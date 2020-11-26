@@ -1,0 +1,27 @@
+﻿<Project Sdk="Tizen.NET.Sdk/1.1.5">
+
+  <PropertyGroup>
+    <OutputType>library</OutputType>
+    <TargetFramework>tizen60</TargetFramework>
+    <LangVersion>8</LangVersion>
+    <Nullable>enable</Nullable>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageId>Tizen.Flutter.Embedding</PackageId>
+    <Version>1.0.2</Version>
+    <Authors>flutter-tizen</Authors>
+    <PackageLicenseExpression>BSD-3-Clause</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/flutter-tizen</PackageProjectUrl>
+    <PackageIconUrl>https://download.tizen.org/misc/Tizen-Brand/01-Primary-Assets/Pinwheel/On-Light/01-RGB/Tizen-Pinwheel-On-Light-RGB.png</PackageIconUrl>
+    <Description>Provides a base class for integrating Flutter within a Tizen app.</Description>
+    <PackageTags>Tizen;Flutter</PackageTags>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>NU5048,CS1591</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DebugType>portable</DebugType>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
+
+</Project>

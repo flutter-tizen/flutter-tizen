@@ -1,0 +1,183 @@
+#!/usr/bin/env python3
+# Copyright 2020 Samsung Electronics Co., Ltd. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import os
+import platform
+import shutil
+import subprocess
+import sys
+import urllib.request
+import zipfile
+
+def revision(sourceDir):
+    command = f'cd {sourceDir} && git rev-parse HEAD'
+    return subprocess.run(
+        command, shell=True, check=True, stdout=subprocess.PIPE
+    ).stdout.decode('utf-8').strip()
+
+def read(filePath):
+    if os.path.isfile(filePath):
+        with open(filePath, 'r') as f:
+            return f.read().strip()
+    return None
+
+def download(message, url, location):
+    size = 0
+    with urllib.request.urlopen(url) as res, open(location, 'wb') as f:
+        while True:
+            buf = res.read(64 * 1024)
+            if not buf:
+                break
+            size += f.write(buf)
+            print(f'{message} {size / 1024 / 1024:.1f} MB\r', end='')
+        print(f'{message} Done     ')
+
+def main():
+    # Currently, gen_snapshot is only available for linux-x64.
+    if sys.platform != 'linux' or platform.machine() != 'x86_64':
+        print('Not supported platform.')
+        exit(1)
+
+    rootDir = os.path.abspath(__file__ + '/../..')
+    cacheDir = rootDir + '/bin/cache'
+    flutterDir = rootDir + '/flutter'
+    flutterRepo = 'https://github.com/flutter/flutter.git'
+
+    # Install flutter if not installed.
+    if os.path.isfile(flutterDir) or os.path.islink(flutterDir):
+        os.remove(flutterDir)
+    if not os.path.isdir(flutterDir):
+        cloneCommand = f'git clone --depth=1 {flutterRepo}'
+        subprocess.run(cloneCommand, shell=True, check=True)
+
+    # Upgrade flutter if needed.
+    flutterVersionPath = rootDir + '/bin/flutter.version'
+    targetFlutterVersion = read(flutterVersionPath)
+
+    if targetFlutterVersion != revision(flutterDir):
+        upgradeCommand = [
+            f'cd {flutterDir}',
+            'git reset --hard',
+            'git clean -xdf',
+            f'git fetch --depth=1 {flutterRepo} {targetFlutterVersion}',
+            'git checkout FETCH_HEAD'
+        ]
+        subprocess.run(' && '.join(upgradeCommand), shell=True, check=True)
+
+        # Invalidate the cache.
+        if os.path.isdir(cacheDir):
+            shutil.rmtree(cacheDir)
+
+    if targetFlutterVersion != revision(flutterDir):
+        print('Something went wrong when upgrading the Flutter SDK.\n'
+              f'Remove directory {flutterDir} and try again.')
+        exit(1)
+
+    flutterPath = flutterDir + '/bin/flutter'
+    flutterCacheDir = flutterDir + '/bin/cache'
+    flutterStampPath = flutterCacheDir + '/flutter_tools.stamp'
+    flutterStamp = read(flutterStampPath)
+
+    if targetFlutterVersion != flutterStamp:
+        # Invalidate the flutter cache.
+        subprocess.run([flutterPath, '--version'], check=True)
+
+    # Validate the Dart SDK.
+    dartPath = os.path.realpath(flutterCacheDir + '/dart-sdk/bin/dart')
+    pubPath = os.path.realpath(flutterCacheDir + '/dart-sdk/bin/pub')
+    if not os.path.isfile(dartPath) or not os.path.isfile(pubPath):
+        print('Could not locate the Dart SDK.\n'
+              f'Remove directory {flutterDir} and try again.')
+        exit(1)
+
+    # The following logic is from flutter/bin/internal/shared.sh.
+    snapshotPath = cacheDir + '/flutter-tizen.snapshot'
+    stampPath = cacheDir + '/flutter-tizen.stamp'
+    scriptPath = rootDir + '/bin/flutter_tizen.dart'
+    pubspecPath = rootDir + '/pubspec.yaml'
+    publockPath = rootDir + '/pubspec.lock'
+    packagesPath = rootDir + '/.packages'
+
+    if not os.path.isdir(cacheDir):
+        os.makedirs(cacheDir)
+
+    # Upgrade if any of the following conditions are met.
+    if not os.path.isfile(snapshotPath) or \
+            revision(rootDir) != read(stampPath) or \
+            os.path.getmtime(pubspecPath) > os.path.getmtime(publockPath):
+        print('Running pub upgrade...')
+        upgradeCommand = f'cd {rootDir} && {pubPath} upgrade --no-precompile'
+        subprocess.run(upgradeCommand, shell=True, check=True)
+
+        print('Compiling flutter-tizen...')
+        aotCommand = [dartPath, '--disable-dart-dev',
+                      f'--snapshot={snapshotPath}',
+                      f'--packages={packagesPath}',
+                      '--no-enable-mirrors', scriptPath]
+        subprocess.run(aotCommand, check=True)
+
+        with open(stampPath, 'w') as f:
+            f.write(revision(rootDir))
+
+    # Download and extract engine artifacts.
+    # Artifact caching is usually done by the flutter SDK when a build is
+    # requested for a certain platform (in Dart code). However, we do it a
+    # little earlier because the implementation is much simpler in Python.
+    engineCacheDir = cacheDir + '/artifacts/engine'
+    engineVersionPath = rootDir + '/bin/engine.version'
+    engineVersion = read(engineVersionPath)
+    engineStampPath = engineCacheDir + '/engine.stamp'
+    engineStamp = read(engineStampPath)
+
+    if engineVersion != engineStamp:
+        if os.path.isdir(engineCacheDir):
+            shutil.rmtree(engineCacheDir)
+        os.makedirs(engineCacheDir)
+
+        if 'BASE_URL' in os.environ:
+            baseUrl = os.environ['BASE_URL']
+        else:
+            baseUrl = 'https://github.com/flutter-tizen/engine/releases'
+        archiveUrl = f'{baseUrl}/download/{engineVersion[:7]}/linux-x64.zip'
+        archivePath = engineCacheDir + '/artifacts.zip'
+
+        try:
+            download('Downloading linux-x64 tools...', archiveUrl, archivePath)
+        except:
+            print(f'Failed to download engine artifacts from:\n  {archiveUrl}')
+            raise
+
+        try:
+            with zipfile.ZipFile(archivePath, 'r') as zipRef:
+                zipRef.extractall(engineCacheDir)
+        except zipfile.BadZipFile:
+            print('Unable to extract files. Check if the URL is valid:\n'
+                  f'  {archiveUrl}')
+            exit(1)
+        finally:
+            os.remove(archivePath)
+
+        # ZipFile.extractall() does not retain file permissions.
+        for root, _, files in os.walk(engineCacheDir):
+            for path in [f'{root}/{f}' for f in files if f == 'gen_snapshot']:
+                os.chmod(path, 0o755)
+
+        with open(engineStampPath, 'w') as f:
+            f.write(engineVersion)
+
+    # Set --flutter-root and run.
+    command = [dartPath, '--disable-dart-dev', f'--packages={packagesPath}',
+               snapshotPath, '--flutter-root', flutterDir]
+    command.extend(sys.argv[1:])
+    try:
+        process = subprocess.run(command)
+        exit(process.returncode)
+    except KeyboardInterrupt:
+        print('Operation cancelled.')
+    exit(1)
+
+# Execute only if run as a script.
+if __name__ == "__main__":
+    main()

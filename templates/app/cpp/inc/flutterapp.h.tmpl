@@ -1,0 +1,18 @@
+#ifndef __FLUTTERAPP_H__
+#define __FLUTTERAPP_H__
+
+#include <app.h>
+#include <dlog.h>
+
+#include "flutter_tizen.h"
+
+#ifdef LOG_TAG
+#undef LOG_TAG
+#endif
+#define LOG_TAG "ConsoleMessage"
+
+#if !defined(PACKAGE)
+#define PACKAGE "{{androidIdentifier}}"
+#endif
+
+#endif /* __FLUTTERAPP_H__ */
