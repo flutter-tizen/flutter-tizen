@@ -34,12 +34,20 @@ namespace Tizen.Flutter.Embedding
 
         public override void Run(string[] args)
         {
+            // Log any unhandled exception.
+            AppDomain.CurrentDomain.UnhandledException += (s, e) =>
+            {
+                var exception = e.ExceptionObject as Exception;
+                InternalLog.Error(LogTag, $"Unhandled exception: {exception}");
+            };
+
+            // Parse engine arguments passed from the tool. This should be reworked.
             for (int i = args.Length - 1; i >= 0; i--)
             {
                 if (args[i].StartsWith("FLUTTER_ENGINE_ARGS"))
                 {
                     args[i] = args[i].Substring(args[i].IndexOf(' ')).Trim();
-                    Log.Debug(LogTag, "Run with: " + args[i]);
+                    InternalLog.Debug(LogTag, "Run with: " + args[i]);
 
                     // A regex is used here to correctly parse "quoted" strings.
                     // TODO: Avoid using Linq to reduce the memory pressure.
@@ -61,7 +69,7 @@ namespace Tizen.Flutter.Embedding
             if (!Information.TryGetValue("http://tizen.org/feature/screen.width", out int width) ||
                 !Information.TryGetValue("http://tizen.org/feature/screen.height", out int height))
             {
-                Log.Error(LogTag, "Could not obtain the screen size.");
+                InternalLog.Error(LogTag, "Could not obtain the screen size.");
                 return;
             }
             var windowProperties = new FlutterWindowProperties
