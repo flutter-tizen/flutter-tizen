@@ -43,10 +43,10 @@ flutter-tizen create .
 flutter-tizen build tpk
 
 # Build the project and run on a Tizen device. Use `-d [id]` to specify a device ID.
-flutter-tizen run -d tizen
+flutter-tizen run
 
 # Run integration tests.
-flutter-tizen drive -d tizen --driver=... --target=...
+flutter-tizen drive --driver=... --target=...
 ```
 
 #### Notice
