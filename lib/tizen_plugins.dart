@@ -96,8 +96,8 @@ mixin TizenExtension on FlutterCommand {
   @override
   Future<FlutterCommandResult> verifyThenRunCommand(String commandPath) async {
     if (super.shouldRunPub) {
-      final FlutterProject project = FlutterProject.current();
-      await injectTizenPlugins(project);
+      // TODO(swift-kim): Should run pub get first before injecting plugins.
+      await injectTizenPlugins(FlutterProject.current());
     }
     return await super.verifyThenRunCommand(commandPath);
   }
@@ -117,8 +117,12 @@ Future<String> _createEntrypoint(
   }
 
   final TizenProject tizenProject = TizenProject.fromFlutter(project);
+  if (!tizenProject.existsSync()) {
+    return targetFile;
+  }
   final Directory registryDirectory = tizenProject.managedDirectory;
-  final File entrypoint = registryDirectory.childFile('main.dart');
+  final File entrypoint = registryDirectory.childFile('main.dart')
+    ..createSync(recursive: true);
   final PackageConfig packageConfig = await loadPackageConfigWithLogging(
     project.directory.childFile('.packages'),
     logger: globals.logger,
