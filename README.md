@@ -37,7 +37,7 @@ flutter-tizen doctor
 flutter-tizen devices
 
 # Add Tizen files if a Flutter project already exists in the current directory.
-fluttze-tizen create .
+flutter-tizen create .
 
 # Build a TPK (application package) without installing.
 flutter-tizen build tpk
