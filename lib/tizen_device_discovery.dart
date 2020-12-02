@@ -106,7 +106,7 @@ class TizenDevices extends PollingDeviceDiscovery {
         continue;
       }
 
-      final List<String> splitLine = line.split(RegExp(r'\s+'));
+      final List<String> splitLine = line.split(RegExp(r'\s{2,}'));
       if (splitLine.length != 3) {
         continue;
       }
