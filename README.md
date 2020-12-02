@@ -37,16 +37,16 @@ flutter-tizen doctor
 flutter-tizen devices
 
 # Add Tizen files if a Flutter project already exists in the current directory.
-fluttze-tizen create .
+flutter-tizen create .
 
 # Build a TPK (application package) without installing.
 flutter-tizen build tpk
 
 # Build the project and run on a Tizen device. Use `-d [id]` to specify a device ID.
-flutter-tizen run -d tizen
+flutter-tizen run
 
 # Run integration tests.
-flutter-tizen drive -d tizen --driver=... --target=...
+flutter-tizen drive --driver=... --target=...
 ```
 
 #### Notice

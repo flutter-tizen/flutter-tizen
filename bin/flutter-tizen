@@ -49,7 +49,7 @@ def main():
     if os.path.isfile(flutterDir) or os.path.islink(flutterDir):
         os.remove(flutterDir)
     if not os.path.isdir(flutterDir):
-        cloneCommand = f'git clone --depth=1 {flutterRepo}'
+        cloneCommand = f'cd {rootDir} && git clone --depth=1 {flutterRepo}'
         subprocess.run(cloneCommand, shell=True, check=True)
 
     # Upgrade flutter if needed.

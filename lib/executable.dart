@@ -41,10 +41,14 @@ Future<void> main(List<String> args) async {
   final bool verbose = args.contains('-v') || args.contains('--verbose');
   final bool help = args.contains('-h') || args.contains('--help');
   final bool verboseHelp = help && verbose;
+  final bool specifiedId = args.contains('-d') || args.contains('--device-id');
 
-  // Suppress flutter analytics as we are not actually using the tools, but just
-  // depending on their source code.
-  args = <String>['--suppress-analytics', '--no-version-check', ...args];
+  args = <String>[
+    '--suppress-analytics', // Suppress flutter analytics by default.
+    '--no-version-check',
+    if (!specifiedId) ...<String>['-d', 'tizen'],
+    ...args,
+  ];
 
   await runner.run(
       args,

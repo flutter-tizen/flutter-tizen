@@ -130,7 +130,7 @@ class TizenDevice extends Device {
   Future<String> get sdkNameAndVersion async => 'Tizen $platformVersion';
 
   @override
-  String get name => getCapability('device_name');
+  String get name => 'Tizen';
 
   bool get usesSecureProtocol => getCapability('secure_protocol') == 'enabled';
 
