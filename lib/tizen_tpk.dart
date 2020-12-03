@@ -83,6 +83,9 @@ class TizenTpk extends ApplicationPackage {
 
   static Future<TizenTpk> fromProject(FlutterProject flutterProject) async {
     final TizenProject project = TizenProject.fromFlutter(flutterProject);
+    if (!project.manifestFile.existsSync()) {
+      throwToolExit('tizen-manifest.xml could not be found.');
+    }
 
     final File tpkFile = flutterProject.directory
         .childDirectory('build')
@@ -90,10 +93,6 @@ class TizenTpk extends ApplicationPackage {
         .childFile(project.outputTpkName);
     if (tpkFile.existsSync()) {
       return await TizenTpk.fromTpk(tpkFile);
-    }
-
-    if (!project.manifestFile.existsSync()) {
-      throwToolExit('tizen-manifest.xml could not be found.');
     }
 
     return TizenTpk(
