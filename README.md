@@ -21,38 +21,60 @@ _Flutter and the related logo are trademarks of Google LLC. We are not endorsed 
 
 ## Usage
 
-Clone this repository and add `flutter-tizen/bin` to your **PATH**.
+Clone this repository first, and add `flutter-tizen/bin` to your **PATH** by running `export PATH=...` or editing your config file.
 
-```bash
-export PATH=$PATH:`pwd`/flutter-tizen/bin
+```sh
+git clone https://github.com/flutter-tizen/flutter-tizen.git
+export PATH=`pwd`/flutter-tizen/bin:$PATH
 ```
-
-`flutter-tizen` substitutes the original `flutter` command. Not all commands or functions are supported. To see supported options and detailed information about the commands, use `-h`.
 
 #### Examples
 
-```bash
+`flutter-tizen` substitutes the original [`flutter`](https://flutter.dev/docs/reference/flutter-cli) CLI command.
+
+```sh
 # Inspect the installed tooling and connected devices.
 flutter-tizen doctor
 flutter-tizen devices
 
-# Add Tizen files if a Flutter project already exists in the current directory.
+# Set up a new project in the current directory, or add Tizen files if a Flutter project already exists.
 flutter-tizen create .
-
-# Build a TPK (application package) without installing.
-flutter-tizen build tpk
 
 # Build the project and run on a Tizen device. Use `-d [id]` to specify a device ID.
 flutter-tizen run
-
-# Run integration tests.
-flutter-tizen drive --driver=... --target=...
+flutter-tizen run --release
 ```
 
-#### Notice
+See [Supported commands](doc/commands.md) for all available commands and their basic usage. See `[command] -h` for more information about each command.
 
-- Only the command line interface is available as of now. We don't currently support IDE (VS Code) extensions.
-- To **update** the flutter-tizen tool, run `git pull` in the tool directory.
+#### Notes
+
+- Only the command line interface is available. We have no plan to add IDE extension support.
+- To **update** the flutter-tizen tool, run `git pull` in this directory.
+
+## Docs
+
+#### Tizen basics
+
+- [Setting up Tizen SDK](doc/install-tizen-sdk.md)
+- Developing Tizen watch and TV apps over Wi-Fi (WIP)
+- Publishing watch apps on Samsung Galaxy Store (WIP)
+
+#### App development
+
+- [Flutter Docs](https://flutter.dev/docs)
+- Development workflow (WIP)
+- Debugging and inspecting Flutter apps with Dart DevTools (WIP)
+
+#### Plugins
+
+- [A list of Flutter plugins available for Tizen](https://github.com/flutter-tizen/plugins)
+- Writing a new plugin to use platform features (WIP)
+
+#### Advanced usage
+
+- [Building the Flutter engine locally](https://github.com/flutter-tizen/engine/wiki/Building-the-engine)
+- [Debugging the flutter-tizen tool](doc/debug-flutter-tizen.md)
 
 ## Issues
 
@@ -61,27 +83,3 @@ If you run into any problem, post an [issue](../../issues) in this repository to
 ## Contribution
 
 This project is community-driven and we welcome all your contribution and feedbacks. Consider filing an [issue](../../issues) or [pull request](../../pulls) to make this project better.
-
-## Debugging flutter-tizen
-
-To run the tool directly from source,
-
-```bash
-FLUTTER_TIZEN=$(dirname $(dirname $(which flutter-tizen)))
-dart $FLUTTER_TIZEN/bin/flutter_tizen.dart --flutter-root $FLUTTER_TIZEN/flutter help
-```
-
-To force the snapshot to be re-generated, remove `bin/cache/flutter-tizen.snapshot`.
-
-You can also debug the tool on Visual Studio Code by configuring `launch.json` as follows. You may have to change the `dart.sdkPath` value in the workspace settings if the built-in Dart SDK version is not compatible.
-
-```json
-{
-  "name": "flutter-tizen",
-  "request": "launch",
-  "type": "dart",
-  "cwd": "<path to the target application>",
-  "program": "<path to flutter-tizen>/bin/flutter_tizen.dart",
-  "args": ["--flutter-root", "<path to flutter-tizen>/flutter", "help"]
-}
-```

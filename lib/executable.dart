@@ -10,7 +10,6 @@ import 'package:flutter_tools/src/base/context.dart';
 import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/base/template.dart';
 import 'package:flutter_tools/src/build_runner/mustache_template.dart';
-import 'package:flutter_tools/src/commands/attach.dart';
 import 'package:flutter_tools/src/commands/config.dart';
 import 'package:flutter_tools/src/commands/devices.dart';
 import 'package:flutter_tools/src/commands/doctor.dart';
