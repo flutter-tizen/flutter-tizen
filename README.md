@@ -57,7 +57,7 @@ See [Supported commands](doc/commands.md) for all available commands and their b
 #### Tizen basics
 
 - [Setting up Tizen SDK](doc/install-tizen-sdk.md)
-- Developing Tizen watch and TV apps over Wi-Fi (WIP)
+- [Developing for watch and TVs over Wi-Fi](doc/setup-watch-tv.md)
 - Publishing watch apps on Samsung Galaxy Store (WIP)
 
 #### App development
@@ -73,7 +73,7 @@ See [Supported commands](doc/commands.md) for all available commands and their b
 
 #### Advanced usage
 
-- [Building the Flutter engine locally](https://github.com/flutter-tizen/engine/wiki/Building-the-engine)
+- [Building the Flutter engine from source](https://github.com/flutter-tizen/engine/wiki/Building-the-engine)
 - [Debugging the flutter-tizen tool](doc/debug-flutter-tizen.md)
 
 ## Issues

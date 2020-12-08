@@ -1,6 +1,6 @@
 # Supported commands
 
-Not all commands in [`flutter`](https://flutter.dev/docs/reference/flutter-cli) are supported by `flutter-tizen`.
+Not all commands in the [`flutter`](https://flutter.dev/docs/reference/flutter-cli) CLI are supported by `flutter-tizen`.
 
 ## Global options
 
