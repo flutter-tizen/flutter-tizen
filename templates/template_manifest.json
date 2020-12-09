@@ -12,6 +12,7 @@
     "templates/app/tizen.tmpl/inc/flutterapp.h.tmpl",
     "templates/app/tizen.tmpl/project_def.prop",
     "templates/app/tizen.tmpl/src/flutterapp.cc",
+    "templates/plugin/tizen.tmpl/.gitignore",
     "templates/plugin/tizen.tmpl/inc/projectName_plugin.h.tmpl",
     "templates/plugin/tizen.tmpl/project_def.prop.tmpl",
     "templates/plugin/tizen.tmpl/src/log.h.tmpl",
