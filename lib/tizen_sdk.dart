@@ -7,6 +7,10 @@ import 'package:flutter_tools/src/android/android_sdk.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 
+String getEmCliPath() {
+  return TizenSdk.instance?.emCli?.path;
+}
+
 String getSdbPath() {
   return TizenSdk.instance?.sdb?.path;
 }
@@ -49,6 +53,11 @@ class TizenSdk {
   Directory get platformsDirectory => directory.childDirectory('platforms');
 
   Directory get toolsDirectory => directory.childDirectory('tools');
+
+  File get emCli => toolsDirectory
+      .childDirectory('emulator')
+      .childDirectory('bin')
+      .childFile('em-cli');
 
   File get sdb => toolsDirectory.childFile('sdb');
 

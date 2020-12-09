@@ -5,6 +5,7 @@
 
 import 'package:flutter_tools/executable.dart' as flutter;
 import 'package:flutter_tools/runner.dart' as runner;
+import 'package:flutter_tools/src/android/android_workflow.dart';
 import 'package:flutter_tools/src/application_package.dart';
 import 'package:flutter_tools/src/base/context.dart';
 import 'package:flutter_tools/src/base/logger.dart';
@@ -13,9 +14,11 @@ import 'package:flutter_tools/src/build_runner/mustache_template.dart';
 import 'package:flutter_tools/src/commands/attach.dart';
 import 'package:flutter_tools/src/commands/config.dart';
 import 'package:flutter_tools/src/commands/devices.dart';
+import 'package:flutter_tools/src/commands/emulators.dart';
 import 'package:flutter_tools/src/commands/doctor.dart';
 import 'package:flutter_tools/src/commands/format.dart';
 import 'package:flutter_tools/src/commands/logs.dart';
+import 'package:flutter_tools/src/emulator.dart';
 import 'package:flutter_tools/src/device.dart';
 import 'package:flutter_tools/src/doctor.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
@@ -32,6 +35,8 @@ import 'commands/packages.dart';
 import 'commands/run.dart';
 import 'tizen_device_discovery.dart';
 import 'tizen_doctor.dart';
+import 'tizen_emulator.dart';
+import 'tizen_sdk.dart';
 import 'tizen_tpk.dart';
 
 /// Main entry point for commands.
@@ -59,6 +64,7 @@ Future<void> main(List<String> args) async {
             DoctorCommand(verbose: verboseHelp),
             FormatCommand(),
             LogsCommand(),
+            EmulatorsCommand(),
             // Commands extended for Tizen.
             TizenAnalyzeCommand(verboseHelp: verboseHelp),
             TizenAttachCommand(verboseHelp: verboseHelp),
@@ -78,6 +84,14 @@ Future<void> main(List<String> args) async {
         DeviceManager: () => TizenDeviceManager(),
         TemplateRenderer: () => const MustacheTemplateRenderer(),
         DoctorValidatorsProvider: () => TizenDoctorValidatorsProvider(),
+        EmulatorManager: () => TizenEmulatorManager(
+              tizenSdk: TizenSdk.locateSdk(),
+              androidSdk: globals.androidSdk,
+              processManager: globals.processManager,
+              logger: globals.logger,
+              fileSystem: globals.fs,
+              androidWorkflow: androidWorkflow,
+            ),
         // [LoggerFactory] is not needed for now.
         if (verbose)
           Logger: () => VerboseLogger(StdoutLogger(
