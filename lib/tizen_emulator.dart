@@ -75,16 +75,14 @@ class TizenEmulatorManager extends EmulatorManager {
 
     final PlatformImage platformImage = _getPreferredPlatformImage();
     if (platformImage == null) {
-      return CreateEmulatorResult(name,
-          success: false,
-          error:
-              'No suitable Tizen platform images are available. You may need to install these'
-              ' using the Tizen Package Manager.'
-              'Visit the link below to see how to create Tizen platform images for emulators:'
-              ' https://docs.tizen.org/application/tizen-studio/setup/update-sdk/#installing-additional-packages');
+      return CreateEmulatorResult(
+        name,
+        success: false,
+        error: 'No suitable Tizen platform images are available.\n'
+               'You may need to install these using the Tizen Package Manager.',
+      );
     }
 
-    // throwOnError: when should we use or not use?
     final RunResult runResult = await _processUtils.run(
       <String>[
         _tizenSdk.emCli.path,
@@ -238,10 +236,7 @@ class TizenEmulators extends EmulatorDiscovery {
   bool get canListAnything => _tizenSdk?.emCli?.existsSync() ?? false;
 
   @override
-  Future<List<Emulator>> get emulators => _getEmulators();
-
-  // set future and async but not using await?
-  Future<List<Emulator>> _getEmulators() async {
+  Future<List<Emulator>> get emulators async {
     if (!canListAnything) {
       // Although this method doesn't run the `tizenSdk.emCli` command
       // to get emulator info, logically, emulator info shouldn't be
@@ -332,10 +327,13 @@ class TizenEmulator extends Emulator {
   /// See [AndroidEmulator.launch] in [android_emulator.dart] (simplified)
   @override
   Future<void> launch() async {
-    // Null checking on _tizenSdk.emCli.path is already
-    // done at `TizenEmulators._getEmulators`.
+    final String emCliPath = _tizenSdk?.emCli?.path;
+    if (emCliPath == null) {
+      throwToolExit('Unable to locate Tizen Emulator Manager.');
+    }
+
     final List<String> args = <String>[
-      _tizenSdk.emCli.path,
+      emCliPath,
       'launch',
       '--name',
       id,
@@ -343,7 +341,7 @@ class TizenEmulator extends Emulator {
 
     final RunResult runResult = await _processUtils.run(args);
     if (runResult.exitCode == 0) {
-      globals.printStatus('Successfully launched a Tizen emulator, $id.');
+      globals.printStatus('Successfully launched Tizen emulator, $id.');
     } else if (runResult.exitCode == 2) {
       globals.printStatus('Tizen emulator $id is already running.');
     } else {
