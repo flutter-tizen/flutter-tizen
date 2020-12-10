@@ -48,7 +48,23 @@ class TizenSdk {
 
   Directory get platformsDirectory => directory.childDirectory('platforms');
 
+  Directory get sdkDataDirectory {
+    final File sdkInfo = directory.childFile('sdk.info');
+    if (sdkInfo.existsSync()) {
+       final Map<String, String> info = parseIniLines(sdkInfo.readAsLinesSync());
+       if(info.containsKey('TIZEN_SDK_DATA_PATH')){
+         return globals.fs.directory(info['TIZEN_SDK_DATA_PATH']);
+       }
+    }
+    return null;
+  }
+
   Directory get toolsDirectory => directory.childDirectory('tools');
+
+  File get emCli => toolsDirectory
+      .childDirectory('emulator')
+      .childDirectory('bin')
+      .childFile('em-cli');
 
   File get sdb => toolsDirectory.childFile('sdb');
 
@@ -85,4 +101,28 @@ class TizenSdk {
 
     return rootstrapName;
   }
+}
+
+Map<String, String> parseIniLines(List<String> contents) {
+  final Map<String, String> results = <String, String>{};
+
+  final Iterable<List<String>> properties = contents
+      .map<String>((String l) => l.trim())
+      // Strip blank lines/comments
+      .where((String l) => l != '' && !l.startsWith('#'))
+      // Discard anything that isn't simple name=value
+      .where((String l) => l.contains('='))
+      // Split into name/value
+      // The parser method assumes no equal signs(=) in 'name',
+      // so the method splits the string at the first equal sign.
+      .map<List<String>>((String l){
+        final int splitPos = l.indexOf('=');
+        return <String>[l.substring(0, splitPos), l.substring(splitPos + 1)];
+      });
+
+  for (final List<String> property in properties) {
+    results[property[0].trim()] = property[1].trim();
+  }
+
+  return results;
 }
