@@ -1,0 +1,27 @@
+name: Dart
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: google/dart:2.10.0-110.3.beta
+    steps:
+      - uses: actions/checkout@v2
+      - name: Fetch Flutter SDK
+        run: |
+          git clone --depth=1 https://github.com/flutter/flutter.git
+          cd flutter
+          git fetch --depth=1 https://github.com/flutter/flutter.git `cat ../bin/flutter.version`
+          git checkout FETCH_HEAD
+      - name: Install dependencies
+        run: dart pub get
+      - name: Verify formatting
+        run: dart format --output=none --set-exit-if-changed lib
+      - name: Analyze project source
+        run: dart analyze --fatal-infos lib
