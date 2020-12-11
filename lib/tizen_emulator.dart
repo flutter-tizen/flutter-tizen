@@ -14,7 +14,6 @@ import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/base/process.dart';
 import 'package:flutter_tools/src/device.dart';
 import 'package:flutter_tools/src/emulator.dart';
-import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tizen/tizen_sdk.dart';
 import 'package:meta/meta.dart';
 import 'package:process/process.dart';
@@ -32,7 +31,6 @@ class TizenEmulatorManager extends EmulatorManager {
             ProcessUtils(logger: logger, processManager: processManager),
         _tizenSdk = tizenSdk,
         _tizenEmulators = TizenEmulators(
-          fileSystem: fileSystem,
           logger: logger,
           processManager: processManager,
           tizenSdk: tizenSdk,
@@ -212,16 +210,13 @@ class PlatformImage {
 
 class TizenEmulators extends EmulatorDiscovery {
   TizenEmulators({
-    @required FileSystem fileSystem,
     @required Logger logger,
     @required ProcessManager processManager,
     @required TizenSdk tizenSdk,
-  })  : _fileSystem = fileSystem,
-        _logger = logger,
+  })  : _logger = logger,
         _processManager = processManager,
         _tizenSdk = tizenSdk;
 
-  final FileSystem _fileSystem;
   final Logger _logger;
   final ProcessManager _processManager;
   final TizenSdk _tizenSdk;
@@ -323,7 +318,7 @@ class TizenEmulator extends Emulator {
   @override
   Category get category => Category.mobile;
 
-  /// See [AndroidEmulator.launch] in [android_emulator.dart] (simplified)
+  /// See: [AndroidEmulator.launch] in `android_emulator.dart` (simplified)
   @override
   Future<void> launch() async {
     final String emCliPath = _tizenSdk?.emCli?.path;
@@ -340,9 +335,9 @@ class TizenEmulator extends Emulator {
 
     final RunResult runResult = await _processUtils.run(args);
     if (runResult.exitCode == 0) {
-      globals.printStatus('Successfully launched Tizen emulator, $id.');
+      _logger.printStatus('Successfully launched Tizen emulator, $id.');
     } else if (runResult.exitCode == 2) {
-      globals.printStatus('Tizen emulator $id is already running.');
+      _logger.printStatus('Tizen emulator $id is already running.');
     } else {
       throwToolExit('Unable to launch Tizen emulator $id.');
     }
