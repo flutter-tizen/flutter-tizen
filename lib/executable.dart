@@ -85,7 +85,7 @@ Future<void> main(List<String> args) async {
         TemplateRenderer: () => const MustacheTemplateRenderer(),
         DoctorValidatorsProvider: () => TizenDoctorValidatorsProvider(),
         EmulatorManager: () => TizenEmulatorManager(
-              tizenSdk: TizenSdk.locateSdk(),
+              tizenSdk: TizenSdk.instance,
               androidSdk: globals.androidSdk,
               processManager: globals.processManager,
               logger: globals.logger,
