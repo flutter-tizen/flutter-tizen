@@ -51,10 +51,10 @@ class TizenSdk {
   Directory get sdkDataDirectory {
     final File sdkInfo = directory.childFile('sdk.info');
     if (sdkInfo.existsSync()) {
-       final Map<String, String> info = parseIniLines(sdkInfo.readAsLinesSync());
-       if(info.containsKey('TIZEN_SDK_DATA_PATH')){
-         return globals.fs.directory(info['TIZEN_SDK_DATA_PATH']);
-       }
+      final Map<String, String> info = parseIniLines(sdkInfo.readAsLinesSync());
+      if (info.containsKey('TIZEN_SDK_DATA_PATH')) {
+        return globals.fs.directory(info['TIZEN_SDK_DATA_PATH']);
+      }
     }
     return null;
   }
@@ -115,10 +115,10 @@ Map<String, String> parseIniLines(List<String> contents) {
       // Split into name/value
       // The parser method assumes no equal signs(=) in 'name',
       // so the method splits the string at the first equal sign.
-      .map<List<String>>((String l){
-        final int splitPos = l.indexOf('=');
-        return <String>[l.substring(0, splitPos), l.substring(splitPos + 1)];
-      });
+      .map<List<String>>((String l) {
+    final int splitPos = l.indexOf('=');
+    return <String>[l.substring(0, splitPos), l.substring(splitPos + 1)];
+  });
 
   for (final List<String> property in properties) {
     results[property[0].trim()] = property[1].trim();

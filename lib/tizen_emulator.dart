@@ -12,7 +12,6 @@ import 'package:flutter_tools/src/android/android_workflow.dart';
 import 'package:flutter_tools/src/base/common.dart';
 import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/base/process.dart';
-import 'package:flutter_tools/src/base/terminal.dart';
 import 'package:flutter_tools/src/device.dart';
 import 'package:flutter_tools/src/emulator.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
@@ -79,7 +78,7 @@ class TizenEmulatorManager extends EmulatorManager {
         name,
         success: false,
         error: 'No suitable Tizen platform images are available.\n'
-               'You may need to install these using the Tizen Package Manager.',
+            'You may need to install these using the Tizen Package Manager.',
       );
     }
 
