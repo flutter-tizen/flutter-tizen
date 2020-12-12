@@ -188,7 +188,7 @@ class TizenCreateCommand extends CreateCommand {
         symlink.deleteSync(recursive: true);
       }
       if (backupTemplateManifest.existsSync()) {
-        backupTemplateManifest.rename(originalTemplateManifest.path);
+        backupTemplateManifest.renameSync(originalTemplateManifest.path);
       }
     }
   }

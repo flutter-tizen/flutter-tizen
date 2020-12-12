@@ -200,13 +200,13 @@ abstract class DotnetTpk extends Target {
       final File icuData =
           engineDir.parent.childDirectory('common').childFile('icudtl.dat');
 
-      engineBinary.copy(libDir.childFile(engineBinary.basename).path);
-      icuData.copy(resDir.childFile(icuData.basename).path);
+      engineBinary.copySync(libDir.childFile(engineBinary.basename).path);
+      icuData.copySync(resDir.childFile(icuData.basename).path);
 
       if (buildMode.isPrecompiled) {
         final File aotSharedLib =
             environment.buildDir.childDirectory(arch).childFile('app.so');
-        aotSharedLib.copy(libDir.childFile('libapp.so').path);
+        aotSharedLib.copySync(libDir.childFile('libapp.so').path);
       }
     }
 
@@ -456,8 +456,8 @@ abstract class NativeTpk extends Target {
     final File icuData =
         engineDir.parent.childDirectory('common').childFile('icudtl.dat');
 
-    engineBinary.copy(libDir.childFile('libflutter_linux_tizen.so').path);
-    icuData.copy(resDir.childFile(icuData.basename).path);
+    engineBinary.copySync(libDir.childFile('libflutter_linux_tizen.so').path);
+    icuData.copySync(resDir.childFile(icuData.basename).path);
 
     if (libDir.childFile('libapp.so').existsSync()) {
       libDir.childFile('libapp.so').deleteSync(recursive: true);
@@ -465,7 +465,7 @@ abstract class NativeTpk extends Target {
     if (buildMode.isPrecompiled) {
       final File aotSharedLib =
           environment.buildDir.childDirectory(targetArch).childFile('app.so');
-      aotSharedLib.copy(libDir.childFile('libapp.so').path);
+      aotSharedLib.copySync(libDir.childFile('libapp.so').path);
     }
 
     // Prepare for build.
