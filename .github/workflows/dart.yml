@@ -7,7 +7,7 @@ on:
     branches: [ master ]
 
 jobs:
-  build:
+  analysis:
     runs-on: ubuntu-latest
     container:
       image: google/dart:2.10.0-110.3.beta
@@ -19,7 +19,7 @@ jobs:
           cd flutter
           git fetch --depth=1 https://github.com/flutter/flutter.git `cat ../bin/flutter.version`
           git checkout FETCH_HEAD
-      - name: Install dependencies
+      - name: Install pub dependencies
         run: dart pub get
       - name: Verify formatting
         run: dart format --output=none --set-exit-if-changed lib
