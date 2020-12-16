@@ -32,6 +32,10 @@ The following packages are required by the flutter-tizen tool.
   - _[5.5 Wearable] - [Emulator]_
   - _[Extension SDK] - [TV Extensions-5.5] - [Emulator]_
 
+If you cannot see extension packages in the _Extension SDK_ tab, click the configuration button (⚙️) and make sure you are using the latest official distribution.
+
+![Configuration](images/package-manager-configuration.png)
+
 ## Setting up Tizen emulators
 
 If you installed emulator packages in the previous step, you can use _Emulator Manager_ to manage and launch emulator instances. If you can't see any emulator instance in the device list, open _Package Manager_ and install emulator packages of your target platform.
