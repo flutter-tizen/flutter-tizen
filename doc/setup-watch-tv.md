@@ -1,4 +1,4 @@
-# Developing for watch and TVs over Wi-Fi
+# Developing for watch and TV devices over Wi-Fi
 
 In order to install and test Flutter apps on your watch or TV device, you have to first enable the connection between the device and your host machine.
 

@@ -1,6 +1,6 @@
 # Flutter for Tizen
 
-![Dart](https://github.com/flutter-tizen/flutter-tizen/workflows/Dart/badge.svg)
+[![Dart](https://github.com/flutter-tizen/flutter-tizen/workflows/Dart/badge.svg)](../../actions)
 
 An extension to the [Flutter SDK](https://github.com/flutter/flutter) for building Flutter applications for Tizen.
 
@@ -11,11 +11,12 @@ _Flutter and the related logo are trademarks of Google LLC. We are not endorsed 
 ## System requirements
 
 - Operating system: Linux x64
-  - If you're on WSL (Windows Subsystem for Linux), make sure to start the sdb server on the Windows host prior to running any sdb command from the Linux shell.
+  - If you're using _WSL (Windows Subsystem for Linux)_, see [Running flutter-tizen on WSL](doc/wsl-guide.md).
 - Tools:
   - Python 3 (3.6 or later)
   - [Tizen Studio](doc/install-tizen-sdk.md) (4.0 or later)
-  - [.NET Core](https://docs.microsoft.com/en-us/dotnet/core/install/linux) (3.0 or later)
+  - [.NET SDK](https://docs.microsoft.com/en-us/dotnet/core/install/linux) (3.0 or later)
+  - `curl` `file` `git` `make` `xz-utils` `zip`
 - Supported devices:
   - Watch devices running Tizen 5.5 or later
   - TV devices running **Tizen 6.0** or later (older devices are not supported due to security reasons)
@@ -30,9 +31,9 @@ git clone https://github.com/flutter-tizen/flutter-tizen.git
 export PATH=`pwd`/flutter-tizen/bin:$PATH
 ```
 
-#### Examples
-
 `flutter-tizen` substitutes the original [`flutter`](https://flutter.dev/docs/reference/flutter-cli) CLI command.
+
+#### Examples
 
 ```sh
 # Inspect the installed tooling and connected devices.
@@ -59,7 +60,7 @@ See [Supported commands](doc/commands.md) for all available commands and their b
 #### Tizen basics
 
 - [Setting up Tizen SDK](doc/install-tizen-sdk.md)
-- [Developing for watch and TVs over Wi-Fi](doc/setup-watch-tv.md)
+- [Developing for watch and TV devices over Wi-Fi](doc/setup-watch-tv.md)
 - Publishing watch apps on Samsung Galaxy Store (WIP)
 
 #### App development
@@ -73,7 +74,7 @@ See [Supported commands](doc/commands.md) for all available commands and their b
 - [A list of Flutter plugins available for Tizen](https://github.com/flutter-tizen/plugins)
 - Writing a new plugin to use platform features (WIP)
 
-#### Advanced usage
+#### Advanced
 
 - [Building the Flutter engine from source](https://github.com/flutter-tizen/engine/wiki/Building-the-engine)
 - [Debugging the flutter-tizen tool](doc/debug-flutter-tizen.md)
