@@ -35,12 +35,12 @@ class TizenBuildInfo {
   const TizenBuildInfo(
     this.buildInfo, {
     @required this.targetArchs,
-    this.profile,
+    this.securityProfile,
   });
 
   final BuildInfo buildInfo;
   final List<String> targetArchs;
-  final String profile;
+  final String securityProfile;
 }
 
 /// See:

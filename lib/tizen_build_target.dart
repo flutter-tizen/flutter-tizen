@@ -211,7 +211,7 @@ abstract class DotnetTpk extends Target {
 
     // For now a constant value is used instead of reading from a file.
     // Keep this value in sync with the latest published nuget version.
-    const String embeddingVersion = '1.0.3';
+    const String embeddingVersion = '1.1.0';
 
     // Run .NET build.
     if (getDotnetCliPath() == null) {
@@ -246,7 +246,7 @@ abstract class DotnetTpk extends Target {
     // We need to re-generate the TPK by signing with a correct profile.
     // TODO(swift-kim): Apply the profile during .NET build for efficiency.
     // Password descryption by secret-tool will be needed for full automation.
-    if (buildInfo.profile?.isEmpty ?? true) {
+    if (buildInfo.securityProfile?.isEmpty ?? true) {
       environment.logger.printStatus('The active profile is used for signing.');
     }
     result = await _processUtils.run(<String>[
@@ -254,9 +254,9 @@ abstract class DotnetTpk extends Target {
       'package',
       '-t',
       'tpk',
-      if (buildInfo.profile?.isNotEmpty ?? false) ...<String>[
+      if (buildInfo.securityProfile?.isNotEmpty ?? false) ...<String>[
         '-s',
-        buildInfo.profile,
+        buildInfo.securityProfile,
       ],
       '--',
       outputDir.childFile(tizenProject.outputTpkName).path,
@@ -541,9 +541,9 @@ abstract class NativeTpk extends Target {
       'package',
       '-t',
       'tpk',
-      if (buildInfo.profile?.isNotEmpty ?? false) ...<String>[
+      if (buildInfo.securityProfile?.isNotEmpty ?? false) ...<String>[
         '-s',
-        buildInfo.profile,
+        buildInfo.securityProfile,
       ],
       '--',
       buildDir.path,

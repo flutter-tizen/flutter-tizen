@@ -369,46 +369,15 @@ class TizenDevice extends Device {
       ],
     ];
 
-    List<String> command;
-    if (usesSecureProtocol) {
-      if (engineArgs.isNotEmpty) {
-        // TODO(swift-kim): Implement a workaround for passing engine arguments.
-        _logger.printError("Not supported arguments: ${engineArgs.join(' ')}");
-      }
-      command = <String>['shell', '0', 'execute', package.applicationId];
-    } else {
-      command = <String>[
-        'shell',
-        'app_launcher',
-        '-s',
-        package.applicationId,
-        if (engineArgs.isNotEmpty) ...<String>[
-          '__AUL_SDK__',
-          'UNIT_TEST',
-          '__DLP_UNIT_TEST_ARG__',
-          "'FLUTTER_ENGINE_ARGS ${engineArgs.join(' ')}'"
-        ],
-      ];
-    }
+    // Create a temp file to be consumed by a launching app.
+    await _writeEngineArguments(engineArgs, '${package.id}.rpm');
 
-    // The `sdb shell app_launcher -s ... __AUL_SDK__ UNIT_TEST ...` command
-    // does not return immediately when the device is unrooted. As a workaround,
-    // we set a timeout for the command and manually extract its output.
-    String stdout;
-    try {
-      final RunResult result =
-          await runSdbAsync(command, timeout: const Duration(seconds: 5));
-      stdout = result.stdout.trim();
-    } on ProcessException catch (ex) {
-      if (ex.message?.startsWith('Process timed out:') ?? false) {
-        stdout = ex.message.replaceFirst('Process timed out:', '').trim();
-      } else {
-        rethrow;
-      }
-    }
-    // This invocation returns 0 even when it fails.
+    final List<String> command = usesSecureProtocol
+        ? <String>['shell', '0', 'execute', package.applicationId]
+        : <String>['shell', 'app_launcher', '-s', package.applicationId];
+    final String stdout = (await runSdbAsync(command)).stdout;
     if (!stdout.contains('successfully launched')) {
-      _logger.printError(stdout, wrap: false);
+      _logger.printError(stdout.trim());
       return LaunchResult.failed();
     }
 
@@ -442,6 +411,21 @@ class TizenDevice extends Device {
     }
   }
 
+  Future<void> _writeEngineArguments(
+    List<String> arguments,
+    String filename,
+  ) async {
+    final File localFile =
+        globals.fs.systemTempDirectory.createTempSync().childFile(filename);
+    localFile.writeAsStringSync(arguments.join('\n'));
+    final String remotePath = '/home/owner/share/tmp/sdk_tools/$filename';
+    final RunResult result =
+        await runSdbAsync(<String>['push', localFile.path, remotePath]);
+    if (!result.stdout.contains('file(s) pushed')) {
+      _logger.printError('Failed to push a file: ${result.stdout.trim()}');
+    }
+  }
+
   @override
   Future<bool> stopApp(TizenTpk app, {String userIdentifier}) async {
     if (app == null) {
@@ -458,7 +442,11 @@ class TizenDevice extends Device {
       final RunResult result = runSdbSync(usesSecureProtocol
           ? <String>['shell', '0', 'getdate']
           : <String>['shell', 'date', '+""%Y-%m-%d %H:%M:%S""']);
-      return DateTime.parse(result.stdout.trim());
+      // Notice that the result isn't normalized with the actual device time
+      // zone. (Because the %z info is missing from the `getdate` result.)
+      // Using the UTC format (appending 'Z' at the end) just prevents the
+      // result from being affected by the host's time zone.
+      return DateTime.parse('${result.stdout.trim()}Z');
     } on FormatException catch (ex) {
       _logger.printError(ex.toString());
       return null;
@@ -601,7 +589,7 @@ class TizenDlogReader extends DeviceLogReader {
     // TODO(swift-kim): We need a better workaround for this.
     if (!_device.usesSecureProtocol && _after != null) {
       final DateTime logTime =
-          DateTime.tryParse('${_after.year}-${timeMatch.group(1)}');
+          DateTime.tryParse('${_after.year}-${timeMatch.group(1)}Z');
       if (logTime?.isBefore(_after) ?? false) {
         return;
       }

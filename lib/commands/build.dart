@@ -82,7 +82,7 @@ class BuildTpkCommand extends BuildSubCommand with TizenExtension {
     final TizenBuildInfo tizenBuildInfo = TizenBuildInfo(
       buildInfo,
       targetArchs: stringsArg('target-arch'),
-      profile: stringArg('security-profile'),
+      securityProfile: stringArg('security-profile'),
     );
     validateBuild(tizenBuildInfo);
 
