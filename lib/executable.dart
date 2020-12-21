@@ -5,7 +5,6 @@
 
 import 'package:flutter_tools/executable.dart' as flutter;
 import 'package:flutter_tools/runner.dart' as runner;
-import 'package:flutter_tools/src/android/android_workflow.dart';
 import 'package:flutter_tools/src/application_package.dart';
 import 'package:flutter_tools/src/base/context.dart';
 import 'package:flutter_tools/src/base/logger.dart';
@@ -32,6 +31,7 @@ import 'commands/drive.dart';
 import 'commands/install.dart';
 import 'commands/packages.dart';
 import 'commands/run.dart';
+import 'tizen_artifacts.dart';
 import 'tizen_device_discovery.dart';
 import 'tizen_doctor.dart';
 import 'tizen_emulator.dart';
@@ -61,9 +61,9 @@ Future<void> main(List<String> args) async {
             ConfigCommand(verboseHelp: verboseHelp),
             DevicesCommand(),
             DoctorCommand(verbose: verboseHelp),
+            EmulatorsCommand(),
             FormatCommand(),
             LogsCommand(),
-            EmulatorsCommand(),
             // Commands extended for Tizen.
             TizenAnalyzeCommand(verboseHelp: verboseHelp),
             TizenAttachCommand(verboseHelp: verboseHelp),
@@ -83,15 +83,17 @@ Future<void> main(List<String> args) async {
         DeviceManager: () => TizenDeviceManager(),
         TemplateRenderer: () => const MustacheTemplateRenderer(),
         DoctorValidatorsProvider: () => TizenDoctorValidatorsProvider(),
+        TizenSdk: () => TizenSdk.locateSdk(),
+        TizenArtifacts: () => TizenArtifacts(),
+        TizenWorkflow: () => TizenWorkflow(),
+        TizenValidator: () => TizenValidator(),
         EmulatorManager: () => TizenEmulatorManager(
-              tizenSdk: TizenSdk.instance,
-              androidSdk: globals.androidSdk,
+              tizenSdk: tizenSdk,
+              tizenWorkflow: tizenWorkflow,
               processManager: globals.processManager,
               logger: globals.logger,
               fileSystem: globals.fs,
-              androidWorkflow: androidWorkflow,
             ),
-        // [LoggerFactory] is not needed for now.
         if (verbose)
           Logger: () => VerboseLogger(StdoutLogger(
                 timeoutConfiguration: timeoutConfiguration,
