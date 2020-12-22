@@ -3,16 +3,20 @@
 // found in the LICENSE file.
 
 import 'package:file/file.dart';
+import 'package:flutter_tools/src/android/android_emulator.dart';
 import 'package:flutter_tools/src/android/android_sdk.dart';
+import 'package:flutter_tools/src/base/context.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 
+TizenSdk get tizenSdk => context.get<TizenSdk>();
+
 String getSdbPath() {
-  return TizenSdk.instance?.sdb?.path;
+  return tizenSdk?.sdb?.path;
 }
 
 String getTizenCliPath() {
-  return TizenSdk.instance?.tizenCli?.path;
+  return tizenSdk?.tizenCli?.path;
 }
 
 String getDotnetCliPath() {
@@ -42,19 +46,15 @@ class TizenSdk {
     return TizenSdk._(tizenHomeDir);
   }
 
-  static TizenSdk instance = TizenSdk.locateSdk();
-
   final Directory directory;
 
   Directory get platformsDirectory => directory.childDirectory('platforms');
 
   Directory get sdkDataDirectory {
     final File sdkInfo = directory.childFile('sdk.info');
-    if (sdkInfo.existsSync()) {
-      final Map<String, String> info = parseIniLines(sdkInfo.readAsLinesSync());
-      if (info.containsKey('TIZEN_SDK_DATA_PATH')) {
-        return globals.fs.directory(info['TIZEN_SDK_DATA_PATH']);
-      }
+    final Map<String, String> info = parseIniFile(sdkInfo);
+    if (info.containsKey('TIZEN_SDK_DATA_PATH')) {
+      return globals.fs.directory(info['TIZEN_SDK_DATA_PATH']);
     }
     return null;
   }
@@ -103,7 +103,12 @@ class TizenSdk {
   }
 }
 
-Map<String, String> parseIniLines(List<String> contents) {
+/// Source: [parseIniLines] in `android_emulator.dart`
+Map<String, String> parseIniFile(File file) {
+  if (!file.existsSync()) {
+    return <String, String>{};
+  }
+  final List<String> contents = file.readAsLinesSync();
   final Map<String, String> results = <String, String>{};
 
   final Iterable<List<String>> properties = contents

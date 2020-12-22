@@ -112,7 +112,7 @@ Not all commands in the [`flutter`](https://flutter.dev/docs/reference/flutter-c
 
 - ### `emulators`
 
-  List and launch Tizen emulators.
+  List and launch emulators. Currently only works with Tizen emulators.
 
   ```sh
   # List all emulator instances.

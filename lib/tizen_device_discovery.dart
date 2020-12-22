@@ -21,6 +21,7 @@ import 'package:meta/meta.dart';
 import 'package:process/process.dart';
 
 import 'tizen_device.dart';
+import 'tizen_doctor.dart';
 import 'tizen_sdk.dart';
 
 /// An extended [DeviceManager] for managing Tizen devices.
@@ -51,7 +52,8 @@ class TizenDeviceManager extends FlutterDeviceManager {
   @override
   List<DeviceDiscovery> get deviceDiscoverers => <DeviceDiscovery>[
         ...super.deviceDiscoverers,
-        TizenDevices(
+        TizenDeviceDiscovery(
+          tizenWorkflow: tizenWorkflow,
           logger: globals.logger,
           processManager: globals.processManager,
         ),
@@ -61,26 +63,28 @@ class TizenDeviceManager extends FlutterDeviceManager {
 /// Device discovery for Tizen devices.
 ///
 /// Source: [AndroidDevices] in `android_device_discovery.dart`
-class TizenDevices extends PollingDeviceDiscovery {
-  TizenDevices({
+class TizenDeviceDiscovery extends PollingDeviceDiscovery {
+  TizenDeviceDiscovery({
+    @required TizenWorkflow tizenWorkflow,
     @required ProcessManager processManager,
     @required Logger logger,
-  })  : _logger = logger,
+  })  : _tizenWorkflow = tizenWorkflow,
+        _logger = logger,
         _processManager = processManager,
-        _processUtils = ProcessUtils(
-            logger: logger ?? globals.logger,
-            processManager: processManager ?? globals.processManager),
+        _processUtils =
+            ProcessUtils(logger: logger, processManager: processManager),
         super('Tizen devices');
 
+  final TizenWorkflow _tizenWorkflow;
   final Logger _logger;
   final ProcessManager _processManager;
   final ProcessUtils _processUtils;
 
   @override
-  bool get supportsPlatform => true;
+  bool get supportsPlatform => _tizenWorkflow.appliesToHostPlatform;
 
   @override
-  bool get canListAnything => getSdbPath() != null;
+  bool get canListAnything => _tizenWorkflow.canListDevices;
 
   @override
   Future<List<Device>> pollingGetDevices({Duration timeout}) async {

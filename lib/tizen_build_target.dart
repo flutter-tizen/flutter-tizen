@@ -79,9 +79,8 @@ class TizenPlugins extends Target {
           buildDir.childFile('lib' + (plugin.toMap()['sofile'] as String));
 
       for (final String arch in targetArchs) {
-        final TizenSdk tizenSdk = TizenSdk.instance;
-        final Directory engineDir = TizenArtifacts.instance
-            .getEngineDirectory(getTargetPlatformForArch(arch), buildMode);
+        final Directory engineDir = tizenArtifacts.getEngineDirectory(
+            getTargetPlatformForArch(arch), buildMode);
         final Directory commonDir = engineDir.parent.childDirectory('common');
         final Directory clientWrapperDir =
             commonDir.childDirectory('client_wrapper');
@@ -194,8 +193,8 @@ abstract class DotnetTpk extends Target {
           .childDirectory(arch)
             ..createSync(recursive: true);
 
-      final Directory engineDir = TizenArtifacts.instance
-          .getEngineDirectory(getTargetPlatformForArch(arch), buildMode);
+      final Directory engineDir = tizenArtifacts.getEngineDirectory(
+          getTargetPlatformForArch(arch), buildMode);
       final File engineBinary = engineDir.childFile('libflutter.so');
       final File icuData =
           engineDir.parent.childDirectory('common').childFile('icudtl.dat');
@@ -450,8 +449,8 @@ abstract class NativeTpk extends Target {
     final Directory libDir = tizenDir.childDirectory('lib')
       ..createSync(recursive: true);
 
-    final Directory engineDir = TizenArtifacts.instance
-        .getEngineDirectory(getTargetPlatformForArch(targetArch), buildMode);
+    final Directory engineDir = tizenArtifacts.getEngineDirectory(
+        getTargetPlatformForArch(targetArch), buildMode);
     final File engineBinary = engineDir.childFile('libflutter.so');
     final File icuData =
         engineDir.parent.childDirectory('common').childFile('icudtl.dat');
@@ -488,7 +487,6 @@ abstract class NativeTpk extends Target {
           .addAll(await pluginProject.getPropertyAsAbsolutePaths('USER_SRCS'));
     }
 
-    final TizenSdk tizenSdk = TizenSdk.instance;
     final Directory commonDir = engineDir.parent.childDirectory('common');
     final Directory clientWrapperDir =
         commonDir.childDirectory('client_wrapper');

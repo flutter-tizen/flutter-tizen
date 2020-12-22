@@ -4,10 +4,14 @@
 
 import 'package:flutter_tools/src/android/android_studio_validator.dart';
 import 'package:flutter_tools/src/android/android_workflow.dart';
+import 'package:flutter_tools/src/base/context.dart';
 import 'package:flutter_tools/src/doctor.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 
 import 'tizen_sdk.dart';
+
+TizenWorkflow get tizenWorkflow => context.get<TizenWorkflow>();
+TizenValidator get tizenValidator => context.get<TizenValidator>();
 
 /// See: [_DefaultDoctorValidatorsProvider] in `doctor.dart`
 class TizenDoctorValidatorsProvider extends DoctorValidatorsProvider {
@@ -19,7 +23,7 @@ class TizenDoctorValidatorsProvider extends DoctorValidatorsProvider {
       // Append before any IDE validators.
       if (validator is AndroidStudioValidator ||
           validator is NoAndroidStudioValidator) {
-        validators.insert(validators.indexOf(validator), TizenValidator());
+        validators.insert(validators.indexOf(validator), tizenValidator);
         break;
       }
     }
@@ -29,7 +33,7 @@ class TizenDoctorValidatorsProvider extends DoctorValidatorsProvider {
   @override
   List<Workflow> get workflows => <Workflow>[
         ...DoctorValidatorsProvider.defaultInstance.workflows,
-        TizenWorkflow(),
+        tizenWorkflow,
       ];
 }
 
@@ -38,7 +42,7 @@ class TizenValidator extends DoctorValidator {
   TizenValidator() : super('Tizen toolchain - develop for Tizen devices');
 
   bool _checkPackages(List<ValidationMessage> messages) {
-    final TizenSdk tizenSdk = TizenSdk.instance;
+    // tizenSdk is not null here.
     final String platformVersion = tizenSdk.defaultTargetPlatform;
     final String gccVersion = tizenSdk.defaultGccVersion;
 
@@ -106,11 +110,11 @@ class TizenWorkflow extends Workflow {
   bool get appliesToHostPlatform => globals.platform.isLinux;
 
   @override
-  bool get canLaunchDevices => getSdbPath() != null;
+  bool get canLaunchDevices => tizenSdk != null;
 
   @override
-  bool get canListDevices => getSdbPath() != null;
+  bool get canListDevices => tizenSdk != null;
 
   @override
-  bool get canListEmulators => getSdbPath() != null;
+  bool get canListEmulators => tizenSdk != null && tizenSdk.emCli.existsSync();
 }

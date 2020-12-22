@@ -4,9 +4,12 @@
 
 import 'package:file/file.dart';
 import 'package:flutter_tools/src/artifacts.dart';
+import 'package:flutter_tools/src/base/context.dart';
 import 'package:flutter_tools/src/build_info.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
+
+TizenArtifacts get tizenArtifacts => context.get<TizenArtifacts>();
 
 /// See: [getNameForTargetPlatform] in `build_info.dart`
 String getArchForTargetPlatform(TargetPlatform platform) {
@@ -35,8 +38,6 @@ TargetPlatform getTargetPlatformForArch(String arch) {
 /// It's unable to extend [Artifacts] directly because it has no visible
 /// constructor.
 class TizenArtifacts extends CachedArtifacts {
-  static TizenArtifacts get instance => TizenArtifacts();
-
   /// See: [Cache.getArtifactDirectory] in `cache.dart`
   Directory getArtifactDirectory(String name) {
     return globals.fs

@@ -82,7 +82,7 @@ class TizenBuilder {
       buildDir: project.dartTool.childDirectory('flutter_build'),
       cacheDir: globals.cache.getRoot(),
       flutterRootDir: globals.fs.directory(Cache.flutterRoot),
-      engineVersion: TizenArtifacts.instance.isLocalEngine
+      engineVersion: tizenArtifacts.isLocalEngine
           ? null
           : globals.flutterVersion.engineRevision,
       defines: <String, String>{
@@ -101,7 +101,7 @@ class TizenBuilder {
         if (buildInfo.extraFrontEndOptions?.isNotEmpty ?? false)
           kExtraFrontEndOptions: buildInfo.extraFrontEndOptions.join(','),
       },
-      artifacts: TizenArtifacts.instance,
+      artifacts: tizenArtifacts,
       fileSystem: globals.fs,
       logger: globals.logger,
       processManager: globals.processManager,
