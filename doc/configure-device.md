@@ -1,6 +1,6 @@
-# Developing for watch and TV devices over Wi-Fi
+# Configuring Tizen devices for development
 
-In order to install and test Flutter apps on your watch or TV device, you have to first enable the connection between the device and your host machine.
+To debug Flutter apps on your Tizen device (watch or TV), you need to configure a TCP/IP connection between the device and your host PC using Wi-Fi.
 
 1. Make sure the host and the target device are on the same network (connected to the same access point).
 
@@ -10,7 +10,7 @@ In order to install and test Flutter apps on your watch or TV device, you have t
 
      ![About watch](images/watch-developer-option-1.png) ![Software version](images/watch-developer-option-2.png)
 
-   - For _Smart TV_, open **Apps**, enter **12345** using the remote control or the on-screen number keypad, switch **Developer mode** to **On**, enter your host's IP address and press **OK**. You will see **Develop mode** is enabled in **Apps** after rebooting the TV.
+   - For _Smart TV_, open **Apps**, enter **12345** using the remote control or the on-screen number keypad, switch **Developer mode** to **On**, enter your host's IP address, and press **OK**. You will see **Develop mode** is enabled in **Apps** after rebooting the TV.
 
      ![Apps](images/tv-developer-option-1.png)
 
@@ -18,7 +18,7 @@ In order to install and test Flutter apps on your watch or TV device, you have t
 
      ![Develop mode enabled](images/tv-developer-option-3.png)
 
-3. Connect on your host using the device's IP address.
+3. Establish a connection using the device's IP address.
 
    ```sh
    $ sdb connect 192.168.0.101

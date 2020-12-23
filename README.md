@@ -1,6 +1,6 @@
 # Flutter for Tizen
 
-[![Dart](https://github.com/flutter-tizen/flutter-tizen/workflows/Dart/badge.svg)](../../actions)
+[![Dart](https://github.com/flutter-tizen/flutter-tizen/workflows/Dart/badge.svg)](https://github.com/flutter-tizen/flutter-tizen/actions)
 
 An extension to the [Flutter SDK](https://github.com/flutter/flutter) for building Flutter applications for Tizen.
 
@@ -48,11 +48,8 @@ flutter-tizen run
 flutter-tizen run --release
 ```
 
-See [Supported commands](doc/commands.md) for all available commands and their basic usage. See `[command] -h` for more information about each command.
-
-#### Notes
-
-- Only the command line interface is available. We have no plan to add IDE extension support.
+- See [Supported commands](doc/commands.md) for all available commands and their basic usage. See `[command] -h` for more information about each command.
+- See [Getting started](doc/get-started.md) to create your first app and try **hot reload**.
 - To **update** the flutter-tizen tool, run `git pull` in this directory.
 
 ## Docs
@@ -60,19 +57,22 @@ See [Supported commands](doc/commands.md) for all available commands and their b
 #### Tizen basics
 
 - [Setting up Tizen SDK](doc/install-tizen-sdk.md)
-- [Developing for watch and TV devices over Wi-Fi](doc/setup-watch-tv.md)
-- Publishing watch apps on Samsung Galaxy Store (WIP)
+- [Configuring Tizen devices for development](doc/configure-device.md)
 
 #### App development
 
+- [Getting started](doc/get-started.md)
 - [Flutter Docs](https://flutter.dev/docs)
-- Development workflow (WIP)
 - Debugging and inspecting Flutter apps with Dart DevTools (WIP)
 
 #### Plugins
 
 - [A list of Flutter plugins available for Tizen](https://github.com/flutter-tizen/plugins)
 - Writing a new plugin to use platform features (WIP)
+
+#### Publishing
+
+- Publishing Galaxy Watch apps on Samsung Galaxy Store (WIP)
 
 #### Advanced
 
