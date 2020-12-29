@@ -8,6 +8,7 @@ import 'package:flutter_tools/src/android/android_sdk.dart';
 import 'package:flutter_tools/src/base/context.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
+import 'package:meta/meta.dart';
 
 TizenSdk get tizenSdk => context.get<TizenSdk>();
 
@@ -73,16 +74,20 @@ class TizenSdk {
       .childDirectory('bin')
       .childFile('tizen');
 
-  String get defaultTargetPlatform => '5.5';
+  String get defaultTargetPlatform => '4.0';
 
   String get defaultNativeCompiler => 'llvm-10.0';
 
   String get defaultGccVersion => '9.2';
 
-  String getFlutterRootstrap(String arch) {
-    // TODO(swift-kim): Always use wearable 5.5 rootstrap for plugin builds?
-    final String rootstrapName =
-        'wearable-5.5-${arch == 'x86' ? 'emulator' : 'device'}.flutter';
+  String getFlutterRootstrap({
+    String profile,
+    @required String arch,
+  }) {
+    final String version =
+        profile == null ? defaultTargetPlatform : profile.split('-').last;
+    final String type = arch == 'x86' ? 'emulator' : 'device';
+    final String rootstrapName = 'wearable-$version-$type.flutter';
 
     // Tizen SBI creates a list of rootstraps from this directory.
     final Directory pluginsDir = toolsDirectory
