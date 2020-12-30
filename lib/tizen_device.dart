@@ -485,7 +485,7 @@ class TizenDevice extends Device {
       _logReader ??= await TizenDlogReader.createLogReader(
         this,
         _processManager,
-        validSince: includePastLogs ? _lastClearLogTime : currentDeviceTime,
+        after: includePastLogs ? _lastClearLogTime : currentDeviceTime,
       );
 
   @override
@@ -519,7 +519,7 @@ class TizenDevice extends Device {
 ///
 /// Source: [AdbLogReader] in `android_device.dart`
 class TizenDlogReader extends DeviceLogReader {
-  TizenDlogReader._(this.name, this._sdbProcess, this._validSince) {
+  TizenDlogReader._(this.name, this._device, this._sdbProcess, this._after) {
     _linesController = StreamController<String>.broadcast(
       onListen: _start,
       onCancel: _stop,
@@ -529,7 +529,7 @@ class TizenDlogReader extends DeviceLogReader {
   static Future<TizenDlogReader> createLogReader(
     TizenDevice device,
     ProcessManager processManager, {
-    DateTime validSince,
+    DateTime after,
   }) async {
     // `sdb dlog -m` is not allowed for non-root users.
     final List<String> command = device.usesSecureProtocol
@@ -539,10 +539,12 @@ class TizenDlogReader extends DeviceLogReader {
     final Process process = await processManager
         .start(<String>[getSdbPath(), '-s', device.id, ...command]);
 
-    return TizenDlogReader._(device.name, process, validSince);
+    return TizenDlogReader._(device.name, device, process, after);
   }
 
+  final TizenDevice _device;
   final Process _sdbProcess;
+  final DateTime _after;
 
   @override
   final String name;
@@ -569,8 +571,6 @@ class TizenDlogReader extends DeviceLogReader {
     }));
   }
 
-  final DateTime _validSince;
-
   // '00-00 00:00:00.000+0000 '
   final RegExp _timeFormat =
       RegExp(r'(\d{2}-\d{2}\s\d{2}:\d{2}:\d{2})\.\d{3}[+-]\d{4}\s');
@@ -596,11 +596,13 @@ class TizenDlogReader extends DeviceLogReader {
       return;
     }
 
-    // Filter by time.
-    if (_validSince != null) {
+    // Filtering by time is disabled on TV devices because they use invalid
+    // timestamps.
+    // TODO(swift-kim): We need a better workaround for this.
+    if (!_device.usesSecureProtocol && _after != null) {
       final DateTime logTime =
-          DateTime.tryParse('${_validSince.year}-${timeMatch.group(1)}');
-      if (logTime?.isBefore(_validSince) ?? false) {
+          DateTime.tryParse('${_after.year}-${timeMatch.group(1)}');
+      if (logTime?.isBefore(_after) ?? false) {
         return;
       }
     }
