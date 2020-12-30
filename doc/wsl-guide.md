@@ -18,7 +18,8 @@ You can try out [flutter-tizen](https://github.com/flutter-tizen/flutter-tizen) 
 
    # Install required packages using package-manager-cli.
    ~/tizen-studio/package-manager/package-manager-cli.bin install \
-     NativeCLI NativeToolchain-Gcc-9.2 Certificate-Manager WEARABLE-5.5-NativeAppDevelopment-CLI
+     NativeCLI NativeToolchain-Gcc-9.2 Certificate-Manager \
+     WEARABLE-4.0-NativeAppDevelopment-CLI WEARABLE-5.5-NativeAppDevelopment-CLI
    ```
 
 1. (Linux) Install flutter-tizen and add to PATH.
