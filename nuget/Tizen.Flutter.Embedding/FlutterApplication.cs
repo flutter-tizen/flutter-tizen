@@ -4,10 +4,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
+using System.IO;
 using System.Runtime.InteropServices;
-using System.Text.RegularExpressions;
 using Tizen.Applications;
 using Tizen.System;
 using static Tizen.Flutter.Embedding.Interop;
@@ -23,7 +21,7 @@ namespace Tizen.Flutter.Embedding
 
         /// <summary>
         /// The switches to pass to the Flutter engine.
-        /// Any element can be added before <see cref="OnCreate"/> is called.
+        /// Custom switches can be added before <see cref="OnCreate"/> is called.
         /// </summary>
         protected List<string> EngineArgs { get; } = new List<string>();
 
@@ -41,30 +39,16 @@ namespace Tizen.Flutter.Embedding
                 InternalLog.Error(LogTag, $"Unhandled exception: {exception}");
             };
 
-            // Parse engine arguments passed from the tool. This should be reworked.
-            for (int i = args.Length - 1; i >= 0; i--)
-            {
-                var arg = args[i].Trim('\'');
-                if (arg.StartsWith("FLUTTER_ENGINE_ARGS"))
-                {
-                    var engineArgs = arg.Substring(arg.IndexOf(' '));
-                    InternalLog.Debug(LogTag, "Running with: " + engineArgs);
-
-                    // A regex is used here to correctly parse "quoted" strings.
-                    // TODO: Avoid using Linq to reduce the memory pressure.
-                    EngineArgs.AddRange(Regex.Matches(engineArgs, @"[\""].+?[\""]|[^ ]+")
-                        .Cast<Match>()
-                        .Select(x => x.Value.Trim('"')));
-                    break;
-                }
-            }
-
             base.Run(args);
         }
 
         protected override void OnCreate()
         {
             base.OnCreate();
+
+            // Read engine arguments passed from the tool.
+            ParseEngineArgs();
+            InternalLog.Info(LogTag, $"switches: {string.Join(" ", EngineArgs)}");
 
             // Get the screen size of the currently running device.
             if (!Information.TryGetValue("http://tizen.org/feature/screen.width", out int width) ||
@@ -103,10 +87,33 @@ namespace Tizen.Flutter.Embedding
                 switches_count = (uint)switches.Length,
             };
 
-            Handle = FlutterCreateWindow(ref Unsafe.AsRef(windowProperties), ref Unsafe.AsRef(engineProperties));
+            Handle = FlutterCreateWindow(ref windowProperties, ref engineProperties);
             if (Handle.IsInvalid)
             {
                 throw new Exception("Could not launch a Flutter application.");
+            }
+        }
+
+        private void ParseEngineArgs()
+        {
+            string packageId = Current.ApplicationInfo.PackageId;
+            string tempPath = $"/home/owner/share/tmp/sdk_tools/{packageId}.rpm";
+            if (!File.Exists(tempPath))
+            {
+                return;
+            }
+            try
+            {
+                var lines = File.ReadAllText(tempPath).Trim().Split("\n");
+                if (lines.Length > 0)
+                {
+                    EngineArgs.AddRange(lines);
+                }
+                File.Delete(tempPath);
+            }
+            catch (Exception ex)
+            {
+                InternalLog.Warn(LogTag, $"Error while processing a file:\n{ex}");
             }
         }
 
