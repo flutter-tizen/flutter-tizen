@@ -4,6 +4,7 @@
 // found in the LICENSE file.
 
 import 'package:file/file.dart';
+import 'package:flutter_tizen/tizen_tpk.dart';
 import 'package:flutter_tools/src/artifacts.dart';
 import 'package:flutter_tools/src/base/build.dart';
 import 'package:flutter_tools/src/base/common.dart';
@@ -60,8 +61,11 @@ class TizenPlugins extends Target {
     final BuildMode buildMode =
         getBuildModeForName(environment.defines[kBuildMode]);
 
-    // Clear the output directory.
     final TizenProject tizenProject = TizenProject.fromFlutter(project);
+    final String profile =
+        TizenManifest.parseFromXml(tizenProject.manifestFile)?.profile;
+
+    // Clear the output directory.
     final Directory ephemeralDir = tizenProject.ephemeralDirectory;
     if (ephemeralDir.existsSync()) {
       ephemeralDir.deleteSync(recursive: true);
@@ -72,9 +76,6 @@ class TizenPlugins extends Target {
         await findTizenPlugins(project, filterNative: true);
 
     for (final TizenPlugin plugin in nativePlugins) {
-      final TizenNativeProject pluginProject = TizenNativeProject(plugin.path);
-      final String profile = pluginProject.getProperty('profile');
-
       final Directory pluginDir = environment.fileSystem.directory(plugin.path);
       final String buildConfig = buildMode.isPrecompiled ? 'Release' : 'Debug';
       final Directory buildDir = pluginDir.childDirectory(buildConfig);
@@ -433,10 +434,13 @@ abstract class NativeTpk extends Target {
     final BuildMode buildMode =
         getBuildModeForName(environment.defines[kBuildMode]);
 
+    final TizenProject tizenProject = TizenProject.fromFlutter(project);
+    final String profile =
+        TizenManifest.parseFromXml(tizenProject.manifestFile)?.profile;
+
     // Copy ephemeral files.
     // TODO(swift-kim): Use ephemeral directory instead of editable directory.
     final Directory outputDir = environment.outputDir;
-    final TizenProject tizenProject = TizenProject.fromFlutter(project);
     final Directory tizenDir = tizenProject.editableDirectory;
     final Directory resDir = tizenDir.childDirectory('res')
       ..createSync(recursive: true);
@@ -473,10 +477,6 @@ abstract class NativeTpk extends Target {
     // Prepare for build.
     final String buildConfig = buildMode.isPrecompiled ? 'Release' : 'Debug';
     final Directory buildDir = tizenDir.childDirectory(buildConfig);
-
-    final TizenNativeProject projectManifest =
-        TizenNativeProject(tizenProject.editableDirectory.path);
-    final String profile = projectManifest.getProperty('profile');
 
     final List<String> userIncludes = <String>[];
     final List<String> userSources = <String>[];

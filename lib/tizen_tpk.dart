@@ -128,14 +128,7 @@ class TizenTpk extends ApplicationPackage {
 ///
 /// See: [ApkManifestData] in `application_package.dart`
 class TizenManifest {
-  TizenManifest(
-    this._document, {
-    @required this.packageId,
-    @required this.version,
-    this.apiVersion,
-    this.applicationId,
-  })  : assert(packageId != null),
-        assert(version != null);
+  TizenManifest(this._document);
 
   factory TizenManifest.parseFromXml(File xmlFile) {
     if (xmlFile == null || !xmlFile.existsSync()) {
@@ -153,53 +146,43 @@ class TizenManifest {
     } on XmlException catch (ex) {
       throwToolExit('Failed to parse ${xmlFile.basename}: $ex');
     }
-    final XmlElement manifest = document.rootElement;
-    final String package = manifest.getAttribute('package');
-    final String version = manifest.getAttribute('version');
-    final String apiVersion = manifest.getAttribute('api-version');
-
-    final XmlElement uiApplication =
-        manifest.findElements('ui-application').first;
-    final String appid = uiApplication.getAttribute('appid');
-
-    return TizenManifest(
-      document,
-      packageId: package,
-      version: version,
-      apiVersion: apiVersion,
-      applicationId: appid,
-    );
+    return TizenManifest(document);
   }
 
   final XmlDocument _document;
 
+  XmlElement get _manifest => _document.rootElement;
+
   /// The package name.
-  final String packageId;
+  String get packageId => _manifest.getAttribute('package');
 
   /// The package version number in the "x.y.z" format.
-  String version;
+  String get version => _manifest.getAttribute('version');
+  set version(String version) => _manifest.setAttribute('version', version);
 
   /// The target API version number.
-  final String apiVersion;
+  String get apiVersion => _manifest.getAttribute('api-version');
+
+  /// The fully qualified target profile name (e.g. `wearable-5.5`)
+  String get profile {
+    final XmlElement parent = _manifest.findElements('profile').first;
+    final String name = parent.getAttribute('name');
+    return '$name-$apiVersion';
+  }
 
   /// The unique application id used for launching and terminating applications.
-  final String applicationId;
+  String get applicationId {
+    final XmlElement parent = _manifest.findElements('ui-application').first;
+    return parent.getAttribute('appid');
+  }
 
   @override
-  String toString() {
-    final XmlElement manifest = _document.rootElement;
-    for (final XmlAttribute attr in manifest.attributes) {
-      if (attr.name.local == 'version') {
-        attr.value = version;
-      }
-    }
-    return _document.toXmlString(pretty: true, indent: '    ');
-  }
+  String toString() => _document.toXmlString(pretty: true, indent: '    ');
 }
 
 /// Represents the content of `signature1.xml` or `author-signature.xml` file.
 class Signature {
-  const Signature({this.signatureValue});
+  const Signature(this._document);
 
   factory Signature.parseFromXml(File xmlFile) {
     if (xmlFile == null || !xmlFile.existsSync()) {
@@ -221,18 +204,16 @@ class Signature {
       );
       return null;
     }
-    final XmlElement signature = document.rootElement;
-
-    String signatureValue;
-    for (final XmlElement elem in signature.findElements('SignatureValue')) {
-      if (elem.text.trim().isNotEmpty) {
-        signatureValue = elem.text.replaceAll(RegExp(r'\s+'), '');
-        break;
-      }
-    }
-
-    return Signature(signatureValue: signatureValue);
+    return Signature(document);
   }
 
-  final String signatureValue;
+  final XmlDocument _document;
+
+  String get signatureValue {
+    final XmlElement signature = _document.rootElement;
+    for (final XmlElement elem in signature.findElements('SignatureValue')) {
+      return elem.text.replaceAll(RegExp(r'\s+'), '');
+    }
+    return null;
+  }
 }
