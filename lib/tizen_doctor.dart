@@ -108,7 +108,9 @@ class TizenValidator extends DoctorValidator {
 class TizenWorkflow extends Workflow {
   @override
   bool get appliesToHostPlatform =>
-      globals.platform.isLinux || globals.platform.isWindows;
+      globals.platform.isLinux ||
+      globals.platform.isWindows ||
+      globals.platform.isMacOS;
 
   @override
   bool get canLaunchDevices => tizenSdk != null;
