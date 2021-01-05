@@ -11,6 +11,12 @@ import sys
 import urllib.request
 import zipfile
 
+def isWin():
+    return sys.platform.startswith(('cygwin', 'win')) and platform.machine() == 'AMD64'
+
+def isLinux():
+    return sys.platform == 'linux' and platform.machine() == 'x86_64'
+
 def revision(sourceDir):
     command = f'cd {sourceDir} && git rev-parse HEAD'
     return subprocess.run(
@@ -36,7 +42,8 @@ def download(message, url, location):
 
 def main():
     # Currently, gen_snapshot is only available for linux-x64.
-    if sys.platform != 'linux' or platform.machine() != 'x86_64':
+    
+    if not isWin() and not isLinux():
         print('Not supported platform.')
         exit(1)
 
@@ -76,6 +83,9 @@ def main():
         exit(1)
 
     flutterPath = flutterDir + '/bin/flutter'
+    if isWin():
+        flutterPath += '.bat'
+        
     flutterCacheDir = flutterDir + '/bin/cache'
     flutterStampPath = flutterCacheDir + '/flutter_tools.stamp'
     flutterStamp = read(flutterStampPath)
@@ -87,6 +97,9 @@ def main():
     # Validate the Dart SDK.
     dartPath = os.path.realpath(flutterCacheDir + '/dart-sdk/bin/dart')
     pubPath = os.path.realpath(flutterCacheDir + '/dart-sdk/bin/pub')
+    if isWin():
+        dartPath += '.exe'
+        pubPath += '.bat'
     if not os.path.isfile(dartPath) or not os.path.isfile(pubPath):
         print('Could not locate the Dart SDK.\n'
               f'Remove directory {flutterDir} and try again.')
@@ -130,6 +143,11 @@ def main():
     engineVersion = read(engineVersionPath)
     engineStampPath = engineCacheDir + '/engine.stamp'
     engineStamp = read(engineStampPath)
+    
+    if isLinux():
+        engineArchiveName = 'linux-x64'
+    else:
+        engineArchiveName = 'windows-x64'
 
     if engineVersion != engineStamp:
         if os.path.isdir(engineCacheDir):
@@ -140,11 +158,11 @@ def main():
             baseUrl = os.environ['BASE_URL']
         else:
             baseUrl = 'https://github.com/flutter-tizen/engine/releases'
-        archiveUrl = f'{baseUrl}/download/{engineVersion[:7]}/linux-x64.zip'
+        archiveUrl = f'{baseUrl}/download/{engineVersion[:7]}/{engineArchiveName}.zip'
         archivePath = engineCacheDir + '/artifacts.zip'
 
         try:
-            download('Downloading linux-x64 tools...', archiveUrl, archivePath)
+            download(f'Downloading {engineArchiveName} tools...', archiveUrl, archivePath)
         except:
             print(f'Failed to download engine artifacts from:\n  {archiveUrl}')
             raise
@@ -160,9 +178,10 @@ def main():
             os.remove(archivePath)
 
         # ZipFile.extractall() does not retain file permissions.
-        for root, _, files in os.walk(engineCacheDir):
-            for path in [f'{root}/{f}' for f in files if f == 'gen_snapshot']:
-                os.chmod(path, 0o755)
+        if isLinux():
+            for root, _, files in os.walk(engineCacheDir):
+                for path in [f'{root}/{f}' for f in files if f == 'gen_snapshot']:
+                    os.chmod(path, 0o755)
 
         with open(engineStampPath, 'w') as f:
             f.write(engineVersion)

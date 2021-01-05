@@ -107,7 +107,8 @@ class TizenValidator extends DoctorValidator {
 /// See: [AndroidWorkflow] in `android_workflow.dart`
 class TizenWorkflow extends Workflow {
   @override
-  bool get appliesToHostPlatform => globals.platform.isLinux;
+  bool get appliesToHostPlatform =>
+      globals.platform.isLinux || globals.platform.isWindows;
 
   @override
   bool get canLaunchDevices => tizenSdk != null;
