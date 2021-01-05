@@ -4,6 +4,7 @@
 // found in the LICENSE file.
 
 import 'package:file/file.dart';
+import 'package:flutter_tizen/tizen_tpk.dart';
 import 'package:flutter_tools/src/artifacts.dart';
 import 'package:flutter_tools/src/base/build.dart';
 import 'package:flutter_tools/src/base/common.dart';
@@ -60,8 +61,11 @@ class TizenPlugins extends Target {
     final BuildMode buildMode =
         getBuildModeForName(environment.defines[kBuildMode]);
 
-    // Clear the output directory.
     final TizenProject tizenProject = TizenProject.fromFlutter(project);
+    final String profile =
+        TizenManifest.parseFromXml(tizenProject.manifestFile)?.profile;
+
+    // Clear the output directory.
     final Directory ephemeralDir = tizenProject.ephemeralDirectory;
     if (ephemeralDir.existsSync()) {
       ephemeralDir.deleteSync(recursive: true);
@@ -120,7 +124,7 @@ class TizenPlugins extends Target {
           '-c',
           tizenSdk.defaultNativeCompiler,
           '-r',
-          tizenSdk.getFlutterRootstrap(arch),
+          tizenSdk.getFlutterRootstrap(profile: profile, arch: arch),
           '-e',
           extraOptions.join(' '),
           '--',
@@ -430,10 +434,13 @@ abstract class NativeTpk extends Target {
     final BuildMode buildMode =
         getBuildModeForName(environment.defines[kBuildMode]);
 
+    final TizenProject tizenProject = TizenProject.fromFlutter(project);
+    final String profile =
+        TizenManifest.parseFromXml(tizenProject.manifestFile)?.profile;
+
     // Copy ephemeral files.
     // TODO(swift-kim): Use ephemeral directory instead of editable directory.
     final Directory outputDir = environment.outputDir;
-    final TizenProject tizenProject = TizenProject.fromFlutter(project);
     final Directory tizenDir = tizenProject.editableDirectory;
     final Directory resDir = tizenDir.childDirectory('res')
       ..createSync(recursive: true);
@@ -481,10 +488,9 @@ abstract class NativeTpk extends Target {
       // TODO(swift-kim): Currently only checks for USER_INC_DIRS and USER_SRCS.
       // More properties (such as USER_LIBS) should be parsed to fully support
       // plugin builds.
-      userIncludes.addAll(
-          await pluginProject.getPropertyAsAbsolutePaths('USER_INC_DIRS'));
-      userSources
-          .addAll(await pluginProject.getPropertyAsAbsolutePaths('USER_SRCS'));
+      userIncludes
+          .addAll(pluginProject.getPropertyAsAbsolutePaths('USER_INC_DIRS'));
+      userSources.addAll(pluginProject.getPropertyAsAbsolutePaths('USER_SRCS'));
     }
 
     final Directory commonDir = engineDir.parent.childDirectory('common');
@@ -527,7 +533,7 @@ abstract class NativeTpk extends Target {
       '-c',
       tizenSdk.defaultNativeCompiler,
       '-r',
-      tizenSdk.getFlutterRootstrap(targetArch),
+      tizenSdk.getFlutterRootstrap(profile: profile, arch: targetArch),
       '-e',
       extraOptions.join(' '),
       '--',

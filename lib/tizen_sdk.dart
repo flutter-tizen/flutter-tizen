@@ -5,9 +5,11 @@
 import 'package:file/file.dart';
 import 'package:flutter_tools/src/android/android_emulator.dart';
 import 'package:flutter_tools/src/android/android_sdk.dart';
+import 'package:flutter_tools/src/base/common.dart';
 import 'package:flutter_tools/src/base/context.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
+import 'package:meta/meta.dart';
 
 TizenSdk get tizenSdk => context.get<TizenSdk>();
 
@@ -73,16 +75,32 @@ class TizenSdk {
       .childDirectory('bin')
       .childFile('tizen');
 
-  String get defaultTargetPlatform => '5.5';
+  String get defaultTargetPlatform => '4.0';
 
   String get defaultNativeCompiler => 'llvm-10.0';
 
   String get defaultGccVersion => '9.2';
 
-  String getFlutterRootstrap(String arch) {
-    // TODO(swift-kim): Always use wearable 5.5 rootstrap for plugin builds?
-    final String rootstrapName =
-        'wearable-5.5-${arch == 'x86' ? 'emulator' : 'device'}.flutter';
+  String getFlutterRootstrap({
+    String profile,
+    @required String arch,
+  }) {
+    final String type = arch == 'x86' ? 'emulator' : 'device';
+    final String rootstrapName = profile == null
+        ? 'wearable-$defaultTargetPlatform-$type.flutter'
+        : '${profile.replaceFirst('common', 'wearable')}-$type.flutter';
+
+    final File rootstrapTarget = globals.fs
+        .directory(Cache.flutterRoot)
+        .parent
+        .childDirectory('rootstraps')
+        .childFile('$rootstrapName.xml');
+    if (!rootstrapTarget.existsSync()) {
+      throwToolExit(
+        'File not found: ${rootstrapTarget.absolute.path}\n'
+        'Make sure your tizen-manifest.xml contains correct information for build.',
+      );
+    }
 
     // Tizen SBI creates a list of rootstraps from this directory.
     final Directory pluginsDir = toolsDirectory
@@ -92,11 +110,6 @@ class TizenSdk {
     if (rootstrapLink.existsSync()) {
       rootstrapLink.deleteSync(recursive: true);
     }
-    final File rootstrapTarget = globals.fs
-        .directory(Cache.flutterRoot)
-        .parent
-        .childDirectory('rootstraps')
-        .childFile('$rootstrapName.xml');
     rootstrapLink.createSync(rootstrapTarget.path, recursive: true);
 
     return rootstrapName;

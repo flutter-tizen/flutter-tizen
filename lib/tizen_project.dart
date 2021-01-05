@@ -68,33 +68,36 @@ class TizenNativeProject {
 
   final RegExp _propertyFormat = RegExp(r'(\S+)\s*\+?=(.*)');
 
-  Future<Map<String, String>> get properties async {
-    final Map<String, String> map = <String, String>{};
-    if (!isValid) {
-      return map;
-    }
+  Map<String, String> _properties;
 
-    final List<String> lines = await projectFile.readAsLines();
-    for (final String line in lines) {
-      final Match match = _propertyFormat.firstMatch(line);
-      if (match == null) {
-        continue;
+  String getProperty(String key) {
+    if (_properties == null) {
+      if (!isValid) {
+        return null;
       }
-      final String key = match.group(1);
-      final String value = match.group(2).trim();
-      map[key] = value;
+      _properties = <String, String>{};
+
+      for (final String line in projectFile.readAsLinesSync()) {
+        final Match match = _propertyFormat.firstMatch(line);
+        if (match == null) {
+          continue;
+        }
+        final String key = match.group(1);
+        final String value = match.group(2).trim();
+        _properties[key] = value;
+      }
     }
-    return map;
+    return _properties.containsKey(key) ? _properties[key] : null;
   }
 
-  Future<List<String>> getPropertyAsAbsolutePaths(String key) async {
-    final Map<String, String> propertyMap = await properties;
-    if (!propertyMap.containsKey(key)) {
+  List<String> getPropertyAsAbsolutePaths(String key) {
+    final String property = getProperty(key);
+    if (property == null) {
       return <String>[];
     }
 
     final List<String> paths = <String>[];
-    for (final String element in propertyMap[key].split(' ')) {
+    for (final String element in property.split(' ')) {
       if (globals.fs.path.isAbsolute(element)) {
         paths.add(element);
       } else {
