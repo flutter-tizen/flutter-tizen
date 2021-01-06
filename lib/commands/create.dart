@@ -120,31 +120,33 @@ class TizenCreateCommand extends CreateCommand {
   Future<FlutterCommandResult> runCommand() async {
     // The template directory that the flutter tools search for available
     // templates cannot be overriden because the implementation is private.
-    // Thus, we temporarily create symbolic links to the Tizen templates inside
-    // the flutter tools' template directory.
-    final Directory templateSource = globals.fs
+    // Thus, we temporarily create symbolic links to our templates inside the
+    // directory.
+    final Directory tizenTemplates = globals.fs
         .directory(Cache.flutterRoot)
         .parent
         .childDirectory('templates');
-    if (!templateSource.existsSync()) {
+    if (!tizenTemplates.existsSync()) {
       throwToolExit('Could not locate Tizen templates.');
     }
+    final File tizenTemplateManifest =
+        tizenTemplates.childFile('template_manifest.json');
 
     final Directory templateDest = globals.fs
         .directory(Cache.flutterRoot)
         .childDirectory('packages')
         .childDirectory('flutter_tools')
         .childDirectory('templates');
-
     final File templateManifest =
-        templateSource.childFile('template_manifest.json');
-    final File originalTemplateManifest =
         templateDest.childFile('template_manifest.json');
     final File backupTemplateManifest =
         templateDest.childFile('template_manifest.json.bak');
-    if (!templateManifest.existsSync() ||
-        !originalTemplateManifest.existsSync()) {
-      throwToolExit('Could not locate the template manifest files.');
+
+    // This is required due to: https://github.com/flutter/flutter/pull/59706
+    // TODO(swift-kim): Find any better workaround.
+    if (templateManifest.existsSync() && !backupTemplateManifest.existsSync()) {
+      templateManifest.renameSync(backupTemplateManifest.path);
+      tizenTemplateManifest.copySync(templateManifest.path);
     }
 
     final String language = stringArg('tizen-language');
@@ -158,16 +160,8 @@ class TizenCreateCommand extends CreateCommand {
     const String pluginType = 'cpp';
     final List<Link> symlinks = <Link>[];
     try {
-      // This is required due to: https://github.com/flutter/flutter/pull/59706
-      // TODO(swift-kim): Find any better workaround for this.
-      originalTemplateManifest.renameSync(backupTemplateManifest.path);
-      final Link manifestSymlink =
-          globals.fs.link(originalTemplateManifest.path);
-      manifestSymlink.createSync(templateManifest.path);
-      symlinks.add(manifestSymlink);
-
       for (final Directory projectType
-          in templateSource.listSync().whereType<Directory>()) {
+          in tizenTemplates.listSync().whereType<Directory>()) {
         final Directory template = projectType.childDirectory(
             projectType.basename == 'plugin' ? pluginType : language);
         if (!template.existsSync()) {
@@ -186,9 +180,6 @@ class TizenCreateCommand extends CreateCommand {
     } finally {
       for (final Link symlink in symlinks) {
         symlink.deleteSync(recursive: true);
-      }
-      if (backupTemplateManifest.existsSync()) {
-        backupTemplateManifest.renameSync(originalTemplateManifest.path);
       }
     }
   }
