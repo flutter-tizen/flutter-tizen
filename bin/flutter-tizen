@@ -12,9 +12,9 @@ import zipfile
 from platform import machine
 
 def revision(sourceDir):
-    command = f'cd {sourceDir} && git rev-parse HEAD'
+    command = ['git', 'rev-parse', 'HEAD']
     return subprocess.run(
-        command, shell=True, check=True, stdout=subprocess.PIPE
+        command, cwd=sourceDir, check=True, stdout=subprocess.PIPE
     ).stdout.decode('utf-8').strip()
 
 def read(filePath):
@@ -54,22 +54,20 @@ def main():
     if os.path.isfile(flutterDir) or os.path.islink(flutterDir):
         os.remove(flutterDir)
     if not os.path.isdir(flutterDir):
-        cloneCommand = f'cd {rootDir} && git clone --depth=1 {flutterRepo}'
-        subprocess.run(cloneCommand, shell=True, check=True)
+        cloneCommand = ['git', 'clone', '--depth=1', flutterRepo]
+        subprocess.run(cloneCommand, cwd=rootDir, check=True)
 
     # Upgrade flutter if needed.
     flutterVersionPath = rootDir + '/bin/flutter.version'
     targetFlutterVersion = read(flutterVersionPath)
 
     if targetFlutterVersion != revision(flutterDir):
-        upgradeCommand = [
-            f'cd {flutterDir}',
-            'git reset --hard',
-            'git clean -xdf',
-            f'git fetch --depth=1 {flutterRepo} {targetFlutterVersion}',
-            'git checkout FETCH_HEAD'
-        ]
-        subprocess.run(' && '.join(upgradeCommand), shell=True, check=True)
+        subprocess.run(['git', 'reset', '--hard'], cwd=flutterDir, check=True)
+        subprocess.run(['git', 'clean', '-xdf'], cwd=flutterDir, check=True)
+        subprocess.run(['git', 'fetch', '--depth=1', flutterRepo,
+                        targetFlutterVersion], cwd=flutterDir, check=True)
+        subprocess.run(['git', 'checkout', 'FETCH_HEAD'],
+                       cwd=flutterDir, check=True)
 
         # Invalidate the cache.
         if os.path.isdir(cacheDir):
@@ -83,7 +81,7 @@ def main():
     exeSuffix = '.exe' if platform == 'windows' else ''
     batSuffix = '.bat' if platform == 'windows' else ''
     flutterPath = flutterDir + '/bin/flutter' + batSuffix
-        
+
     flutterCacheDir = flutterDir + '/bin/cache'
     flutterStampPath = flutterCacheDir + '/flutter_tools.stamp'
     flutterStamp = read(flutterStampPath)
@@ -93,8 +91,10 @@ def main():
         subprocess.run([flutterPath, '--version'], check=True)
 
     # Validate the Dart SDK.
-    dartPath = os.path.realpath(flutterCacheDir + '/dart-sdk/bin/dart' + exeSuffix)
-    pubPath = os.path.realpath(flutterCacheDir + '/dart-sdk/bin/pub' + batSuffix)
+    dartPath = os.path.realpath(
+        flutterCacheDir + '/dart-sdk/bin/dart' + exeSuffix)
+    pubPath = os.path.realpath(
+        flutterCacheDir + '/dart-sdk/bin/pub' + batSuffix)
     if not os.path.isfile(dartPath) or not os.path.isfile(pubPath):
         print('Could not locate the Dart SDK.\n'
               f'Remove directory {flutterDir} and try again.')
@@ -116,13 +116,13 @@ def main():
             revision(rootDir) != read(stampPath) or \
             os.path.getmtime(pubspecPath) > os.path.getmtime(publockPath):
         print('Running pub upgrade...')
-        upgradeCommand = f'cd {rootDir} && {pubPath} upgrade --no-precompile'
-        subprocess.run(upgradeCommand, shell=True, check=True)
+        upgradeCommand = [pubPath, 'upgrade', '--no-precompile']
+        subprocess.run(upgradeCommand, cwd=rootDir, check=True)
 
         print('Compiling flutter-tizen...')
         aotCommand = [dartPath, '--disable-dart-dev',
-                      f'--snapshot={snapshotPath}',
-                      f'--packages={packagesPath}',
+                      '--snapshot=' + snapshotPath,
+                      '--packages=' + packagesPath,
                       '--no-enable-mirrors', scriptPath]
         subprocess.run(aotCommand, check=True)
 
@@ -152,7 +152,8 @@ def main():
         archivePath = engineCacheDir + '/artifacts.zip'
 
         try:
-            download(f'Downloading {platform}-x64 tools...', archiveUrl, archivePath)
+            download(f'Downloading {platform}-x64 tools...', archiveUrl,
+                     archivePath)
         except:
             print(f'Failed to download engine artifacts from:\n  {archiveUrl}')
             raise
@@ -177,7 +178,7 @@ def main():
             f.write(engineVersion)
 
     # Set --flutter-root and run.
-    command = [dartPath, '--disable-dart-dev', f'--packages={packagesPath}',
+    command = [dartPath, '--disable-dart-dev', '--packages=' + packagesPath,
                snapshotPath, '--flutter-root', flutterDir]
     command.extend(sys.argv[1:])
     try:
