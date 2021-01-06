@@ -318,7 +318,9 @@ class TizenDevice extends Device {
     }
 
     _logger.printTrace("Stopping app '${package.name}' on $name.");
-    await stopApp(package, userIdentifier: userIdentifier);
+    if (await isAppInstalled(package)) {
+      await stopApp(package, userIdentifier: userIdentifier);
+    }
 
     if (!await _installLatestApp(package)) {
       return LaunchResult.failed();
