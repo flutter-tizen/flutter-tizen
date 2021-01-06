@@ -66,14 +66,15 @@ class TizenSdk {
   File get emCli => toolsDirectory
       .childDirectory('emulator')
       .childDirectory('bin')
-      .childFile('em-cli');
+      .childFile(globals.platform.isWindows ? 'em-cli.bat' : 'em-cli');
 
-  File get sdb => toolsDirectory.childFile('sdb');
+  File get sdb =>
+      toolsDirectory.childFile(globals.platform.isWindows ? 'sdb.exe' : 'sdb');
 
   File get tizenCli => toolsDirectory
       .childDirectory('ide')
       .childDirectory('bin')
-      .childFile('tizen');
+      .childFile(globals.platform.isWindows ? 'tizen.bat' : 'tizen');
 
   String get defaultTargetPlatform => '4.0';
 

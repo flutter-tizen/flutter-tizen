@@ -4,12 +4,12 @@
 # found in the LICENSE file.
 
 import os
-import platform
 import shutil
 import subprocess
 import sys
 import urllib.request
 import zipfile
+from platform import machine
 
 def revision(sourceDir):
     command = f'cd {sourceDir} && git rev-parse HEAD'
@@ -35,10 +35,15 @@ def download(message, url, location):
         print(f'{message} Done     ')
 
 def main():
-    # Currently, gen_snapshot is only available for linux-x64.
-    if sys.platform != 'linux' or platform.machine() != 'x86_64':
+    if not machine().endswith('64'):
         print('Not supported platform.')
         exit(1)
+    if sys.platform.startswith(('cygwin', 'win')):
+        platform = 'windows'
+    elif sys.platform == 'darwin':
+        platform = 'darwin'
+    else:
+        platform = 'linux'
 
     rootDir = os.path.abspath(__file__ + '/../..')
     cacheDir = rootDir + '/bin/cache'
@@ -75,7 +80,10 @@ def main():
               f'Remove directory {flutterDir} and try again.')
         exit(1)
 
-    flutterPath = flutterDir + '/bin/flutter'
+    exeSuffix = '.exe' if platform == 'windows' else ''
+    batSuffix = '.bat' if platform == 'windows' else ''
+    flutterPath = flutterDir + '/bin/flutter' + batSuffix
+        
     flutterCacheDir = flutterDir + '/bin/cache'
     flutterStampPath = flutterCacheDir + '/flutter_tools.stamp'
     flutterStamp = read(flutterStampPath)
@@ -85,8 +93,8 @@ def main():
         subprocess.run([flutterPath, '--version'], check=True)
 
     # Validate the Dart SDK.
-    dartPath = os.path.realpath(flutterCacheDir + '/dart-sdk/bin/dart')
-    pubPath = os.path.realpath(flutterCacheDir + '/dart-sdk/bin/pub')
+    dartPath = os.path.realpath(flutterCacheDir + '/dart-sdk/bin/dart' + exeSuffix)
+    pubPath = os.path.realpath(flutterCacheDir + '/dart-sdk/bin/pub' + batSuffix)
     if not os.path.isfile(dartPath) or not os.path.isfile(pubPath):
         print('Could not locate the Dart SDK.\n'
               f'Remove directory {flutterDir} and try again.')
@@ -140,11 +148,11 @@ def main():
             baseUrl = os.environ['BASE_URL']
         else:
             baseUrl = 'https://github.com/flutter-tizen/engine/releases'
-        archiveUrl = f'{baseUrl}/download/{engineVersion[:7]}/linux-x64.zip'
+        archiveUrl = f'{baseUrl}/download/{engineVersion[:7]}/{platform}-x64.zip'
         archivePath = engineCacheDir + '/artifacts.zip'
 
         try:
-            download('Downloading linux-x64 tools...', archiveUrl, archivePath)
+            download(f'Downloading {platform}-x64 tools...', archiveUrl, archivePath)
         except:
             print(f'Failed to download engine artifacts from:\n  {archiveUrl}')
             raise
@@ -160,9 +168,10 @@ def main():
             os.remove(archivePath)
 
         # ZipFile.extractall() does not retain file permissions.
-        for root, _, files in os.walk(engineCacheDir):
-            for path in [f'{root}/{f}' for f in files if f == 'gen_snapshot']:
-                os.chmod(path, 0o755)
+        if platform != 'windows':
+            for root, _, files in os.walk(engineCacheDir):
+                for path in [f'{root}/{f}' for f in files if f == 'gen_snapshot']:
+                    os.chmod(path, 0o755)
 
         with open(engineStampPath, 'w') as f:
             f.write(engineVersion)
