@@ -122,25 +122,24 @@ class TizenCreateCommand extends CreateCommand {
     // templates cannot be overriden because the implementation is private.
     // Thus, we temporarily create symbolic links to our templates inside the
     // directory.
-    final Directory tizenTemplates = globals.fs
+    final Directory templates = globals.fs
         .directory(Cache.flutterRoot)
         .parent
         .childDirectory('templates');
-    if (!tizenTemplates.existsSync()) {
+    if (!templates.existsSync()) {
       throwToolExit('Could not locate Tizen templates.');
     }
     final File tizenTemplateManifest =
-        tizenTemplates.childFile('template_manifest.json');
+        templates.childFile('template_manifest.json');
 
-    final Directory templateDest = globals.fs
+    final Directory target = globals.fs
         .directory(Cache.flutterRoot)
         .childDirectory('packages')
         .childDirectory('flutter_tools')
         .childDirectory('templates');
-    final File templateManifest =
-        templateDest.childFile('template_manifest.json');
+    final File templateManifest = target.childFile('template_manifest.json');
     final File backupTemplateManifest =
-        templateDest.childFile('template_manifest.json.bak');
+        target.childFile('template_manifest.json.bak');
 
     // This is required due to: https://github.com/flutter/flutter/pull/59706
     // TODO(swift-kim): Find any better workaround.
@@ -158,28 +157,28 @@ class TizenCreateCommand extends CreateCommand {
     }
     // The dart plugin template is not supported at the moment.
     const String pluginType = 'cpp';
-    final List<Link> symlinks = <Link>[];
+    final List<Directory> created = <Directory>[];
     try {
       for (final Directory projectType
-          in tizenTemplates.listSync().whereType<Directory>()) {
-        final Directory template = projectType.childDirectory(
+          in templates.listSync().whereType<Directory>()) {
+        final Directory source = projectType.childDirectory(
             projectType.basename == 'plugin' ? pluginType : language);
-        if (!template.existsSync()) {
+        if (!source.existsSync()) {
           continue;
         }
-        final Link symlink = templateDest
+        final Directory dest = target
             .childDirectory(projectType.basename)
-            .childLink('tizen.tmpl');
-        if (symlink.existsSync()) {
-          symlink.deleteSync(recursive: true);
+            .childDirectory('tizen.tmpl');
+        if (dest.existsSync()) {
+          dest.deleteSync(recursive: true);
         }
-        symlink.createSync(template.path);
-        symlinks.add(symlink);
+        globals.fsUtils.copyDirectorySync(source, dest);
+        created.add(dest);
       }
       return await runInternal();
     } finally {
-      for (final Link symlink in symlinks) {
-        symlink.deleteSync(recursive: true);
+      for (final Directory template in created) {
+        template.deleteSync(recursive: true);
       }
     }
   }
