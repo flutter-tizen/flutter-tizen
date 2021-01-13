@@ -120,31 +120,32 @@ class TizenCreateCommand extends CreateCommand {
   Future<FlutterCommandResult> runCommand() async {
     // The template directory that the flutter tools search for available
     // templates cannot be overriden because the implementation is private.
-    // Thus, we temporarily create symbolic links to the Tizen templates inside
-    // the flutter tools' template directory.
-    final Directory templateSource = globals.fs
+    // Thus, we temporarily create symbolic links to our templates inside the
+    // directory.
+    final Directory templates = globals.fs
         .directory(Cache.flutterRoot)
         .parent
         .childDirectory('templates');
-    if (!templateSource.existsSync()) {
+    if (!templates.existsSync()) {
       throwToolExit('Could not locate Tizen templates.');
     }
+    final File tizenTemplateManifest =
+        templates.childFile('template_manifest.json');
 
-    final Directory templateDest = globals.fs
+    final Directory target = globals.fs
         .directory(Cache.flutterRoot)
         .childDirectory('packages')
         .childDirectory('flutter_tools')
         .childDirectory('templates');
-
-    final File templateManifest =
-        templateSource.childFile('template_manifest.json');
-    final File originalTemplateManifest =
-        templateDest.childFile('template_manifest.json');
+    final File templateManifest = target.childFile('template_manifest.json');
     final File backupTemplateManifest =
-        templateDest.childFile('template_manifest.json.bak');
-    if (!templateManifest.existsSync() ||
-        !originalTemplateManifest.existsSync()) {
-      throwToolExit('Could not locate the template manifest files.');
+        target.childFile('template_manifest.json.bak');
+
+    // This is required due to: https://github.com/flutter/flutter/pull/59706
+    // TODO(swift-kim): Find any better workaround.
+    if (templateManifest.existsSync() && !backupTemplateManifest.existsSync()) {
+      templateManifest.renameSync(backupTemplateManifest.path);
+      tizenTemplateManifest.copySync(templateManifest.path);
     }
 
     final String language = stringArg('tizen-language');
@@ -156,39 +157,28 @@ class TizenCreateCommand extends CreateCommand {
     }
     // The dart plugin template is not supported at the moment.
     const String pluginType = 'cpp';
-    final List<Link> symlinks = <Link>[];
+    final List<Directory> created = <Directory>[];
     try {
-      // This is required due to: https://github.com/flutter/flutter/pull/59706
-      // TODO(swift-kim): Find any better workaround for this.
-      originalTemplateManifest.renameSync(backupTemplateManifest.path);
-      final Link manifestSymlink =
-          globals.fs.link(originalTemplateManifest.path);
-      manifestSymlink.createSync(templateManifest.path);
-      symlinks.add(manifestSymlink);
-
       for (final Directory projectType
-          in templateSource.listSync().whereType<Directory>()) {
-        final Directory template = projectType.childDirectory(
+          in templates.listSync().whereType<Directory>()) {
+        final Directory source = projectType.childDirectory(
             projectType.basename == 'plugin' ? pluginType : language);
-        if (!template.existsSync()) {
+        if (!source.existsSync()) {
           continue;
         }
-        final Link symlink = templateDest
+        final Directory dest = target
             .childDirectory(projectType.basename)
-            .childLink('tizen.tmpl');
-        if (symlink.existsSync()) {
-          symlink.deleteSync(recursive: true);
+            .childDirectory('tizen.tmpl');
+        if (dest.existsSync()) {
+          dest.deleteSync(recursive: true);
         }
-        symlink.createSync(template.path);
-        symlinks.add(symlink);
+        globals.fsUtils.copyDirectorySync(source, dest);
+        created.add(dest);
       }
       return await runInternal();
     } finally {
-      for (final Link symlink in symlinks) {
-        symlink.deleteSync(recursive: true);
-      }
-      if (backupTemplateManifest.existsSync()) {
-        backupTemplateManifest.renameSync(originalTemplateManifest.path);
+      for (final Directory template in created) {
+        template.deleteSync(recursive: true);
       }
     }
   }

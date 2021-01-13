@@ -12,7 +12,7 @@ WHERE %PYTHON_EXE% > NUL 2> NUL
 IF !ERRORLEVEL! NEQ 0 (
     ECHO Error: Python3 isn't installed on the host.
     ECHO        The flutter-tizen tool requires python3 to run.
-    ECHO        Install Python3 from the official website any try again.
+    ECHO        Install Python3 from the official website and try again.
     ECHO        https://www.python.org/downloads/
     EXIT /B !ERRORLEVEL!
 )
