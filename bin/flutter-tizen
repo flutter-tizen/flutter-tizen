@@ -93,9 +93,7 @@ def main():
     # Validate the Dart SDK.
     dartPath = os.path.realpath(
         flutterCacheDir + '/dart-sdk/bin/dart' + exeSuffix)
-    pubPath = os.path.realpath(
-        flutterCacheDir + '/dart-sdk/bin/pub' + batSuffix)
-    if not os.path.isfile(dartPath) or not os.path.isfile(pubPath):
+    if not os.path.isfile(dartPath):
         print('Could not locate the Dart SDK.\n'
               f'Remove directory {flutterDir} and try again.')
         exit(1)
@@ -116,7 +114,7 @@ def main():
             revision(rootDir) != read(stampPath) or \
             os.path.getmtime(pubspecPath) > os.path.getmtime(publockPath):
         print('Running pub upgrade...')
-        upgradeCommand = [pubPath, 'upgrade', '--no-precompile']
+        upgradeCommand = [flutterPath, 'pub', 'upgrade']
         subprocess.run(upgradeCommand, cwd=rootDir, check=True)
 
         print('Compiling flutter-tizen...')

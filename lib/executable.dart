@@ -31,6 +31,7 @@ import 'commands/drive.dart';
 import 'commands/install.dart';
 import 'commands/packages.dart';
 import 'commands/run.dart';
+import 'commands/test.dart';
 import 'tizen_artifacts.dart';
 import 'tizen_device_discovery.dart';
 import 'tizen_doctor.dart';
@@ -74,6 +75,7 @@ Future<void> main(List<String> args) async {
             TizenInstallCommand(),
             TizenPackagesCommand(),
             TizenRunCommand(verboseHelp: verboseHelp),
+            TizenTestCommand(verboseHelp: verboseHelp),
           ],
       verbose: verbose,
       verboseHelp: verboseHelp,
