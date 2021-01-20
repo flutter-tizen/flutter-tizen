@@ -174,3 +174,11 @@ Not all commands in the [`flutter`](https://flutter.dev/docs/reference/flutter-c
   # Specify the device ID to run on.
   flutter-tizen run -d emulator-26101
   ```
+
+- ### `test`
+
+  Run tests in this package.
+
+  ```sh
+  flutter-tizen test test/general
+  ```
