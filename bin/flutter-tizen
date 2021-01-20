@@ -175,7 +175,7 @@ def main():
         with open(engineStampPath, 'w') as f:
             f.write(engineVersion)
 
-    # Set --flutter-root and run.
+    # Run the snapshot.
     command = [dartPath, '--disable-dart-dev', '--packages=' + packagesPath,
                snapshotPath, '--flutter-root', flutterDir]
     command.extend(sys.argv[1:])

@@ -3,6 +3,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:io';
+
 import 'package:flutter_tools/executable.dart' as flutter;
 import 'package:flutter_tools/runner.dart' as runner;
 import 'package:flutter_tools/src/application_package.dart';
@@ -21,6 +23,7 @@ import 'package:flutter_tools/src/device.dart';
 import 'package:flutter_tools/src/doctor.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/runner/flutter_command.dart';
+import 'package:path/path.dart';
 
 import 'commands/analyze.dart';
 import 'commands/attach.dart';
@@ -46,12 +49,17 @@ Future<void> main(List<String> args) async {
   final bool verbose = args.contains('-v') || args.contains('--verbose');
   final bool help = args.contains('-h') || args.contains('--help');
   final bool verboseHelp = help && verbose;
-  final bool specifiedId = args.contains('-d') || args.contains('--device-id');
+  final bool hasSpecifiedDeviceId =
+      args.contains('-d') || args.contains('--device-id');
+  final bool hasSpecifiedFlutterRoot = args.contains('--flutter-root');
+  final String flutterRoot =
+      normalize(join(Platform.script.toFilePath(), '../../flutter'));
 
   args = <String>[
     '--suppress-analytics', // Suppress flutter analytics by default.
     '--no-version-check',
-    if (!specifiedId) ...<String>['-d', 'tizen'],
+    if (!hasSpecifiedFlutterRoot) ...<String>['--flutter-root', flutterRoot],
+    if (!hasSpecifiedDeviceId) ...<String>['--device-id', 'tizen'],
     ...args,
   ];
 
