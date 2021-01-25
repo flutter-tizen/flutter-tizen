@@ -209,8 +209,8 @@ class TizenDevice extends Device {
     final double apiVersion = double.tryParse(app.manifest.apiVersion) ?? 0;
     if (apiVersion > deviceVersion) {
       _logger.printStatus(
-        'Warning: The package API version (${app.manifest.apiVersion}) mismatches the device API version ($platformVersion).\n'
-        'Check `tizen-manifest.xml` in your Tizen project directory to fix this problem.',
+        'Warning: The package API version (${app.manifest.apiVersion}) is greater than the device API version ($platformVersion).\n'
+        'Check "tizen-manifest.xml" of your Tizen project to fix this problem.',
         color: TerminalColor.yellow,
       );
     }

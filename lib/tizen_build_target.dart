@@ -99,7 +99,7 @@ class TizenPlugins extends Target {
           'USER_SRCS': clientWrapperDir.childFile('*.cc').path
         };
         final List<String> extraOptions = <String>[
-          '-lflutter',
+          '-lflutter_tizen',
           '-L${engineDir.path}',
           '-I${clientWrapperDir.childDirectory('include').path}',
           '-I${commonDir.childDirectory('public').path}'
@@ -199,13 +199,19 @@ abstract class DotnetTpk extends Target {
 
       final Directory engineDir = tizenArtifacts.getEngineDirectory(
           getTargetPlatformForArch(arch), buildMode);
-      final File engineBinary = engineDir.childFile('libflutter.so');
+      final File engineBinary = engineDir.childFile('libflutter_engine.so');
+      final File embedding = engineDir.childFile('libflutter_tizen.so');
       final File icuData =
           engineDir.parent.childDirectory('common').childFile('icudtl.dat');
 
       engineBinary.copySync(libDir.childFile(engineBinary.basename).path);
+      embedding.copySync(libDir.childFile(embedding.basename).path);
       icuData.copySync(resDir.childFile(icuData.basename).path);
 
+      if (tizenProject.apiVersion.startsWith('4')) {
+        final File embedding40 = engineDir.childFile('libflutter_tizen40.so');
+        embedding40.copySync(libDir.childFile(embedding40.basename).path);
+      }
       if (buildMode.isPrecompiled) {
         final File aotSharedLib =
             environment.buildDir.childDirectory(arch).childFile('app.so');
@@ -215,7 +221,7 @@ abstract class DotnetTpk extends Target {
 
     // For now a constant value is used instead of reading from a file.
     // Keep this value in sync with the latest published nuget version.
-    const String embeddingVersion = '1.1.0';
+    const String embeddingVersion = '1.2.0';
 
     // Run .NET build.
     if (getDotnetCliPath() == null) {
@@ -458,11 +464,13 @@ abstract class NativeTpk extends Target {
 
     final Directory engineDir = tizenArtifacts.getEngineDirectory(
         getTargetPlatformForArch(targetArch), buildMode);
-    final File engineBinary = engineDir.childFile('libflutter.so');
+    final File engineBinary = engineDir.childFile('libflutter_engine.so');
+    final File embedding = engineDir.childFile('libflutter_tizen.so');
     final File icuData =
         engineDir.parent.childDirectory('common').childFile('icudtl.dat');
 
-    engineBinary.copySync(libDir.childFile('libflutter_linux_tizen.so').path);
+    engineBinary.copySync(libDir.childFile(engineBinary.basename).path);
+    embedding.copySync(libDir.childFile(embedding.basename).path);
     icuData.copySync(resDir.childFile(icuData.basename).path);
 
     if (libDir.childFile('libapp.so').existsSync()) {
@@ -505,7 +513,7 @@ abstract class NativeTpk extends Target {
       'USER_SRCS': userSources.join(' '),
     };
     final List<String> extraOptions = <String>[
-      '-lflutter_linux_tizen',
+      '-lflutter_tizen',
       '-L${libDir.path}',
       '-I${clientWrapperDir.childDirectory('include').path}',
       '-I${commonDir.childDirectory('public').path}',
