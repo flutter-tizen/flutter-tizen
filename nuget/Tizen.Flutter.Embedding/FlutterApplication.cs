@@ -46,6 +46,9 @@ namespace Tizen.Flutter.Embedding
         {
             base.OnCreate();
 
+            // Read the current platform version and choose a Tizen 4.0 embedder if applicable.
+            Information.TryGetValue("http://tizen.org/feature/platform.version", out PlatformVersion);
+
             // Read engine arguments passed from the tool.
             ParseEngineArgs();
             InternalLog.Info(LogTag, $"switches: {string.Join(" ", EngineArgs)}");

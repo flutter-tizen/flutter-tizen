@@ -9,7 +9,6 @@ namespace Tizen.Flutter.Embedding
 {
     internal static class Interop
     {
-        #region flutter_tizen.h
         [StructLayout(LayoutKind.Sequential)]
         public struct FlutterWindowProperties
         {
@@ -30,40 +29,155 @@ namespace Tizen.Flutter.Embedding
             public uint switches_count;
         }
 
-        [DllImport("flutter.so")]
-        public static extern FlutterWindowControllerHandle FlutterCreateWindow(
-            [In] ref FlutterWindowProperties window_properties,
-            [In] ref FlutterEngineProperties engine_properties);
+        public static string PlatformVersion = string.Empty;
 
-        [DllImport("flutter.so")]
-        public static extern void FlutterDestoryWindow(
-            [In] FlutterWindowControllerHandle window);
+        private static bool IsTizen40 => PlatformVersion.StartsWith("4.0");
 
-        [DllImport("flutter.so")]
-        public static extern void FlutterNotifyLocaleChange(
-            [In] FlutterWindowControllerHandle window);
+        public static FlutterWindowControllerHandle FlutterCreateWindow(
+            ref FlutterWindowProperties window_properties,
+            ref FlutterEngineProperties engine_properties)
+        {
+            if (IsTizen40)
+                return Tizen40Embedder.FlutterCreateWindow(ref window_properties, ref engine_properties);
+            else
+                return DefaultEmbedder.FlutterCreateWindow(ref window_properties, ref engine_properties);
+        }
 
-        [DllImport("flutter.so")]
-        public static extern void FlutterNotifyLowMemoryWarning(
-            [In] FlutterWindowControllerHandle window);
+        public static void FlutterDestoryWindow(FlutterWindowControllerHandle window)
+        {
+            if (IsTizen40)
+                Tizen40Embedder.FlutterDestoryWindow(window);
+            else
+                DefaultEmbedder.FlutterDestoryWindow(window);
+        }
 
-        [DllImport("flutter.so")]
-        public static extern void FlutterNotifyAppIsResumed(
-            [In] FlutterWindowControllerHandle window);
+        public static void FlutterNotifyLocaleChange(FlutterWindowControllerHandle window)
+        {
+            if (IsTizen40)
+                Tizen40Embedder.FlutterNotifyLocaleChange(window);
+            else
+                DefaultEmbedder.FlutterNotifyLocaleChange(window);
+        }
 
-        [DllImport("flutter.so")]
-        public static extern void FlutterNotifyAppIsPaused(
-            [In] FlutterWindowControllerHandle window);
+        public static void FlutterNotifyLowMemoryWarning(FlutterWindowControllerHandle window)
+        {
+            if (IsTizen40)
+                Tizen40Embedder.FlutterNotifyLowMemoryWarning(window);
+            else
+                DefaultEmbedder.FlutterNotifyLowMemoryWarning(window);
+        }
 
-        [DllImport("flutter.so")]
-        public static extern void FlutterRotateWindow(
-            [In] FlutterWindowControllerHandle window,
-            [In] int degree);
+        public static void FlutterNotifyAppIsResumed(FlutterWindowControllerHandle window)
+        {
+            if (IsTizen40)
+                Tizen40Embedder.FlutterNotifyAppIsResumed(window);
+            else
+                DefaultEmbedder.FlutterNotifyAppIsResumed(window);
+        }
 
-        [DllImport("flutter.so")]
-        public static extern IntPtr FlutterDesktopGetPluginRegistrar(
-            [In] FlutterWindowControllerHandle window,
-            [In] string plugin_name);
+        public static void FlutterNotifyAppIsPaused(FlutterWindowControllerHandle window)
+        {
+            if (IsTizen40)
+                Tizen40Embedder.FlutterNotifyAppIsPaused(window);
+            else
+                DefaultEmbedder.FlutterNotifyAppIsPaused(window);
+        }
+
+        public static void FlutterRotateWindow(FlutterWindowControllerHandle window, int degree)
+        {
+            if (IsTizen40)
+                Tizen40Embedder.FlutterRotateWindow(window, degree);
+            else
+                DefaultEmbedder.FlutterRotateWindow(window, degree);
+        }
+
+        public static IntPtr FlutterDesktopGetPluginRegistrar(
+            FlutterWindowControllerHandle window, string plugin_name)
+        {
+            if (IsTizen40)
+                return Tizen40Embedder.FlutterDesktopGetPluginRegistrar(window, plugin_name);
+            else
+                return DefaultEmbedder.FlutterDesktopGetPluginRegistrar(window, plugin_name);
+        }
+
+        #region Default
+        private static class DefaultEmbedder
+        {
+            private const string SharedLibrary = "flutter_tizen.so";
+
+            [DllImport(SharedLibrary)]
+            public static extern FlutterWindowControllerHandle FlutterCreateWindow(
+                ref FlutterWindowProperties window_properties,
+                ref FlutterEngineProperties engine_properties);
+
+            [DllImport(SharedLibrary)]
+            public static extern void FlutterDestoryWindow(
+                FlutterWindowControllerHandle window);
+
+            [DllImport(SharedLibrary)]
+            public static extern void FlutterNotifyLocaleChange(
+                FlutterWindowControllerHandle window);
+
+            [DllImport(SharedLibrary)]
+            public static extern void FlutterNotifyLowMemoryWarning(
+                FlutterWindowControllerHandle window);
+
+            [DllImport(SharedLibrary)]
+            public static extern void FlutterNotifyAppIsResumed(
+                FlutterWindowControllerHandle window);
+
+            [DllImport(SharedLibrary)]
+            public static extern void FlutterNotifyAppIsPaused(
+                FlutterWindowControllerHandle window);
+
+            [DllImport(SharedLibrary)]
+            public static extern void FlutterRotateWindow(
+                FlutterWindowControllerHandle window, int degree);
+
+            [DllImport(SharedLibrary)]
+            public static extern IntPtr FlutterDesktopGetPluginRegistrar(
+                FlutterWindowControllerHandle window, string plugin_name);
+        }
+        #endregion
+
+        #region Tizen40
+        private class Tizen40Embedder
+        {
+            private const string SharedLibrary = "flutter_tizen40.so";
+
+            [DllImport(SharedLibrary)]
+            public static extern FlutterWindowControllerHandle FlutterCreateWindow(
+                ref FlutterWindowProperties window_properties,
+                ref FlutterEngineProperties engine_properties);
+
+            [DllImport(SharedLibrary)]
+            public static extern void FlutterDestoryWindow(
+                FlutterWindowControllerHandle window);
+
+            [DllImport(SharedLibrary)]
+            public static extern void FlutterNotifyLocaleChange(
+                FlutterWindowControllerHandle window);
+
+            [DllImport(SharedLibrary)]
+            public static extern void FlutterNotifyLowMemoryWarning(
+                FlutterWindowControllerHandle window);
+
+            [DllImport(SharedLibrary)]
+            public static extern void FlutterNotifyAppIsResumed(
+                FlutterWindowControllerHandle window);
+
+            [DllImport(SharedLibrary)]
+            public static extern void FlutterNotifyAppIsPaused(
+                FlutterWindowControllerHandle window);
+
+            [DllImport(SharedLibrary)]
+            public static extern void FlutterRotateWindow(
+                FlutterWindowControllerHandle window, int degree);
+
+            [DllImport(SharedLibrary)]
+            public static extern IntPtr FlutterDesktopGetPluginRegistrar(
+                FlutterWindowControllerHandle window, string plugin_name);
+        }
         #endregion
     }
 }
