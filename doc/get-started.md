@@ -2,9 +2,9 @@
 
 ## Setting up the environment
 
-1. Make sure your system and Tizen device meet the minimum requirements in [README](../README.md#system-requirements) and all the required tools are installed.
+1. Make sure your Tizen device meets the minimum version [requirement](../README.md#supported-devices).
 
-   _Note: To see which version of Tizen your device runs on (e.g. Tizen 5.5), [connect](configure-device.md) the device to your PC, run `sdb capability`, and find the `platform_version` value._
+   Note: To see which version of Tizen your device runs on, [connect the device](configure-device.md) to your PC, run `sdb capability`, and find the `platform_version` value.
 
    ```
    $ sdb capability
@@ -14,7 +14,7 @@
    ...
    ```
 
-1. Install **flutter-tizen** by referring to the [Usage](../README.md#usage) section in README. After installing, run `flutter-tizen doctor` to check if there's any issue. (You can ignore any Android-related dependency. Only `Flutter` and `Tizen toolchain` are required.)
+1. Install [**flutter-tizen**](../README.md#installation) and any required tooling. After installation, run `flutter-tizen doctor` to check if there's any issue. (You can ignore any Android-related warnings. Only `Flutter` and `Tizen toolchain` are required.)
 
    ```
    $ flutter-tizen doctor
@@ -32,7 +32,7 @@
 
    ![Dart extension](images/vs-code-dart.png)
 
-   _Note: flutter-tizen only supports the command line interface. You can't use Flutter extension (available in VS Code) to deploy apps to a Tizen device._
+   Note: flutter-tizen only supports the command line interface. You can't use the [Flutter extension](https://marketplace.visualstudio.com/items?itemName=Dart-Code.flutter) in VS Code to deploy Flutter apps to a Tizen device.
 
 1. Launch an emulator or connect your Tizen device.
 

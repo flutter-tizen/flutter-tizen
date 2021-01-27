@@ -81,7 +81,7 @@ class TizenValidator extends DoctorValidator {
       messages.add(const ValidationMessage.error(
         'Unable to locate Tizen SDK.\n'
         'Install Tizen Studio from: https://developer.tizen.org/development/tizen-studio/download\n'
-        'Make sure the tools path (<tizen-studio>/tools) is in your PATH after installation.',
+        'If the Tizen SDK has been installed to a custom location, set TIZEN_SDK to that location.',
       ));
       return ValidationResult(ValidationType.missing, messages);
     }
@@ -93,7 +93,7 @@ class TizenValidator extends DoctorValidator {
     if (getDotnetCliPath() == null) {
       messages.add(const ValidationMessage.error(
         '.NET CLI is required for building Tizen applications.\n'
-        'Install .NET for your Linux distribution from: https://dotnet.microsoft.com/download',
+        'Install the latest .NET SDK from: https://dotnet.microsoft.com/download',
       ));
       return ValidationResult(ValidationType.missing, messages);
     }
