@@ -9,8 +9,6 @@ on:
 jobs:
   analysis:
     runs-on: ubuntu-latest
-    container:
-      image: google/dart:2.10.0-110.3.beta
     steps:
       - uses: actions/checkout@v2
       - name: Fetch Flutter SDK
@@ -20,8 +18,8 @@ jobs:
           git fetch --depth=1 https://github.com/flutter/flutter.git `cat ../bin/flutter.version`
           git checkout FETCH_HEAD
       - name: Install pub dependencies
-        run: dart pub get
+        run: flutter/bin/flutter pub get
       - name: Verify formatting
-        run: dart format --output=none --set-exit-if-changed lib
+        run: flutter/bin/dart format --output=none --set-exit-if-changed lib
       - name: Analyze project source
-        run: dart analyze --fatal-infos lib
+        run: flutter/bin/dart analyze --fatal-infos lib

@@ -18,4 +18,8 @@ dependencies:
   yaml: any
 
 dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  mockito: any
   pedantic: any
+  test: any

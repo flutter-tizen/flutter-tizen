@@ -3,8 +3,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'dart:cli';
-
 import 'package:file/file.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/build_system/targets/web.dart';
@@ -78,20 +76,14 @@ class TizenPlugin extends PluginPlatform implements NativeOrDartPlugin {
   }
 }
 
-/// Any [FlutterCommand] that uses [usesPubOption] or invokes [targetFile]
-/// should depend on this mixin to ensure plugins are correctly configured for
-/// Tizen.
+/// Any [FlutterCommand] that invokes [usesPubOption] or [targetFile] should
+/// depend on this mixin to ensure plugins are correctly configured for Tizen.
 ///
 /// See: [FlutterCommand.verifyThenRunCommand] in `flutter_command.dart`
 mixin TizenExtension on FlutterCommand {
-  String entrypoint;
+  String _entrypoint;
 
-  @override
-  String get targetFile {
-    // Caution: Converting async to sync.
-    return entrypoint ??= waitFor<String>(
-        _createEntrypoint(FlutterProject.current(), super.targetFile));
-  }
+  bool get _usesTargetOption => argParser.options.containsKey('target');
 
   @override
   Future<FlutterCommandResult> verifyThenRunCommand(String commandPath) async {
@@ -99,8 +91,15 @@ mixin TizenExtension on FlutterCommand {
       // TODO(swift-kim): Should run pub get first before injecting plugins.
       await injectTizenPlugins(FlutterProject.current());
     }
+    if (_usesTargetOption) {
+      _entrypoint =
+          await _createEntrypoint(FlutterProject.current(), super.targetFile);
+    }
     return await super.verifyThenRunCommand(commandPath);
   }
+
+  @override
+  String get targetFile => _entrypoint ?? super.targetFile;
 }
 
 /// Creates an entrypoint wrapper of [targetFile] and returns its path.
@@ -115,7 +114,6 @@ Future<String> _createEntrypoint(
   if (!hasDartPlugins) {
     return targetFile;
   }
-
   final TizenProject tizenProject = TizenProject.fromFlutter(project);
   if (!tizenProject.existsSync()) {
     return targetFile;
