@@ -8,32 +8,21 @@ _Note: This project is under development and available for testing purposes only
 
 _Flutter and the related logo are trademarks of Google LLC. We are not endorsed by or affiliated with Google LLC._
 
-## System requirements
+## Supported devices
 
-- Operating system: Linux x64
-  - If you're using _WSL (Windows Subsystem for Linux)_, see [Running flutter-tizen on WSL](doc/wsl-guide.md).
-- Tools:
-  - Python 3 (3.6 or later)
-  - [Tizen Studio](doc/install-tizen-sdk.md) (4.0 or later)
-  - [.NET SDK](https://docs.microsoft.com/en-us/dotnet/core/install/linux) (3.0 or later)
-  - `curl` `file` `git` `make` `xz-utils` `zip`
-- Supported devices:
-  - Watch devices running Tizen 5.5 or later
-  - TV devices running **Tizen 6.0** or later (older devices are not supported due to security reasons)
-  - Emulators running Tizen 5.5 or later
+- **Watch**: Tizen 4.0 (2018) or later
+- **TV**: Tizen 6.0 (2021) or later (older models are not supported due to security reasons)
+- **Emulator**: Tizen 4.0 or later
+
+## Installation
+
+- [Linux (64-bit)](doc/linux-install.md)
+- [Windows (64-bit)](doc/windows-install.md)
+- macOS (64-bit)
 
 ## Usage
 
-Clone this repository first, and add `flutter-tizen/bin` to your **PATH** by running `export PATH=...` or editing your config file.
-
-```sh
-git clone https://github.com/flutter-tizen/flutter-tizen.git
-export PATH=`pwd`/flutter-tizen/bin:$PATH
-```
-
 `flutter-tizen` substitutes the original [`flutter`](https://flutter.dev/docs/reference/flutter-cli) CLI command.
-
-#### Examples
 
 ```sh
 # Inspect the installed tooling and connected devices.
@@ -81,7 +70,7 @@ flutter-tizen run --release
 
 ## Issues
 
-If you run into any problem, post an [issue](../../issues) in this repository to get help. If your issue is clearly not Tizen-specific (i.e it's reproducible with the regular `flutter` command), you may file an issue in https://github.com/flutter/flutter/issues.
+If you run into any problem, post an [issue](../../issues) in this repository to get help. If your issue is clearly not Tizen-specific (i.e. it's reproducible with the regular `flutter` command), you may file an issue in https://github.com/flutter/flutter/issues.
 
 ## Contribution
 

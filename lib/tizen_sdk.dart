@@ -37,10 +37,18 @@ class TizenSdk {
       tizenHomeDir = globals.fs.directory(environment['TIZEN_SDK']);
     } else if (sdb != null && sdb.parent.basename == 'tools') {
       tizenHomeDir = sdb.parent.parent;
-    } else if (globals.fsUtils.homeDirPath != null) {
-      tizenHomeDir = globals.fs
-          .directory(globals.fsUtils.homeDirPath)
-          .childDirectory('tizen-studio');
+    } else if (globals.platform.isLinux) {
+      if (globals.fsUtils.homeDirPath != null) {
+        tizenHomeDir = globals.fs
+            .directory(globals.fsUtils.homeDirPath)
+            .childDirectory('tizen-studio');
+      }
+    } else if (globals.platform.isWindows) {
+      if (environment.containsKey('SystemDrive')) {
+        tizenHomeDir = globals.fs
+            .directory(environment['SystemDrive'])
+            .childDirectory('tizen-studio');
+      }
     }
     if (tizenHomeDir == null || !tizenHomeDir.existsSync()) {
       return null;

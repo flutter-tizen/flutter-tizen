@@ -5,15 +5,6 @@ Download and install the latest release of Tizen Studio from the below link. It 
 - [Download Tizen Studio](https://developer.tizen.org/development/tizen-studio/download)
 - [Tizen Docs: Installing Tizen Studio](https://docs.tizen.org/application/tizen-studio/setup/install-sdk)
 
-If done, make sure the tools path (usually `~/tizen-studio/tools`) is in your PATH. If it's not, add it by running `export PATH=...` or editing your config file.
-
-```sh
-echo $PATH
-export PATH=$HOME/tizen-studio/tools:$PATH
-```
-
-_Note: You can also specify the Tizen Studio installation path with the `TIZEN_SDK` environment variable._
-
 ## Installing required packages
 
 After installing Tizen Studio, the _Package Manager_ window will automatically pop up (otherwise launch it manually). If you're on CLI, use _package-manager-cli_ (`tizen-studio/package-manager/package-manager-cli.bin`) instead.
