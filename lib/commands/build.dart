@@ -19,25 +19,14 @@ class TizenBuildCommand extends BuildCommand {
   TizenBuildCommand({bool verboseHelp = false})
       : super(verboseHelp: verboseHelp) {
     addSubcommand(BuildTpkCommand(verboseHelp: verboseHelp));
-    // BuildAotCommand is deprecated, so we don't override it for Tizen.
   }
 }
 
 class BuildTpkCommand extends BuildSubCommand with TizenExtension {
   /// See: [BuildApkCommand] in `build_apk.dart`
   BuildTpkCommand({bool verboseHelp = false}) {
-    addTreeShakeIconsFlag();
-    usesTargetOption();
-    addBuildModeFlags(verboseHelp: verboseHelp);
-    usesPubOption();
+    addCommonDesktopBuildOptions(verboseHelp: verboseHelp);
     usesBuildNameOption();
-    addSplitDebugInfoOption();
-    addDartObfuscationOption();
-    usesDartDefineOption();
-    usesExtraFrontendOptions();
-    addNullSafetyModeOptions(hide: !verboseHelp);
-    usesTrackWidgetCreation(verboseHelp: verboseHelp);
-    usesAnalyzeSizeFlag();
     argParser.addMultiOption(
       'target-arch',
       splitCommas: true,
@@ -48,8 +37,8 @@ class BuildTpkCommand extends BuildSubCommand with TizenExtension {
     argParser.addOption(
       'security-profile',
       abbr: 's',
-      help: 'The security profile name to sign the TPK with (the active '
-          'profile is used if not specified)',
+      help: 'The security profile name to sign the TPK with (defaults to the '
+          'current active profile)',
     );
   }
 

@@ -15,9 +15,11 @@ import 'package:flutter_tools/src/base/terminal.dart';
 import 'package:flutter_tools/src/base/utils.dart';
 import 'package:flutter_tools/src/build_info.dart';
 import 'package:flutter_tools/src/build_system/build_system.dart';
+import 'package:flutter_tools/src/build_system/targets/assets.dart';
 import 'package:flutter_tools/src/build_system/targets/common.dart';
 import 'package:flutter_tools/src/build_system/targets/icon_tree_shaker.dart';
 import 'package:flutter_tools/src/cache.dart';
+import 'package:flutter_tools/src/commands/assemble.dart';
 import 'package:flutter_tools/src/commands/build_ios_framework.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/linux/build_linux.dart';
@@ -47,6 +49,7 @@ class TizenBuildInfo {
 /// - [AndroidBuilder] in `android_builder.dart`
 /// - [buildGradleApp] in `gradle.dart`
 /// - [BuildIOSFrameworkCommand._produceAppFramework] in `build_ios_framework.dart` (build target)
+/// - [AssembleCommand.runCommand] in `assemble.dart` (performance measurement)
 /// - [buildLinux] in `build_linux.dart` (code size)
 class TizenBuilder {
   static Future<void> buildTpk({
@@ -101,6 +104,9 @@ class TizenBuilder {
         if (buildInfo.extraFrontEndOptions?.isNotEmpty ?? false)
           kExtraFrontEndOptions: buildInfo.extraFrontEndOptions.join(','),
       },
+      inputs: <String, String>{
+        kBundleSkSLPath: buildInfo.bundleSkSLPath,
+      },
       artifacts: tizenArtifacts,
       fileSystem: globals.fs,
       logger: globals.logger,
@@ -131,6 +137,12 @@ class TizenBuilder {
           globals.printError(measurement.exception.toString());
         }
         throwToolExit('The build failed.');
+      }
+
+      if (buildInfo.performanceMeasurementFile != null) {
+        final File outFile =
+            globals.fs.file(buildInfo.performanceMeasurementFile);
+        writePerformanceMeasurementData(result.performance.values, outFile);
       }
     } finally {
       status.stop();
@@ -166,6 +178,26 @@ class TizenBuilder {
         'A summary of your TPK analysis can be found at: ${outputFile.path}',
       );
     }
+  }
+
+  /// Source: [writePerformanceData] in `assemble.dart` (exact copy)
+  static void writePerformanceMeasurementData(
+      Iterable<PerformanceMeasurement> measurements, File outFile) {
+    final Map<String, Object> jsonData = <String, Object>{
+      'targets': <Object>[
+        for (final PerformanceMeasurement measurement in measurements)
+          <String, Object>{
+            'name': measurement.analyicsName,
+            'skipped': measurement.skipped,
+            'succeeded': measurement.succeeded,
+            'elapsedMilliseconds': measurement.elapsedMilliseconds,
+          }
+      ]
+    };
+    if (!outFile.parent.existsSync()) {
+      outFile.parent.createSync(recursive: true);
+    }
+    outFile.writeAsStringSync(json.encode(jsonData));
   }
 
   /// Update tizen-manifest.xml with the new build info if needed.
