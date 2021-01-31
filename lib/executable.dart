@@ -62,14 +62,11 @@ Future<void> main(List<String> args) async {
 
   final bool hasSpecifiedDeviceId =
       args.contains('-d') || args.contains('--device-id');
-  final bool hasSpecifiedFlutterRoot = args.contains('--flutter-root');
-  final String flutterRoot =
-      normalize(join(Platform.script.toFilePath(), '../../flutter'));
 
   args = <String>[
     '--suppress-analytics', // Suppress flutter analytics by default.
     '--no-version-check',
-    if (!hasSpecifiedFlutterRoot) ...<String>['--flutter-root', flutterRoot],
+    '--flutter-root', flutterRoot,
     if (!hasSpecifiedDeviceId) ...<String>['--device-id', 'tizen'],
     ...args,
   ];
@@ -126,4 +123,13 @@ Future<void> main(List<String> args) async {
             ))
     },
   );
+}
+
+String get flutterRoot {
+  final String scriptPath = Platform.script.toFilePath();
+  final String rootPath = normalize(join(
+    scriptPath,
+    scriptPath.endsWith('.snapshot') ? '../../..' : '../..',
+  ));
+  return join(rootPath, 'flutter');
 }
