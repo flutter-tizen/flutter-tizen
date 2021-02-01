@@ -35,11 +35,13 @@ class TizenBuildInfo {
   const TizenBuildInfo(
     this.buildInfo, {
     @required this.targetArchs,
+    this.deviceProfile,
     this.securityProfile,
   });
 
   final BuildInfo buildInfo;
   final List<String> targetArchs;
+  final String deviceProfile;
   final String securityProfile;
 }
 

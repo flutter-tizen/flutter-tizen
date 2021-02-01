@@ -13,12 +13,12 @@ import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/base/process.dart';
 import 'package:flutter_tools/src/device.dart';
 import 'package:flutter_tools/src/emulator.dart';
-import 'package:flutter_tizen/tizen_sdk.dart';
 import 'package:meta/meta.dart';
 import 'package:process/process.dart';
 import 'package:xml/xml.dart';
 
 import 'tizen_doctor.dart';
+import 'tizen_sdk.dart';
 
 /// A class to get available Tizen emulators.
 class TizenEmulatorManager extends EmulatorManager {

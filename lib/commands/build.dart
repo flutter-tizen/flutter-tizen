@@ -43,7 +43,15 @@ class BuildTpkCommand extends BuildSubCommand with TizenExtension {
       splitCommas: true,
       defaultsTo: <String>['arm'],
       allowed: <String>['arm', 'aarch64', 'x86'],
-      help: 'The target architectures to compile the application for',
+      help: 'Target architectures to compile the application for',
+    );
+    argParser.addOption(
+      'device-profile',
+      defaultsTo: 'common',
+      allowed: <String>['common', 'wearable', 'tv'],
+      help: 'The type of Tizen device the application will operate on. It is '
+          'recommended to choose a right profile for your target device rather '
+          'than just "common". Otherwise, some plugins may fail to load.',
     );
     argParser.addOption(
       'security-profile',
@@ -82,6 +90,7 @@ class BuildTpkCommand extends BuildSubCommand with TizenExtension {
     final TizenBuildInfo tizenBuildInfo = TizenBuildInfo(
       buildInfo,
       targetArchs: stringsArg('target-arch'),
+      deviceProfile: stringArg('device-profile'),
       securityProfile: stringArg('security-profile'),
     );
     validateBuild(tizenBuildInfo);
