@@ -19,6 +19,7 @@ import 'package:flutter_tools/src/commands/doctor.dart';
 import 'package:flutter_tools/src/commands/format.dart';
 import 'package:flutter_tools/src/commands/logs.dart';
 import 'package:flutter_tools/src/commands/screenshot.dart';
+import 'package:flutter_tools/src/commands/symbolize.dart';
 import 'package:flutter_tools/src/emulator.dart';
 import 'package:flutter_tools/src/device.dart';
 import 'package:flutter_tools/src/doctor.dart';
@@ -82,6 +83,7 @@ Future<void> main(List<String> args) async {
       FormatCommand(),
       LogsCommand(),
       ScreenshotCommand(),
+      SymbolizeCommand(stdio: globals.stdio, fileSystem: globals.fs),
       // Commands extended for Tizen.
       TizenAnalyzeCommand(verboseHelp: verboseHelp),
       TizenAttachCommand(verboseHelp: verboseHelp),
@@ -120,7 +122,7 @@ Future<void> main(List<String> args) async {
               stdio: globals.stdio,
               terminal: globals.terminal,
               outputPreferences: globals.outputPreferences,
-            ))
+            )),
     },
   );
 }
