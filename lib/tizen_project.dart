@@ -46,6 +46,8 @@ class TizenProject extends FlutterProjectPlatform {
 
   File get manifestFile => editableDirectory.childFile('tizen-manifest.xml');
 
+  String get apiVersion => TizenManifest.parseFromXml(manifestFile).apiVersion;
+
   String get outputTpkName {
     final TizenManifest manifest = TizenManifest.parseFromXml(manifestFile);
     return '${manifest.packageId}-${manifest.version}.tpk';
