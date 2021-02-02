@@ -175,6 +175,24 @@ Not all commands in the [`flutter`](https://flutter.dev/docs/reference/flutter-c
   flutter-tizen run -d emulator-26101
   ```
 
+- ### `screenshot`
+
+  Take a screenshot from a connected device.
+
+  ```sh
+  flutter-tizen screenshot --type rasterizer --observatory-uri http://127.0.0.1:43000/Swm0bjIe0ks=
+  ```
+
+  You have to specify both `--type` and `--observatory-uri` values because the default (`device`) screenshot type is not supported by Tizen devices. The observatory URI value can be found in the device log output (`flutter-tizen run` or `flutter-tizen logs`) after you start an app in debug or profile mode.
+
+- ### `symbolize`
+
+  Symbolize a stack trace from a Flutter app which has been built with the `--split-debug-info` option.
+
+  ```sh
+  flutter-tizen symbolize --debug-info app.android-arm.symbols --input stack_trace.err
+  ```
+
 - ### `test`
 
   Run tests in this package.
