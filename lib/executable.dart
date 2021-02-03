@@ -18,6 +18,8 @@ import 'package:flutter_tools/src/commands/emulators.dart';
 import 'package:flutter_tools/src/commands/doctor.dart';
 import 'package:flutter_tools/src/commands/format.dart';
 import 'package:flutter_tools/src/commands/logs.dart';
+import 'package:flutter_tools/src/commands/screenshot.dart';
+import 'package:flutter_tools/src/commands/symbolize.dart';
 import 'package:flutter_tools/src/emulator.dart';
 import 'package:flutter_tools/src/device.dart';
 import 'package:flutter_tools/src/doctor.dart';
@@ -46,70 +48,90 @@ import 'tizen_tpk.dart';
 ///
 /// Source: [flutter.main] in `executable.dart` (some commands and options were omitted)
 Future<void> main(List<String> args) async {
-  final bool verbose = args.contains('-v') || args.contains('--verbose');
-  final bool help = args.contains('-h') || args.contains('--help');
+  final bool veryVerbose = args.contains('-vv');
+  final bool verbose =
+      args.contains('-v') || args.contains('--verbose') || veryVerbose;
+
+  final bool doctor = (args.isNotEmpty && args.first == 'doctor') ||
+      (args.length == 2 && verbose && args.last == 'doctor');
+  final bool help = args.contains('-h') ||
+      args.contains('--help') ||
+      (args.isNotEmpty && args.first == 'help') ||
+      (args.length == 1 && verbose);
+  final bool muteCommandLogging = (help || doctor) && !veryVerbose;
   final bool verboseHelp = help && verbose;
+
   final bool hasSpecifiedDeviceId =
       args.contains('-d') || args.contains('--device-id');
-  final bool hasSpecifiedFlutterRoot = args.contains('--flutter-root');
-  final String flutterRoot =
-      normalize(join(Platform.script.toFilePath(), '../../flutter'));
 
   args = <String>[
     '--suppress-analytics', // Suppress flutter analytics by default.
     '--no-version-check',
-    if (!hasSpecifiedFlutterRoot) ...<String>['--flutter-root', flutterRoot],
+    '--flutter-root', flutterRoot,
     if (!hasSpecifiedDeviceId) ...<String>['--device-id', 'tizen'],
     ...args,
   ];
 
   await runner.run(
-      args,
-      () => <FlutterCommand>[
-            // Commands directly from flutter_tools.
-            ConfigCommand(verboseHelp: verboseHelp),
-            DevicesCommand(),
-            DoctorCommand(verbose: verboseHelp),
-            EmulatorsCommand(),
-            FormatCommand(),
-            LogsCommand(),
-            // Commands extended for Tizen.
-            TizenAnalyzeCommand(verboseHelp: verboseHelp),
-            TizenAttachCommand(verboseHelp: verboseHelp),
-            TizenBuildCommand(verboseHelp: verboseHelp),
-            TizenCleanCommand(verbose: verbose),
-            TizenCreateCommand(),
-            TizenDriveCommand(),
-            TizenInstallCommand(),
-            TizenPackagesCommand(),
-            TizenRunCommand(verboseHelp: verboseHelp),
-            TizenTestCommand(verboseHelp: verboseHelp),
-          ],
-      verbose: verbose,
-      verboseHelp: verboseHelp,
-      reportCrashes: false,
-      overrides: <Type, Generator>{
-        ApplicationPackageFactory: () => TpkFactory(),
-        DeviceManager: () => TizenDeviceManager(),
-        TemplateRenderer: () => const MustacheTemplateRenderer(),
-        DoctorValidatorsProvider: () => TizenDoctorValidatorsProvider(),
-        TizenSdk: () => TizenSdk.locateSdk(),
-        TizenArtifacts: () => TizenArtifacts(),
-        TizenWorkflow: () => TizenWorkflow(),
-        TizenValidator: () => TizenValidator(),
-        EmulatorManager: () => TizenEmulatorManager(
-              tizenSdk: tizenSdk,
-              tizenWorkflow: tizenWorkflow,
-              processManager: globals.processManager,
-              logger: globals.logger,
-              fileSystem: globals.fs,
-            ),
-        if (verbose)
-          Logger: () => VerboseLogger(StdoutLogger(
-                timeoutConfiguration: timeoutConfiguration,
-                stdio: globals.stdio,
-                terminal: globals.terminal,
-                outputPreferences: globals.outputPreferences,
-              ))
-      });
+    args,
+    () => <FlutterCommand>[
+      // Commands directly from flutter_tools.
+      ConfigCommand(verboseHelp: verboseHelp),
+      DevicesCommand(),
+      DoctorCommand(verbose: verbose),
+      EmulatorsCommand(),
+      FormatCommand(),
+      LogsCommand(),
+      ScreenshotCommand(),
+      SymbolizeCommand(stdio: globals.stdio, fileSystem: globals.fs),
+      // Commands extended for Tizen.
+      TizenAnalyzeCommand(verboseHelp: verboseHelp),
+      TizenAttachCommand(verboseHelp: verboseHelp),
+      TizenBuildCommand(verboseHelp: verboseHelp),
+      TizenCleanCommand(verbose: verbose),
+      TizenCreateCommand(),
+      TizenDriveCommand(),
+      TizenInstallCommand(),
+      TizenPackagesCommand(),
+      TizenRunCommand(verboseHelp: verboseHelp),
+      TizenTestCommand(verboseHelp: verboseHelp),
+    ],
+    verbose: verbose,
+    verboseHelp: verboseHelp,
+    muteCommandLogging: muteCommandLogging,
+    reportCrashes: false,
+    overrides: <Type, Generator>{
+      ApplicationPackageFactory: () => TpkFactory(),
+      DeviceManager: () => TizenDeviceManager(),
+      TemplateRenderer: () => const MustacheTemplateRenderer(),
+      DoctorValidatorsProvider: () => TizenDoctorValidatorsProvider(),
+      TizenSdk: () => TizenSdk.locateSdk(),
+      TizenArtifacts: () => TizenArtifacts(),
+      TizenWorkflow: () => TizenWorkflow(),
+      TizenValidator: () => TizenValidator(),
+      EmulatorManager: () => TizenEmulatorManager(
+            tizenSdk: tizenSdk,
+            tizenWorkflow: tizenWorkflow,
+            processManager: globals.processManager,
+            logger: globals.logger,
+            fileSystem: globals.fs,
+          ),
+      if (verbose && !muteCommandLogging)
+        Logger: () => VerboseLogger(StdoutLogger(
+              timeoutConfiguration: timeoutConfiguration,
+              stdio: globals.stdio,
+              terminal: globals.terminal,
+              outputPreferences: globals.outputPreferences,
+            )),
+    },
+  );
+}
+
+String get flutterRoot {
+  final String scriptPath = Platform.script.toFilePath();
+  final String rootPath = normalize(join(
+    scriptPath,
+    scriptPath.endsWith('.snapshot') ? '../../..' : '../..',
+  ));
+  return join(rootPath, 'flutter');
 }

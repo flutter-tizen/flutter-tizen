@@ -177,7 +177,7 @@ def main():
 
     # Run the snapshot.
     command = [dartPath, '--disable-dart-dev', '--packages=' + packagesPath,
-               snapshotPath, '--flutter-root', flutterDir]
+               snapshotPath]
     command.extend(sys.argv[1:])
     try:
         process = subprocess.run(command)
