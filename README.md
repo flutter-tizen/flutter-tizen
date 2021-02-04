@@ -52,7 +52,7 @@ flutter-tizen run --release
 
 - [Getting started](doc/get-started.md)
 - [Flutter Docs](https://flutter.dev/docs)
-- Debugging and inspecting Flutter apps with Dart DevTools (WIP)
+- [Debugging and inspecting Flutter apps with DevTools](doc/devtools-usage.md)
 
 #### Plugins
 
