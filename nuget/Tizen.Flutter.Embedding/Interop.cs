@@ -83,14 +83,6 @@ namespace Tizen.Flutter.Embedding
                 DefaultEmbedder.FlutterNotifyAppIsPaused(window);
         }
 
-        public static void FlutterRotateWindow(FlutterWindowControllerHandle window, int degree)
-        {
-            if (IsTizen40)
-                Tizen40Embedder.FlutterRotateWindow(window, degree);
-            else
-                DefaultEmbedder.FlutterRotateWindow(window, degree);
-        }
-
         public static IntPtr FlutterDesktopGetPluginRegistrar(
             FlutterWindowControllerHandle window, string plugin_name)
         {
@@ -134,10 +126,6 @@ namespace Tizen.Flutter.Embedding
                 FlutterWindowControllerHandle window);
 
             [DllImport(SharedLibrary)]
-            public static extern void FlutterRotateWindow(
-                FlutterWindowControllerHandle window, int degree);
-
-            [DllImport(SharedLibrary)]
             public static extern IntPtr FlutterDesktopGetPluginRegistrar(
                 FlutterWindowControllerHandle window, string plugin_name);
         }
@@ -172,10 +160,6 @@ namespace Tizen.Flutter.Embedding
             [DllImport(SharedLibrary)]
             public static extern void FlutterNotifyAppIsPaused(
                 FlutterWindowControllerHandle window);
-
-            [DllImport(SharedLibrary)]
-            public static extern void FlutterRotateWindow(
-                FlutterWindowControllerHandle window, int degree);
 
             [DllImport(SharedLibrary)]
             public static extern IntPtr FlutterDesktopGetPluginRegistrar(
