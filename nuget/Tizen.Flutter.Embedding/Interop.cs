@@ -100,6 +100,9 @@ namespace Tizen.Flutter.Embedding
                 return DefaultEmbedder.FlutterDesktopGetPluginRegistrar(window, plugin_name);
         }
 
+        [DllImport("flutter_engine.so")]
+        public static extern bool FlutterEngineRunsAOTCompiledDartCode();
+
         #region Default
         private static class DefaultEmbedder
         {
