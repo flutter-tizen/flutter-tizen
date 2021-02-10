@@ -163,12 +163,12 @@ class TizenManifest {
   /// The target API version number.
   String get apiVersion => _manifest.getAttribute('api-version');
 
-  /// The fully qualified target profile name (e.g. `wearable-5.5`)
-  String get profile {
-    final XmlElement parent = _manifest.findElements('profile').first;
-    final String name = parent.getAttribute('name');
-    return '$name-$apiVersion';
-  }
+  /// The profile name representing a device type.
+  String get profileName =>
+      _manifest.findElements('profile').first.getAttribute('name');
+
+  /// The fully qualified profile string. (e.g. `wearable-5.5`)
+  String get profile => '$profileName-$apiVersion';
 
   /// The unique application id used for launching and terminating applications.
   String get applicationId {

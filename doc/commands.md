@@ -46,6 +46,9 @@ Not all commands in the [`flutter`](https://flutter.dev/docs/reference/flutter-c
   # Build a TPK without installing on a device.
   flutter-tizen build tpk
 
+  # Build for a TV device.
+  flutter-tizen build tpk --device-profile tv
+
   # Build for an emulator.
   flutter-tizen build tpk --debug --target-arch x86
   ```

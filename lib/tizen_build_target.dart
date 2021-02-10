@@ -4,7 +4,6 @@
 // found in the LICENSE file.
 
 import 'package:file/file.dart';
-import 'package:flutter_tizen/tizen_tpk.dart';
 import 'package:flutter_tools/src/artifacts.dart';
 import 'package:flutter_tools/src/base/build.dart';
 import 'package:flutter_tools/src/base/common.dart';
@@ -23,6 +22,7 @@ import 'tizen_builder.dart';
 import 'tizen_plugins.dart';
 import 'tizen_project.dart';
 import 'tizen_sdk.dart';
+import 'tizen_tpk.dart';
 
 /// Prepares the pre-built flutter bundle.
 class TizenAssetBundle extends AndroidAssetBundle {
@@ -32,10 +32,10 @@ class TizenAssetBundle extends AndroidAssetBundle {
 
 /// Compiles Tizen native plugins into shared objects.
 class TizenPlugins extends Target {
-  TizenPlugins(this.project, this.targetArchs);
+  TizenPlugins(this.project, this.buildInfo);
 
   final FlutterProject project;
-  final List<String> targetArchs;
+  final TizenBuildInfo buildInfo;
 
   final ProcessUtils _processUtils = ProcessUtils(
       logger: globals.logger, processManager: globals.processManager);
@@ -82,7 +82,7 @@ class TizenPlugins extends Target {
       final File sharedLib =
           buildDir.childFile('lib' + (plugin.toMap()['sofile'] as String));
 
-      for (final String arch in targetArchs) {
+      for (final String arch in buildInfo.targetArchs) {
         final Directory engineDir = tizenArtifacts.getEngineDirectory(
             getTargetPlatformForArch(arch), buildMode);
         final Directory commonDir = engineDir.parent.childDirectory('common');
@@ -102,7 +102,8 @@ class TizenPlugins extends Target {
           '-lflutter_tizen',
           '-L${engineDir.path}',
           '-I${clientWrapperDir.childDirectory('include').path}',
-          '-I${commonDir.childDirectory('public').path}'
+          '-I${commonDir.childDirectory('public').path}',
+          '-D${buildInfo.deviceProfile.toUpperCase()}_PROFILE',
         ];
 
         if (getTizenCliPath() == null) {
@@ -173,7 +174,7 @@ abstract class DotnetTpk extends Target {
   @override
   List<Target> get dependencies => <Target>[
         TizenAssetBundle(),
-        TizenPlugins(project, buildInfo.targetArchs),
+        TizenPlugins(project, buildInfo),
       ];
 
   @override
@@ -518,6 +519,7 @@ abstract class NativeTpk extends Target {
       '-I${clientWrapperDir.childDirectory('include').path}',
       '-I${commonDir.childDirectory('public').path}',
       ...userIncludes.map((String p) => '-I' + p),
+      '-D${buildInfo.deviceProfile.toUpperCase()}_PROFILE',
       '-Wl,-unresolved-symbols=ignore-in-shared-libs',
     ];
 

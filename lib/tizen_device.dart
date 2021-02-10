@@ -306,8 +306,11 @@ class TizenDevice extends Device {
       await TizenBuilder.buildTpk(
         project: project,
         targetFile: mainPath,
-        tizenBuildInfo: TizenBuildInfo(debuggingOptions.buildInfo,
-            targetArchs: <String>[architecture]),
+        tizenBuildInfo: TizenBuildInfo(
+          debuggingOptions.buildInfo,
+          targetArchs: <String>[architecture],
+          deviceProfile: getCapability('profile_name'),
+        ),
       );
       // Package has been built, so we can get the updated application id and
       // activity name from the tpk.
