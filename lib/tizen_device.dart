@@ -571,6 +571,8 @@ class TizenDlogReader extends DeviceLogReader {
   // 'I/ConsoleMessage(  PID): '
   final RegExp _logFormat = RegExp(r'[IWEF]\/.+?\(\s*(\d+)\):\s');
 
+  bool _acceptedLastLine = true;
+
   void _onLine(String line) {
     // This line might be processed after the subscription is closed but before
     // sdb stops streaming logs.
@@ -579,28 +581,39 @@ class TizenDlogReader extends DeviceLogReader {
     }
 
     final Match timeMatch = _timeFormat.firstMatch(line);
-    if (timeMatch == null) {
-      return;
-    }
-    line = line.replaceFirst(timeMatch.group(0), '');
+    if (timeMatch != null) {
+      // Chop off the time.
+      line = line.replaceFirst(timeMatch.group(0), '');
 
-    // Filter by level.
-    if (!_logFormat.hasMatch(line)) {
-      return;
-    }
-
-    // Filtering by time is disabled on TV devices because they use invalid
-    // timestamps.
-    // TODO(swift-kim): We need a better workaround for this.
-    if (!_device.usesSecureProtocol && _after != null) {
-      final DateTime logTime =
-          DateTime.tryParse('${_after.year}-${timeMatch.group(1)}Z');
-      if (logTime?.isBefore(_after) ?? false) {
-        return;
+      final Match logMatch = _logFormat.firstMatch(line);
+      if (logMatch != null) {
+        if (appPid != null && int.parse(logMatch.group(1)) != appPid) {
+          _acceptedLastLine = false;
+          return;
+        } else if (_after != null && !_device.usesSecureProtocol) {
+          // TODO(swift-kim): Deal with invalid timestamps on TV devices.
+          final DateTime logTime =
+              DateTime.tryParse('${_after.year}-${timeMatch.group(1)}Z');
+          if (logTime?.isBefore(_after) ?? false) {
+            _acceptedLastLine = false;
+            return;
+          }
+        }
+        _acceptedLastLine = true;
+        _linesController.add(line);
+      } else {
+        _acceptedLastLine = false;
       }
+    } else if (line.startsWith('Buffer main is set') ||
+        line.startsWith('ioctl LOGGER') ||
+        line.startsWith('argc = 4, optind = 3') ||
+        line.startsWith('--------- beginning of')) {
+      _acceptedLastLine = false;
+    } else if (_acceptedLastLine) {
+      // If it doesn't match the log pattern at all, then pass it through if we
+      // passed the last matching line through. It might be a multiline message.
+      _linesController.add(line);
     }
-
-    _linesController.add(line);
   }
 
   void _stop() {
