@@ -222,7 +222,7 @@ abstract class DotnetTpk extends Target {
 
     // For now a constant value is used instead of reading from a file.
     // Keep this value in sync with the latest published nuget version.
-    const String embeddingVersion = '1.2.1';
+    const String embeddingVersion = '1.2.2';
 
     // Run .NET build.
     if (getDotnetCliPath() == null) {

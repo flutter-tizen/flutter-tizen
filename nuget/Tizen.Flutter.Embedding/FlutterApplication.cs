@@ -157,16 +157,6 @@ namespace Tizen.Flutter.Embedding
             }
         }
 
-        protected override void OnDeviceOrientationChanged(DeviceOrientationEventArgs e)
-        {
-            base.OnDeviceOrientationChanged(e);
-
-            if (!Handle.IsInvalid)
-            {
-                FlutterRotateWindow(Handle, (int)e.DeviceOrientation);
-            }
-        }
-
         protected override void OnLocaleChanged(LocaleChangedEventArgs e)
         {
             base.OnLocaleChanged(e);
