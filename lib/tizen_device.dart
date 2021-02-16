@@ -35,9 +35,11 @@ class TizenDevice extends Device {
     String id, {
     String modelId,
     @required Logger logger,
+    @required TizenSdk tizenSdk,
     @required ProcessManager processManager,
   })  : _modelId = modelId,
         _logger = logger,
+        _tizenSdk = tizenSdk,
         _processManager = processManager,
         _processUtils =
             ProcessUtils(logger: logger, processManager: processManager),
@@ -48,6 +50,7 @@ class TizenDevice extends Device {
 
   final String _modelId;
   final Logger _logger;
+  final TizenSdk _tizenSdk;
   final ProcessManager _processManager;
   final ProcessUtils _processUtils;
 
@@ -55,21 +58,25 @@ class TizenDevice extends Device {
   TizenDlogReader _logReader;
   TizenDevicePortForwarder _portForwarder;
 
+  /// Source: [AndroidDevice.adbCommandForDevice] in `android_device.dart`
+  List<String> sdbCommand(List<String> args) {
+    return <String>[_tizenSdk.sdb.path, '-s', id, ...args];
+  }
+
+  /// See: [AndroidDevice.runAdbCheckedSync] in `android_device.dart`
   RunResult runSdbSync(
     List<String> params, {
     bool checked = true,
   }) {
-    return _processUtils.runSync(<String>[getSdbPath(), '-s', id, ...params],
-        throwOnError: checked);
+    return _processUtils.runSync(sdbCommand(params), throwOnError: checked);
   }
 
+  /// See: [AndroidDevice.runAdbCheckedAsync] in `android_device.dart`
   Future<RunResult> runSdbAsync(
     List<String> params, {
     bool checked = true,
-    Duration timeout,
   }) async {
-    return _processUtils.run(<String>[getSdbPath(), '-s', id, ...params],
-        throwOnError: checked, timeout: timeout);
+    return _processUtils.run(sdbCommand(params), throwOnError: checked);
   }
 
   String getCapability(String name) {
@@ -525,12 +532,11 @@ class TizenDlogReader extends DeviceLogReader {
     DateTime after,
   }) async {
     // `sdb dlog -m` is not allowed for non-root users.
-    final List<String> command = device.usesSecureProtocol
+    final List<String> args = device.usesSecureProtocol
         ? <String>['shell', '0', 'showlog_level', 'time']
         : <String>['dlog', '-v', 'time', 'ConsoleMessage'];
 
-    final Process process = await processManager
-        .start(<String>[getSdbPath(), '-s', device.id, ...command]);
+    final Process process = await processManager.start(device.sdbCommand(args));
 
     return TizenDlogReader._(device.name, device, process, after);
   }

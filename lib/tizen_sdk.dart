@@ -13,17 +13,7 @@ import 'package:meta/meta.dart';
 
 TizenSdk get tizenSdk => context.get<TizenSdk>();
 
-String getSdbPath() {
-  return tizenSdk?.sdb?.path;
-}
-
-String getTizenCliPath() {
-  return tizenSdk?.tizenCli?.path;
-}
-
-String getDotnetCliPath() {
-  return globals.os.which('dotnet')?.path;
-}
+File get dotnetCli => globals.os.which('dotnet');
 
 class TizenSdk {
   TizenSdk._(this.directory);
