@@ -133,6 +133,15 @@ Not all commands in the [`flutter`](https://flutter.dev/docs/reference/flutter-c
   flutter-tizen format foo.dart
   ```
 
+- ### `gen-l10n`
+
+  Generate localizations for the Flutter project. Identical to `flutter gen-l10n`.
+
+  ```sh
+  # Note: Create a template arb file "app_en.arb" in "lib/l10n" before running this.
+  flutter-tizen gen-l10n
+  ```
+
 - ### `install`
 
   Install TPK on a Tizen device.

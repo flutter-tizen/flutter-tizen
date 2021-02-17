@@ -106,9 +106,9 @@ class TizenPlugins extends Target {
           '-D${buildInfo.deviceProfile.toUpperCase()}_PROFILE',
         ];
 
-        if (getTizenCliPath() == null) {
+        if (tizenSdk == null || !tizenSdk.tizenCli.existsSync()) {
           throwToolExit(
-            'Unable to locate Tizen SDK.\n'
+            'Unable to locate Tizen CLI executable.\n'
             'Run "flutter-tizen doctor" and install required components.',
           );
         }
@@ -116,7 +116,7 @@ class TizenPlugins extends Target {
           buildDir.deleteSync(recursive: true);
         }
         final RunResult result = await _processUtils.run(<String>[
-          getTizenCliPath(),
+          tizenSdk.tizenCli.path,
           'build-native',
           '-a',
           arch,
@@ -225,11 +225,14 @@ abstract class DotnetTpk extends Target {
     const String embeddingVersion = '1.2.2';
 
     // Run .NET build.
-    if (getDotnetCliPath() == null) {
-      throwToolExit('Unable to locate .NET CLI.');
+    if (dotnetCli == null) {
+      throwToolExit(
+        'Unable to locate .NET CLI executable.\n'
+        'Install the latest .NET SDK from: https://dotnet.microsoft.com/download',
+      );
     }
     RunResult result = await _processUtils.run(<String>[
-      getDotnetCliPath(),
+      dotnetCli.path,
       'build',
       '-c',
       'Release',
@@ -247,9 +250,9 @@ abstract class DotnetTpk extends Target {
           'Build succeeded but the expected TPK not found:\n${result.stdout}');
     }
 
-    if (getTizenCliPath() == null) {
+    if (tizenSdk == null || !tizenSdk.tizenCli.existsSync()) {
       throwToolExit(
-        'Unable to locate Tizen SDK.\n'
+        'Unable to locate Tizen CLI executable.\n'
         'Run "flutter-tizen doctor" and install required components.',
       );
     }
@@ -261,7 +264,7 @@ abstract class DotnetTpk extends Target {
       environment.logger.printStatus('The active profile is used for signing.');
     }
     result = await _processUtils.run(<String>[
-      getTizenCliPath(),
+      tizenSdk.tizenCli.path,
       'package',
       '-t',
       'tpk',
@@ -524,9 +527,9 @@ abstract class NativeTpk extends Target {
     ];
 
     // Run native build.
-    if (getTizenCliPath() == null) {
+    if (tizenSdk == null || !tizenSdk.tizenCli.existsSync()) {
       throwToolExit(
-        'Unable to locate Tizen SDK.\n'
+        'Unable to locate Tizen CLI executable.\n'
         'Run "flutter-tizen doctor" and install required components.',
       );
     }
@@ -534,7 +537,7 @@ abstract class NativeTpk extends Target {
       buildDir.deleteSync(recursive: true);
     }
     RunResult result = await _processUtils.run(<String>[
-      getTizenCliPath(),
+      tizenSdk.tizenCli.path,
       'build-native',
       '-a',
       targetArch,
@@ -553,7 +556,7 @@ abstract class NativeTpk extends Target {
       throwToolExit('Failed to compile native application:\n$result');
     }
     result = await _processUtils.run(<String>[
-      getTizenCliPath(),
+      tizenSdk.tizenCli.path,
       'package',
       '-t',
       'tpk',

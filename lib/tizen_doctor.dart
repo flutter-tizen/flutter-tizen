@@ -77,7 +77,7 @@ class TizenValidator extends DoctorValidator {
   Future<ValidationResult> validate() async {
     final List<ValidationMessage> messages = <ValidationMessage>[];
 
-    if (getSdbPath() == null) {
+    if (tizenSdk == null) {
       messages.add(const ValidationMessage.error(
         'Unable to locate Tizen SDK.\n'
         'Install Tizen Studio from: https://developer.tizen.org/development/tizen-studio/download\n'
@@ -90,7 +90,7 @@ class TizenValidator extends DoctorValidator {
       return ValidationResult(ValidationType.partial, messages);
     }
 
-    if (getDotnetCliPath() == null) {
+    if (dotnetCli == null) {
       messages.add(const ValidationMessage.error(
         '.NET CLI is required for building Tizen applications.\n'
         'Install the latest .NET SDK from: https://dotnet.microsoft.com/download',
