@@ -1,4 +1,4 @@
-<p align="center"><img src="doc/images/flutter-tizen.png" width="500" height="325"/></p>
+<p align="center"><img src="doc/images/flutter-tizen.png" width="500"/></p>
 
 # Flutter for Tizen
 
