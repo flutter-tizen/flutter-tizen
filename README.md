@@ -1,10 +1,12 @@
+<p align="center"><img src="doc/images/flutter-tizen.png" width="500" height="325"/></p>
+
 # Flutter for Tizen
 
 [![Dart](https://github.com/flutter-tizen/flutter-tizen/workflows/Dart/badge.svg)](https://github.com/flutter-tizen/flutter-tizen/actions)
 
-An extension to the [Flutter SDK](https://github.com/flutter/flutter) for building Flutter applications for Tizen.
+An extension to the [Flutter SDK](https://github.com/flutter/flutter) for building Flutter applications for Tizen devices.
 
-_Note: This project is under development and available for testing purposes only._
+_**Note: This project is under development and available for testing purposes only.**_
 
 _Flutter and the related logo are trademarks of Google LLC. We are not endorsed by or affiliated with Google LLC._
 
