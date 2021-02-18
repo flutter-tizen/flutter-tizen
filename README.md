@@ -63,7 +63,7 @@ flutter-tizen run --release
 
 #### Publishing
 
-- Publishing Galaxy Watch apps on Samsung Galaxy Store (WIP)
+- [Publishing your app on Samsung Galaxy Store/TV App Store](doc/publish-app.md)
 
 #### Advanced
 
