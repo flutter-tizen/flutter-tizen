@@ -1,6 +1,6 @@
 # Getting started
 
-## Setting up the environment
+## Set up the environment
 
 1. Make sure your Tizen device meets the minimum version [requirement](../README.md#supported-devices).
 
