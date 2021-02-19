@@ -86,6 +86,8 @@ class TizenDeviceDiscovery extends PollingDeviceDiscovery {
   @override
   bool get canListAnything => _tizenWorkflow.canListDevices;
 
+  final RegExp _splitPattern = RegExp(r'\s{2,}|\t');
+
   @override
   Future<List<Device>> pollingGetDevices({Duration timeout}) async {
     if (tizenSdk == null) {
@@ -103,33 +105,41 @@ class TizenDeviceDiscovery extends PollingDeviceDiscovery {
 
     final List<TizenDevice> devices = <TizenDevice>[];
     for (final String line in LineSplitter.split(stdout)) {
-      if (line.startsWith('* ') ||
-          line.startsWith('  ') ||
-          line.startsWith('List of devices')) {
+      if (line.startsWith('List of devices')) {
         continue;
       }
 
-      final List<String> splitLine = line.split(RegExp(r'\s{2,}|\t'));
+      final List<String> splitLine = line.split(_splitPattern);
       if (splitLine.length != 3) {
         continue;
       }
 
       final String deviceId = splitLine[0];
-      final String deviceStatus = splitLine[1];
+      final String deviceState = splitLine[1];
       final String deviceModel = splitLine[2];
 
-      // TODO(swift-kim): Warn about unknown (offline) devices.
-      if (deviceStatus != 'device') {
+      if (deviceState != 'device') {
         continue;
       }
 
-      devices.add(TizenDevice(
+      final TizenDevice device = TizenDevice(
         deviceId,
         modelId: deviceModel,
         logger: _logger ?? globals.logger,
         tizenSdk: tizenSdk,
         processManager: _processManager ?? globals.processManager,
-      ));
+      );
+
+      // Occasionally sdb detects an Android device as a Tizen device.
+      // Issue: https://github.com/flutter-tizen/flutter-tizen/issues/30
+      try {
+        // This call fails for non-Tizen devices.
+        device.getCapability('cpu_arch');
+      } on ProcessException {
+        continue;
+      }
+
+      devices.add(device);
     }
     return devices;
   }
@@ -145,12 +155,42 @@ class TizenDeviceDiscovery extends PollingDeviceDiscovery {
     if (result.exitCode != 0) {
       return <String>[];
     }
-    final String stderr = result.stderr.trim();
+    final String output = result.toString();
+    if (!output.contains('List of devices')) {
+      return <String>[output];
+    }
 
     final List<String> messages = <String>[];
-    for (final String line in LineSplitter.split(stderr)) {
+    for (final String line in LineSplitter.split(output)) {
+      if (line.startsWith('List of devices')) {
+        continue;
+      }
+
       if (line.startsWith('* ') || line.startsWith('  ')) {
         messages.add(line.substring(2).replaceAll(' *', ''));
+        continue;
+      }
+
+      final List<String> splitLine = line.split(_splitPattern);
+      if (splitLine.length != 3) {
+        messages.add(
+          'Unexpected failure parsing device information from sdb output:\n$line',
+        );
+        continue;
+      }
+
+      final String deviceId = splitLine[0];
+      final String deviceState = splitLine[1];
+
+      if (deviceState == 'unauthorized') {
+        messages.add(
+          'Device $deviceId is not authorized.\n'
+          'You might need to check your device for an authorization dialog.',
+        );
+      } else if (deviceState == 'offline') {
+        messages.add('Device $deviceId is offline.');
+      } else if (deviceState == 'unknown') {
+        messages.add('Device $deviceId is not ready.');
       }
     }
     return messages;

@@ -496,7 +496,15 @@ class TizenDevice extends Device {
       );
 
   @override
-  bool isSupported() => true;
+  bool isSupported() {
+    final double deviceVersion = double.tryParse(platformVersion) ?? 0;
+    if (!_emulatorArchs.contains(getCapability('cpu_arch')) &&
+        usesSecureProtocol &&
+        deviceVersion < 6.0) {
+      return false;
+    }
+    return deviceVersion >= 4.0;
+  }
 
   @override
   bool get supportsScreenshot => false;
