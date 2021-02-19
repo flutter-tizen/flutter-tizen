@@ -249,18 +249,22 @@ class TizenEmulators extends EmulatorDiscovery {
     TizenEmulator loadEmulatorInfo(String id) {
       final File configFile =
           emulatorDir.childDirectory(id).childFile('vm_config.xml');
-      final Map<String, String> properties = <String, String>{};
 
       final XmlDocument xmlDocument =
           XmlDocument.parse(configFile.readAsStringSync());
-      final String name = xmlDocument.findAllElements('name').first.text;
+      final XmlElement deviceTemplate =
+          xmlDocument.findAllElements('deviceTemplate').first;
+      final String name = deviceTemplate.getAttribute('name');
       final XmlElement diskImage =
           xmlDocument.findAllElements('diskImage').first;
       final String profile = diskImage.getAttribute('profile');
       final String version = diskImage.getAttribute('version');
-      properties['name'] = name;
-      properties['profile'] = profile;
-      properties['version'] = version;
+
+      final Map<String, String> properties = <String, String>{
+        'name': name,
+        'profile': profile,
+        'version': version,
+      };
 
       return TizenEmulator(
         id,
@@ -291,18 +295,22 @@ class TizenEmulator extends Emulator {
     @required Logger logger,
     @required ProcessManager processManager,
     @required TizenSdk tizenSdk,
-  })  : _logger = logger,
+  })  : _properties = properties,
+        _logger = logger,
         _processUtils =
             ProcessUtils(logger: logger, processManager: processManager),
         _tizenSdk = tizenSdk,
         super(id, properties != null && properties.isNotEmpty);
 
+  final Map<String, String> _properties;
   final Logger _logger;
   final ProcessUtils _processUtils;
   final TizenSdk _tizenSdk;
 
+  String _prop(String name) => _properties != null ? _properties[name] : null;
+
   @override
-  String get name => id;
+  String get name => _prop('name') ?? id;
 
   @override
   String get manufacturer => 'Samsung';
@@ -326,10 +334,11 @@ class TizenEmulator extends Emulator {
         await _processUtils.run(<String>[emCli.path, 'launch', '--name', id]);
     if (result.exitCode == 0) {
       _logger.printStatus('Successfully launched Tizen emulator $id.');
-    } else if (result.exitCode == 2) {
+    } else if (result.stdout.contains('is running now...')) {
       _logger.printStatus('Tizen emulator $id is already running.');
     } else {
-      throwToolExit('Unable to launch Tizen emulator $id.');
+      _logger.printError(result.stdout);
+      _logger.printError('Could not launch Tizen emulator $id.');
     }
   }
 }
