@@ -24,7 +24,7 @@ _Flutter and the related logo are trademarks of Google LLC. We are not endorsed 
 
 ## Usage
 
-`flutter-tizen` substitutes the original [`flutter`](https://flutter.dev/docs/reference/flutter-cli) CLI command.
+`flutter-tizen` substitutes the original [`flutter`](https://flutter.dev/docs/reference/flutter-cli) CLI command. Only the command line interface is supported.
 
 ```sh
 # Inspect the installed tooling and connected devices.
