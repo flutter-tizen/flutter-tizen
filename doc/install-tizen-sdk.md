@@ -5,7 +5,7 @@ Download and install the latest release of Tizen Studio from the below link. It 
 - [Download Tizen Studio](https://developer.tizen.org/development/tizen-studio/download)
 - [Tizen Docs: Installing Tizen Studio](https://docs.tizen.org/application/tizen-studio/setup/install-sdk)
 
-## Installing required packages
+## Install required packages
 
 After installing Tizen Studio, the _Package Manager_ window will automatically pop up (otherwise launch it manually). If you're on CLI, use _package-manager-cli_ (`tizen-studio/package-manager/package-manager-cli.bin`) instead.
 
@@ -28,7 +28,7 @@ If you cannot see extension packages in the _Extension SDK_ tab, click the confi
 
 ![Configuration](images/package-manager-configuration.png)
 
-## Setting up Tizen emulators
+## Set up Tizen emulators
 
 If you installed emulator packages in the previous step, you can use _Emulator Manager_ to manage and launch emulator instances. If you can't see any emulator instance in the device list, open _Package Manager_ and install emulator packages of your target platform.
 
@@ -36,11 +36,11 @@ If you installed emulator packages in the previous step, you can use _Emulator M
 
 To launch an emulator, select a device and press _Launch_. You can also use the [`flutter-tizen emulators`](commands.md#emulators) command to launch an emulator without _Emulator Manager_.
 
-Your system should support CPU VT (Intel VT/AMD-V) to enable the HW virtualization feature. For details, see [Tizen Docs: Increasing the Application Execution Speed](https://docs.tizen.org/application/tizen-studio/common-tools/emulator/#increasing-the-application-execution-speed).
+Note: If you are using Windows on an AMD-based system, you cannot launch Tizen emulators because _Emulator Manager_ depends on _Intel HAXM_. For more information on HW virtualization, see [Tizen Docs: Increasing the Application Execution Speed](https://docs.tizen.org/application/tizen-studio/common-tools/emulator/#increasing-the-application-execution-speed).
 
-## Creating Tizen certificates
+## Create a Tizen certificate
 
-To install your application package on a Tizen device or publish on _Galaxy Store Seller Portal/TV Seller Office_, you need to sign the application with a valid certificate. Use _Certificate Manager_ (GUI), or the [`tizen certificate/security-profiles`](https://docs.tizen.org/application/tizen-studio/common-tools/command-line-interface) command (CLI) to create a Tizen or Samsung certificate.
+To install your app on Tizen devices or publish on _Galaxy Store/TV App Store_, you need to sign the app with a valid certificate. Use _Certificate Manager_ (GUI), or the [`tizen certificate/security-profiles`](https://docs.tizen.org/application/tizen-studio/common-tools/command-line-interface) command (CLI) to create a Tizen or Samsung certificate.
 
 ![Certificate types](images/certificate-types.png)
 

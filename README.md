@@ -1,4 +1,4 @@
-<p align="center"><img src="doc/images/flutter-tizen.png" width="500" height="325"/></p>
+<p align="center"><img src="doc/images/flutter-tizen.png" width="500"/></p>
 
 # Flutter for Tizen
 
@@ -24,7 +24,7 @@ _Flutter and the related logo are trademarks of Google LLC. We are not endorsed 
 
 ## Usage
 
-`flutter-tizen` substitutes the original [`flutter`](https://flutter.dev/docs/reference/flutter-cli) CLI command.
+`flutter-tizen` substitutes the original [`flutter`](https://flutter.dev/docs/reference/flutter-cli) CLI command. Only the command line interface is supported.
 
 ```sh
 # Inspect the installed tooling and connected devices.
@@ -63,7 +63,7 @@ flutter-tizen run --release
 
 #### Publishing
 
-- Publishing Galaxy Watch apps on Samsung Galaxy Store (WIP)
+- [Publishing your app on Samsung Galaxy Store/TV App Store](doc/publish-app.md)
 
 #### Advanced
 

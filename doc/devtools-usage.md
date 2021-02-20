@@ -48,7 +48,7 @@ The Debugger tab should appear in DevTools if you launched an app in debug mode 
 flutter-tizen run --start-paused
 ```
 
-For detailed usage of the debugger, see [Using the debugger](https://flutter.dev/docs/development/tools/devtools/debugger).
+For detailed usage of the debugger, see [Flutter Docs: Using the debugger](https://flutter.dev/docs/development/tools/devtools/debugger).
 
 ## Performance view
 
@@ -62,7 +62,7 @@ Once the app launches, navigate to the Performance tab in DevTools.
 
 ![DevTools Performance](images/devtools-performance.png)
 
-For more information on this view, see [Using the Performance view](https://flutter.dev/docs/development/tools/devtools/performance).
+For more information on this view, see [Flutter Docs: Using the Performance view](https://flutter.dev/docs/development/tools/devtools/performance).
 
 ## Other resources
 
