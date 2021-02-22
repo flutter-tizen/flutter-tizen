@@ -41,35 +41,35 @@ class TizenDoctorValidatorsProvider extends DoctorValidatorsProvider {
 class TizenValidator extends DoctorValidator {
   TizenValidator() : super('Tizen toolchain - develop for Tizen devices');
 
-  bool _checkPackages(List<ValidationMessage> messages) {
+  bool _validatePackages(List<ValidationMessage> messages) {
     // tizenSdk is not null here.
     final String platformVersion = tizenSdk.defaultTargetPlatform;
     final String gccVersion = tizenSdk.defaultGccVersion;
+    final String packageManager = tizenSdk.packageManagerCli.path;
+    final List<String> missingPackages = <String>[];
 
-    final bool hasTizenCli = tizenSdk.tizenCli.existsSync();
-    final bool hasNativeToolchain = tizenSdk.toolsDirectory
+    if (!tizenSdk.tizenCli.existsSync()) {
+      missingPackages.add('NativeCLI');
+    }
+    if (!tizenSdk.toolsDirectory
         .childDirectory('arm-linux-gnueabi-gcc-$gccVersion')
-        .existsSync();
-    final bool hasPlatformRootstrap = tizenSdk.platformsDirectory
+        .existsSync()) {
+      missingPackages.add('NativeToolchain-Gcc-$gccVersion');
+    }
+    if (!tizenSdk.platformsDirectory
         .childDirectory('tizen-$platformVersion')
         .childDirectory('wearable')
         .childDirectory('rootstraps')
-        .existsSync();
+        .existsSync()) {
+      missingPackages.add('WEARABLE-$platformVersion-NativeAppDevelopment-CLI');
+    }
 
-    if (hasTizenCli && hasPlatformRootstrap && hasNativeToolchain) {
-      return true;
-    } else {
-      messages.add(ValidationMessage.error(
-        <String>[
-          'Install missing packages with Tizen Package Manager or package-manager-cli:',
-          if (!hasTizenCli) '- NativeCLI',
-          if (!hasNativeToolchain) '- NativeToolchain-Gcc-$gccVersion',
-          if (!hasPlatformRootstrap)
-            '- WEARABLE-$platformVersion-NativeAppDevelopment-CLI',
-        ].join('\n'),
-      ));
+    if (missingPackages.isNotEmpty) {
+      messages.add(ValidationMessage.error('To install missing packages, run:\n'
+          '$packageManager install ${missingPackages.join(' ')}'));
       return false;
     }
+    return true;
   }
 
   /// See: [AndroidValidator.validate] in `android_workflow.dart`
@@ -86,7 +86,17 @@ class TizenValidator extends DoctorValidator {
       return ValidationResult(ValidationType.missing, messages);
     }
 
-    if (!_checkPackages(messages)) {
+    final double sdkVersion = double.tryParse(tizenSdk.sdkVersion) ?? 0;
+    if (sdkVersion < 4.0) {
+      messages.add(const ValidationMessage.error(
+          'A newer version of Tizen Studio is required. To update, run Package Manager.'));
+      return ValidationResult(ValidationType.missing, messages);
+    }
+
+    messages.add(ValidationMessage(
+        'Tizen Studio ${tizenSdk.sdkVersion} at ${tizenSdk.directory.path}'));
+
+    if (!_validatePackages(messages)) {
       return ValidationResult(ValidationType.partial, messages);
     }
 
@@ -97,6 +107,8 @@ class TizenValidator extends DoctorValidator {
       ));
       return ValidationResult(ValidationType.missing, messages);
     }
+
+    messages.add(ValidationMessage('.NET CLI executable at ${dotnetCli.path}'));
 
     return ValidationResult(ValidationType.installed, messages);
   }

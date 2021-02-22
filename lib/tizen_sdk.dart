@@ -50,6 +50,8 @@ class TizenSdk {
 
   Directory get platformsDirectory => directory.childDirectory('platforms');
 
+  Directory get toolsDirectory => directory.childDirectory('tools');
+
   Directory get sdkDataDirectory {
     final File sdkInfo = directory.childFile('sdk.info');
     final Map<String, String> info = parseIniFile(sdkInfo);
@@ -59,12 +61,19 @@ class TizenSdk {
     return null;
   }
 
-  Directory get toolsDirectory => directory.childDirectory('tools');
-
-  File get emCli => toolsDirectory
-      .childDirectory('emulator')
-      .childDirectory('bin')
-      .childFile(globals.platform.isWindows ? 'em-cli.bat' : 'em-cli');
+  String get sdkVersion {
+    final File versionFile = directory.childFile('sdk.version');
+    final Map<String, String> info = parseIniFile(versionFile);
+    if (info.containsKey('TIZEN_SDK_VERSION')) {
+      String version = info['TIZEN_SDK_VERSION'];
+      final List<String> segments = version.split('.');
+      if (segments.length > 2) {
+        version = segments.sublist(0, 2).join('.');
+      }
+      return version;
+    }
+    return null;
+  }
 
   File get sdb =>
       toolsDirectory.childFile(globals.platform.isWindows ? 'sdb.exe' : 'sdb');
@@ -73,6 +82,17 @@ class TizenSdk {
       .childDirectory('ide')
       .childDirectory('bin')
       .childFile(globals.platform.isWindows ? 'tizen.bat' : 'tizen');
+
+  File get emCli => toolsDirectory
+      .childDirectory('emulator')
+      .childDirectory('bin')
+      .childFile(globals.platform.isWindows ? 'em-cli.bat' : 'em-cli');
+
+  File get packageManagerCli => directory
+      .childDirectory('package-manager')
+      .childFile(globals.platform.isWindows
+          ? 'package-manager-cli.exe'
+          : 'package-manager-cli.bin');
 
   String get defaultTargetPlatform => '4.0';
 

@@ -113,8 +113,7 @@ class TizenEmulatorManager extends EmulatorManager {
   };
 
   List<PlatformImage> _loadAllPlatformImages() {
-    final Directory platformsDir =
-        _tizenSdk.directory.childDirectory('platforms');
+    final Directory platformsDir = _tizenSdk.platformsDirectory;
     if (!platformsDir.existsSync()) {
       return <PlatformImage>[];
     }
