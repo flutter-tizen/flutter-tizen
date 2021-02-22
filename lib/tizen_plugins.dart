@@ -5,6 +5,7 @@
 
 import 'package:file/file.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
+import 'package:flutter_tools/src/base/terminal.dart';
 import 'package:flutter_tools/src/build_system/targets/web.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/dart/package_map.dart';
@@ -146,6 +147,20 @@ Future<void> main() async {
   return entrypoint.path;
 }
 
+const List<String> _knownPlugins = <String>[
+  'battery',
+  'connectivity',
+  'device_info',
+  'image_picker',
+  'integration_test',
+  'package_info',
+  'path_provider',
+  'sensors',
+  'share',
+  'shared_preferences',
+  'url_launcher',
+];
+
 /// This method has the same role as [ensureReadyForPlatformSpecificTooling].
 ///
 /// See:
@@ -168,6 +183,18 @@ Future<void> injectTizenPlugins(FlutterProject project) async {
         tizenProject.managedDirectory, nativePlugins);
     await _writeCsharpPluginRegistrant(
         tizenProject.managedDirectory, nativePlugins);
+  }
+
+  final List<String> plugins =
+      (await findPlugins(project)).map((Plugin p) => p.name).toList();
+  for (final String plugin in plugins) {
+    final String tizenPlugin = '${plugin}_tizen';
+    if (_knownPlugins.contains(plugin) && !plugins.contains(tizenPlugin)) {
+      globals.printStatus(
+        '$tizenPlugin is available on pub.dev. Did you forget to add to pubspec.yaml?',
+        color: TerminalColor.yellow,
+      );
+    }
   }
 }
 
