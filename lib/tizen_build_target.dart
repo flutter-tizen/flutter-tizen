@@ -25,7 +25,7 @@ import 'tizen_project.dart';
 import 'tizen_sdk.dart';
 import 'tizen_tpk.dart';
 
-Future<void> writeDepFile(String depFileName, Environment environment,
+Future<void> writeDepfile(String depFileName, Environment environment,
     List<File> inputFiles, List<File> outputFiles) async {
   final DepfileService depfileService = DepfileService(
     fileSystem: environment.fileSystem,
@@ -73,10 +73,10 @@ class TizenPlugins extends Target {
   @override
   Future<void> build(Environment environment) async {
     // input and output files which the target depends on
-    final List<File> inputDepFiles = <File>[];
-    final List<File> outputDepFiles = <File>[];
+    final List<File> inputDepfiles = <File>[];
+    final List<File> outputDepfiles = <File>[];
 
-    inputDepFiles.add(project.directory.childFile('.packages'));
+    inputDepfiles.add(project.directory.childFile('.packages'));
 
     final BuildMode buildMode =
         getBuildModeForName(environment.defines[kBuildMode]);
@@ -166,7 +166,7 @@ class TizenPlugins extends Target {
             .childDirectory(arch)
               ..createSync(recursive: true);
         sharedLib.copySync(outputDir.childFile(sharedLib.basename).path);
-        outputDepFiles.add(sharedLib);
+        outputDepfiles.add(sharedLib);
       }
     }
 
@@ -184,14 +184,14 @@ class TizenPlugins extends Target {
         .map((TizenPlugin plugin) => plugin.name)
         .toList()
         .toString());
-    outputDepFiles.add(pluginList);
+    outputDepfiles.add(pluginList);
 
     // write ephemeral.d file
-    await writeDepFile(
+    await writeDepfile(
       'ephemeral.d',
       environment,
-      inputDepFiles,
-      outputDepFiles,
+      inputDepfiles,
+      outputDepfiles,
     );
   }
 }
@@ -225,8 +225,8 @@ abstract class DotnetTpk extends Target {
   @override
   Future<void> build(Environment environment) async {
     // input and output files which the target depends on
-    final List<File> inputDepFiles = <File>[];
-    final List<File> outputDepFiles = <File>[];
+    final List<File> inputDepfiles = <File>[];
+    final List<File> outputDepfiles = <File>[];
 
     final BuildMode buildMode =
         getBuildModeForName(environment.defines[kBuildMode]);
@@ -241,7 +241,7 @@ abstract class DotnetTpk extends Target {
         outputDir.childDirectory('flutter_assets'),
         resDir.childDirectory('flutter_assets'));
 
-    inputDepFiles.addAll(outputDir
+    inputDepfiles.addAll(outputDir
         .childDirectory('flutter_assets')
         .listSync(recursive: true)
         .whereType<File>()
@@ -264,18 +264,18 @@ abstract class DotnetTpk extends Target {
       embedding.copySync(libDir.childFile(embedding.basename).path);
       icuData.copySync(resDir.childFile(icuData.basename).path);
 
-      inputDepFiles.addAll(<File>[engineBinary, embedding, icuData]);
+      inputDepfiles.addAll(<File>[engineBinary, embedding, icuData]);
 
       if (tizenProject.apiVersion.startsWith('4')) {
         final File embedding40 = engineDir.childFile('libflutter_tizen40.so');
         embedding40.copySync(libDir.childFile(embedding40.basename).path);
-        inputDepFiles.add(embedding40);
+        inputDepfiles.add(embedding40);
       }
       if (buildMode.isPrecompiled) {
         final File aotSharedLib =
             environment.buildDir.childDirectory(arch).childFile('app.so');
         aotSharedLib.copySync(libDir.childFile('libapp.so').path);
-        inputDepFiles.add(aotSharedLib);
+        inputDepfiles.add(aotSharedLib);
       }
     }
 
@@ -347,19 +347,19 @@ abstract class DotnetTpk extends Target {
             directory.basename == 'obj' ||
             directory.basename == 'flutter'))
         .toList();
-    inputDepFiles.addAll(<File>[
+    inputDepfiles.addAll(<File>[
       for (Directory dir in inputDepDirs)
         ...dir.listSync(recursive: true).whereType<File>().toList()
     ]);
 
-    outputDepFiles.add(outputDir.childFile(tizenProject.outputTpkName));
+    outputDepfiles.add(outputDir.childFile(tizenProject.outputTpkName));
 
     // write dotnet_tpk.d file
-    await writeDepFile(
+    await writeDepfile(
       'dotnet_tpk.d',
       environment,
-      inputDepFiles,
-      outputDepFiles,
+      inputDepfiles,
+      outputDepfiles,
     );
   }
 }
