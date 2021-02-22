@@ -77,9 +77,6 @@ class TizenBuilder {
     final BuildInfo buildInfo = tizenBuildInfo.buildInfo;
     final Directory outputDir =
         project.directory.childDirectory('build').childDirectory('tizen');
-    if (outputDir.existsSync()) {
-      outputDir.deleteSync(recursive: true);
-    }
 
     final Environment environment = Environment(
       projectDir: project.directory,
