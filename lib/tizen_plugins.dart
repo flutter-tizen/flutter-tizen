@@ -109,15 +109,17 @@ mixin TizenExtension on FlutterCommand {
 /// Source: [WebEntrypointTarget.build] in `web.dart`
 Future<String> _createEntrypoint(
     FlutterProject project, String targetFile) async {
-  final bool hasDartPlugins =
-      (await findTizenPlugins(project, filterDart: true)).isNotEmpty;
-  if (!hasDartPlugins) {
+  final List<TizenPlugin> dartPlugins =
+      await findTizenPlugins(project, dartOnly: true);
+  if (dartPlugins.isEmpty) {
     return targetFile;
   }
+
   final TizenProject tizenProject = TizenProject.fromFlutter(project);
   if (!tizenProject.existsSync()) {
     return targetFile;
   }
+
   final Directory registryDirectory = tizenProject.managedDirectory;
   final File entrypoint = registryDirectory.childFile('main.dart')
     ..createSync(recursive: true);
@@ -157,9 +159,9 @@ Future<void> injectTizenPlugins(FlutterProject project) async {
   final TizenProject tizenProject = TizenProject.fromFlutter(project);
   if (tizenProject.existsSync()) {
     final List<TizenPlugin> dartPlugins =
-        await findTizenPlugins(project, filterDart: true);
+        await findTizenPlugins(project, dartOnly: true);
     final List<TizenPlugin> nativePlugins =
-        await findTizenPlugins(project, filterNative: true);
+        await findTizenPlugins(project, nativeOnly: true);
     await _writeDartPluginRegistrant(
         tizenProject.managedDirectory, dartPlugins);
     await _writeCppPluginRegistrant(
@@ -172,8 +174,8 @@ Future<void> injectTizenPlugins(FlutterProject project) async {
 /// Source: [findPlugins] in `plugins.dart`
 Future<List<TizenPlugin>> findTizenPlugins(
   FlutterProject project, {
-  bool filterDart = false,
-  bool filterNative = false,
+  bool dartOnly = false,
+  bool nativeOnly = false,
 }) async {
   final List<TizenPlugin> plugins = <TizenPlugin>[];
   final File packagesFile = project.directory.childFile('.packages');
@@ -186,9 +188,9 @@ Future<List<TizenPlugin>> findTizenPlugins(
     final TizenPlugin plugin = _pluginFromPackage(package.name, packageRoot);
     if (plugin == null) {
       continue;
-    } else if (filterNative && plugin.pluginClass == null) {
+    } else if (nativeOnly && plugin.pluginClass == null) {
       continue;
-    } else if (filterDart && plugin.pluginClass != null) {
+    } else if (dartOnly && plugin.pluginClass != null) {
       continue;
     }
     plugins.add(plugin);

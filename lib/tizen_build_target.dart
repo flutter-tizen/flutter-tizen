@@ -73,7 +73,7 @@ class TizenPlugins extends Target {
     ephemeralDir.createSync(recursive: true);
 
     final List<TizenPlugin> nativePlugins =
-        await findTizenPlugins(project, filterNative: true);
+        await findTizenPlugins(project, nativeOnly: true);
 
     for (final TizenPlugin plugin in nativePlugins) {
       final Directory pluginDir = environment.fileSystem.directory(plugin.path);
@@ -493,9 +493,10 @@ abstract class NativeTpk extends Target {
     final List<String> userIncludes = <String>[];
     final List<String> userSources = <String>[];
 
-    final List<TizenPlugin> plugins =
-        await findTizenPlugins(project, filterNative: true);
-    for (final TizenPlugin plugin in plugins) {
+    final List<TizenPlugin> nativePlugins =
+        await findTizenPlugins(project, nativeOnly: true);
+
+    for (final TizenPlugin plugin in nativePlugins) {
       final TizenNativeProject pluginProject = TizenNativeProject(plugin.path);
       // TODO(swift-kim): Currently only checks for USER_INC_DIRS and USER_SRCS.
       // More properties (such as USER_LIBS) should be parsed to fully support
