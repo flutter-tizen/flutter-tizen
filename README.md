@@ -20,7 +20,7 @@ _Flutter and the related logo are trademarks of Google LLC. We are not endorsed 
 
 - [Linux (64-bit)](doc/linux-install.md)
 - [Windows (64-bit)](doc/windows-install.md)
-- macOS (64-bit)
+- [macOS (64-bit)](doc/macos-install.md)
 
 ## Usage
 

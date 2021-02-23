@@ -27,7 +27,7 @@ class TizenSdk {
       tizenHomeDir = globals.fs.directory(environment['TIZEN_SDK']);
     } else if (sdb != null && sdb.parent.basename == 'tools') {
       tizenHomeDir = sdb.parent.parent;
-    } else if (globals.platform.isLinux) {
+    } else if (globals.platform.isLinux || globals.platform.isMacOS) {
       if (globals.fsUtils.homeDirPath != null) {
         tizenHomeDir = globals.fs
             .directory(globals.fsUtils.homeDirPath)

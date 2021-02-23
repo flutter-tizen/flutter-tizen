@@ -88,8 +88,10 @@ class TizenValidator extends DoctorValidator {
 
     final double sdkVersion = double.tryParse(tizenSdk.sdkVersion) ?? 0;
     if (sdkVersion < 4.0) {
-      messages.add(const ValidationMessage.error(
-          'A newer version of Tizen Studio is required. To update, run Package Manager.'));
+      messages.add(ValidationMessage.error(
+        'A newer version of Tizen Studio is required. To update, run:\n'
+        '${tizenSdk.packageManagerCli.path} update',
+      ));
       return ValidationResult(ValidationType.missing, messages);
     }
 
