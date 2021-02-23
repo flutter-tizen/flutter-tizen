@@ -25,8 +25,12 @@ import 'tizen_project.dart';
 import 'tizen_sdk.dart';
 import 'tizen_tpk.dart';
 
-Future<void> writeDepfile(String depFileName, Environment environment,
-    List<File> inputFiles, List<File> outputFiles) async {
+void writeDepfile(
+  String depFileName,
+  Environment environment,
+  List<File> inputFiles,
+  List<File> outputFiles,
+) {
   final DepfileService depfileService = DepfileService(
     fileSystem: environment.fileSystem,
     logger: environment.logger,
@@ -73,10 +77,10 @@ class TizenPlugins extends Target {
   @override
   Future<void> build(Environment environment) async {
     // input and output files which the target depends on
-    final List<File> inputDepfiles = <File>[];
-    final List<File> outputDepfiles = <File>[];
+    final List<File> inputs = <File>[];
+    final List<File> outputs = <File>[];
 
-    inputDepfiles.add(project.directory.childFile('.packages'));
+    inputs.add(project.directory.childFile('.packages'));
 
     final BuildMode buildMode =
         getBuildModeForName(environment.defines[kBuildMode]);
@@ -166,7 +170,7 @@ class TizenPlugins extends Target {
             .childDirectory(arch)
               ..createSync(recursive: true);
         sharedLib.copySync(outputDir.childFile(sharedLib.basename).path);
-        outputDepfiles.add(sharedLib);
+        outputs.add(sharedLib);
       }
     }
 
@@ -176,22 +180,24 @@ class TizenPlugins extends Target {
     // TODO(HakkyuKim): Separate the logic that parses plugin packages from .packages
     // as another target. Depending on that target will reduce the overall buid time
     // in cases where non-plugin packages are added to .packages.
+    // TODO(HakkyuKim): Handle recognizing code changes when plugin packages are referenced
+    // with local system path in .packages.
     final File pluginList = environment.outputDir.childFile('plugin_list');
-    if (pluginList.existsSync()) {
-      pluginList.createSync();
+    if (!pluginList.existsSync()) {
+      pluginList.createSync(recursive: true);
     }
     pluginList.writeAsStringSync(nativePlugins
         .map((TizenPlugin plugin) => plugin.name)
         .toList()
         .toString());
-    outputDepfiles.add(pluginList);
+    outputs.add(pluginList);
 
     // write ephemeral.d file
-    await writeDepfile(
+    writeDepfile(
       'ephemeral.d',
       environment,
-      inputDepfiles,
-      outputDepfiles,
+      inputs,
+      outputs,
     );
   }
 }
@@ -225,15 +231,19 @@ abstract class DotnetTpk extends Target {
   @override
   Future<void> build(Environment environment) async {
     // input and output files which the target depends on
-    final List<File> inputDepfiles = <File>[];
-    final List<File> outputDepfiles = <File>[];
+    final List<File> inputs = <File>[];
+    final List<File> outputs = <File>[];
 
     final BuildMode buildMode =
         getBuildModeForName(environment.defines[kBuildMode]);
 
     // Copy ephemeral files.
-    final Directory outputDir = environment.outputDir;
     final TizenProject tizenProject = TizenProject.fromFlutter(project);
+    final Directory outputDir = environment.outputDir
+      ..createSync(recursive: true);
+    final Directory tempDir = outputDir.childDirectory('temp')
+      ..createSync(recursive: true);
+
     final Directory ephemeralDir = tizenProject.ephemeralDirectory;
     final Directory resDir = ephemeralDir.childDirectory('res')
       ..createSync(recursive: true);
@@ -241,7 +251,7 @@ abstract class DotnetTpk extends Target {
         outputDir.childDirectory('flutter_assets'),
         resDir.childDirectory('flutter_assets'));
 
-    inputDepfiles.addAll(outputDir
+    inputs.addAll(outputDir
         .childDirectory('flutter_assets')
         .listSync(recursive: true)
         .whereType<File>()
@@ -264,18 +274,18 @@ abstract class DotnetTpk extends Target {
       embedding.copySync(libDir.childFile(embedding.basename).path);
       icuData.copySync(resDir.childFile(icuData.basename).path);
 
-      inputDepfiles.addAll(<File>[engineBinary, embedding, icuData]);
+      inputs.addAll(<File>[engineBinary, embedding, icuData]);
 
       if (tizenProject.apiVersion.startsWith('4')) {
         final File embedding40 = engineDir.childFile('libflutter_tizen40.so');
         embedding40.copySync(libDir.childFile(embedding40.basename).path);
-        inputDepfiles.add(embedding40);
+        inputs.add(embedding40);
       }
       if (buildMode.isPrecompiled) {
         final File aotSharedLib =
             environment.buildDir.childDirectory(arch).childFile('app.so');
         aotSharedLib.copySync(libDir.childFile('libapp.so').path);
-        inputDepfiles.add(aotSharedLib);
+        inputs.add(aotSharedLib);
       }
     }
 
@@ -296,7 +306,7 @@ abstract class DotnetTpk extends Target {
       '-c',
       'Release',
       '-o',
-      '${outputDir.path}/', // The trailing '/' is needed.
+      '${tempDir.path}/', // The trailing '/' is needed.
       '/p:FlutterEmbeddingVersion=$embeddingVersion',
       tizenProject.editableDirectory.path,
     ]);
@@ -304,7 +314,7 @@ abstract class DotnetTpk extends Target {
       throwToolExit('Failed to build .NET application:\n$result');
     }
 
-    if (!outputDir.childFile(tizenProject.outputTpkName).existsSync()) {
+    if (!tempDir.childFile(tizenProject.outputTpkName).existsSync()) {
       throwToolExit(
           'Build succeeded but the expected TPK not found:\n${result.stdout}');
     }
@@ -332,34 +342,62 @@ abstract class DotnetTpk extends Target {
         buildInfo.securityProfile,
       ],
       '--',
-      outputDir.childFile(tizenProject.outputTpkName).path,
+      tempDir.childFile(tizenProject.outputTpkName).path,
     ]);
     if (result.exitCode != 0) {
       throwToolExit('Failed to sign the TPK:\n$result');
     }
+    // Add input dependemcies to the certificate list to track active certificate profile
+    // used in the current tpk build.
+    // (TODO: HakkyuKim) There is an edge case that doesnt trigger a rebuild
+    // when the content of the active certificate changes.
+    if (tizenSdk.certificateList != null &&
+        tizenSdk.certificateList.existsSync()) {
+      inputs.add(tizenSdk.certificateList);
+    }
+
+    // Move the entire dotnet build outputs(`tempDir`) to the `outputDir` directory.
+    // This is a work-around to handle the following issue:
+    // Reasons still unknown, the output directory of the dotnet build
+    // is not properly retained in a case when builds are executed in a
+    // sequence of mixed build modes(debug after release, or vice-versa).
+    // Even if we set different output path for different build modes,
+    // dotnet build somehow affects the files in the previous output path.
+    // (It may be related to the fact that dotnet host app is alway building
+    // in release mode.) Consequently, subsequent release builds adter a debug build
+    // may produce tpks that contain fat files that are meant to be packaged only
+    // in debug builds. To solve this, dotnet build directory should be erased after
+    // each build after caching the output files in another directory.
+    globals.fsUtils.copyDirectorySync(
+      outputDir.childDirectory('temp'),
+      outputDir,
+    );
+    tempDir.deleteSync(recursive: true);
+
+    final File tpkFile = outputDir.childFile(tizenProject.outputTpkName);
+    outputs.add(tpkFile);
 
     // Should not add files generated from dotnet build nor
     // files copied from other target builds as input dependencies.
-    final List<Directory> inputDepDirs = tizenProject.editableDirectory
+    final List<Directory> inputDirs = tizenProject.editableDirectory
         .listSync()
         .whereType<Directory>()
         .where((Directory directory) => !(directory.basename == 'bin' ||
             directory.basename == 'obj' ||
             directory.basename == 'flutter'))
         .toList();
-    inputDepfiles.addAll(<File>[
-      for (Directory dir in inputDepDirs)
+    inputs.addAll(<File>[
+      ...tizenProject.editableDirectory.listSync().whereType<File>(),
+      for (Directory dir in inputDirs)
         ...dir.listSync(recursive: true).whereType<File>().toList()
     ]);
 
-    outputDepfiles.add(outputDir.childFile(tizenProject.outputTpkName));
-
     // write dotnet_tpk.d file
-    await writeDepfile(
+    writeDepfile(
       'dotnet_tpk.d',
       environment,
-      inputDepfiles,
-      outputDepfiles,
+      inputs,
+      outputs,
     );
   }
 }

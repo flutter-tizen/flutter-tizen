@@ -76,7 +76,7 @@ class TizenBuilder {
 
     final BuildInfo buildInfo = tizenBuildInfo.buildInfo;
     final Directory outputDir =
-        project.directory.childDirectory('build').childDirectory('tizen');
+        tizenProject.getBuildModeDirectory(buildInfo.modeName);
 
     final Environment environment = Environment(
       projectDir: project.directory,
@@ -148,6 +148,12 @@ class TizenBuilder {
     }
 
     final File tpkFile = outputDir.childFile(tizenProject.outputTpkName);
+
+    // Update latest tpk build
+    final File latestTpk =
+        tizenProject.latestTpkDirectory.childFile(tizenProject.latestTpkName);
+    tpkFile.copySync(latestTpk.path);
+
     final String tpkSize = getSizeAsMB(tpkFile.lengthSync());
     globals.printStatus(
       '$successMark Built ${relative(tpkFile.path)} ($tpkSize).',

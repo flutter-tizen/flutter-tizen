@@ -59,6 +59,9 @@ class TizenSdk {
     return null;
   }
 
+  File get certificateList =>
+      sdkDataDirectory?.childDirectory('profile')?.childFile('profiles.xml');
+
   Directory get toolsDirectory => directory.childDirectory('tools');
 
   File get emCli => toolsDirectory

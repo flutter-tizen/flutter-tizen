@@ -53,6 +53,21 @@ class TizenProject extends FlutterProjectPlatform {
     return '${manifest.packageId}-${manifest.version}.tpk';
   }
 
+  String get latestTpkName => 'app.tpk';
+
+  Directory get buildDirectory {
+    return parent.directory
+        .childDirectory('build')
+        .childDirectory('tizen')
+        .childDirectory(isDotnet ? 'dotnet' : 'native');
+  }
+
+  Directory get latestTpkDirectory => buildDirectory;
+
+  Directory getBuildModeDirectory(String modeName) {
+    return buildDirectory.childDirectory(modeName);
+  }
+
   Future<void> ensureReadyForPlatformSpecificTooling() async {}
 }
 

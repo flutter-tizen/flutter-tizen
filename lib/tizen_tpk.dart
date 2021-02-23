@@ -24,7 +24,10 @@ class TpkFactory extends ApplicationPackageFactory {
   }) async {
     if (platform == TargetPlatform.tester) {
       return applicationBinary == null
-          ? await TizenTpk.fromProject(FlutterProject.current())
+          ? await TizenTpk.fromProject(
+              FlutterProject.current(),
+              buildInfo,
+            )
           : await TizenTpk.fromTpk(applicationBinary);
     }
     return super.getPackageForPlatform(platform,
@@ -40,7 +43,10 @@ class TpkStore extends ApplicationPackageStore {
     BuildInfo buildInfo,
   ) async {
     if (platform == TargetPlatform.tester) {
-      return await TizenTpk.fromProject(FlutterProject.current());
+      return await TizenTpk.fromProject(
+        FlutterProject.current(),
+        buildInfo,
+      );
     }
     return super.getPackageForPlatform(platform, buildInfo);
   }
@@ -81,16 +87,20 @@ class TizenTpk extends ApplicationPackage {
     );
   }
 
-  static Future<TizenTpk> fromProject(FlutterProject flutterProject) async {
+  static Future<TizenTpk> fromProject(
+    FlutterProject flutterProject,
+    BuildInfo buildInfo,
+  ) async {
     final TizenProject project = TizenProject.fromFlutter(flutterProject);
     if (!project.manifestFile.existsSync()) {
       throwToolExit('tizen-manifest.xml could not be found.');
     }
 
-    final File tpkFile = flutterProject.directory
-        .childDirectory('build')
-        .childDirectory('tizen')
-        .childFile(project.outputTpkName);
+    final File tpkFile = buildInfo != null
+        ? project
+            .getBuildModeDirectory(buildInfo.modeName)
+            .childFile(project.outputTpkName)
+        : project.latestTpkDirectory.childFile(project.latestTpkName);
     if (tpkFile.existsSync()) {
       return await TizenTpk.fromTpk(tpkFile);
     }

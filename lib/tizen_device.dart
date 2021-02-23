@@ -321,7 +321,10 @@ class TizenDevice extends Device {
       );
       // Package has been built, so we can get the updated application id and
       // activity name from the tpk.
-      package = await TizenTpk.fromProject(project);
+      package = await TizenTpk.fromProject(
+        project,
+        debuggingOptions.buildInfo,
+      );
     }
     if (package == null) {
       throwToolExit('Problem building an application: see above error(s).');
