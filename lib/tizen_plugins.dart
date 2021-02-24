@@ -5,6 +5,7 @@
 
 import 'package:file/file.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
+import 'package:flutter_tools/src/base/terminal.dart';
 import 'package:flutter_tools/src/build_system/targets/web.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/dart/package_map.dart';
@@ -109,15 +110,17 @@ mixin TizenExtension on FlutterCommand {
 /// Source: [WebEntrypointTarget.build] in `web.dart`
 Future<String> _createEntrypoint(
     FlutterProject project, String targetFile) async {
-  final bool hasDartPlugins =
-      (await findTizenPlugins(project, filterDart: true)).isNotEmpty;
-  if (!hasDartPlugins) {
+  final List<TizenPlugin> dartPlugins =
+      await findTizenPlugins(project, dartOnly: true);
+  if (dartPlugins.isEmpty) {
     return targetFile;
   }
+
   final TizenProject tizenProject = TizenProject.fromFlutter(project);
   if (!tizenProject.existsSync()) {
     return targetFile;
   }
+
   final Directory registryDirectory = tizenProject.managedDirectory;
   final File entrypoint = registryDirectory.childFile('main.dart')
     ..createSync(recursive: true);
@@ -144,6 +147,20 @@ Future<void> main() async {
   return entrypoint.path;
 }
 
+const List<String> _knownPlugins = <String>[
+  'battery',
+  'connectivity',
+  'device_info',
+  'image_picker',
+  'integration_test',
+  'package_info',
+  'path_provider',
+  'sensors',
+  'share',
+  'shared_preferences',
+  'url_launcher',
+];
+
 /// This method has the same role as [ensureReadyForPlatformSpecificTooling].
 ///
 /// See:
@@ -157,9 +174,9 @@ Future<void> injectTizenPlugins(FlutterProject project) async {
   final TizenProject tizenProject = TizenProject.fromFlutter(project);
   if (tizenProject.existsSync()) {
     final List<TizenPlugin> dartPlugins =
-        await findTizenPlugins(project, filterDart: true);
+        await findTizenPlugins(project, dartOnly: true);
     final List<TizenPlugin> nativePlugins =
-        await findTizenPlugins(project, filterNative: true);
+        await findTizenPlugins(project, nativeOnly: true);
     await _writeDartPluginRegistrant(
         tizenProject.managedDirectory, dartPlugins);
     await _writeCppPluginRegistrant(
@@ -167,13 +184,25 @@ Future<void> injectTizenPlugins(FlutterProject project) async {
     await _writeCsharpPluginRegistrant(
         tizenProject.managedDirectory, nativePlugins);
   }
+
+  final List<String> plugins =
+      (await findPlugins(project)).map((Plugin p) => p.name).toList();
+  for (final String plugin in plugins) {
+    final String tizenPlugin = '${plugin}_tizen';
+    if (_knownPlugins.contains(plugin) && !plugins.contains(tizenPlugin)) {
+      globals.printStatus(
+        '$tizenPlugin is available on pub.dev. Did you forget to add to pubspec.yaml?',
+        color: TerminalColor.yellow,
+      );
+    }
+  }
 }
 
 /// Source: [findPlugins] in `plugins.dart`
 Future<List<TizenPlugin>> findTizenPlugins(
   FlutterProject project, {
-  bool filterDart = false,
-  bool filterNative = false,
+  bool dartOnly = false,
+  bool nativeOnly = false,
 }) async {
   final List<TizenPlugin> plugins = <TizenPlugin>[];
   final File packagesFile = project.directory.childFile('.packages');
@@ -186,9 +215,9 @@ Future<List<TizenPlugin>> findTizenPlugins(
     final TizenPlugin plugin = _pluginFromPackage(package.name, packageRoot);
     if (plugin == null) {
       continue;
-    } else if (filterNative && plugin.pluginClass == null) {
+    } else if (nativeOnly && plugin.pluginClass == null) {
       continue;
-    } else if (filterDart && plugin.pluginClass != null) {
+    } else if (dartOnly && plugin.pluginClass != null) {
       continue;
     }
     plugins.add(plugin);
