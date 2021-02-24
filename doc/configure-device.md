@@ -4,7 +4,7 @@ To debug Flutter apps on your Tizen device (watch or TV), you need to configure 
 
 1. Make sure the host and the target device are on the same network (connected to the same access point).
 
-2. Enable the developer options.
+1. Enable the developer options.
 
    - For _Galaxy Watch_, open **Settings - About watch - Software** and tap **Software version** multiple times.
 
@@ -18,7 +18,13 @@ To debug Flutter apps on your Tizen device (watch or TV), you need to configure 
 
      ![Develop mode enabled](images/tv-developer-option-3.png)
 
-3. Establish a connection using the device's IP address.
+1. (Optional) Find the path to `sdb` (`<tizen-studio>/tools`) and add to your PATH. If you're using Linux or macOS and Tizen Studio has been installed to the default location, run:
+
+   ```sh
+   export PATH=$HOME/tizen-studio/tools:$PATH
+   ```
+
+1. Establish a connection using the device's IP address.
 
    ```sh
    $ sdb connect 192.168.0.101
