@@ -28,6 +28,19 @@ import 'tizen_tpk.dart';
 class TizenAssetBundle extends AndroidAssetBundle {
   @override
   String get name => 'tizen_asset_bundle';
+
+  @override
+  Future<void> build(Environment environment) async {
+    // Since debug and release build shares the output folder
+    // ({PROJECT_ROOT}/build/tizen/flutter_assets), we need to
+    // initialize the folder to prevent dirty files from surviving.
+    final Directory flutterAssetsDir =
+        environment.outputDir.childDirectory('flutter_assets');
+    if (flutterAssetsDir.existsSync()) {
+      flutterAssetsDir.deleteSync(recursive: true);
+    }
+    await super.build(environment);
+  }
 }
 
 /// Compiles Tizen native plugins into shared objects.
@@ -179,6 +192,40 @@ abstract class DotnetTpk extends Target {
 
   @override
   Future<void> build(Environment environment) async {
+    // Folders that are used as detinations folders of copy operations
+    // should be reinitialized before running the actual build.
+    // Otherwise the folder may contain dirty files which were
+    // created during different build modes. (ex: debug -> release)
+    // (TODO: HakkyuKim): Consider using something like CopyTarget
+    final TizenProject tizenProject = TizenProject.fromFlutter(project);
+    final Directory ephemeralDir = tizenProject.ephemeralDirectory;
+    final Directory flutterAssets =
+        ephemeralDir.childDirectory('res').childDirectory('flutter_assets');
+    if (flutterAssets.existsSync()) {
+      flutterAssets.deleteSync(recursive: true);
+    }
+
+    // Output folders of this build should also be initialized to prevent
+    // dirty files from suviving.
+    // (TODO: HakkyuKim) Consider using a subdirectory such as dotnet_output
+    environment.outputDir
+        .listSync()
+        .where((FileSystemEntity entity) =>
+            // flutter_assets is the output directory of [TizenAssetBundle] which this
+            // target depends on. We must not delete this folder.
+            !(entity is Directory && entity.basename == 'flutter_assets'))
+        .where((FileSystemEntity entity) =>
+            // .last_build_id file is maintained by the flutter [_BuildInstance] to
+            // keep track of the latest build mode. We must not delete this file
+            !(entity is File && entity.basename == '.last_build_id'))
+        .forEach((FileSystemEntity entity) {
+      entity.deleteSync(recursive: true);
+    });
+
+    await _build(environment);
+  }
+
+  Future<void> _build(Environment environment) async {
     final BuildMode buildMode =
         getBuildModeForName(environment.defines[kBuildMode]);
 
