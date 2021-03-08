@@ -307,23 +307,33 @@ abstract class DotnetTpk extends Target {
     // We need to re-generate the TPK by signing with a correct profile.
     // TODO(swift-kim): Apply the profile during .NET build for efficiency.
     // Password descryption by secret-tool will be needed for full automation.
-    if (buildInfo.securityProfile?.isEmpty ?? true) {
-      environment.logger.printStatus('The active profile is used for signing.');
+    if (buildInfo.securityProfile != null &&
+        !tizenSdk.certificateProfiles
+            .existsProfile(buildInfo.securityProfile)) {
+      throwToolExit(
+        'The security profile ${buildInfo.securityProfile} does not exist.\n'
+        'Check valid security(certificate) profiles in certificate manager.',
+      );
     }
-    result = await _processUtils.run(<String>[
-      tizenSdk.tizenCli.path,
-      'package',
-      '-t',
-      'tpk',
-      if (buildInfo.securityProfile?.isNotEmpty ?? false) ...<String>[
+    String securityProfile = buildInfo.securityProfile;
+    securityProfile ??=
+        tizenSdk.certificateProfiles?.activeProfileName ?? 'default';
+    environment.logger
+        .printStatus('The $securityProfile profile is used for signing.');
+    if (securityProfile != 'default') {
+      result = await _processUtils.run(<String>[
+        tizenSdk.tizenCli.path,
+        'package',
+        '-t',
+        'tpk',
         '-s',
-        buildInfo.securityProfile,
-      ],
-      '--',
-      outputDir.childFile(tizenProject.outputTpkName).path,
-    ]);
-    if (result.exitCode != 0) {
-      throwToolExit('Failed to sign the TPK:\n$result');
+        securityProfile,
+        '--',
+        outputDir.childFile(tizenProject.outputTpkName).path,
+      ]);
+      if (result.exitCode != 0) {
+        throwToolExit('Failed to sign the TPK:\n$result');
+      }
     }
   }
 }

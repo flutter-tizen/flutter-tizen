@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import 'package:file/file.dart';
+import 'package:flutter_tizen/tizen_tpk.dart';
 import 'package:flutter_tools/src/android/android_emulator.dart';
 import 'package:flutter_tools/src/android/android_sdk.dart';
 import 'package:flutter_tools/src/base/common.dart';
@@ -93,6 +94,12 @@ class TizenSdk {
       .childFile(globals.platform.isWindows
           ? 'package-manager-cli.exe'
           : 'package-manager-cli.bin');
+
+  File get certificateProfilesFile =>
+      sdkDataDirectory.childDirectory('profile').childFile('profiles.xml');
+
+  CertificateProfiles get certificateProfiles =>
+      CertificateProfiles.parseFromXml(certificateProfilesFile);
 
   String get defaultTargetPlatform => '4.0';
 

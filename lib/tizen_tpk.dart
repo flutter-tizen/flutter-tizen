@@ -217,3 +217,145 @@ class Signature {
     return null;
   }
 }
+
+class Certificate {
+  Certificate._({
+    @required this.key,
+    @required this.password,
+    @required this.distributorNumber,
+    @required this.ca,
+  });
+
+  factory Certificate.parseFromXmlElement(XmlElement profileItem) {
+    final String ca = profileItem.getAttribute('ca');
+    final String key = profileItem.getAttribute('key');
+    final String password = profileItem.getAttribute('password');
+    final String distributorNumber = profileItem.getAttribute('distributor');
+
+    // The certificate doesn't exist and the profileitem
+    // exists only as a placeholder
+    if (key.isEmpty || password.isEmpty) {
+      return null;
+    }
+
+    return Certificate._(
+      key: key,
+      password: password,
+      distributorNumber: distributorNumber,
+      ca: ca,
+    );
+  }
+
+  final String key;
+  final String password;
+  final String distributorNumber;
+  final String ca;
+
+  bool get isSamsungCertificate => ca.isEmpty;
+  bool get isTizenCertificate => ca.isNotEmpty;
+}
+
+class CertificateProfile {
+  CertificateProfile(
+    this.name, {
+    @required this.authorCertificate,
+    @required this.distributorCertificates,
+  });
+
+  factory CertificateProfile.parseFromXmlElement(XmlElement profile) {
+    Certificate authorCertificate;
+    final List<Certificate> distributorCertificates = <Certificate>[];
+
+    final String name = profile.getAttribute('name');
+
+    // The element that holds a single certifcate key, password pair
+    for (final XmlElement profileItem
+        in profile.findAllElements('profileitem')) {
+      final Certificate tizenCertificate =
+          Certificate.parseFromXmlElement(profileItem);
+      if (tizenCertificate != null) {
+        // distributor number 0 specifies an author certificate
+        tizenCertificate.distributorNumber == '0'
+            ? authorCertificate = tizenCertificate
+            : distributorCertificates.add(tizenCertificate);
+      }
+    }
+
+    return CertificateProfile(
+      name,
+      authorCertificate: authorCertificate,
+      distributorCertificates: distributorCertificates,
+    );
+  }
+
+  final String name;
+  final Certificate authorCertificate;
+  final List<Certificate> distributorCertificates;
+
+  bool get isSamsungProfile =>
+      authorCertificate.isSamsungCertificate &&
+      distributorCertificates
+          .every((Certificate certificate) => certificate.isSamsungCertificate);
+
+  bool get isTizenProfile =>
+      authorCertificate.isTizenCertificate &&
+      distributorCertificates
+          .every((Certificate certificate) => certificate.isTizenCertificate);
+
+  bool get isMixedProfile => !isSamsungProfile && !isTizenProfile;
+}
+
+class CertificateProfiles {
+  CertificateProfiles._(this._document, this.profiles);
+
+  factory CertificateProfiles.parseFromXml(File xmlFile) {
+    if (xmlFile == null || !xmlFile.existsSync()) {
+      return null;
+    }
+
+    final String data = xmlFile.readAsStringSync().trim();
+    if (data.isEmpty) {
+      return null;
+    }
+
+    XmlDocument document;
+    try {
+      document = XmlDocument.parse(data);
+    } on XmlException catch (ex) {
+      throwToolExit('Failed to parse ${xmlFile.basename}: $ex');
+    }
+
+    final List<CertificateProfile> tizenCertificateProfiles =
+        <CertificateProfile>[
+      ...document.rootElement.findAllElements('profile').map(
+          (XmlElement profile) =>
+              CertificateProfile.parseFromXmlElement(profile))
+    ];
+
+    return CertificateProfiles._(document, tizenCertificateProfiles);
+  }
+
+  final XmlDocument _document;
+  final List<CertificateProfile> profiles;
+
+  XmlElement get _root => _document.rootElement;
+
+  String get activeProfileName => _root.getAttribute('active').isNotEmpty
+      ? _root.getAttribute('active')
+      : null;
+
+  CertificateProfile get activeProfile => getProfileByName(activeProfileName);
+
+  CertificateProfile getProfileByName(String name) {
+    return profiles.firstWhere(
+      (CertificateProfile certificateProfile) =>
+          certificateProfile.name == name,
+      orElse: () => null,
+    );
+  }
+
+  bool existsProfile(String name) => getProfileByName(name) != null;
+
+  @override
+  String toString() => _document.toXmlString(pretty: true, indent: '    ');
+}
