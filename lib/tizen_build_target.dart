@@ -8,6 +8,7 @@ import 'package:flutter_tools/src/artifacts.dart';
 import 'package:flutter_tools/src/base/build.dart';
 import 'package:flutter_tools/src/base/common.dart';
 import 'package:flutter_tools/src/base/process.dart';
+import 'package:flutter_tools/src/base/terminal.dart';
 import 'package:flutter_tools/src/build_info.dart';
 import 'package:flutter_tools/src/build_system/build_system.dart';
 import 'package:flutter_tools/src/build_system/exceptions.dart';
@@ -307,20 +308,17 @@ abstract class DotnetTpk extends Target {
     // We need to re-generate the TPK by signing with a correct profile.
     // TODO(swift-kim): Apply the profile during .NET build for efficiency.
     // Password descryption by secret-tool will be needed for full automation.
-    if (buildInfo.securityProfile != null &&
-        !tizenSdk.certificateProfiles
-            .existsProfile(buildInfo.securityProfile)) {
-      throwToolExit(
-        'The security profile ${buildInfo.securityProfile} does not exist.\n'
-        'Check valid security(certificate) profiles in certificate manager.',
-      );
-    }
     String securityProfile = buildInfo.securityProfile;
-    securityProfile ??=
-        tizenSdk.certificateProfiles?.activeProfileName ?? 'default';
-    environment.logger
-        .printStatus('The $securityProfile profile is used for signing.');
-    if (securityProfile != 'default') {
+    if (securityProfile != null &&
+        (tizenSdk.securityProfiles == null ||
+            !tizenSdk.securityProfiles.names.contains(securityProfile))) {
+      throwToolExit('The security profile $securityProfile does not exist.');
+    }
+
+    securityProfile ??= tizenSdk.securityProfiles?.activeProfile?.name;
+    if (securityProfile != null) {
+      environment.logger
+          .printStatus('The $securityProfile profile is used for signing.');
       result = await _processUtils.run(<String>[
         tizenSdk.tizenCli.path,
         'package',
@@ -334,6 +332,12 @@ abstract class DotnetTpk extends Target {
       if (result.exitCode != 0) {
         throwToolExit('Failed to sign the TPK:\n$result');
       }
+    } else {
+      globals.printStatus(
+        'The tpk is signed with a default certificate, you can create one using the certificate manager.\n'
+        'https://github.com/flutter-tizen/flutter-tizen/blob/master/doc/install-tizen-sdk.md#create-a-tizen-certificate',
+        color: TerminalColor.yellow,
+      );
     }
   }
 }

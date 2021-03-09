@@ -95,11 +95,12 @@ class TizenSdk {
           ? 'package-manager-cli.exe'
           : 'package-manager-cli.bin');
 
-  File get certificateProfilesFile =>
+  // This method will be used in [TpkTarget] for cache validation
+  File get securityProfilesFile =>
       sdkDataDirectory.childDirectory('profile').childFile('profiles.xml');
 
-  CertificateProfiles get certificateProfiles =>
-      CertificateProfiles.parseFromXml(certificateProfilesFile);
+  SecurityProfiles get securityProfiles =>
+      SecurityProfiles.parseFromXml(securityProfilesFile);
 
   String get defaultTargetPlatform => '4.0';
 
