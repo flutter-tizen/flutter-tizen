@@ -217,3 +217,127 @@ class Signature {
     return null;
   }
 }
+
+class Certificate {
+  Certificate._({
+    @required this.key,
+    @required this.password,
+    @required this.distributorNumber,
+    @required this.ca,
+  });
+
+  factory Certificate.parseFromXmlElement(XmlElement profileItem) {
+    final String ca = profileItem.getAttribute('ca');
+    final String key = profileItem.getAttribute('key');
+    final String password = profileItem.getAttribute('password');
+    final String distributorNumber = profileItem.getAttribute('distributor');
+
+    // The data doesn't exist and the xml element
+    // exists only as a placeholder
+    if (key.isEmpty || password.isEmpty) {
+      return null;
+    }
+
+    return Certificate._(
+      key: key,
+      password: password,
+      distributorNumber: distributorNumber,
+      ca: ca,
+    );
+  }
+
+  final String key;
+  final String password;
+  final String distributorNumber;
+  final String ca;
+}
+
+class SecurityProfile {
+  SecurityProfile(
+    this.name, {
+    @required this.authorCertificate,
+    @required this.distributorCertificates,
+  });
+
+  factory SecurityProfile.parseFromXmlElement(XmlElement profile) {
+    Certificate authorCertificate;
+    final List<Certificate> distributorCertificates = <Certificate>[];
+
+    // The element that holds a single certifcate key, password pair
+    for (final XmlElement profileItem
+        in profile.findAllElements('profileitem')) {
+      final Certificate certificate =
+          Certificate.parseFromXmlElement(profileItem);
+      if (certificate != null) {
+        // distributor number 0 specifies an author certificate
+        if (certificate.distributorNumber == '0') {
+          authorCertificate = certificate;
+        } else {
+          distributorCertificates.add(certificate);
+        }
+      }
+    }
+
+    return SecurityProfile(
+      profile.getAttribute('name'),
+      authorCertificate: authorCertificate,
+      distributorCertificates: distributorCertificates,
+    );
+  }
+
+  final String name;
+  final Certificate authorCertificate;
+  final List<Certificate> distributorCertificates;
+}
+
+class SecurityProfiles {
+  SecurityProfiles._(this.activeProfile, this._profiles);
+
+  factory SecurityProfiles.parseFromXml(File xmlFile) {
+    if (xmlFile == null || !xmlFile.existsSync()) {
+      return null;
+    }
+
+    final String data = xmlFile.readAsStringSync().trim();
+    if (data.isEmpty) {
+      return null;
+    }
+
+    XmlDocument document;
+    try {
+      document = XmlDocument.parse(data);
+    } on XmlException catch (ex) {
+      throwToolExit('Failed to parse ${xmlFile.basename}: $ex');
+    }
+
+    final String activeName = document.rootElement.getAttribute('active');
+
+    SecurityProfile activeProfile;
+    final List<SecurityProfile> profiles = <SecurityProfile>[];
+
+    for (final XmlElement profileXml
+        in document.rootElement.findAllElements('profile')) {
+      final SecurityProfile profile =
+          SecurityProfile.parseFromXmlElement(profileXml);
+      profiles.add(profile);
+      if (profile.name == activeName) {
+        activeProfile = profile;
+      }
+    }
+
+    return SecurityProfiles._(activeProfile, profiles);
+  }
+
+  final SecurityProfile activeProfile;
+  final List<SecurityProfile> _profiles;
+
+  List<String> get names =>
+      _profiles.map((SecurityProfile profile) => profile.name).toList();
+
+  SecurityProfile getProfile(String name) {
+    return _profiles.firstWhere(
+      (SecurityProfile profile) => profile.name == name,
+      orElse: () => null,
+    );
+  }
+}

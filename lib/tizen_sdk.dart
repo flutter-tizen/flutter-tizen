@@ -11,6 +11,8 @@ import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:meta/meta.dart';
 
+import 'tizen_tpk.dart';
+
 TizenSdk get tizenSdk => context.get<TizenSdk>();
 
 File get dotnetCli => globals.os.which('dotnet');
@@ -93,6 +95,12 @@ class TizenSdk {
       .childFile(globals.platform.isWindows
           ? 'package-manager-cli.exe'
           : 'package-manager-cli.bin');
+
+  File get securityProfilesFile =>
+      sdkDataDirectory.childDirectory('profile').childFile('profiles.xml');
+
+  SecurityProfiles get securityProfiles =>
+      SecurityProfiles.parseFromXml(securityProfilesFile);
 
   String get defaultTargetPlatform => '4.0';
 
