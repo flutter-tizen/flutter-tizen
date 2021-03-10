@@ -218,15 +218,15 @@ class Signature {
   }
 }
 
-class ProfileItem {
-  ProfileItem._({
+class Certificate {
+  Certificate._({
     @required this.key,
     @required this.password,
     @required this.distributorNumber,
     @required this.ca,
   });
 
-  factory ProfileItem.parseFromXmlElement(XmlElement profileItem) {
+  factory Certificate.parseFromXmlElement(XmlElement profileItem) {
     final String ca = profileItem.getAttribute('ca');
     final String key = profileItem.getAttribute('key');
     final String password = profileItem.getAttribute('password');
@@ -238,7 +238,7 @@ class ProfileItem {
       return null;
     }
 
-    return ProfileItem._(
+    return Certificate._(
       key: key,
       password: password,
       distributorNumber: distributorNumber,
@@ -260,14 +260,14 @@ class SecurityProfile {
   });
 
   factory SecurityProfile.parseFromXmlElement(XmlElement profile) {
-    ProfileItem authorCertificate;
-    final List<ProfileItem> distributorCertificates = <ProfileItem>[];
+    Certificate authorCertificate;
+    final List<Certificate> distributorCertificates = <Certificate>[];
 
     // The element that holds a single certifcate key, password pair
     for (final XmlElement profileItem
         in profile.findAllElements('profileitem')) {
-      final ProfileItem certificate =
-          ProfileItem.parseFromXmlElement(profileItem);
+      final Certificate certificate =
+          Certificate.parseFromXmlElement(profileItem);
       if (certificate != null) {
         // distributor number 0 specifies an author certificate
         if (certificate.distributorNumber == '0') {
@@ -286,8 +286,8 @@ class SecurityProfile {
   }
 
   final String name;
-  final ProfileItem authorCertificate;
-  final List<ProfileItem> distributorCertificates;
+  final Certificate authorCertificate;
+  final List<Certificate> distributorCertificates;
 }
 
 class SecurityProfiles {
@@ -334,7 +334,6 @@ class SecurityProfiles {
   List<String> get names =>
       _profiles.map((SecurityProfile profile) => profile.name).toList();
 
-  // This method will be used in [TpkTarget] for cache validation
   SecurityProfile getProfile(String name) {
     return _profiles.firstWhere(
       (SecurityProfile profile) => profile.name == name,

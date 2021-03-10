@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 import 'package:file/file.dart';
-import 'package:flutter_tizen/tizen_tpk.dart';
 import 'package:flutter_tools/src/android/android_emulator.dart';
 import 'package:flutter_tools/src/android/android_sdk.dart';
 import 'package:flutter_tools/src/base/common.dart';
@@ -11,6 +10,8 @@ import 'package:flutter_tools/src/base/context.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:meta/meta.dart';
+
+import 'tizen_tpk.dart';
 
 TizenSdk get tizenSdk => context.get<TizenSdk>();
 
@@ -95,7 +96,6 @@ class TizenSdk {
           ? 'package-manager-cli.exe'
           : 'package-manager-cli.bin');
 
-  // This method will be used in [TpkTarget] for cache validation
   File get securityProfilesFile =>
       sdkDataDirectory.childDirectory('profile').childFile('profiles.xml');
 
