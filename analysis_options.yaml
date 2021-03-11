@@ -1,4 +1,3 @@
-# Uses the same analysis options as flutter_tools.
 include: flutter/packages/flutter_tools/analysis_options.yaml
 
 analyzer:
@@ -11,10 +10,9 @@ analyzer:
     - "flutter/packages/flutter_goldens/**"
     - "flutter/packages/flutter_goldens_client/**"
     - "flutter/packages/flutter_localizations/**"
-    - "flutter/packages/fuchsia_remote_debug_protocol/**"
     - "flutter/packages/flutter_test/**"
     - "flutter/packages/flutter_web_plugins/**"
-    - "flutter/packages/_flutter_web_build_script/**"
+    - "flutter/packages/fuchsia_remote_debug_protocol/**"
 
 linter:
   rules:
