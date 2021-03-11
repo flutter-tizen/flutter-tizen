@@ -112,12 +112,21 @@ class TizenBuilder {
       processManager: globals.processManager,
     );
 
-    Target target;
+    TizenPackager target;
     if (tizenProject.isDotnet) {
       target = buildInfo.mode.isJit
           ? DebugDotnetTpk(project, tizenBuildInfo)
           : ReleaseDotnetTpk(project, tizenBuildInfo);
     } else {
+      // Tizen native projects may not leverage cache build, the directories
+      // should be cleared out to ensure that all dirty files get deleted before
+      // runnning the build.
+      if (environment.outputDir.existsSync()) {
+        environment.outputDir.deleteSync(recursive: true);
+      }
+      if (tizenProject.ephemeralDirectory.existsSync()) {
+        tizenProject.ephemeralDirectory.deleteSync(recursive: true);
+      }
       target = buildInfo.mode.isJit
           ? DebugNativeTpk(project, tizenBuildInfo)
           : ReleaseNativeTpk(project, tizenBuildInfo);
@@ -137,6 +146,11 @@ class TizenBuilder {
         }
         throwToolExit('The build failed.');
       }
+
+      // Since Tizen shares the host app directory between different build modes,
+      // we must package tpk file after 'FlutterBuildSystem.build' has finished
+      // compiling binaries and has removed dirty files from 'PROJECT_ROOT/tizen'.
+      await target.package(environment);
 
       if (buildInfo.performanceMeasurementFile != null) {
         final File outFile =
