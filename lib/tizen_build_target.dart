@@ -420,7 +420,6 @@ class TizenAotElf extends Target {
         platform: platform,
         buildMode: buildMode,
         mainPath: environment.buildDir.childFile('app.dill').path,
-        packagesPath: environment.projectDir.childFile('.packages').path,
         outputPath: outputPath,
         bitcode: false,
         extraGenSnapshotOptions: extraGenSnapshotOptions,

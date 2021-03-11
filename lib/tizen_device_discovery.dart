@@ -9,6 +9,7 @@ import 'dart:io';
 import 'package:flutter_tools/src/android/android_device_discovery.dart';
 import 'package:flutter_tools/src/android/android_workflow.dart';
 import 'package:flutter_tools/src/base/common.dart';
+import 'package:flutter_tools/src/base/context.dart';
 import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/base/process.dart';
 import 'package:flutter_tools/src/context_runner.dart';
@@ -17,6 +18,7 @@ import 'package:flutter_tools/src/features.dart';
 import 'package:flutter_tools/src/fuchsia/fuchsia_workflow.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/macos/macos_workflow.dart';
+import 'package:flutter_tools/src/windows/windows_workflow.dart';
 import 'package:meta/meta.dart';
 import 'package:process/process.dart';
 
@@ -43,10 +45,11 @@ class TizenDeviceManager extends FlutterDeviceManager {
           config: globals.config,
           fuchsiaWorkflow: fuchsiaWorkflow,
           xcDevice: globals.xcdevice,
-          macOSWorkflow: MacOSWorkflow(
-            platform: globals.platform,
-            featureFlags: featureFlags,
-          ),
+          userMessages: globals.userMessages,
+          windowsWorkflow: windowsWorkflow,
+          macOSWorkflow: context.get<MacOSWorkflow>(),
+          operatingSystemUtils: globals.os,
+          terminal: globals.terminal,
         );
 
   @override

@@ -125,8 +125,7 @@ class TizenBuilder {
 
     final String buildModeName = getNameForBuildMode(buildInfo.mode);
     final Status status = globals.logger.startProgress(
-        'Building a Tizen application in $buildModeName mode...',
-        timeout: timeoutConfiguration.slowOperation);
+        'Building a Tizen application in $buildModeName mode...');
     try {
       final BuildResult result =
           await globals.buildSystem.build(target, environment);
@@ -186,7 +185,7 @@ class TizenBuilder {
       'targets': <Object>[
         for (final PerformanceMeasurement measurement in measurements)
           <String, Object>{
-            'name': measurement.analyicsName,
+            'name': measurement.analyticsName,
             'skipped': measurement.skipped,
             'succeeded': measurement.succeeded,
             'elapsedMilliseconds': measurement.elapsedMilliseconds,

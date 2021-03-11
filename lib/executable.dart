@@ -11,13 +11,14 @@ import 'package:flutter_tools/src/application_package.dart';
 import 'package:flutter_tools/src/base/context.dart';
 import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/base/template.dart';
-import 'package:flutter_tools/src/build_runner/mustache_template.dart';
+import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/commands/config.dart';
 import 'package:flutter_tools/src/commands/devices.dart';
 import 'package:flutter_tools/src/commands/emulators.dart';
 import 'package:flutter_tools/src/commands/doctor.dart';
 import 'package:flutter_tools/src/commands/format.dart';
 import 'package:flutter_tools/src/commands/generate_localizations.dart';
+import 'package:flutter_tools/src/commands/install.dart';
 import 'package:flutter_tools/src/commands/logs.dart';
 import 'package:flutter_tools/src/commands/screenshot.dart';
 import 'package:flutter_tools/src/commands/symbolize.dart';
@@ -25,6 +26,7 @@ import 'package:flutter_tools/src/emulator.dart';
 import 'package:flutter_tools/src/device.dart';
 import 'package:flutter_tools/src/doctor.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
+import 'package:flutter_tools/src/isolated/mustache_template.dart';
 import 'package:flutter_tools/src/runner/flutter_command.dart';
 import 'package:path/path.dart';
 
@@ -34,7 +36,6 @@ import 'commands/build.dart';
 import 'commands/clean.dart';
 import 'commands/create.dart';
 import 'commands/drive.dart';
-import 'commands/install.dart';
 import 'commands/packages.dart';
 import 'commands/run.dart';
 import 'commands/test.dart';
@@ -68,10 +69,11 @@ Future<void> main(List<String> args) async {
   args = <String>[
     '--suppress-analytics', // Suppress flutter analytics by default.
     '--no-version-check',
-    '--flutter-root', flutterRoot,
     if (!hasSpecifiedDeviceId) ...<String>['--device-id', 'tizen'],
     ...args,
   ];
+
+  Cache.flutterRoot = flutterRoot;
 
   await runner.run(
     args,
@@ -82,7 +84,11 @@ Future<void> main(List<String> args) async {
       DoctorCommand(verbose: verbose),
       EmulatorsCommand(),
       FormatCommand(),
-      GenerateLocalizationsCommand(fileSystem: globals.fs),
+      GenerateLocalizationsCommand(
+        fileSystem: globals.fs,
+        logger: globals.logger,
+      ),
+      InstallCommand(),
       LogsCommand(),
       ScreenshotCommand(),
       SymbolizeCommand(stdio: globals.stdio, fileSystem: globals.fs),
@@ -92,8 +98,7 @@ Future<void> main(List<String> args) async {
       TizenBuildCommand(verboseHelp: verboseHelp),
       TizenCleanCommand(verbose: verbose),
       TizenCreateCommand(),
-      TizenDriveCommand(),
-      TizenInstallCommand(),
+      TizenDriveCommand(verboseHelp: verboseHelp),
       TizenPackagesCommand(),
       TizenRunCommand(verboseHelp: verboseHelp),
       TizenTestCommand(verboseHelp: verboseHelp),
@@ -120,15 +125,16 @@ Future<void> main(List<String> args) async {
           ),
       if (verbose && !muteCommandLogging)
         Logger: () => VerboseLogger(StdoutLogger(
-              timeoutConfiguration: timeoutConfiguration,
               stdio: globals.stdio,
               terminal: globals.terminal,
               outputPreferences: globals.outputPreferences,
+              stopwatchFactory: const StopwatchFactory(),
             )),
     },
   );
 }
 
+/// See: [Cache.defaultFlutterRoot]
 String get flutterRoot {
   final String scriptPath = Platform.script.toFilePath();
   final String rootPath = normalize(join(

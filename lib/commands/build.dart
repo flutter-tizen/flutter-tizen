@@ -75,7 +75,7 @@ class BuildTpkCommand extends BuildSubCommand with TizenExtension {
   /// See: [BuildApkCommand.runCommand] in `build_apk.dart`
   @override
   Future<FlutterCommandResult> runCommand() async {
-    final BuildInfo buildInfo = getBuildInfo();
+    final BuildInfo buildInfo = await getBuildInfo();
     final TizenBuildInfo tizenBuildInfo = TizenBuildInfo(
       buildInfo,
       targetArchs: stringsArg('target-arch'),

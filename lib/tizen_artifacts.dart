@@ -60,6 +60,7 @@ class TizenArtifacts extends CachedArtifacts {
     Artifact artifact, {
     TargetPlatform platform,
     BuildMode mode,
+    EnvironmentType environmentType,
   }) {
     switch (artifact) {
       case Artifact.genSnapshot:

@@ -18,9 +18,16 @@ import '../tizen_plugins.dart';
 class TizenPackagesCommand extends FlutterCommand {
   TizenPackagesCommand() {
     addSubcommand(TizenPackagesGetCommand('get', false));
-    addSubcommand(TizenPackagesGetCommand('upgrade', true));
+    addSubcommand(PackagesInteractiveGetCommand('upgrade',
+        'Upgrade the current package\'s dependencies to latest versions.'));
+    addSubcommand(PackagesInteractiveGetCommand(
+        'add', 'Add a dependency to pubspec.yaml.'));
+    addSubcommand(PackagesInteractiveGetCommand(
+        'remove', 'Removes a dependency from the current package.'));
     addSubcommand(PackagesTestCommand());
-    addSubcommand(PackagesPublishCommand());
+    addSubcommand(PackagesForwardCommand(
+        'publish', 'Publish the current package to pub.dartlang.org',
+        requiresPubspec: true));
     addSubcommand(PackagesForwardCommand(
         'downgrade', 'Downgrade packages in a Flutter project',
         requiresPubspec: true));
@@ -34,6 +41,8 @@ class TizenPackagesCommand extends FlutterCommand {
     addSubcommand(PackagesForwardCommand('version', 'Print Pub version'));
     addSubcommand(PackagesForwardCommand(
         'uploader', 'Manage uploaders for a package on pub.dev'));
+    addSubcommand(PackagesForwardCommand('login', 'Log into pub.dev.'));
+    addSubcommand(PackagesForwardCommand('logout', 'Log out of pub.dev.'));
     addSubcommand(
         PackagesForwardCommand('global', 'Work with Pub global packages'));
     addSubcommand(PackagesForwardCommand(

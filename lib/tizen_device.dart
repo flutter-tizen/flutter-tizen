@@ -222,10 +222,8 @@ class TizenDevice extends Device {
       );
     }
 
-    final Status status = _logger.startProgress(
-      'Installing ${relative(app.file.path)}...',
-      timeout: const Duration(minutes: 1),
-    );
+    final Status status =
+        _logger.startProgress('Installing ${relative(app.file.path)}...');
     final RunResult result =
         await runSdbAsync(<String>['install', app.file.path], checked: false);
     status.stop();

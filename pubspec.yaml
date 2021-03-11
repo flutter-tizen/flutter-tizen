@@ -1,7 +1,8 @@
 name: flutter_tizen
 description: Flutter application build tools for Tizen devices
 homepage: https://github.com/flutter-tizen/flutter-tizen
-version: 1.22.12-pre.1
+version: 2.0.1
+publish_to: none
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
@@ -9,17 +10,17 @@ environment:
 dependencies:
   flutter_tools:
     path: flutter/packages/flutter_tools
-  file: any
-  meta: any
-  package_config: any
-  path: any
-  process: any
-  xml: any
-  yaml: any
+  file: # inherit from flutter_tools
+  meta:
+  package_config:
+  path:
+  process:
+  xml:
+  yaml:
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  mockito: any
-  pedantic: any
-  test: any
+  mockito:
+  pedantic:
+  test:

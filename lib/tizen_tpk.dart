@@ -32,20 +32,6 @@ class TpkFactory extends ApplicationPackageFactory {
   }
 }
 
-/// [ApplicationPackageStore] extended for Tizen.
-class TpkStore extends ApplicationPackageStore {
-  @override
-  Future<ApplicationPackage> getPackageForPlatform(
-    TargetPlatform platform,
-    BuildInfo buildInfo,
-  ) async {
-    if (platform == TargetPlatform.tester) {
-      return await TizenTpk.fromProject(FlutterProject.current());
-    }
-    return super.getPackageForPlatform(platform, buildInfo);
-  }
-}
-
 /// See: [AndroidApk] in `application_package.dart`
 class TizenTpk extends ApplicationPackage {
   TizenTpk({
