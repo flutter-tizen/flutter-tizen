@@ -13,6 +13,7 @@ analyzer:
     - "flutter/packages/flutter_test/**"
     - "flutter/packages/flutter_web_plugins/**"
     - "flutter/packages/fuchsia_remote_debug_protocol/**"
+    - "flutter/packages/integration_test/**"
 
 linter:
   rules:

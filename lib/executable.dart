@@ -134,7 +134,7 @@ Future<void> main(List<String> args) async {
   );
 }
 
-/// See: [Cache.defaultFlutterRoot]
+/// See: [Cache.defaultFlutterRoot] in `cache.dart`
 String get flutterRoot {
   final String scriptPath = Platform.script.toFilePath();
   final String rootPath = normalize(join(

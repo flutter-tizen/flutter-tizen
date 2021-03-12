@@ -26,7 +26,7 @@ import 'tizen_device.dart';
 import 'tizen_doctor.dart';
 import 'tizen_sdk.dart';
 
-/// An extended [DeviceManager] for managing Tizen devices.
+/// An extended [FlutterDeviceManager] for managing Tizen devices.
 class TizenDeviceManager extends FlutterDeviceManager {
   /// Source: [runInContext] in `context_runner.dart`
   TizenDeviceManager()
@@ -93,7 +93,7 @@ class TizenDeviceDiscovery extends PollingDeviceDiscovery {
 
   @override
   Future<List<Device>> pollingGetDevices({Duration timeout}) async {
-    if (tizenSdk == null) {
+    if (tizenSdk == null || !tizenSdk.sdb.existsSync()) {
       return <TizenDevice>[];
     }
 
@@ -103,7 +103,7 @@ class TizenDeviceDiscovery extends PollingDeviceDiscovery {
           .run(<String>[tizenSdk.sdb.path, 'devices'], throwOnError: true);
       stdout = result.stdout.trim();
     } on ProcessException catch (ex) {
-      throwToolExit('sdb failed to list connected devices:\n$ex');
+      throwToolExit('sdb failed to list attached devices:\n$ex');
     }
 
     final List<TizenDevice> devices = <TizenDevice>[];

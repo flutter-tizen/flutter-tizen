@@ -114,11 +114,11 @@ class TizenBuilder {
 
     Target target;
     if (tizenProject.isDotnet) {
-      target = buildInfo.mode.isJit
+      target = buildInfo.isDebug
           ? DebugDotnetTpk(project, tizenBuildInfo)
           : ReleaseDotnetTpk(project, tizenBuildInfo);
     } else {
-      target = buildInfo.mode.isJit
+      target = buildInfo.isDebug
           ? DebugNativeTpk(project, tizenBuildInfo)
           : ReleaseNativeTpk(project, tizenBuildInfo);
     }
@@ -168,12 +168,23 @@ class TizenBuilder {
         type: 'linux',
       );
       final File outputFile = globals.fsUtils.getUniqueFile(
-        globals.fs.directory(getBuildDirectory()),
+        globals.fs
+            .directory(globals.fsUtils.homeDirPath)
+            .childDirectory('.flutter-devtools'),
         'tpk-code-size-analysis',
         'json',
       )..writeAsStringSync(jsonEncode(output));
       globals.printStatus(
         'A summary of your TPK analysis can be found at: ${outputFile.path}',
+      );
+
+      // DevTools expects a file path relative to the .flutter-devtools/ dir.
+      final String relativeAppSizePath =
+          outputFile.path.split('.flutter-devtools/').last.trim();
+      globals.printStatus(
+        '\nTo analyze your app size in Dart DevTools, run the following commands:\n\n'
+        '\$ flutter-tizen pub global activate devtools\n'
+        '\$ flutter-tizen pub global run devtools --appSizeBase=$relativeAppSizePath\n',
       );
     }
   }
