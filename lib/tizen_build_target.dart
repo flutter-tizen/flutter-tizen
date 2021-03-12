@@ -243,145 +243,21 @@ class TizenPlugins extends Target {
   }
 }
 
-// The mixin that handles packaging tpk files
-mixin TizenPackager on Target {
-  PackageTpkDelegate _packageTpkDelegate = _DefaultPackageTpkDelegate();
-
-  void _setPackageTpkDelegate(PackageTpkDelegate packageTpkDelegate) {
-    _packageTpkDelegate = packageTpkDelegate;
-  }
-
-  Future<File> package(Environment environment) async {
-    return await _packageTpkDelegate.package(environment);
-  }
+abstract class TizenPackage extends Target {
+  bool _isTpkCached = true;
+  String _securityProfile;
+  bool get isTpkCached => _isTpkCached;
+  Future<void> package(Environment environment);
 }
 
-// The base class that performs tpk packaging.
-abstract class PackageTpkDelegate {
-  Future<File> package(Environment environment);
-}
-
-// The default packaging delegate returns the previously built tpk
-class _DefaultPackageTpkDelegate implements PackageTpkDelegate {
-  _DefaultPackageTpkDelegate();
-
-  @override
-  Future<File> package(Environment environment) {
-    final FlutterProject flutterProject =
-        FlutterProject.fromDirectory(environment.projectDir);
-    final TizenProject tizenProject = TizenProject.fromFlutter(flutterProject);
-    final File tpk =
-        environment.outputDir.childFile(tizenProject.outputTpkName);
-    if (!tpk.existsSync()) {
-      throwToolExit('Failed to locate TPK: ${tpk.path}');
-    }
-    return Future<File>.value(tpk);
-  }
-}
-
-// The packaing delegate for Tizen dotnet project. This delegate should be called after
-// running 'FlutterBuildSystem.build'; after the tpk source directory({PROJECT_DIR}/tizen)
-// is set to the current build mode.
-class DotnetPackageTpkDelegate implements PackageTpkDelegate {
-  DotnetPackageTpkDelegate(this.securityProfile);
-
-  final String securityProfile;
-
-  final ProcessUtils _processUtils = ProcessUtils(
-      logger: globals.logger, processManager: globals.processManager);
-
-  @override
-  Future<File> package(Environment environment) async {
-    final FlutterProject flutterProject =
-        FlutterProject.fromDirectory(environment.projectDir);
-    final TizenProject tizenProject = TizenProject.fromFlutter(flutterProject);
-    final Directory outputDir = environment.outputDir;
-
-    // For now a constant value is used instead of reading from a file.
-    // Keep this value in sync with the latest published nuget version.
-    const String embeddingVersion = '1.2.2';
-
-    // Run .NET build.
-    if (dotnetCli == null) {
-      throwToolExit(
-        'Unable to locate .NET CLI executable.\n'
-        'Install the latest .NET SDK from: https://dotnet.microsoft.com/download',
-      );
-    }
-    RunResult result = await _processUtils.run(<String>[
-      dotnetCli.path,
-      'build',
-      '-c',
-      'Release',
-      '-o',
-      '${outputDir.path}/', // The trailing '/' is needed.
-      '/p:FlutterEmbeddingVersion=$embeddingVersion',
-      tizenProject.editableDirectory.path,
-    ]);
-    if (result.exitCode != 0) {
-      throwToolExit('Failed to build .NET application:\n$result');
-    }
-
-    if (!outputDir.childFile(tizenProject.outputTpkName).existsSync()) {
-      throwToolExit(
-          'Build succeeded but the expected TPK not found:\n${result.stdout}');
-    }
-
-    if (tizenSdk == null || !tizenSdk.tizenCli.existsSync()) {
-      throwToolExit(
-        'Unable to locate Tizen CLI executable.\n'
-        'Run "flutter-tizen doctor" and install required components.',
-      );
-    }
-    // build-task-tizen signs the output TPK with a dummy profile by default.
-    // We need to re-generate the TPK by signing with a correct profile.
-    // TODO(swift-kim): Apply the profile during .NET build for efficiency.
-    // Password descryption by secret-tool will be needed for full automation.
-    environment.logger
-        .printStatus('The $securityProfile profile is used for signing.');
-    result = await _processUtils.run(<String>[
-      tizenSdk.tizenCli.path,
-      'package',
-      '-t',
-      'tpk',
-      '-s',
-      securityProfile,
-      '--',
-      outputDir.childFile(tizenProject.outputTpkName).path,
-    ]);
-    if (result.exitCode != 0) {
-      throwToolExit('Failed to sign the TPK:\n$result');
-    }
-
-    await _persistFileCache(environment);
-    return outputDir.childFile(tizenProject.outputTpkName);
-  }
-
-  Future<void> _persistFileCache(Environment environment) async {
-    final FlutterProject flutterProject =
-        FlutterProject.fromDirectory(environment.projectDir);
-    final TizenProject tizenProject = TizenProject.fromFlutter(flutterProject);
-    final File tpk =
-        environment.outputDir.childFile(tizenProject.outputTpkName);
-
-    final File cacheFile = environment.buildDir.childFile(FileStore.kFileCache);
-    final FileStore fileCache = FileStore(
-      cacheFile: cacheFile,
-      logger: environment.logger,
-    )..initialize();
-
-    // update tpk hash
-    fileCache.currentAssetKeys.addAll(fileCache.previousAssetKeys);
-    await fileCache.diffFileList(<File>[tpk]);
-    fileCache.persist();
-  }
-}
-
-abstract class DotnetTpk extends Target with TizenPackager {
+abstract class DotnetTpk extends TizenPackage {
   DotnetTpk(this.project, this.buildInfo);
 
   final FlutterProject project;
   final TizenBuildInfo buildInfo;
+
+  final ProcessUtils _processUtils = ProcessUtils(
+      logger: globals.logger, processManager: globals.processManager);
 
   @override
   List<Source> get inputs => const <Source>[];
@@ -424,7 +300,7 @@ abstract class DotnetTpk extends Target with TizenPackager {
     final File tizenPluginsDep =
         environment.buildDir.childFile('tizen_plugins.d');
     if (tizenPluginsDep.existsSync()) {
-      final Depfile tizenPlugins = depfileService.parse(flutterAssetsDep);
+      final Depfile tizenPlugins = depfileService.parse(tizenPluginsDep);
       inputs.addAll(tizenPlugins.outputs);
     }
 
@@ -512,10 +388,10 @@ abstract class DotnetTpk extends Target with TizenPackager {
       // add signing profile certificates as input dependencies
       final SecurityProfile signingProfile =
           tizenSdk.securityProfiles.getProfile(securityProfile);
-      inputs.add(globals.fs.file(signingProfile.authorCertificate.key));
+      inputs.add(environment.fileSystem.file(signingProfile.authorCertificate.key));
       for (final Certificate certificate
           in signingProfile.distributorCertificates) {
-        inputs.add(globals.fs.file(certificate.key));
+        inputs.add(environment.fileSystem.file(certificate.key));
       }
     } else {
       globals.printStatus(
@@ -525,12 +401,99 @@ abstract class DotnetTpk extends Target with TizenPackager {
       );
     }
 
-    _setPackageTpkDelegate(DotnetPackageTpkDelegate(securityProfile));
+    _isTpkCached = false;
+    _securityProfile = securityProfile;
 
     depfileService.writeToFile(
       Depfile(inputs, outputs),
       environment.buildDir.childFile('dotnet_tpk.d'),
     );
+  }
+
+  @override
+  Future<void> package(Environment environment) async {
+    final FlutterProject flutterProject =
+        FlutterProject.fromDirectory(environment.projectDir);
+    final TizenProject tizenProject = TizenProject.fromFlutter(flutterProject);
+    final Directory outputDir = environment.outputDir;
+
+    // For now a constant value is used instead of reading from a file.
+    // Keep this value in sync with the latest published nuget version.
+    const String embeddingVersion = '1.2.2';
+
+    // Run .NET build.
+    if (dotnetCli == null) {
+      throwToolExit(
+        'Unable to locate .NET CLI executable.\n'
+        'Install the latest .NET SDK from: https://dotnet.microsoft.com/download',
+      );
+    }
+    RunResult result = await _processUtils.run(<String>[
+      dotnetCli.path,
+      'build',
+      '-c',
+      'Release',
+      '-o',
+      '${outputDir.path}/', // The trailing '/' is needed.
+      '/p:FlutterEmbeddingVersion=$embeddingVersion',
+      tizenProject.editableDirectory.path,
+    ]);
+    if (result.exitCode != 0) {
+      throwToolExit('Failed to build .NET application:\n$result');
+    }
+
+    if (!outputDir.childFile(tizenProject.outputTpkName).existsSync()) {
+      throwToolExit(
+          'Build succeeded but the expected TPK not found:\n${result.stdout}');
+    }
+
+    if (tizenSdk == null || !tizenSdk.tizenCli.existsSync()) {
+      throwToolExit(
+        'Unable to locate Tizen CLI executable.\n'
+        'Run "flutter-tizen doctor" and install required components.',
+      );
+    }
+    // build-task-tizen signs the output TPK with a dummy profile by default.
+    // We need to re-generate the TPK by signing with a correct profile.
+    // TODO(swift-kim): Apply the profile during .NET build for efficiency.
+    // Password descryption by secret-tool will be needed for full automation.
+    environment.logger
+        .printStatus('The $_securityProfile profile is used for signing.');
+    result = await _processUtils.run(<String>[
+      tizenSdk.tizenCli.path,
+      'package',
+      '-t',
+      'tpk',
+      '-s',
+      _securityProfile,
+      '--',
+      outputDir.childFile(tizenProject.outputTpkName).path,
+    ]);
+    if (result.exitCode != 0) {
+      throwToolExit('Failed to sign the TPK:\n$result');
+    }
+
+    await _persistTpkCache(environment);
+    _isTpkCached = true;
+  }
+
+  Future<void> _persistTpkCache(Environment environment) async{
+    final FlutterProject flutterProject =
+        FlutterProject.fromDirectory(environment.projectDir);
+    final TizenProject tizenProject = TizenProject.fromFlutter(flutterProject);
+    final File tpk =
+        environment.outputDir.childFile(tizenProject.outputTpkName);
+
+    final File cacheFile = environment.buildDir.childFile(FileStore.kFileCache);
+    final FileStore fileCache = FileStore(
+      cacheFile: cacheFile,
+      logger: environment.logger,
+    )..initialize();
+
+    // update tpk hash
+    fileCache.currentAssetKeys.addAll(fileCache.previousAssetKeys);
+    await fileCache.diffFileList(<File>[tpk]);
+    fileCache.persist();
   }
 }
 
@@ -669,7 +632,7 @@ class ReleaseDotnetTpk extends DotnetTpk {
       ];
 }
 
-abstract class NativeTpk extends Target with TizenPackager {
+abstract class NativeTpk extends Target {
   NativeTpk(this.project, this.buildInfo);
 
   final FlutterProject project;
