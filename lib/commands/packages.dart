@@ -10,19 +10,19 @@ import 'package:flutter_tools/src/runner/flutter_command.dart';
 
 import '../tizen_plugins.dart';
 
-/// This class is a direct copy of [PackagesCommand]. The only reason for the
-/// duplication is to extend and replace [PackagesGetCommand] sub-commands in
-/// the constructor. We may find a better workaround in the future.
+/// This class was copied from [PackagesCommand] to substitute its
+/// [PackagesGetCommand] and [PackagesInteractiveGetCommand] subcommands with
+/// their Tizen equivalents. We may find a better workaround in the future.
 ///
 /// Source: [PackagesCommand] in `packages.dart`
 class TizenPackagesCommand extends FlutterCommand {
   TizenPackagesCommand() {
     addSubcommand(TizenPackagesGetCommand('get', false));
-    addSubcommand(PackagesInteractiveGetCommand('upgrade',
+    addSubcommand(TizenPackagesInteractiveGetCommand('upgrade',
         'Upgrade the current package\'s dependencies to latest versions.'));
-    addSubcommand(PackagesInteractiveGetCommand(
+    addSubcommand(TizenPackagesInteractiveGetCommand(
         'add', 'Add a dependency to pubspec.yaml.'));
-    addSubcommand(PackagesInteractiveGetCommand(
+    addSubcommand(TizenPackagesInteractiveGetCommand(
         'remove', 'Removes a dependency from the current package.'));
     addSubcommand(PackagesTestCommand());
     addSubcommand(PackagesForwardCommand(
@@ -64,17 +64,23 @@ class TizenPackagesCommand extends FlutterCommand {
   Future<FlutterCommandResult> runCommand() async => null;
 }
 
-class TizenPackagesGetCommand extends PackagesGetCommand {
+class TizenPackagesGetCommand extends PackagesGetCommand
+    with _PostRunPluginInjection {
   TizenPackagesGetCommand(String name, bool upgrade) : super(name, upgrade);
+}
 
+class TizenPackagesInteractiveGetCommand extends PackagesInteractiveGetCommand
+    with _PostRunPluginInjection {
+  TizenPackagesInteractiveGetCommand(String commandName, String description)
+      : super(commandName, description);
+}
+
+mixin _PostRunPluginInjection on FlutterCommand {
   /// See: [PackagesGetCommand.runCommand] in `packages.dart`
   @override
   Future<FlutterCommandResult> runCommand() async {
     final FlutterCommandResult result = await super.runCommand();
 
-    // The super method runs [ensureReadyForPlatformSpecificTooling] for the
-    // current project (and example project if found). We have to override it
-    // for Tizen.
     if (result == FlutterCommandResult.success()) {
       final String workingDirectory =
           argResults.rest.isNotEmpty ? argResults.rest[0] : null;

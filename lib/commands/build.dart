@@ -83,11 +83,12 @@ class BuildTpkCommand extends BuildSubCommand with TizenExtension {
       securityProfile: stringArg('security-profile'),
     );
     validateBuild(tizenBuildInfo);
+    displayNullSafetyMode(buildInfo);
 
     await TizenBuilder.buildTpk(
-      tizenBuildInfo: tizenBuildInfo,
       project: FlutterProject.current(),
       targetFile: targetFile,
+      tizenBuildInfo: tizenBuildInfo,
       sizeAnalyzer: SizeAnalyzer(
         fileSystem: globals.fs,
         logger: globals.logger,
