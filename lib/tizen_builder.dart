@@ -150,7 +150,7 @@ class TizenBuilder {
       // Since Tizen shares the host app directory between different build modes,
       // we must package tpk file after 'FlutterBuildSystem.build' has finished
       // compiling binaries and has removed dirty files from 'PROJECT_ROOT/tizen'.
-      if(target is DotnetTpk && !target.isTpkCached){
+      if (target is DotnetTpk && !target.isTpkCached) {
         await target.package(environment);
       }
 

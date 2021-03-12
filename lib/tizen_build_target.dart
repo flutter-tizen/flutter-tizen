@@ -388,7 +388,8 @@ abstract class DotnetTpk extends TizenPackage {
       // add signing profile certificates as input dependencies
       final SecurityProfile signingProfile =
           tizenSdk.securityProfiles.getProfile(securityProfile);
-      inputs.add(environment.fileSystem.file(signingProfile.authorCertificate.key));
+      inputs.add(
+          environment.fileSystem.file(signingProfile.authorCertificate.key));
       for (final Certificate certificate
           in signingProfile.distributorCertificates) {
         inputs.add(environment.fileSystem.file(certificate.key));
@@ -477,7 +478,7 @@ abstract class DotnetTpk extends TizenPackage {
     _isTpkCached = true;
   }
 
-  Future<void> _persistTpkCache(Environment environment) async{
+  Future<void> _persistTpkCache(Environment environment) async {
     final FlutterProject flutterProject =
         FlutterProject.fromDirectory(environment.projectDir);
     final TizenProject tizenProject = TizenProject.fromFlutter(flutterProject);
