@@ -32,6 +32,10 @@ import 'tizen_build_target.dart';
 import 'tizen_project.dart';
 import 'tizen_tpk.dart';
 
+/// The define to control what Tizen architectures are built for.
+/// This is expected to be a comma-separated list of architectures.
+const String kTizenArchs = 'TizenArchs';
+
 /// See: [AndroidBuildInfo] in `build_info.dart`
 class TizenBuildInfo {
   const TizenBuildInfo(
@@ -88,6 +92,7 @@ class TizenBuilder {
           ? null
           : globals.flutterVersion.engineRevision,
       defines: <String, String>{
+        kTizenArchs: tizenBuildInfo.targetArchs.join(','),
         kTargetFile: targetFile,
         kBuildMode: getNameForBuildMode(buildInfo.mode),
         kTargetPlatform: getNameForTargetPlatform(TargetPlatform.android),
