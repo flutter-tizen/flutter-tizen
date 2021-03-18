@@ -32,20 +32,6 @@ class TpkFactory extends ApplicationPackageFactory {
   }
 }
 
-/// [ApplicationPackageStore] extended for Tizen.
-class TpkStore extends ApplicationPackageStore {
-  @override
-  Future<ApplicationPackage> getPackageForPlatform(
-    TargetPlatform platform,
-    BuildInfo buildInfo,
-  ) async {
-    if (platform == TargetPlatform.tester) {
-      return await TizenTpk.fromProject(FlutterProject.current());
-    }
-    return super.getPackageForPlatform(platform, buildInfo);
-  }
-}
-
 /// See: [AndroidApk] in `application_package.dart`
 class TizenTpk extends ApplicationPackage {
   TizenTpk({
@@ -53,7 +39,7 @@ class TizenTpk extends ApplicationPackage {
     @required this.manifest,
     this.signature,
   })  : assert(file != null),
-        super(id: manifest.packageId);
+        super(id: manifest?.packageId);
 
   static Future<TizenTpk> fromTpk(File tpk) async {
     final Directory tempDir = globals.fs.systemTempDirectory.createTempSync();
@@ -232,8 +218,7 @@ class Certificate {
     final String password = profileItem.getAttribute('password');
     final String distributorNumber = profileItem.getAttribute('distributor');
 
-    // The data doesn't exist and the xml element
-    // exists only as a placeholder
+    // The data doesn't exist and the xml element exists only as a placeholder.
     if (key.isEmpty || password.isEmpty) {
       return null;
     }
@@ -291,7 +276,7 @@ class SecurityProfile {
 }
 
 class SecurityProfiles {
-  SecurityProfiles._(this.activeProfile, this._profiles);
+  SecurityProfiles._(this.active, this._profiles);
 
   factory SecurityProfiles.parseFromXml(File xmlFile) {
     if (xmlFile == null || !xmlFile.existsSync()) {
@@ -328,7 +313,7 @@ class SecurityProfiles {
     return SecurityProfiles._(activeProfile, profiles);
   }
 
-  final SecurityProfile activeProfile;
+  final SecurityProfile active;
   final List<SecurityProfile> _profiles;
 
   List<String> get names =>

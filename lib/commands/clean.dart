@@ -47,7 +47,6 @@ class TizenCleanCommand extends CleanCommand {
     final String path = relative(file.path);
     final Status status = globals.logger.startProgress(
       'Deleting $path...',
-      timeout: timeoutConfiguration.fastOperation,
     );
     try {
       file.deleteSync(recursive: true);

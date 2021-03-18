@@ -7,6 +7,7 @@ import 'package:file/file.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/base/terminal.dart';
 import 'package:flutter_tools/src/build_system/targets/web.dart';
+import 'package:flutter_tools/src/dart/language_version.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/dart/package_map.dart';
 import 'package:flutter_tools/src/platform_plugins.dart';
@@ -104,8 +105,7 @@ mixin TizenExtension on FlutterCommand {
 }
 
 /// Creates an entrypoint wrapper of [targetFile] and returns its path.
-/// Required to support Dart plugins.
-/// Doesn't currently work with the route option.
+/// This effectively adds support for Dart plugins.
 ///
 /// Source: [WebEntrypointTarget.build] in `web.dart`
 Future<String> _createEntrypoint(
@@ -121,13 +121,18 @@ Future<String> _createEntrypoint(
     return targetFile;
   }
 
-  final Directory registryDirectory = tizenProject.managedDirectory;
-  final File entrypoint = registryDirectory.childFile('main.dart')
+  final File entrypoint = tizenProject.managedDirectory.childFile('main.dart')
     ..createSync(recursive: true);
   final PackageConfig packageConfig = await loadPackageConfigWithLogging(
     project.directory.childFile('.packages'),
     logger: globals.logger,
   );
+  final FlutterProject flutterProject = FlutterProject.current();
+  final LanguageVersion languageVersion = determineLanguageVersion(
+    globals.fs.file(targetFile),
+    packageConfig[flutterProject.manifest.appName],
+  );
+
   final Uri mainUri = globals.fs.file(targetFile).absolute.uri;
   final String mainImport =
       packageConfig.toPackageUri(mainUri)?.toString() ?? mainUri.toString();
@@ -136,6 +141,8 @@ Future<String> _createEntrypoint(
 //
 // Generated file. Do not edit.
 //
+// @dart=${languageVersion.major}.${languageVersion.minor}
+
 import '$mainImport' as entrypoint;
 import 'generated_plugin_registrant.dart';
 
@@ -161,11 +168,10 @@ const List<String> _knownPlugins = <String>[
   'url_launcher',
 ];
 
-/// This method has the same role as [ensureReadyForPlatformSpecificTooling].
+/// This method must be called whenever [injectPlugins] is called.
+/// [injectPlugins] is commonly called by [FlutterProject.regeneratePlatformSpecificTooling].
 ///
-/// See:
-/// - [FlutterProject.ensureReadyForPlatformSpecificTooling] in `project.dart`
-/// - [injectPlugins] in `plugins.dart`
+/// See: [injectPlugins] in `plugins.dart`
 Future<void> injectTizenPlugins(FlutterProject project) async {
   if (!project.directory.existsSync() || project.hasExampleApp) {
     return;
@@ -177,12 +183,9 @@ Future<void> injectTizenPlugins(FlutterProject project) async {
         await findTizenPlugins(project, dartOnly: true);
     final List<TizenPlugin> nativePlugins =
         await findTizenPlugins(project, nativeOnly: true);
-    await _writeDartPluginRegistrant(
-        tizenProject.managedDirectory, dartPlugins);
-    await _writeCppPluginRegistrant(
-        tizenProject.managedDirectory, nativePlugins);
-    await _writeCsharpPluginRegistrant(
-        tizenProject.managedDirectory, nativePlugins);
+    _writeDartPluginRegistrant(tizenProject.managedDirectory, dartPlugins);
+    _writeCppPluginRegistrant(tizenProject.managedDirectory, nativePlugins);
+    _writeCsharpPluginRegistrant(tizenProject.managedDirectory, nativePlugins);
   }
 
   final List<String> plugins =
@@ -266,8 +269,10 @@ TizenPlugin _pluginFromPackage(String name, Uri packageRoot) {
 }
 
 /// See: [_writeWebPluginRegistrant] in `plugins.dart`
-Future<void> _writeDartPluginRegistrant(
-    Directory registryDirectory, List<TizenPlugin> plugins) async {
+void _writeDartPluginRegistrant(
+  Directory registryDirectory,
+  List<TizenPlugin> plugins,
+) {
   final List<Map<String, dynamic>> pluginConfigs =
       plugins.map((TizenPlugin plugin) => plugin.toMap()).toList();
   final Map<String, dynamic> context = <String, dynamic>{
@@ -278,10 +283,13 @@ Future<void> _writeDartPluginRegistrant(
 //
 // Generated file. Do not edit.
 //
+// ignore_for_file: lines_longer_than_80_chars
+
 {{#plugins}}
 import 'package:{{name}}/{{file}}';
 {{/plugins}}
 
+// ignore: public_member_api_docs
 void registerPlugins() {
 {{#plugins}}
   {{dartPluginClass}}.register();
@@ -294,8 +302,10 @@ void registerPlugins() {
 }
 
 /// See: [_writeWindowsPluginFiles] in `plugins.dart`
-Future<void> _writeCppPluginRegistrant(
-    Directory registryDirectory, List<TizenPlugin> plugins) async {
+void _writeCppPluginRegistrant(
+  Directory registryDirectory,
+  List<TizenPlugin> plugins,
+) {
   final List<Map<String, dynamic>> pluginConfigs =
       plugins.map((TizenPlugin plugin) => plugin.toMap()).toList();
   final Map<String, dynamic> context = <String, dynamic>{
@@ -330,8 +340,10 @@ void RegisterPlugins(FlutterWindowControllerRef window) {
   );
 }
 
-Future<void> _writeCsharpPluginRegistrant(
-    Directory registryDirectory, List<TizenPlugin> plugins) async {
+void _writeCsharpPluginRegistrant(
+  Directory registryDirectory,
+  List<TizenPlugin> plugins,
+) {
   final List<Map<String, dynamic>> pluginConfigs =
       plugins.map((TizenPlugin plugin) => plugin.toMap()).toList();
   final Map<String, dynamic> context = <String, dynamic>{

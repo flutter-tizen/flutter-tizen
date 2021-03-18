@@ -213,19 +213,17 @@ class TizenDevice extends Device {
     }
 
     final double deviceVersion = double.tryParse(platformVersion) ?? 0;
-    final double apiVersion = double.tryParse(app.manifest.apiVersion) ?? 0;
+    final double apiVersion = double.tryParse(app.manifest?.apiVersion) ?? 0;
     if (apiVersion > deviceVersion) {
       _logger.printStatus(
-        'Warning: The package API version (${app.manifest.apiVersion}) is greater than the device API version ($platformVersion).\n'
+        'Warning: The package API version (${app.manifest?.apiVersion}) is greater than the device API version ($platformVersion).\n'
         'Check "tizen-manifest.xml" of your Tizen project to fix this problem.',
         color: TerminalColor.yellow,
       );
     }
 
-    final Status status = _logger.startProgress(
-      'Installing ${relative(app.file.path)}...',
-      timeout: const Duration(minutes: 1),
-    );
+    final Status status =
+        _logger.startProgress('Installing ${relative(app.file.path)}...');
     final RunResult result =
         await runSdbAsync(<String>['install', app.file.path], checked: false);
     status.stop();

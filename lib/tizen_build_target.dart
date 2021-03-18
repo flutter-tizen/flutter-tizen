@@ -315,7 +315,7 @@ abstract class DotnetTpk extends Target {
       throwToolExit('The security profile $securityProfile does not exist.');
     }
 
-    securityProfile ??= tizenSdk.securityProfiles?.activeProfile?.name;
+    securityProfile ??= tizenSdk.securityProfiles?.active?.name;
     if (securityProfile != null) {
       environment.logger
           .printStatus('The $securityProfile profile is used for signing.');
@@ -333,8 +333,8 @@ abstract class DotnetTpk extends Target {
         throwToolExit('Failed to sign the TPK:\n$result');
       }
     } else {
-      globals.printStatus(
-        'The tpk is signed with a default certificate, you can create one using the certificate manager.\n'
+      environment.logger.printStatus(
+        'The tpk has been signed with a default certificate. You can create one using Certificate Manager.\n'
         'https://github.com/flutter-tizen/flutter-tizen/blob/master/doc/install-tizen-sdk.md#create-a-tizen-certificate',
         color: TerminalColor.yellow,
       );
@@ -344,7 +344,7 @@ abstract class DotnetTpk extends Target {
 
 /// Builds AOT snapshots (app.so) for multiple target archs.
 ///
-/// Source: [AotElfBase] in `common.dart`
+/// Source: [AotElfRelease] in `common.dart`
 class TizenAotElf extends Target {
   TizenAotElf(this.targetArchs);
 
@@ -353,13 +353,14 @@ class TizenAotElf extends Target {
   @override
   String get name => 'tizen_aot_elf';
 
-  /// Source: [AotElfProfile.inputs] in `common.dart`
   @override
   List<Source> get inputs => <Source>[
         const Source.pattern('{BUILD_DIR}/app.dill'),
-        const Source.pattern('{PROJECT_DIR}/.packages'),
         const Source.artifact(Artifact.engineDartBinary),
         const Source.artifact(Artifact.skyEnginePath),
+        // Any type of gen_snapshot is applicable here because engine artifacts
+        // are assumed to be updated at once, not one by one for each platform
+        // or build mode.
         const Source.artifact(Artifact.genSnapshot, mode: BuildMode.release),
       ];
 
@@ -374,6 +375,7 @@ class TizenAotElf extends Target {
         KernelSnapshot(),
       ];
 
+  /// Source: [AotElfBase.build] in `common.dart`
   @override
   Future<void> build(Environment environment) async {
     final AOTSnapshotter snapshotter = AOTSnapshotter(
@@ -420,7 +422,6 @@ class TizenAotElf extends Target {
         platform: platform,
         buildMode: buildMode,
         mainPath: environment.buildDir.childFile('app.dill').path,
-        packagesPath: environment.projectDir.childFile('.packages').path,
         outputPath: outputPath,
         bitcode: false,
         extraGenSnapshotOptions: extraGenSnapshotOptions,
@@ -558,13 +559,12 @@ abstract class NativeTpk extends Target {
         await findTizenPlugins(project, nativeOnly: true);
 
     for (final TizenPlugin plugin in nativePlugins) {
-      final TizenNativeProject pluginProject = TizenNativeProject(plugin.path);
+      final TizenLibrary library = TizenLibrary(plugin.path);
       // TODO(swift-kim): Currently only checks for USER_INC_DIRS and USER_SRCS.
       // More properties (such as USER_LIBS) should be parsed to fully support
       // plugin builds.
-      userIncludes
-          .addAll(pluginProject.getPropertyAsAbsolutePaths('USER_INC_DIRS'));
-      userSources.addAll(pluginProject.getPropertyAsAbsolutePaths('USER_SRCS'));
+      userIncludes.addAll(library.getPropertyAsAbsolutePaths('USER_INC_DIRS'));
+      userSources.addAll(library.getPropertyAsAbsolutePaths('USER_SRCS'));
     }
 
     final Directory commonDir = engineDir.parent.childDirectory('common');

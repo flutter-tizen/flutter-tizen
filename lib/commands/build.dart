@@ -75,7 +75,7 @@ class BuildTpkCommand extends BuildSubCommand with TizenExtension {
   /// See: [BuildApkCommand.runCommand] in `build_apk.dart`
   @override
   Future<FlutterCommandResult> runCommand() async {
-    final BuildInfo buildInfo = getBuildInfo();
+    final BuildInfo buildInfo = await getBuildInfo();
     final TizenBuildInfo tizenBuildInfo = TizenBuildInfo(
       buildInfo,
       targetArchs: stringsArg('target-arch'),
@@ -83,11 +83,12 @@ class BuildTpkCommand extends BuildSubCommand with TizenExtension {
       securityProfile: stringArg('security-profile'),
     );
     validateBuild(tizenBuildInfo);
+    displayNullSafetyMode(buildInfo);
 
     await TizenBuilder.buildTpk(
-      tizenBuildInfo: tizenBuildInfo,
       project: FlutterProject.current(),
       targetFile: targetFile,
+      tizenBuildInfo: tizenBuildInfo,
       sizeAnalyzer: SizeAnalyzer(
         fileSystem: globals.fs,
         logger: globals.logger,

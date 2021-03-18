@@ -2,47 +2,34 @@
 
 [DevTools](https://flutter.dev/docs/development/tools/devtools/overview) is a suite of performance and debugging tools for Dart and Flutter.
 
-DevTools is already integrated with the flutter-tizen tool. To open it, first start your app in either debug or profile mode. Once the app launches, enter "v" in your terminal, then DevTools should appear in your browser.
+DevTools is already integrated with the flutter-tizen tool. To open it, first start your app in either debug or profile mode:
 
 ```sh
-# Start an app in debug mode
+# Start in debug mode
 $ flutter-tizen run
 
-# Start an app in profile mode
+# Start in profile mode
 $ flutter-tizen run --profile
 ```
 
-![DevTools](images/devtools-inspector.png)
-
-Alternatively, you can use the `pub global` command to install and start a standalone DevTools server:
+Once the app launches, you will see a message in your terminal that looks like:
 
 ```sh
-# Install DevTools
-flutter-tizen pub global activate devtools
-
-# Start DevTools
-flutter-tizen pub global run devtools
+Flutter DevTools, a Flutter debugger and profiler, on Tizen SM-R800 is available at:
+http://127.0.0.1:9100?uri=http%3A%2F%2F127.0.0.1%3A...
 ```
 
-Once the DevTools server starts, open your browser and navigate to `http://localhost:9100`. Then, you should see this connect dialog:
+Open your browser and navigate to the URL, then you will see a page that looks like:
 
-![DevTools Connect](images/devtools-connect.png)
-
-You need an observatory URI of a running app that you want to connect to. Start your app in either debug or profile mode using the `flutter-tizen run` command, and then you will see a message in your terminal that looks like:
-
-```
-An Observatory debugger and profiler on Tizen SM-R800 is available at: http://127.0.0.1:34025/wG7X7TSM38k=/
-```
-
-Paste this URL (`http://...`) into the connect dialog above.
+![DevTools](images/devtools-inspector.png)
 
 ## Debugger
 
-The Debugger tab should appear in DevTools if you launched an app in debug mode (`flutter-tizen run`). Although the flutter-tizen tool is not natively integrated with existing IDEs like Android Studio and VS Code, this tab provides you with source-level debugging experience with support for breakpoints, stepping, and variable inspection.
+You will see the _Debugger_ tab enabled in DevTools after starting your app in debug mode (`flutter-tizen run`). Although the flutter-tizen tool is not natively integrated with existing IDEs like Android Studio and VS Code, this tab provides you with source-level debugging experience with support for breakpoints, stepping, and variable inspection.
 
 ![DevTools Debugger](images/devtools-debugger.png)
 
-**Tip**: To set breakpoints before any code execution, run with the `--start-paused` option:
+**Tip**: To set breakpoints before any code execution, use [programmatic breakpoints](https://flutter.dev/docs/testing/code-debugging#setting-breakpoints) or run with the `--start-paused` option:
 
 ```sh
 flutter-tizen run --start-paused
@@ -58,7 +45,7 @@ To diagnose performance issues (frame drops) in a Flutter app, you need to run t
 flutter-tizen run --profile
 ```
 
-Once the app launches, navigate to the Performance tab in DevTools.
+Once the app launches, navigate to the _Performance_ tab in DevTools.
 
 ![DevTools Performance](images/devtools-performance.png)
 

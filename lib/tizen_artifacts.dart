@@ -54,12 +54,13 @@ class TizenArtifacts extends CachedArtifacts {
         .childDirectory(getEngineType(platform, mode));
   }
 
-  /// See: [CachedArtifacts._getAndroidArtifactPath] in `cache.dart`
+  /// See: [CachedArtifacts._getAndroidArtifactPath] in `artifacts.dart`
   @override
   String getArtifactPath(
     Artifact artifact, {
     TargetPlatform platform,
     BuildMode mode,
+    EnvironmentType environmentType,
   }) {
     switch (artifact) {
       case Artifact.genSnapshot:
@@ -69,7 +70,9 @@ class TizenArtifacts extends CachedArtifacts {
             getNameForHostPlatform(getCurrentHostPlatform());
         return getEngineDirectory(platform, mode)
             .childDirectory(hostPlatform)
-            .childFile('gen_snapshot')
+            .childFile(globals.platform.isWindows
+                ? 'gen_snapshot.exe'
+                : 'gen_snapshot')
             .path;
       default:
         return globals.artifacts

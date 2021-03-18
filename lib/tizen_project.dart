@@ -57,8 +57,8 @@ class TizenProject extends FlutterProjectPlatform {
 }
 
 /// Used for parsing native plugin's `project_def.prop`.
-class TizenNativeProject {
-  TizenNativeProject(this.path);
+class TizenLibrary {
+  TizenLibrary(this.path);
 
   final String path;
 
