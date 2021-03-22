@@ -27,21 +27,60 @@ import 'tizen_tpk.dart';
 
 /// Prepares the pre-built flutter bundle.
 class TizenAssetBundle extends AndroidAssetBundle {
+  TizenAssetBundle(this.project, this.buildInfo);
+
+  final FlutterProject project;
+  final TizenBuildInfo buildInfo;
+
   @override
   String get name => 'tizen_asset_bundle';
 
   @override
-  Future<void> build(Environment environment) async {
-    // Since debug and release build shares the output directory
-    // ({PROJECT_ROOT}/build/tizen/flutter_assets), we need to
-    // clear the directory to prevent dirty files from surviving.
-    final Directory flutterAssetsDir =
-        environment.outputDir.childDirectory('flutter_assets');
-    if (flutterAssetsDir.existsSync()) {
-      flutterAssetsDir.deleteSync(recursive: true);
-    }
-    await super.build(environment);
-  }
+  List<Target> get dependencies => <Target>[
+        ...super.dependencies,
+        TizenPlugins(project, buildInfo),
+      ];
+}
+
+/// Source: [DebugAndroidApplication] in `android.dart`
+class DebugTizenAssetBundle extends TizenAssetBundle {
+  DebugTizenAssetBundle(FlutterProject project, TizenBuildInfo buildInfo)
+      : super(project, buildInfo);
+
+  @override
+  String get name => 'debug_tizen_asset_bundle';
+
+  @override
+  List<Source> get inputs => <Source>[
+        ...super.inputs,
+        const Source.artifact(Artifact.vmSnapshotData, mode: BuildMode.debug),
+        const Source.artifact(Artifact.isolateSnapshotData,
+            mode: BuildMode.debug),
+      ];
+
+  @override
+  List<Source> get outputs => <Source>[
+        ...super.outputs,
+        const Source.pattern('{OUTPUT_DIR}/flutter_assets/vm_snapshot_data'),
+        const Source.pattern(
+            '{OUTPUT_DIR}/flutter_assets/isolate_snapshot_data'),
+        const Source.pattern('{OUTPUT_DIR}/flutter_assets/kernel_blob.bin'),
+      ];
+}
+
+/// See: [ReleaseAndroidApplication] in `android.dart`
+class ReleaseTizenAssetBundle extends TizenAssetBundle {
+  ReleaseTizenAssetBundle(FlutterProject project, TizenBuildInfo buildInfo)
+      : super(project, buildInfo);
+
+  @override
+  String get name => 'release_tizen_asset_bundle';
+
+  @override
+  List<Target> get dependencies => <Target>[
+        TizenAotElf(buildInfo.targetArchs),
+        ...super.dependencies,
+      ];
 }
 
 /// Compiles Tizen native plugins into shared objects.
@@ -165,7 +204,7 @@ class TizenPlugins extends Target {
   }
 }
 
-abstract class DotnetTpk extends Target {
+class DotnetTpk {
   DotnetTpk(this.project, this.buildInfo);
 
   final FlutterProject project;
@@ -174,71 +213,21 @@ abstract class DotnetTpk extends Target {
   final ProcessUtils _processUtils = ProcessUtils(
       logger: globals.logger, processManager: globals.processManager);
 
-  @override
-  List<Source> get inputs => const <Source>[
-        Source.pattern('{PROJECT_DIR}/tizen'),
-        Source.pattern('{OUTPUT_DIR}/flutter_assets'),
-      ];
-
-  @override
-  List<Source> get outputs => const <Source>[
-        Source.pattern('{OUTPUT_DIR}/*.tpk'),
-      ];
-
-  @override
-  List<Target> get dependencies => <Target>[
-        TizenAssetBundle(),
-        TizenPlugins(project, buildInfo),
-      ];
-
-  @override
   Future<void> build(Environment environment) async {
-    // Directories that are used as destination directories of copy operations
-    // should be cleared before running the actual build.
-    // Otherwise the directory may contain dirty files which were
-    // created during different build modes. (ex: debug -> release)
-    // (TODO: HakkyuKim): Consider using something like CopyTarget
-    final TizenProject tizenProject = TizenProject.fromFlutter(project);
-    final Directory ephemeralDir = tizenProject.ephemeralDirectory;
-    final Directory flutterAssets =
-        ephemeralDir.childDirectory('res').childDirectory('flutter_assets');
-    if (flutterAssets.existsSync()) {
-      flutterAssets.deleteSync(recursive: true);
-    }
-
-    // Output directories of this build should also be cleared to prevent
-    // dirty files from suviving.
-    // (TODO: HakkyuKim) Consider using a subdirectory such as dotnet_output
-    environment.outputDir
-        .listSync()
-        .where((FileSystemEntity entity) =>
-            // flutter_assets is the output directory of [TizenAssetBundle] which this
-            // target depends on. We must not delete this directory.
-            !(entity is Directory && entity.basename == 'flutter_assets'))
-        .where((FileSystemEntity entity) =>
-            // .last_build_id file is maintained by the flutter [_BuildInstance] to
-            // keep track of the latest build mode. We must not delete this file
-            !(entity is File && entity.basename == '.last_build_id'))
-        .forEach((FileSystemEntity entity) {
-      entity.deleteSync(recursive: true);
-    });
-
-    await _build(environment);
-  }
-
-  Future<void> _build(Environment environment) async {
     final BuildMode buildMode =
         getBuildModeForName(environment.defines[kBuildMode]);
 
-    // Copy ephemeral files.
     final Directory outputDir = environment.outputDir;
     final TizenProject tizenProject = TizenProject.fromFlutter(project);
     final Directory ephemeralDir = tizenProject.ephemeralDirectory;
-    final Directory resDir = ephemeralDir.childDirectory('res')
-      ..createSync(recursive: true);
+    final Directory resDir = ephemeralDir.childDirectory('res');
+    final Directory flutterAssetsDir = resDir.childDirectory('flutter_assets');
+
+    if (flutterAssetsDir.existsSync()) {
+      flutterAssetsDir.deleteSync(recursive: true);
+    }
     globals.fsUtils.copyDirectorySync(
-        outputDir.childDirectory('flutter_assets'),
-        resDir.childDirectory('flutter_assets'));
+        outputDir.childDirectory('flutter_assets'), flutterAssetsDir);
 
     for (final String arch in buildInfo.targetArchs) {
       final Directory libDir = ephemeralDir
@@ -435,48 +424,7 @@ class TizenAotElf extends Target {
   }
 }
 
-/// Source: [DebugAndroidApplication] in `android.dart`
-class DebugDotnetTpk extends DotnetTpk {
-  DebugDotnetTpk(FlutterProject project, TizenBuildInfo buildInfo)
-      : super(project, buildInfo);
-
-  @override
-  String get name => 'debug_dotnet_tpk';
-
-  @override
-  List<Source> get inputs => <Source>[
-        ...super.inputs,
-        const Source.artifact(Artifact.vmSnapshotData, mode: BuildMode.debug),
-        const Source.artifact(Artifact.isolateSnapshotData,
-            mode: BuildMode.debug),
-      ];
-
-  @override
-  List<Source> get outputs => <Source>[
-        ...super.outputs,
-        const Source.pattern('{OUTPUT_DIR}/flutter_assets/vm_snapshot_data'),
-        const Source.pattern(
-            '{OUTPUT_DIR}/flutter_assets/isolate_snapshot_data'),
-        const Source.pattern('{OUTPUT_DIR}/flutter_assets/kernel_blob.bin'),
-      ];
-}
-
-/// See: [ReleaseAndroidApplication] in `android.dart`
-class ReleaseDotnetTpk extends DotnetTpk {
-  ReleaseDotnetTpk(FlutterProject project, TizenBuildInfo buildInfo)
-      : super(project, buildInfo);
-
-  @override
-  String get name => 'release_dotnet_tpk';
-
-  @override
-  List<Target> get dependencies => <Target>[
-        TizenAotElf(buildInfo.targetArchs),
-        ...super.dependencies,
-      ];
-}
-
-abstract class NativeTpk extends Target {
+class NativeTpk {
   NativeTpk(this.project, this.buildInfo);
 
   final FlutterProject project;
@@ -485,23 +433,6 @@ abstract class NativeTpk extends Target {
   final ProcessUtils _processUtils = ProcessUtils(
       logger: globals.logger, processManager: globals.processManager);
 
-  @override
-  List<Source> get inputs => const <Source>[
-        Source.pattern('{PROJECT_DIR}/tizen'),
-        Source.pattern('{OUTPUT_DIR}/flutter_assets'),
-      ];
-
-  @override
-  List<Source> get outputs => const <Source>[
-        Source.pattern('{OUTPUT_DIR}/*.tpk'),
-      ];
-
-  @override
-  List<Target> get dependencies => <Target>[
-        TizenAssetBundle(),
-      ];
-
-  @override
   Future<void> build(Environment environment) async {
     final BuildMode buildMode =
         getBuildModeForName(environment.defines[kBuildMode]);
@@ -645,43 +576,4 @@ abstract class NativeTpk extends Target {
           'Build succeeded but the expected TPK not found:\n${result.stdout}');
     }
   }
-}
-
-class DebugNativeTpk extends NativeTpk {
-  DebugNativeTpk(FlutterProject project, TizenBuildInfo buildInfo)
-      : super(project, buildInfo);
-
-  @override
-  String get name => 'debug_native_tpk';
-
-  @override
-  List<Source> get inputs => <Source>[
-        ...super.inputs,
-        const Source.artifact(Artifact.vmSnapshotData, mode: BuildMode.debug),
-        const Source.artifact(Artifact.isolateSnapshotData,
-            mode: BuildMode.debug),
-      ];
-
-  @override
-  List<Source> get outputs => <Source>[
-        ...super.outputs,
-        const Source.pattern('{OUTPUT_DIR}/flutter_assets/vm_snapshot_data'),
-        const Source.pattern(
-            '{OUTPUT_DIR}/flutter_assets/isolate_snapshot_data'),
-        const Source.pattern('{OUTPUT_DIR}/flutter_assets/kernel_blob.bin'),
-      ];
-}
-
-class ReleaseNativeTpk extends NativeTpk {
-  ReleaseNativeTpk(FlutterProject project, TizenBuildInfo buildInfo)
-      : super(project, buildInfo);
-
-  @override
-  String get name => 'release_native_tpk';
-
-  @override
-  List<Target> get dependencies => <Target>[
-        TizenAotElf(buildInfo.targetArchs),
-        ...super.dependencies,
-      ];
 }
