@@ -90,8 +90,6 @@ class TizenEmulatorManager extends EmulatorManager {
         name,
         '-p',
         platformImage.name,
-        '-t',
-        preferredDevices[platformImage.profile],
       ],
     );
     return CreateEmulatorResult(
@@ -101,16 +99,6 @@ class TizenEmulatorManager extends EmulatorManager {
       error: runResult.stderr,
     );
   }
-
-  static const Map<String, String> preferredDevices = <String, String>{
-    'tv': 'HD1080 TV',
-    'wearable': 'Wearable Circle',
-  };
-
-  static const Map<String, int> profilePriority = <String, int>{
-    'tv': 1,
-    'wearable': 2,
-  };
 
   List<PlatformImage> _loadAllPlatformImages() {
     final Directory platformsDir = _tizenSdk.platformsDirectory;
@@ -171,14 +159,14 @@ class TizenEmulatorManager extends EmulatorManager {
       return null;
     }
     // Selects an image with the highest platform version among available profiles.
-    // TV profiles have priority over wearable profiles.
+    // TV profile takes priority over other profiles.
     platformImages.sort((PlatformImage a, PlatformImage b) {
-      if (a.profile == b.profile) {
-        return -a.version.compareTo(b.version);
-      }
-      return profilePriority[a.profile].compareTo(profilePriority[b.profile]);
+      return -a.version.compareTo(b.version);
     });
-    return platformImages.first;
+    return platformImages.firstWhere(
+      (PlatformImage image) => image.profile == 'tv',
+      orElse: () => platformImages.first,
+    );
   }
 
   @override
