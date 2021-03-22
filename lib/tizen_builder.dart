@@ -118,8 +118,8 @@ class TizenBuilder {
     );
 
     final Target target = buildInfo.isDebug
-        ? DebugTizenAssetBundle(project, tizenBuildInfo)
-        : ReleaseTizenAssetBundle(project, tizenBuildInfo);
+        ? DebugTizenApplication(project, tizenBuildInfo)
+        : ReleaseTizenApplication(project, tizenBuildInfo);
 
     final String buildModeName = getNameForBuildMode(buildInfo.mode);
     final Status status = globals.logger.startProgress(
