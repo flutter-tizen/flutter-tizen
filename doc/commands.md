@@ -110,7 +110,7 @@ Not all commands in the [`flutter`](https://flutter.dev/docs/reference/flutter-c
 
 - ### `emulators`
 
-  List, launch and create emulators.
+  List, launch, and create emulators.
 
   ```sh
   # List all emulator instances.
