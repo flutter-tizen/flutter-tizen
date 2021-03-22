@@ -26,7 +26,7 @@ import 'tizen_sdk.dart';
 import 'tizen_tpk.dart';
 
 /// Prepares the pre-built flutter bundle.
-class TizenAssetBundle extends AndroidAssetBundle {
+abstract class TizenAssetBundle extends AndroidAssetBundle {
   TizenAssetBundle(this.project, this.buildInfo);
 
   final FlutterProject project;
@@ -34,21 +34,15 @@ class TizenAssetBundle extends AndroidAssetBundle {
 
   @override
   String get name => 'tizen_asset_bundle';
-
-  @override
-  List<Target> get dependencies => <Target>[
-        ...super.dependencies,
-        TizenPlugins(project, buildInfo),
-      ];
 }
 
 /// Source: [DebugAndroidApplication] in `android.dart`
-class DebugTizenAssetBundle extends TizenAssetBundle {
-  DebugTizenAssetBundle(FlutterProject project, TizenBuildInfo buildInfo)
+class DebugTizenApplication extends TizenAssetBundle {
+  DebugTizenApplication(FlutterProject project, TizenBuildInfo buildInfo)
       : super(project, buildInfo);
 
   @override
-  String get name => 'debug_tizen_asset_bundle';
+  String get name => 'debug_tizen_application';
 
   @override
   List<Source> get inputs => <Source>[
@@ -66,20 +60,29 @@ class DebugTizenAssetBundle extends TizenAssetBundle {
             '{OUTPUT_DIR}/flutter_assets/isolate_snapshot_data'),
         const Source.pattern('{OUTPUT_DIR}/flutter_assets/kernel_blob.bin'),
       ];
-}
-
-/// See: [ReleaseAndroidApplication] in `android.dart`
-class ReleaseTizenAssetBundle extends TizenAssetBundle {
-  ReleaseTizenAssetBundle(FlutterProject project, TizenBuildInfo buildInfo)
-      : super(project, buildInfo);
-
-  @override
-  String get name => 'release_tizen_asset_bundle';
 
   @override
   List<Target> get dependencies => <Target>[
-        TizenAotElf(buildInfo.targetArchs),
         ...super.dependencies,
+        if (TizenProject.fromFlutter(project).isDotnet)
+          TizenPlugins(project, buildInfo),
+      ];
+}
+
+/// See: [ReleaseAndroidApplication] in `android.dart`
+class ReleaseTizenApplication extends TizenAssetBundle {
+  ReleaseTizenApplication(FlutterProject project, TizenBuildInfo buildInfo)
+      : super(project, buildInfo);
+
+  @override
+  String get name => 'release_tizen_application';
+
+  @override
+  List<Target> get dependencies => <Target>[
+        ...super.dependencies,
+        TizenAotElf(buildInfo.targetArchs),
+        if (TizenProject.fromFlutter(project).isDotnet)
+          TizenPlugins(project, buildInfo),
       ];
 }
 
