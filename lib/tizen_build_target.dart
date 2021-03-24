@@ -18,6 +18,7 @@ import 'package:flutter_tools/src/build_system/exceptions.dart';
 import 'package:flutter_tools/src/build_system/source.dart';
 import 'package:flutter_tools/src/build_system/targets/android.dart';
 import 'package:flutter_tools/src/build_system/targets/common.dart';
+import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/project.dart';
 
@@ -669,9 +670,18 @@ class NativeTpk {
     // Prepare for build.
     final String buildConfig = buildMode.isPrecompiled ? 'Release' : 'Debug';
     final Directory buildDir = tizenDir.childDirectory(buildConfig);
+    final Directory embeddingDir = environment.fileSystem
+        .directory(Cache.flutterRoot)
+        .parent
+        .childDirectory('embedding')
+        .childDirectory('cpp');
 
-    final List<String> userIncludes = <String>[];
-    final List<String> userSources = <String>[];
+    final List<String> userIncludes = <String>[
+      embeddingDir.childDirectory('include').path,
+    ];
+    final List<String> userSources = <String>[
+      embeddingDir.childFile('*.cc').path,
+    ];
 
     final List<TizenPlugin> nativePlugins =
         await findTizenPlugins(project, nativeOnly: true);

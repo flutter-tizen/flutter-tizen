@@ -320,17 +320,17 @@ void _writeCppPluginRegistrant(
 #ifndef GENERATED_PLUGIN_REGISTRANT_
 #define GENERATED_PLUGIN_REGISTRANT_
 
-#include "flutter_tizen.h"
+#include <flutter/plugin_registry.h>
 
 {{#plugins}}
 #include "{{file}}"
 {{/plugins}}
 
 // Registers Flutter plugins.
-void RegisterPlugins(FlutterWindowControllerRef window) {
+void RegisterPlugins(flutter::PluginRegistry *registry) {
 {{#plugins}}
   {{class}}RegisterWithRegistrar(
-      FlutterDesktopGetPluginRegistrar(window, "{{class}}"));
+      registry->GetRegistrarForPlugin("{{class}}"));
 {{/plugins}}
 }
 
