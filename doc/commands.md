@@ -32,7 +32,7 @@ Not all commands in the [`flutter`](https://flutter.dev/docs/reference/flutter-c
 
 - ### `attach`
 
-  Attach to a Flutter app running on a Tizen device.
+  Attach to a Flutter app running on a connected device.
 
   ```sh
   flutter-tizen attach
@@ -72,16 +72,11 @@ Not all commands in the [`flutter`](https://flutter.dev/docs/reference/flutter-c
 
 - ### `create`
 
-  Create a new project.
+  Create a new Flutter project.
 
   ```sh
   # Create a new app project in the current directory.
   # If a project already exists in the current directory, only missing files are added.
-  flutter-tizen create .
-
-  # The Tizen embedding APIs are not yet stable.
-  # Delete and re-create the `tizen` directory as often as you can.
-  rm -r tizen/
   flutter-tizen create .
 
   # Create a new plugin project in `foobar_tizen` directory.
@@ -98,7 +93,7 @@ Not all commands in the [`flutter`](https://flutter.dev/docs/reference/flutter-c
 
 - ### `doctor`
 
-  Show information about the installed Tizen tooling.
+  Show information about the installed tooling.
 
   ```sh
   flutter-tizen doctor
@@ -106,7 +101,7 @@ Not all commands in the [`flutter`](https://flutter.dev/docs/reference/flutter-c
 
 - ### `drive`
 
-  Run Flutter Driver tests. For details, see [`integration_test`](https://github.com/flutter/plugins/tree/master/packages/integration_test) (plugin).
+  Run integration tests for the project on an attached device. For details, see [`integration_test`](https://github.com/flutter/flutter/tree/master/packages/integration_test).
 
   ```sh
   # Launch `foo_test.dart` on a Tizen device.
@@ -115,14 +110,14 @@ Not all commands in the [`flutter`](https://flutter.dev/docs/reference/flutter-c
 
 - ### `emulators`
 
-  List and launch emulators. Currently only works with Tizen emulators.
+  List, launch, and create emulators.
 
   ```sh
   # List all emulator instances.
   flutter-tizen emulators
 
-  # Launch a TV 5.5 emulator.
-  flutter-tizen emulators --launch T-samsung-5.5-x86
+  # Launch a TV 6.0 emulator.
+  flutter-tizen emulators --launch T-samsung-6.0-x86
   ```
 
 - ### `format`
@@ -138,13 +133,13 @@ Not all commands in the [`flutter`](https://flutter.dev/docs/reference/flutter-c
   Generate localizations for the Flutter project. Identical to `flutter gen-l10n`.
 
   ```sh
-  # Note: Create a template arb file "app_en.arb" in "lib/l10n" before running this.
+  # Note: Create a template arb file `app_en.arb` in `lib/l10n` before running this.
   flutter-tizen gen-l10n
   ```
 
 - ### `install`
 
-  Install TPK on a Tizen device.
+  Install a TPK package on an attached device.
 
   ```sh
   # Install `build/tizen/*.tpk` on a Tizen device.
@@ -164,7 +159,7 @@ Not all commands in the [`flutter`](https://flutter.dev/docs/reference/flutter-c
 
 - ### `pub`
 
-  Commands for managing Flutter packages. Identical to `flutter pub`.
+  Commands for managing Flutter packages.
 
   ```sh
   # Get packages for the current project.
@@ -173,18 +168,17 @@ Not all commands in the [`flutter`](https://flutter.dev/docs/reference/flutter-c
 
 - ### `run`
 
-  Build the current project and run on a Tizen device.
+  Build the current project and run on a connected device. For more information on each build mode, see [Flutter's build modes](https://flutter.dev/docs/testing/build-modes).
 
   ```sh
   # Build and run in debug mode.
   flutter-tizen run
 
   # Build and run in release mode.
-  # Full performance, but no debugging (hot-reload) support.
   flutter-tizen run --release
 
-  # Specify the device ID to run on.
-  flutter-tizen run -d emulator-26101
+  # Build and run in profile mode.
+  flutter-tizen run --profile
   ```
 
 - ### `screenshot`
@@ -207,7 +201,7 @@ Not all commands in the [`flutter`](https://flutter.dev/docs/reference/flutter-c
 
 - ### `test`
 
-  Run tests in this package.
+  Run Flutter unit tests for the current project.
 
   ```sh
   flutter-tizen test test/general
