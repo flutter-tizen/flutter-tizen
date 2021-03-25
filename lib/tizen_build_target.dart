@@ -11,6 +11,7 @@ import 'package:flutter_tools/src/base/process.dart';
 import 'package:flutter_tools/src/base/terminal.dart';
 import 'package:flutter_tools/src/build_info.dart';
 import 'package:flutter_tools/src/build_system/build_system.dart';
+import 'package:flutter_tools/src/build_system/depfile.dart';
 import 'package:flutter_tools/src/build_system/exceptions.dart';
 import 'package:flutter_tools/src/build_system/source.dart';
 import 'package:flutter_tools/src/build_system/targets/android.dart';
@@ -63,8 +64,11 @@ class TizenPlugins extends Target {
       ];
 
   @override
-  List<Source> get outputs => const <Source>[
-        Source.pattern('{PROJECT_DIR}/tizen/flutter/ephemeral'),
+  List<Source> get outputs => const <Source>[];
+
+  @override
+  List<String> get depfiles => <String>[
+        'tizen_plugins.d',
       ];
 
   @override
@@ -162,6 +166,60 @@ class TizenPlugins extends Target {
         sharedLib.copySync(outputDir.childFile(sharedLib.basename).path);
       }
     }
+
+    final Depfile pluginDepfile = collectPluginSources(
+      nativePlugins,
+      environment,
+      ephemeralDir,
+    );
+    final DepfileService depfileService = DepfileService(
+      fileSystem: environment.fileSystem,
+      logger: environment.logger,
+    );
+    depfileService.writeToFile(
+      pluginDepfile,
+      environment.buildDir.childFile('tizen_plugins.d'),
+    );
+  }
+
+  Depfile collectPluginSources(
+    List<TizenPlugin> nativePlugins,
+    Environment environment,
+    Directory ephemeralDir,
+  ) {
+    final List<File> inputs = <File>[];
+    final List<File> outputs = <File>[];
+
+    for (final TizenPlugin plugin in nativePlugins) {
+      for (final String arch in buildInfo.targetArchs) {
+        final TizenLibrary tizenLibrary = TizenLibrary(plugin.path);
+
+        final Directory headerDir = tizenLibrary.headerDir;
+        final Directory sourceDir = tizenLibrary.sourecDir;
+        final File projectFile = tizenLibrary.projectFile;
+
+        if (projectFile != null) {
+          inputs.add(projectFile);
+        }
+        if (headerDir?.existsSync() ?? false) {
+          headerDir.listSync().whereType<File>().forEach((File file) {
+            inputs.add(file);
+          });
+        }
+        if (sourceDir?.existsSync() ?? false) {
+          sourceDir.listSync().whereType<File>().forEach((File file) {
+            inputs.add(file);
+          });
+        }
+
+        final File sharedLib = ephemeralDir
+            .childDirectory('lib')
+            .childDirectory(arch)
+            .childFile('lib' + (plugin.toMap()['sofile'] as String));
+        outputs.add(sharedLib);
+      }
+    }
+    return Depfile(inputs, outputs);
   }
 }
 
