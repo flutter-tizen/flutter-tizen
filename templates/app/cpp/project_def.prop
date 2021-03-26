@@ -17,7 +17,7 @@ USER_CPP_UNDEFS =
 # Compiler/linker flags
 USER_CFLAGS_MISC =
 USER_CPPFLAGS_MISC = -c -fmessage-length=0
-USER_LFLAGS =
+USER_LFLAGS = -Wl,-E
 
 # Libraries and objects
 USER_LIB_DIRS = lib
