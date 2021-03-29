@@ -43,12 +43,12 @@ namespace Tizen.Flutter.Embedding
                 return DefaultEmbedder.FlutterCreateWindow(ref window_properties, ref engine_properties);
         }
 
-        public static void FlutterDestoryWindow(FlutterWindowControllerHandle window)
+        public static void FlutterDestroyWindow(FlutterWindowControllerHandle window)
         {
             if (IsTizen40)
-                Tizen40Embedder.FlutterDestoryWindow(window);
+                Tizen40Embedder.FlutterDestroyWindow(window);
             else
-                DefaultEmbedder.FlutterDestoryWindow(window);
+                DefaultEmbedder.FlutterDestroyWindow(window);
         }
 
         public static void FlutterNotifyLocaleChange(FlutterWindowControllerHandle window)
@@ -106,7 +106,7 @@ namespace Tizen.Flutter.Embedding
                 ref FlutterEngineProperties engine_properties);
 
             [DllImport(SharedLibrary)]
-            public static extern void FlutterDestoryWindow(
+            public static extern void FlutterDestroyWindow(
                 FlutterWindowControllerHandle window);
 
             [DllImport(SharedLibrary)]
@@ -142,7 +142,7 @@ namespace Tizen.Flutter.Embedding
                 ref FlutterEngineProperties engine_properties);
 
             [DllImport(SharedLibrary)]
-            public static extern void FlutterDestoryWindow(
+            public static extern void FlutterDestroyWindow(
                 FlutterWindowControllerHandle window);
 
             [DllImport(SharedLibrary)]

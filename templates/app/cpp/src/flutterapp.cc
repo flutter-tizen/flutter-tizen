@@ -86,13 +86,9 @@ static void app_terminate(void *data) {
 
   appdata_s *ad = (appdata_s *)data;
   if (ad->window) {
-    FlutterDestoryWindow(ad->window);
+    FlutterDestroyWindow(ad->window);
     ad->window = nullptr;
   }
-}
-
-static void ui_app_orient_changed(app_event_info_h event_info, void *data) {
-  // Unimplemented
 }
 
 static void ui_app_lang_changed(app_event_info_h event_info, void *data) {
@@ -127,7 +123,6 @@ int main(int argc, char *argv[]) {
 
   app_event_handler_h handlers[5] = {};
   ui_app_add_event_handler(&handlers[APP_EVENT_LOW_MEMORY], APP_EVENT_LOW_MEMORY, ui_app_low_memory, &ad);
-  ui_app_add_event_handler(&handlers[APP_EVENT_DEVICE_ORIENTATION_CHANGED], APP_EVENT_DEVICE_ORIENTATION_CHANGED, ui_app_orient_changed, &ad);
   ui_app_add_event_handler(&handlers[APP_EVENT_LANGUAGE_CHANGED], APP_EVENT_LANGUAGE_CHANGED, ui_app_lang_changed, &ad);
   ui_app_add_event_handler(&handlers[APP_EVENT_REGION_FORMAT_CHANGED], APP_EVENT_REGION_FORMAT_CHANGED, ui_app_region_changed, &ad);
 
