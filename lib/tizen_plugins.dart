@@ -220,7 +220,7 @@ Future<List<TizenPlugin>> findTizenPlugins(
       continue;
     } else if (nativeOnly && plugin.pluginClass == null) {
       continue;
-    } else if (dartOnly && plugin.pluginClass != null) {
+    } else if (dartOnly && plugin.dartPluginClass == null) {
       continue;
     }
     plugins.add(plugin);
