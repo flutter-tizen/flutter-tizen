@@ -11,6 +11,9 @@ import 'package:flutter_tools/src/base/process.dart';
 import 'package:flutter_tools/src/base/terminal.dart';
 import 'package:flutter_tools/src/build_info.dart';
 import 'package:flutter_tools/src/build_system/build_system.dart';
+import 'package:flutter_tools/src/build_system/depfile.dart';
+import 'package:flutter_tools/src/build_system/targets/assets.dart';
+import 'package:flutter_tools/src/build_system/targets/icon_tree_shaker.dart';
 import 'package:flutter_tools/src/build_system/exceptions.dart';
 import 'package:flutter_tools/src/build_system/source.dart';
 import 'package:flutter_tools/src/build_system/targets/android.dart';
@@ -26,20 +29,82 @@ import 'tizen_sdk.dart';
 import 'tizen_tpk.dart';
 
 /// Prepares the pre-built flutter bundle.
-abstract class TizenAssetBundle extends AndroidAssetBundle {
-  TizenAssetBundle(this.project, this.buildInfo);
-
-  final FlutterProject project;
-  final TizenBuildInfo buildInfo;
+///
+/// Source: [AndroidAssetBundle] in `android.dart`
+abstract class TizenAssetBundle extends Target {
+  const TizenAssetBundle();
 
   @override
   String get name => 'tizen_asset_bundle';
+
+  @override
+  List<Source> get inputs => const <Source>[
+        Source.pattern('{BUILD_DIR}/app.dill'),
+        ...IconTreeShaker.inputs,
+      ];
+
+  @override
+  List<Source> get outputs => const <Source>[];
+
+  @override
+  List<String> get depfiles => <String>[
+        'flutter_assets.d',
+      ];
+
+  @override
+  List<Target> get dependencies => const <Target>[
+        KernelSnapshot(),
+      ];
+
+  @override
+  Future<void> build(Environment environment) async {
+    if (environment.defines[kBuildMode] == null) {
+      throw MissingDefineException(kBuildMode, name);
+    }
+    final BuildMode buildMode =
+        getBuildModeForName(environment.defines[kBuildMode]);
+    final Directory outputDirectory = environment.outputDir
+        .childDirectory('flutter_assets')
+          ..createSync(recursive: true);
+
+    // Only copy the prebuilt runtimes and kernel blob in debug mode.
+    if (buildMode == BuildMode.debug) {
+      final String vmSnapshotData = environment.artifacts
+          .getArtifactPath(Artifact.vmSnapshotData, mode: BuildMode.debug);
+      final String isolateSnapshotData = environment.artifacts
+          .getArtifactPath(Artifact.isolateSnapshotData, mode: BuildMode.debug);
+      environment.buildDir
+          .childFile('app.dill')
+          .copySync(outputDirectory.childFile('kernel_blob.bin').path);
+      environment.fileSystem
+          .file(vmSnapshotData)
+          .copySync(outputDirectory.childFile('vm_snapshot_data').path);
+      environment.fileSystem
+          .file(isolateSnapshotData)
+          .copySync(outputDirectory.childFile('isolate_snapshot_data').path);
+    }
+    final Depfile assetDepfile = await copyAssets(
+      environment,
+      outputDirectory,
+      targetPlatform: TargetPlatform.android,
+    );
+    final DepfileService depfileService = DepfileService(
+      fileSystem: environment.fileSystem,
+      logger: environment.logger,
+    );
+    depfileService.writeToFile(
+      assetDepfile,
+      environment.buildDir.childFile('flutter_assets.d'),
+    );
+  }
 }
 
 /// Source: [DebugAndroidApplication] in `android.dart`
 class DebugTizenApplication extends TizenAssetBundle {
-  DebugTizenApplication(FlutterProject project, TizenBuildInfo buildInfo)
-      : super(project, buildInfo);
+  DebugTizenApplication(this.project, this.buildInfo);
+
+  final FlutterProject project;
+  final TizenBuildInfo buildInfo;
 
   @override
   String get name => 'debug_tizen_application';
@@ -71,8 +136,10 @@ class DebugTizenApplication extends TizenAssetBundle {
 
 /// See: [ReleaseAndroidApplication] in `android.dart`
 class ReleaseTizenApplication extends TizenAssetBundle {
-  ReleaseTizenApplication(FlutterProject project, TizenBuildInfo buildInfo)
-      : super(project, buildInfo);
+  ReleaseTizenApplication(this.project, this.buildInfo);
+
+  final FlutterProject project;
+  final TizenBuildInfo buildInfo;
 
   @override
   String get name => 'release_tizen_application';
