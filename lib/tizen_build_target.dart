@@ -189,6 +189,53 @@ class TizenPlugins extends Target {
     final List<File> inputs = <File>[];
     final List<File> outputs = <File>[];
 
+    final Directory engineDir = tizenArtifacts.getArtifactDirectory('engine');
+    final Directory commonDir = engineDir.childDirectory('common');
+    final Directory clientWrapperDir =
+        commonDir.childDirectory('client_wrapper');
+    final Directory publicDir = commonDir.childDirectory('public');
+
+    if (!engineDir.existsSync() ||
+        !clientWrapperDir.existsSync() ||
+        !publicDir.existsSync()) {
+      throwToolExit(
+        'The flutter engine artifacts were corrupted or invalid.\n'
+        'Unable to build tizen plugins.',
+      );
+    }
+
+    clientWrapperDir
+        .listSync(recursive: true)
+        .whereType<File>()
+        .forEach((File file) => inputs.add(file));
+
+    publicDir
+        .listSync(recursive: true)
+        .whereType<File>()
+        .forEach((File file) => inputs.add(file));
+
+    final TizenProject tizenProject = TizenProject.fromFlutter(project);
+    final String profile =
+        TizenManifest.parseFromXml(tizenProject.manifestFile)?.profile;
+
+    for (final String arch in buildInfo.targetArchs) {
+      final Directory engineBinaryDir = tizenArtifacts.getEngineDirectory(
+          getTargetPlatformForArch(arch), buildInfo.buildInfo.mode);
+      final File engineBinary =
+          engineBinaryDir.childFile('libflutter_tizen.so');
+      if (!engineBinary.existsSync()) {
+        throwToolExit(
+          'The flutter engine artifacts were corrupted or invalid.\n'
+          'Could not find engine binary: ${engineBinary.basename}.',
+        );
+      }
+      inputs.add(engineBinary);
+
+      final File rootstrap =
+          tizenSdk.getFlutterRootstrapFile(profile: profile, arch: arch);
+      inputs.add(rootstrap);
+    }
+
     for (final TizenPlugin plugin in nativePlugins) {
       final TizenLibrary tizenLibrary = TizenLibrary(plugin.path);
 

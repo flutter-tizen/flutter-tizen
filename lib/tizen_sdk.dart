@@ -108,7 +108,7 @@ class TizenSdk {
 
   String get defaultGccVersion => '9.2';
 
-  String getFlutterRootstrap({
+  File getFlutterRootstrapFile({
     String profile,
     @required String arch,
   }) {
@@ -128,18 +128,27 @@ class TizenSdk {
         'Make sure your tizen-manifest.xml contains correct information for build.',
       );
     }
+    return rootstrapTarget;
+  }
+
+  String getFlutterRootstrap({
+    String profile,
+    @required String arch,
+  }) {
+    final File rootstrapTarget =
+        getFlutterRootstrapFile(profile: profile, arch: arch);
 
     // Tizen SBI creates a list of rootstraps from this directory.
     final Directory pluginsDir = toolsDirectory
         .childDirectory('smart-build-interface')
         .childDirectory('plugins');
-    final Link rootstrapLink = pluginsDir.childLink('$rootstrapName.xml');
+    final Link rootstrapLink = pluginsDir.childLink(rootstrapTarget.basename);
     if (rootstrapLink.existsSync()) {
       rootstrapLink.deleteSync(recursive: true);
     }
     rootstrapLink.createSync(rootstrapTarget.path, recursive: true);
 
-    return rootstrapName;
+    return rootstrapTarget.basename.replaceFirst('.xml', '');
   }
 }
 

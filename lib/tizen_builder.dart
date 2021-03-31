@@ -32,6 +32,8 @@ import 'tizen_build_target.dart';
 import 'tizen_project.dart';
 import 'tizen_tpk.dart';
 
+const String kDeviceProfile = 'DeviceProfile';
+
 /// See: [AndroidBuildInfo] in `build_info.dart`
 class TizenBuildInfo {
   const TizenBuildInfo(
@@ -90,6 +92,7 @@ class TizenBuilder {
       defines: <String, String>{
         kTargetFile: targetFile,
         kBuildMode: getNameForBuildMode(buildInfo.mode),
+        kDeviceProfile: tizenBuildInfo.deviceProfile,
         kTargetPlatform: getNameForTargetPlatform(TargetPlatform.android),
         kDartObfuscation: buildInfo.dartObfuscation.toString(),
         kSplitDebugInfo: buildInfo.splitDebugInfoPath,
