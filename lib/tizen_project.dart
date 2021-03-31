@@ -70,7 +70,7 @@ class TizenLibrary {
 
   Directory get headerDir => directory.childDirectory('inc');
 
-  Directory get sourecDir => directory.childDirectory('src');
+  Directory get sourceDir => directory.childDirectory('src');
 
   final RegExp _propertyFormat = RegExp(r'(\S+)\s*\+?=(.*)');
 

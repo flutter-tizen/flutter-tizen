@@ -4,6 +4,7 @@
 // found in the LICENSE file.
 
 import 'package:file/file.dart';
+import 'package:meta/meta.dart';
 import 'package:flutter_tools/src/artifacts.dart';
 import 'package:flutter_tools/src/base/build.dart';
 import 'package:flutter_tools/src/base/common.dart';
@@ -167,10 +168,9 @@ class TizenPlugins extends Target {
       }
     }
 
-    final Depfile pluginDepfile = collectPluginSources(
-      nativePlugins,
-      environment,
-      ephemeralDir,
+    final Depfile pluginDepfile = _createDepfile(
+      nativePlugins: nativePlugins,
+      compiledPluginsDir: ephemeralDir.childDirectory('lib'),
     );
     final DepfileService depfileService = DepfileService(
       fileSystem: environment.fileSystem,
@@ -182,38 +182,43 @@ class TizenPlugins extends Target {
     );
   }
 
-  Depfile collectPluginSources(
-    List<TizenPlugin> nativePlugins,
-    Environment environment,
-    Directory ephemeralDir,
-  ) {
+  Depfile _createDepfile({
+    @required List<TizenPlugin> nativePlugins,
+    @required Directory compiledPluginsDir,
+  }) {
     final List<File> inputs = <File>[];
     final List<File> outputs = <File>[];
 
     for (final TizenPlugin plugin in nativePlugins) {
+      final TizenLibrary tizenLibrary = TizenLibrary(plugin.path);
+
+      if (!tizenLibrary.isValid) {
+        throwToolExit(
+          '${plugin.name} is not a valid Tizen plugin project\n'
+          "Check if project_def.prop exists in plugin's tizen directory.",
+        );
+      }
+
+      final Directory headerDir = tizenLibrary.headerDir;
+      final Directory sourceDir = tizenLibrary.sourceDir;
+      final File projectFile = tizenLibrary.projectFile;
+
+      inputs.add(projectFile);
+      if (headerDir.existsSync()) {
+        headerDir
+            .listSync(recursive: true)
+            .whereType<File>()
+            .forEach((File file) => inputs.add(file));
+      }
+      if (sourceDir.existsSync()) {
+        sourceDir
+            .listSync(recursive: true)
+            .whereType<File>()
+            .forEach((File file) => inputs.add(file));
+      }
+
       for (final String arch in buildInfo.targetArchs) {
-        final TizenLibrary tizenLibrary = TizenLibrary(plugin.path);
-
-        final Directory headerDir = tizenLibrary.headerDir;
-        final Directory sourceDir = tizenLibrary.sourecDir;
-        final File projectFile = tizenLibrary.projectFile;
-
-        if (projectFile != null) {
-          inputs.add(projectFile);
-        }
-        if (headerDir?.existsSync() ?? false) {
-          headerDir.listSync().whereType<File>().forEach((File file) {
-            inputs.add(file);
-          });
-        }
-        if (sourceDir?.existsSync() ?? false) {
-          sourceDir.listSync().whereType<File>().forEach((File file) {
-            inputs.add(file);
-          });
-        }
-
-        final File sharedLib = ephemeralDir
-            .childDirectory('lib')
+        final File sharedLib = compiledPluginsDir
             .childDirectory(arch)
             .childFile('lib' + (plugin.toMap()['sofile'] as String));
         outputs.add(sharedLib);
