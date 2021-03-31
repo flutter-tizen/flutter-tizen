@@ -32,6 +32,11 @@ import 'tizen_build_target.dart';
 import 'tizen_project.dart';
 import 'tizen_tpk.dart';
 
+/// The define to control what Tizen architectures are built for.
+/// This is expected to be a comma-separated list of architectures.
+const String kTizenArchs = 'TizenArchs';
+
+/// The define to control what Tizen device is built for.
 const String kDeviceProfile = 'DeviceProfile';
 
 /// See: [AndroidBuildInfo] in `build_info.dart`
@@ -90,6 +95,7 @@ class TizenBuilder {
           ? null
           : globals.flutterVersion.engineRevision,
       defines: <String, String>{
+        kTizenArchs: tizenBuildInfo.targetArchs.join(','),
         kTargetFile: targetFile,
         kBuildMode: getNameForBuildMode(buildInfo.mode),
         kDeviceProfile: tizenBuildInfo.deviceProfile,
@@ -115,16 +121,9 @@ class TizenBuilder {
       processManager: globals.processManager,
     );
 
-    Target target;
-    if (tizenProject.isDotnet) {
-      target = buildInfo.isDebug
-          ? DebugDotnetTpk(project, tizenBuildInfo)
-          : ReleaseDotnetTpk(project, tizenBuildInfo);
-    } else {
-      target = buildInfo.isDebug
-          ? DebugNativeTpk(project, tizenBuildInfo)
-          : ReleaseNativeTpk(project, tizenBuildInfo);
-    }
+    final Target target = buildInfo.isDebug
+        ? DebugTizenApplication(project, tizenBuildInfo)
+        : ReleaseTizenApplication(project, tizenBuildInfo);
 
     final String buildModeName = getNameForBuildMode(buildInfo.mode);
     final Status status = globals.logger.startProgress(
@@ -138,6 +137,12 @@ class TizenBuilder {
           globals.printError(measurement.exception.toString());
         }
         throwToolExit('The build failed.');
+      }
+
+      if (tizenProject.isDotnet) {
+        await DotnetTpk(project, tizenBuildInfo).build(environment);
+      } else {
+        await NativeTpk(project, tizenBuildInfo).build(environment);
       }
 
       if (buildInfo.performanceMeasurementFile != null) {
