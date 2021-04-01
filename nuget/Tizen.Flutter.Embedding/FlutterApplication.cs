@@ -153,7 +153,7 @@ namespace Tizen.Flutter.Embedding
 
             if (!Handle.IsInvalid)
             {
-                FlutterDestoryWindow(Handle);
+                FlutterDestroyWindow(Handle);
             }
         }
 
