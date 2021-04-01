@@ -23,8 +23,9 @@ import 'tizen_project.dart';
 /// Contains the parameters to template a Tizen plugin.
 ///
 /// The [name] of the plugin is required. Either [dartPluginClass] or
-/// [pluginClass] are required. The [fileName] containing the plugin's code is
-/// required. [pluginClass] will be the entry point to the plugin's native code.
+/// [pluginClass] are required. [pluginClass] will be the entry point to the
+/// plugin's native code. If [pluginClass] is not empty, the [fileName]
+/// containing the plugin's code is required.
 ///
 /// Source: [LinuxPlugin] in `platform_plugins.dart`
 class TizenPlugin extends PluginPlatform implements NativeOrDartPlugin {
@@ -220,7 +221,7 @@ Future<List<TizenPlugin>> findTizenPlugins(
       continue;
     } else if (nativeOnly && plugin.pluginClass == null) {
       continue;
-    } else if (dartOnly && plugin.pluginClass != null) {
+    } else if (dartOnly && plugin.dartPluginClass == null) {
       continue;
     }
     plugins.add(plugin);
@@ -286,7 +287,7 @@ void _writeDartPluginRegistrant(
 // ignore_for_file: lines_longer_than_80_chars
 
 {{#plugins}}
-import 'package:{{name}}/{{file}}';
+import 'package:{{name}}/{{name}}.dart';
 {{/plugins}}
 
 // ignore: public_member_api_docs
