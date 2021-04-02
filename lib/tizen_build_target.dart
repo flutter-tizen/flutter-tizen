@@ -290,6 +290,12 @@ class TizenPlugins extends Target {
     );
   }
 
+  // Helper method that creates a depfile which lists dependent input files
+  // and the generated output binary from the build() process.
+  // The files collected here should be synced with the files used and created in compiling.
+  //
+  // TODO(HakkyuKim): Refactor so that this method doesn't duplicate codes in
+  // the build() method without mixing the code lines between two method.
   Depfile _createDepfile({
     @required List<TizenPlugin> nativePlugins,
     @required Directory compiledPluginsDir,
@@ -302,15 +308,6 @@ class TizenPlugins extends Target {
     final Directory clientWrapperDir =
         commonDir.childDirectory('client_wrapper');
     final Directory publicDir = commonDir.childDirectory('public');
-
-    if (!engineDir.existsSync() ||
-        !clientWrapperDir.existsSync() ||
-        !publicDir.existsSync()) {
-      throwToolExit(
-        'The flutter engine artifacts were corrupted or invalid.\n'
-        'Unable to build tizen plugins.',
-      );
-    }
 
     clientWrapperDir
         .listSync(recursive: true)
@@ -331,12 +328,6 @@ class TizenPlugins extends Target {
           getTargetPlatformForArch(arch), buildInfo.buildInfo.mode);
       final File engineBinary =
           engineBinaryDir.childFile('libflutter_tizen.so');
-      if (!engineBinary.existsSync()) {
-        throwToolExit(
-          'The flutter engine artifacts were corrupted or invalid.\n'
-          'Could not find engine binary: ${engineBinary.basename}.',
-        );
-      }
       inputs.add(engineBinary);
 
       final File rootstrap =
@@ -346,13 +337,6 @@ class TizenPlugins extends Target {
 
     for (final TizenPlugin plugin in nativePlugins) {
       final TizenLibrary tizenLibrary = TizenLibrary(plugin.path);
-
-      if (!tizenLibrary.isValid) {
-        throwToolExit(
-          '${plugin.name} is not a valid Tizen plugin project\n'
-          "Check if project_def.prop exists in plugin's tizen directory.",
-        );
-      }
 
       final Directory headerDir = tizenLibrary.headerDir;
       final Directory sourceDir = tizenLibrary.sourceDir;
