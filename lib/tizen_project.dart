@@ -68,6 +68,10 @@ class TizenLibrary {
 
   bool get isValid => projectFile.existsSync();
 
+  Directory get headerDir => directory.childDirectory('inc');
+
+  Directory get sourceDir => directory.childDirectory('src');
+
   final RegExp _propertyFormat = RegExp(r'(\S+)\s*\+?=(.*)');
 
   Map<String, String> _properties;

@@ -36,6 +36,9 @@ import 'tizen_tpk.dart';
 /// This is expected to be a comma-separated list of architectures.
 const String kTizenArchs = 'TizenArchs';
 
+/// The define to control what Tizen device is built for.
+const String kDeviceProfile = 'DeviceProfile';
+
 /// See: [AndroidBuildInfo] in `build_info.dart`
 class TizenBuildInfo {
   const TizenBuildInfo(
@@ -95,6 +98,7 @@ class TizenBuilder {
         kTizenArchs: tizenBuildInfo.targetArchs.join(','),
         kTargetFile: targetFile,
         kBuildMode: getNameForBuildMode(buildInfo.mode),
+        kDeviceProfile: tizenBuildInfo.deviceProfile,
         kTargetPlatform: getNameForTargetPlatform(TargetPlatform.android),
         kDartObfuscation: buildInfo.dartObfuscation.toString(),
         kSplitDebugInfo: buildInfo.splitDebugInfoPath,

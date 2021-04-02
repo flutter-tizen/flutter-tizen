@@ -4,6 +4,7 @@
 // found in the LICENSE file.
 
 import 'package:file/file.dart';
+import 'package:meta/meta.dart';
 import 'package:flutter_tools/src/artifacts.dart';
 import 'package:flutter_tools/src/base/build.dart';
 import 'package:flutter_tools/src/base/common.dart';
@@ -172,8 +173,11 @@ class TizenPlugins extends Target {
       ];
 
   @override
-  List<Source> get outputs => const <Source>[
-        Source.pattern('{PROJECT_DIR}/tizen/flutter/ephemeral'),
+  List<Source> get outputs => const <Source>[];
+
+  @override
+  List<String> get depfiles => <String>[
+        'tizen_plugins.d',
       ];
 
   @override
@@ -271,6 +275,95 @@ class TizenPlugins extends Target {
         sharedLib.copySync(outputDir.childFile(sharedLib.basename).path);
       }
     }
+
+    final Depfile pluginDepfile = _createDepfile(
+      nativePlugins: nativePlugins,
+      compiledPluginsDir: ephemeralDir.childDirectory('lib'),
+    );
+    final DepfileService depfileService = DepfileService(
+      fileSystem: environment.fileSystem,
+      logger: environment.logger,
+    );
+    depfileService.writeToFile(
+      pluginDepfile,
+      environment.buildDir.childFile('tizen_plugins.d'),
+    );
+  }
+
+  // Helper method that creates a depfile which lists dependent input files
+  // and the generated output binary from the build() process.
+  // The files collected here should be synced with the files used and created in compiling.
+  //
+  // TODO(HakkyuKim): Refactor so that this method doesn't duplicate codes in
+  // the build() method without mixing the code lines between two method.
+  Depfile _createDepfile({
+    @required List<TizenPlugin> nativePlugins,
+    @required Directory compiledPluginsDir,
+  }) {
+    final List<File> inputs = <File>[];
+    final List<File> outputs = <File>[];
+
+    final Directory engineDir = tizenArtifacts.getArtifactDirectory('engine');
+    final Directory commonDir = engineDir.childDirectory('common');
+    final Directory clientWrapperDir =
+        commonDir.childDirectory('client_wrapper');
+    final Directory publicDir = commonDir.childDirectory('public');
+
+    clientWrapperDir
+        .listSync(recursive: true)
+        .whereType<File>()
+        .forEach((File file) => inputs.add(file));
+
+    publicDir
+        .listSync(recursive: true)
+        .whereType<File>()
+        .forEach((File file) => inputs.add(file));
+
+    final TizenProject tizenProject = TizenProject.fromFlutter(project);
+    final String profile =
+        TizenManifest.parseFromXml(tizenProject.manifestFile)?.profile;
+
+    for (final String arch in buildInfo.targetArchs) {
+      final Directory engineBinaryDir = tizenArtifacts.getEngineDirectory(
+          getTargetPlatformForArch(arch), buildInfo.buildInfo.mode);
+      final File engineBinary =
+          engineBinaryDir.childFile('libflutter_tizen.so');
+      inputs.add(engineBinary);
+
+      final File rootstrap =
+          tizenSdk.getFlutterRootstrapFile(profile: profile, arch: arch);
+      inputs.add(rootstrap);
+    }
+
+    for (final TizenPlugin plugin in nativePlugins) {
+      final TizenLibrary tizenLibrary = TizenLibrary(plugin.path);
+
+      final Directory headerDir = tizenLibrary.headerDir;
+      final Directory sourceDir = tizenLibrary.sourceDir;
+      final File projectFile = tizenLibrary.projectFile;
+
+      inputs.add(projectFile);
+      if (headerDir.existsSync()) {
+        headerDir
+            .listSync(recursive: true)
+            .whereType<File>()
+            .forEach((File file) => inputs.add(file));
+      }
+      if (sourceDir.existsSync()) {
+        sourceDir
+            .listSync(recursive: true)
+            .whereType<File>()
+            .forEach((File file) => inputs.add(file));
+      }
+
+      for (final String arch in buildInfo.targetArchs) {
+        final File sharedLib = compiledPluginsDir
+            .childDirectory(arch)
+            .childFile('lib' + (plugin.toMap()['sofile'] as String));
+        outputs.add(sharedLib);
+      }
+    }
+    return Depfile(inputs, outputs);
   }
 }
 
