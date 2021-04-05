@@ -322,6 +322,7 @@ class TizenPlugins extends Target {
     final TizenProject tizenProject = TizenProject.fromFlutter(project);
     final String profile =
         TizenManifest.parseFromXml(tizenProject.manifestFile)?.profile;
+    inputs.add(tizenProject.manifestFile);
 
     for (final String arch in buildInfo.targetArchs) {
       final Directory engineBinaryDir = tizenArtifacts.getEngineDirectory(
