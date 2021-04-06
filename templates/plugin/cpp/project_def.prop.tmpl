@@ -20,7 +20,11 @@ USER_CPPFLAGS_MISC = -c -fmessage-length=0
 USER_LFLAGS =
 
 # Libraries and objects
-USER_LIB_DIRS = lib
+# To provide libraries for your plugin, you must put them in specific
+# directories that match their supporting cpu architecture type.
+# Due to compatibility issue with Tizen CLI, directory names must be armel for arm 
+# and i586 for x86.
+USER_LIB_DIRS = lib/${BUILD_ARCH}
 USER_LIBS =
 USER_OBJS =
 
