@@ -108,24 +108,13 @@ class TizenCreateCommand extends CreateCommand {
         .childDirectory('flutter_tools')
         .childDirectory('templates');
     final File templateManifest = templates.childFile('template_manifest.json');
-    final File backupTemplateManifest =
-        templates.childFile('template_manifest.json.bak');
 
     // This is required due to: https://github.com/flutter/flutter/pull/59706
     // TODO(swift-kim): Find any better workaround. One option is to override
     // renderTemplate() but it may result in additional complexity.
-    if (templateManifest.existsSync() && !backupTemplateManifest.existsSync()) {
-      templateManifest.renameSync(backupTemplateManifest.path);
-      tizenTemplateManifest.copySync(templateManifest.path);
-    }
+    tizenTemplateManifest.copySync(templateManifest.path);
 
     final String language = stringArg('tizen-language');
-    if (language == 'cpp') {
-      globals.printStatus(
-        'Warning: The Tizen language option is experimental. Use it for testing purposes only.',
-        color: TerminalColor.yellow,
-      );
-    }
     // The dart plugin template is not supported at the moment.
     const String pluginType = 'cpp';
     final List<Directory> created = <Directory>[];
