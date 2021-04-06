@@ -273,12 +273,21 @@ class TizenPlugins extends Target {
             .childDirectory(arch)
               ..createSync(recursive: true);
         sharedLib.copySync(outputDir.childFile(sharedLib.basename).path);
+
+        // copy binaries that plugin depends on
+        final Directory pluginLibDir =
+            pluginDir.childDirectory('lib').childDirectory(arch);
+
+        if (pluginLibDir.existsSync()) {
+          globals.fsUtils.copyDirectorySync(pluginLibDir, outputDir);
+        }
       }
     }
 
     final Depfile pluginDepfile = _createDepfile(
       nativePlugins: nativePlugins,
       compiledPluginsDir: ephemeralDir.childDirectory('lib'),
+      environment: environment,
     );
     final DepfileService depfileService = DepfileService(
       fileSystem: environment.fileSystem,
@@ -299,6 +308,7 @@ class TizenPlugins extends Target {
   Depfile _createDepfile({
     @required List<TizenPlugin> nativePlugins,
     @required Directory compiledPluginsDir,
+    @required Environment environment,
   }) {
     final List<File> inputs = <File>[];
     final List<File> outputs = <File>[];
@@ -361,6 +371,23 @@ class TizenPlugins extends Target {
             .childDirectory(arch)
             .childFile('lib' + (plugin.toMap()['sofile'] as String));
         outputs.add(sharedLib);
+
+        final Directory pluginLibDir = environment.fileSystem
+            .directory(plugin.path)
+            .childDirectory('lib')
+            .childDirectory(arch);
+        if (pluginLibDir.existsSync()) {
+          final List<File> pluginLibFiles =
+              pluginLibDir.listSync(recursive: true).whereType<File>().toList();
+          for (final File file in pluginLibFiles) {
+            inputs.add(file);
+            final String suffixPath =
+                file.path.replaceFirst('${pluginLibDir.path}/', '');
+            final String outputPath = environment.fileSystem.path
+                .join(compiledPluginsDir.childDirectory(arch).path, suffixPath);
+            outputs.add(environment.fileSystem.file(outputPath));
+          }
+        }
       }
     }
     return Depfile(inputs, outputs);
