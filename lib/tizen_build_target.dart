@@ -274,8 +274,9 @@ class TizenPlugins extends Target {
         sharedLib.copySync(outputDir.childFile(sharedLib.basename).path);
 
         // copy binaries that plugin depends on
-        final Directory pluginLibDir =
-            pluginDir.childDirectory('lib').childDirectory(arch);
+        final Directory pluginLibDir = pluginDir
+            .childDirectory('lib')
+            .childDirectory(arch == 'arm' ? 'armel' : 'i586');
 
         if (pluginLibDir.existsSync()) {
           globals.fsUtils.copyDirectorySync(pluginLibDir, outputDir);
@@ -314,7 +315,6 @@ class TizenPlugins extends Target {
         .listSync(recursive: true)
         .whereType<File>()
         .forEach((File file) => inputs.add(file));
-
     publicDir
         .listSync(recursive: true)
         .whereType<File>()
@@ -336,15 +336,13 @@ class TizenPlugins extends Target {
       inputs.add(rootstrap);
     }
 
+    final Directory ephemeralDir = tizenProject.ephemeralDirectory;
+
     final List<TizenPlugin> nativePlugins =
         await findTizenPlugins(project, nativeOnly: true);
 
-    final Directory compiledPluginsDir =
-        tizenProject.ephemeralDirectory.childDirectory('lib');
-
     for (final TizenPlugin plugin in nativePlugins) {
       final Directory pluginDir = environment.fileSystem.directory(plugin.path);
-
       final Directory headerDir = pluginDir.childDirectory('inc');
       final Directory sourceDir = pluginDir.childDirectory('src');
 
@@ -363,22 +361,26 @@ class TizenPlugins extends Target {
       }
 
       for (final String arch in buildInfo.targetArchs) {
-        final File sharedLib = compiledPluginsDir
+        final File sharedLib = ephemeralDir
+            .childDirectory('lib')
             .childDirectory(arch)
             .childFile('lib' + (plugin.toMap()['sofile'] as String));
         outputs.add(sharedLib);
 
-        final Directory pluginLibDir =
-            pluginDir.childDirectory('lib').childDirectory(arch);
+        final Directory pluginLibDir = pluginDir
+            .childDirectory('lib')
+            .childDirectory(arch == 'arm' ? 'armel' : 'i586');
         if (pluginLibDir.existsSync()) {
           final List<File> pluginLibFiles =
               pluginLibDir.listSync(recursive: true).whereType<File>().toList();
           for (final File file in pluginLibFiles) {
             inputs.add(file);
-            final String suffixPath =
+            final String relativePath =
                 file.path.replaceFirst('${pluginLibDir.path}/', '');
-            final String outputPath = environment.fileSystem.path
-                .join(compiledPluginsDir.childDirectory(arch).path, suffixPath);
+            final String outputPath = environment.fileSystem.path.join(
+              ephemeralDir.childDirectory('lib').childDirectory(arch).path,
+              relativePath,
+            );
             outputs.add(environment.fileSystem.file(outputPath));
           }
         }
