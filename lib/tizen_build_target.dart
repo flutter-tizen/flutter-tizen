@@ -4,7 +4,6 @@
 // found in the LICENSE file.
 
 import 'package:file/file.dart';
-import 'package:meta/meta.dart';
 import 'package:flutter_tools/src/artifacts.dart';
 import 'package:flutter_tools/src/base/build.dart';
 import 'package:flutter_tools/src/base/common.dart';
@@ -273,13 +272,19 @@ class TizenPlugins extends Target {
             .childDirectory(arch)
               ..createSync(recursive: true);
         sharedLib.copySync(outputDir.childFile(sharedLib.basename).path);
+
+        // copy binaries that plugin depends on
+        final Directory pluginLibDir = pluginDir
+            .childDirectory('lib')
+            .childDirectory(arch == 'arm' ? 'armel' : 'i586');
+
+        if (pluginLibDir.existsSync()) {
+          globals.fsUtils.copyDirectorySync(pluginLibDir, outputDir);
+        }
       }
     }
 
-    final Depfile pluginDepfile = _createDepfile(
-      nativePlugins: nativePlugins,
-      compiledPluginsDir: ephemeralDir.childDirectory('lib'),
-    );
+    final Depfile pluginDepfile = await _createDepfile(environment);
     final DepfileService depfileService = DepfileService(
       fileSystem: environment.fileSystem,
       logger: environment.logger,
@@ -296,15 +301,12 @@ class TizenPlugins extends Target {
   //
   // TODO(HakkyuKim): Refactor so that this method doesn't duplicate codes in
   // the build() method without mixing the code lines between two method.
-  Depfile _createDepfile({
-    @required List<TizenPlugin> nativePlugins,
-    @required Directory compiledPluginsDir,
-  }) {
+  Future<Depfile> _createDepfile(Environment environment) async {
     final List<File> inputs = <File>[];
     final List<File> outputs = <File>[];
 
-    final Directory engineDir = tizenArtifacts.getArtifactDirectory('engine');
-    final Directory commonDir = engineDir.childDirectory('common');
+    final Directory commonDir =
+        tizenArtifacts.getArtifactDirectory('engine').childDirectory('common');
     final Directory clientWrapperDir =
         commonDir.childDirectory('client_wrapper');
     final Directory publicDir = commonDir.childDirectory('public');
@@ -313,7 +315,6 @@ class TizenPlugins extends Target {
         .listSync(recursive: true)
         .whereType<File>()
         .forEach((File file) => inputs.add(file));
-
     publicDir
         .listSync(recursive: true)
         .whereType<File>()
@@ -336,14 +337,17 @@ class TizenPlugins extends Target {
       inputs.add(rootstrap);
     }
 
+    final Directory ephemeralDir = tizenProject.ephemeralDirectory;
+
+    final List<TizenPlugin> nativePlugins =
+        await findTizenPlugins(project, nativeOnly: true);
+
     for (final TizenPlugin plugin in nativePlugins) {
-      final TizenLibrary tizenLibrary = TizenLibrary(plugin.path);
+      final Directory pluginDir = environment.fileSystem.directory(plugin.path);
+      final Directory headerDir = pluginDir.childDirectory('inc');
+      final Directory sourceDir = pluginDir.childDirectory('src');
 
-      final Directory headerDir = tizenLibrary.headerDir;
-      final Directory sourceDir = tizenLibrary.sourceDir;
-      final File projectFile = tizenLibrary.projectFile;
-
-      inputs.add(projectFile);
+      inputs.add(pluginDir.childFile('project_def.prop'));
       if (headerDir.existsSync()) {
         headerDir
             .listSync(recursive: true)
@@ -358,10 +362,29 @@ class TizenPlugins extends Target {
       }
 
       for (final String arch in buildInfo.targetArchs) {
-        final File sharedLib = compiledPluginsDir
+        final File sharedLib = ephemeralDir
+            .childDirectory('lib')
             .childDirectory(arch)
             .childFile('lib' + (plugin.toMap()['sofile'] as String));
         outputs.add(sharedLib);
+
+        final Directory pluginLibDir = pluginDir
+            .childDirectory('lib')
+            .childDirectory(arch == 'arm' ? 'armel' : 'i586');
+        if (pluginLibDir.existsSync()) {
+          final List<File> pluginLibFiles =
+              pluginLibDir.listSync(recursive: true).whereType<File>().toList();
+          for (final File file in pluginLibFiles) {
+            inputs.add(file);
+            final String relativePath =
+                file.path.replaceFirst('${pluginLibDir.path}/', '');
+            final String outputPath = environment.fileSystem.path.join(
+              ephemeralDir.childDirectory('lib').childDirectory(arch).path,
+              relativePath,
+            );
+            outputs.add(environment.fileSystem.file(outputPath));
+          }
+        }
       }
     }
     return Depfile(inputs, outputs);
