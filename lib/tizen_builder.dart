@@ -226,6 +226,9 @@ class TizenBuilder {
     }
     final TizenManifest manifest =
         TizenManifest.parseFromXml(project.manifestFile);
+    if (manifest == null) {
+      return;
+    }
     manifest.version = buildName;
     project.manifestFile.writeAsStringSync(manifest.toString());
   }

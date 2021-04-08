@@ -40,11 +40,10 @@ class TizenProject extends FlutterProjectPlatform {
   File get projectFile => editableDirectory
       .childFile(isDotnet ? 'Runner.csproj' : 'project_def.prop');
 
-  @override
-  bool existsSync() =>
-      editableDirectory.existsSync() && projectFile.existsSync();
-
   File get manifestFile => editableDirectory.childFile('tizen-manifest.xml');
+
+  @override
+  bool existsSync() => projectFile.existsSync() && manifestFile.existsSync();
 
   String get apiVersion => TizenManifest.parseFromXml(manifestFile).apiVersion;
 
