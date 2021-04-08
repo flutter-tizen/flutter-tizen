@@ -426,17 +426,17 @@ class DotnetTpk {
       final Directory engineDir = tizenArtifacts.getEngineDirectory(
           getTargetPlatformForArch(arch), buildMode);
       final File engineBinary = engineDir.childFile('libflutter_engine.so');
-      final File embedding = engineDir.childFile('libflutter_tizen.so');
+      final File embedder = engineDir.childFile('libflutter_tizen.so');
       final File icuData =
           engineDir.parent.childDirectory('common').childFile('icudtl.dat');
 
       engineBinary.copySync(libDir.childFile(engineBinary.basename).path);
-      embedding.copySync(libDir.childFile(embedding.basename).path);
+      embedder.copySync(libDir.childFile(embedder.basename).path);
       icuData.copySync(resDir.childFile(icuData.basename).path);
 
       if (tizenProject.apiVersion.startsWith('4')) {
-        final File embedding40 = engineDir.childFile('libflutter_tizen40.so');
-        embedding40.copySync(libDir.childFile(embedding40.basename).path);
+        final File embedder40 = engineDir.childFile('libflutter_tizen40.so');
+        embedder40.copySync(libDir.childFile(embedder40.basename).path);
       }
       if (buildMode.isPrecompiled) {
         final File aotSharedLib =
@@ -650,12 +650,12 @@ class NativeTpk {
     final Directory engineDir = tizenArtifacts.getEngineDirectory(
         getTargetPlatformForArch(targetArch), buildMode);
     final File engineBinary = engineDir.childFile('libflutter_engine.so');
-    final File embedding = engineDir.childFile('libflutter_tizen.so');
+    final File embedder = engineDir.childFile('libflutter_tizen.so');
     final File icuData =
         engineDir.parent.childDirectory('common').childFile('icudtl.dat');
 
     engineBinary.copySync(libDir.childFile(engineBinary.basename).path);
-    embedding.copySync(libDir.childFile(embedding.basename).path);
+    embedder.copySync(libDir.childFile(embedder.basename).path);
     icuData.copySync(resDir.childFile(icuData.basename).path);
 
     if (libDir.childFile('libapp.so').existsSync()) {
