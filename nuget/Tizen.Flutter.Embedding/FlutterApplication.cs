@@ -21,7 +21,7 @@ namespace Tizen.Flutter.Embedding
 
         /// <summary>
         /// The switches to pass to the Flutter engine.
-        /// Custom switches can be added before <see cref="OnCreate"/> is called.
+        /// Custom switches may be added before <see cref="OnCreate"/> is called.
         /// </summary>
         protected List<string> EngineArgs { get; } = new List<string>();
 
@@ -49,16 +49,11 @@ namespace Tizen.Flutter.Embedding
             // Read the current platform version and choose a Tizen 4.0 embedder if applicable.
             Information.TryGetValue("http://tizen.org/feature/platform.version", out PlatformVersion);
 
-            // Read engine arguments passed from the tool.
-            ParseEngineArgs();
-            InternalLog.Info(LogTag, $"switches: {string.Join(" ", EngineArgs)}");
-
             // Get the screen size of the currently running device.
             if (!Information.TryGetValue("http://tizen.org/feature/screen.width", out int width) ||
                 !Information.TryGetValue("http://tizen.org/feature/screen.height", out int height))
             {
-                InternalLog.Error(LogTag, "Could not obtain the screen size.");
-                return;
+                throw new Exception("Could not obtain the screen size.");
             }
             var windowProperties = new FlutterWindowProperties
             {
@@ -79,6 +74,9 @@ namespace Tizen.Flutter.Embedding
                 _ => "",
             };
             string aotLibPath = $"{resPath}/../lib/{arch}/libapp.so";
+
+            // Read engine arguments passed from the tool.
+            ParseEngineArgs();
 
             using var switches = new StringArray(EngineArgs);
             var engineProperties = new FlutterEngineProperties
@@ -106,8 +104,8 @@ namespace Tizen.Flutter.Embedding
 
         private void ParseEngineArgs()
         {
-            string packageId = Current.ApplicationInfo.PackageId;
-            string tempPath = $"/home/owner/share/tmp/sdk_tools/{packageId}.rpm";
+            string appId = Current.ApplicationInfo.ApplicationId;
+            string tempPath = $"/home/owner/share/tmp/sdk_tools/{appId}.rpm";
             if (!File.Exists(tempPath))
             {
                 return;
@@ -115,15 +113,16 @@ namespace Tizen.Flutter.Embedding
             try
             {
                 var lines = File.ReadAllText(tempPath).Trim().Split("\n");
-                if (lines.Length > 0)
+                foreach (string line in lines)
                 {
-                    EngineArgs.AddRange(lines);
+                    InternalLog.Info(LogTag, $"Enabled: {line}");
+                    EngineArgs.Add(line);
                 }
                 File.Delete(tempPath);
             }
             catch (Exception ex)
             {
-                InternalLog.Warn(LogTag, $"Error while processing a file:\n{ex}");
+                InternalLog.Warn(LogTag, $"Error while processing a file: {ex}");
             }
         }
 
@@ -131,62 +130,48 @@ namespace Tizen.Flutter.Embedding
         {
             base.OnResume();
 
-            if (!Handle.IsInvalid)
-            {
-                FlutterNotifyAppIsResumed(Handle);
-            }
+            FlutterNotifyAppIsResumed(Handle);
         }
 
         protected override void OnPause()
         {
             base.OnPause();
 
-            if (!Handle.IsInvalid)
-            {
-                FlutterNotifyAppIsPaused(Handle);
-            }
+            FlutterNotifyAppIsPaused(Handle);
         }
 
         protected override void OnTerminate()
         {
             base.OnTerminate();
 
-            if (!Handle.IsInvalid)
-            {
-                FlutterDestroyWindow(Handle);
-            }
-        }
-
-        protected override void OnLocaleChanged(LocaleChangedEventArgs e)
-        {
-            base.OnLocaleChanged(e);
-
-            if (!Handle.IsInvalid)
-            {
-                FlutterNotifyLocaleChange(Handle);
-            }
-        }
-
-        protected override void OnRegionFormatChanged(RegionFormatChangedEventArgs e)
-        {
-            base.OnRegionFormatChanged(e);
-
-            if (!Handle.IsInvalid)
-            {
-                FlutterNotifyLocaleChange(Handle);
-            }
+            FlutterDestroyWindow(Handle);
         }
 
         protected override void OnLowMemory(LowMemoryEventArgs e)
         {
             base.OnLowMemory(e);
 
-            if (!Handle.IsInvalid)
-            {
-                FlutterNotifyLowMemoryWarning(Handle);
-            }
+            FlutterNotifyLowMemoryWarning(Handle);
         }
 
+        protected override void OnLocaleChanged(LocaleChangedEventArgs e)
+        {
+            base.OnLocaleChanged(e);
+
+            FlutterNotifyLocaleChange(Handle);
+        }
+
+        protected override void OnRegionFormatChanged(RegionFormatChangedEventArgs e)
+        {
+            base.OnRegionFormatChanged(e);
+
+            FlutterNotifyLocaleChange(Handle);
+        }
+
+        /// <summary>
+        /// Returns the plugin registrar handle for the plugin with the given name.
+        /// The name must be unique across the application.
+        /// </summary>
         public IntPtr GetPluginRegistrar(string pluginName)
         {
             if (!Handle.IsInvalid)

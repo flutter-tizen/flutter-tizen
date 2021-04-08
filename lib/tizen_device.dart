@@ -380,7 +380,7 @@ class TizenDevice extends Device {
     ];
 
     // Create a temp file to be consumed by a launching app.
-    await _writeEngineArguments(engineArgs, '${package.id}.rpm');
+    await _writeEngineArguments(engineArgs, '${package.applicationId}.rpm');
 
     final List<String> command = usesSecureProtocol
         ? <String>['shell', '0', 'execute', package.applicationId]
