@@ -448,6 +448,12 @@ class DotnetTpk {
     // Keep this value in sync with the latest published nuget version.
     const String embeddingVersion = '1.3.0';
 
+    // Clear tpkroot directory
+    final Directory tpkRootDir = outputDir.childDirectory('tpkroot');
+    if (tpkRootDir.existsSync()) {
+      tpkRootDir.deleteSync(recursive: true);
+    }
+
     // Run .NET build.
     if (dotnetCli == null) {
       throwToolExit(
