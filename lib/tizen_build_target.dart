@@ -205,12 +205,13 @@ class TizenPlugins extends Target {
       final Directory pluginDir = environment.fileSystem.directory(plugin.path);
       final String buildConfig = buildMode.isPrecompiled ? 'Release' : 'Debug';
       final Directory buildDir = pluginDir.childDirectory(buildConfig);
-      final File sharedLib =
-          buildDir.childFile('lib' + (plugin.toMap()['sofile'] as String));
 
       for (final String arch in buildInfo.targetArchs) {
         final Directory engineDir = tizenArtifacts.getEngineDirectory(
             getTargetPlatformForArch(arch), buildMode);
+        final Rootstrap rootstrap =
+            tizenSdk.getFlutterRootstrap(profile: profile, arch: arch);
+
         final Directory commonDir = engineDir.parent.childDirectory('common');
         final Directory clientWrapperDir =
             commonDir.childDirectory('client_wrapper');
@@ -251,7 +252,7 @@ class TizenPlugins extends Target {
           '-c',
           tizenSdk.defaultNativeCompiler,
           '-r',
-          tizenSdk.getFlutterRootstrap(profile: profile, arch: arch),
+          rootstrap.id,
           '-e',
           extraOptions.join(' '),
           '--',
@@ -261,6 +262,8 @@ class TizenPlugins extends Target {
           throwToolExit('Failed to build ${plugin.name} plugin:\n$result');
         }
 
+        final File sharedLib =
+            buildDir.childFile('lib' + (plugin.toMap()['sofile'] as String));
         if (!sharedLib.existsSync()) {
           throwToolExit(
             'Built ${plugin.name} but the file ${sharedLib.path} is not found:\n'
@@ -332,9 +335,9 @@ class TizenPlugins extends Target {
           engineBinaryDir.childFile('libflutter_tizen.so');
       inputs.add(engineBinary);
 
-      final File rootstrap =
-          tizenSdk.getFlutterRootstrapFile(profile: profile, arch: arch);
-      inputs.add(rootstrap);
+      final Rootstrap rootstrap =
+          tizenSdk.getFlutterRootstrap(profile: profile, arch: arch);
+      inputs.add(rootstrap.manifestFile);
     }
 
     final Directory ephemeralDir = tizenProject.ephemeralDirectory;
@@ -669,6 +672,8 @@ class NativeTpk {
     // Prepare for build.
     final String buildConfig = buildMode.isPrecompiled ? 'Release' : 'Debug';
     final Directory buildDir = tizenDir.childDirectory(buildConfig);
+    final Rootstrap rootstrap =
+        tizenSdk.getFlutterRootstrap(profile: profile, arch: targetArch);
 
     final List<String> userIncludes = <String>[];
     final List<String> userSources = <String>[];
@@ -726,7 +731,7 @@ class NativeTpk {
       '-c',
       tizenSdk.defaultNativeCompiler,
       '-r',
-      tizenSdk.getFlutterRootstrap(profile: profile, arch: targetArch),
+      rootstrap.id,
       '-e',
       extraOptions.join(' '),
       '--',
