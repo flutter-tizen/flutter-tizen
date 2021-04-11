@@ -3,6 +3,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:io';
+
 import 'package:file/file.dart';
 import 'package:flutter_tools/src/artifacts.dart';
 import 'package:flutter_tools/src/base/build.dart';
@@ -222,13 +224,14 @@ class TizenPlugins extends Target {
           );
         }
         final Map<String, String> variables = <String, String>{
-          'USER_SRCS': clientWrapperDir.childFile('*.cc').path
+          'PATH': getDefaultPathVariable(),
+          'USER_SRCS': getUnixPath(clientWrapperDir.childFile('*.cc').path)
         };
         final List<String> extraOptions = <String>[
           '-lflutter_tizen',
-          '-L${engineDir.path}',
-          '-I${clientWrapperDir.childDirectory('include').path}',
-          '-I${commonDir.childDirectory('public').path}',
+          '-L${getUnixPath(engineDir.path)}',
+          '-I${getUnixPath(clientWrapperDir.childDirectory('include').path)}',
+          '-I${getUnixPath(commonDir.childDirectory('public').path)}',
           '-D${buildInfo.deviceProfile.toUpperCase()}_PROFILE',
         ];
 
@@ -694,14 +697,15 @@ class NativeTpk {
       throwToolExit('The flutter engine artifacts were corrupted or invalid.');
     }
     final Map<String, String> variables = <String, String>{
-      'USER_SRCS': userSources.join(' '),
+      'PATH': getDefaultPathVariable(),
+      'USER_SRCS': userSources.map(getUnixPath).join(' '),
     };
     final List<String> extraOptions = <String>[
       '-lflutter_tizen',
-      '-L${libDir.path}',
-      '-I${clientWrapperDir.childDirectory('include').path}',
-      '-I${commonDir.childDirectory('public').path}',
-      ...userIncludes.map((String p) => '-I' + p),
+      '-L${getUnixPath(libDir.path)}',
+      '-I${getUnixPath(clientWrapperDir.childDirectory('include').path)}',
+      '-I${getUnixPath(commonDir.childDirectory('public').path)}',
+      ...userIncludes.map(getUnixPath).map((String p) => '-I' + p),
       '-D${buildInfo.deviceProfile.toUpperCase()}_PROFILE',
       '-Wl,-unresolved-symbols=ignore-in-shared-libs',
     ];
@@ -763,4 +767,37 @@ class NativeTpk {
           'Build succeeded but the expected TPK not found:\n${result.stdout}');
     }
   }
+}
+
+/// On non-Windows, returns [path] unchanged.
+///
+/// On Windows, converts Windows-style [path] (e.g. 'C:\x\y') into Unix path
+/// ('/c/x/y') and returns.
+String getUnixPath(String path) {
+  if (!Platform.isWindows) {
+    return path;
+  }
+  path = path.replaceAll(r'\', '/');
+  if (path.startsWith(':', 1)) {
+    return '/${path[0].toLowerCase()}${path.substring(2)}';
+  }
+  return path;
+}
+
+/// On non-Windows, returns the PATH environment variable.
+///
+/// On Windows, appends the msys2 executables directory to PATH and returns.
+String getDefaultPathVariable() {
+  final Map<String, String> variables = globals.platform.environment;
+  String path = variables.containsKey('PATH') ? variables['PATH'] : '';
+  if (Platform.isWindows) {
+    assert(tizenSdk != null);
+    final String msysUsrBin = tizenSdk.toolsDirectory
+        .childDirectory('msys2')
+        .childDirectory('usr')
+        .childDirectory('bin')
+        .path;
+    path += ';$msysUsrBin';
+  }
+  return path;
 }
