@@ -209,9 +209,6 @@ class TizenPlugins extends Target {
       for (final String arch in buildInfo.targetArchs) {
         final Directory engineDir = tizenArtifacts.getEngineDirectory(
             getTargetPlatformForArch(arch), buildMode);
-        final Rootstrap rootstrap =
-            tizenSdk.getFlutterRootstrap(profile: profile, arch: arch);
-
         final Directory commonDir = engineDir.parent.childDirectory('common');
         final Directory clientWrapperDir =
             commonDir.childDirectory('client_wrapper');
@@ -233,12 +230,10 @@ class TizenPlugins extends Target {
           '-D${buildInfo.deviceProfile.toUpperCase()}_PROFILE',
         ];
 
-        if (tizenSdk == null || !tizenSdk.tizenCli.existsSync()) {
-          throwToolExit(
-            'Unable to locate Tizen CLI executable.\n'
-            'Run "flutter-tizen doctor" and install required components.',
-          );
-        }
+        assert(tizenSdk != null);
+        final Rootstrap rootstrap =
+            tizenSdk.getFlutterRootstrap(profile: profile, arch: arch);
+
         if (buildDir.existsSync()) {
           buildDir.deleteSync(recursive: true);
         }
@@ -477,24 +472,21 @@ class DotnetTpk {
           'Build succeeded but the expected TPK not found:\n${result.stdout}');
     }
 
-    if (tizenSdk == null || !tizenSdk.tizenCli.existsSync()) {
-      throwToolExit(
-        'Unable to locate Tizen CLI executable.\n'
-        'Run "flutter-tizen doctor" and install required components.',
-      );
-    }
     // build-task-tizen signs the output TPK with a dummy profile by default.
     // We need to re-generate the TPK by signing with a correct profile.
     // TODO(swift-kim): Apply the profile during .NET build for efficiency.
     // Password descryption by secret-tool will be needed for full automation.
     String securityProfile = buildInfo.securityProfile;
-    if (securityProfile != null &&
-        (tizenSdk.securityProfiles == null ||
-            !tizenSdk.securityProfiles.names.contains(securityProfile))) {
-      throwToolExit('The security profile $securityProfile does not exist.');
-    }
+    assert(tizenSdk != null);
 
+    if (securityProfile != null) {
+      if (tizenSdk.securityProfiles == null ||
+          !tizenSdk.securityProfiles.names.contains(securityProfile)) {
+        throwToolExit('The profile $securityProfile does not exist.');
+      }
+    }
     securityProfile ??= tizenSdk.securityProfiles?.active?.name;
+
     if (securityProfile != null) {
       environment.logger
           .printStatus('The $securityProfile profile is used for signing.');
@@ -672,8 +664,6 @@ class NativeTpk {
     // Prepare for build.
     final String buildConfig = buildMode.isPrecompiled ? 'Release' : 'Debug';
     final Directory buildDir = tizenDir.childDirectory(buildConfig);
-    final Rootstrap rootstrap =
-        tizenSdk.getFlutterRootstrap(profile: profile, arch: targetArch);
 
     final List<String> userIncludes = <String>[];
     final List<String> userSources = <String>[];
@@ -711,13 +701,11 @@ class NativeTpk {
       '-Wl,-unresolved-symbols=ignore-in-shared-libs',
     ];
 
+    assert(tizenSdk != null);
+    final Rootstrap rootstrap =
+        tizenSdk.getFlutterRootstrap(profile: profile, arch: targetArch);
+
     // Run native build.
-    if (tizenSdk == null || !tizenSdk.tizenCli.existsSync()) {
-      throwToolExit(
-        'Unable to locate Tizen CLI executable.\n'
-        'Run "flutter-tizen doctor" and install required components.',
-      );
-    }
     if (buildDir.existsSync()) {
       buildDir.deleteSync(recursive: true);
     }
