@@ -43,7 +43,7 @@ class FlutterApp : public flutter::PluginRegistry {
   int Run(int argc, char **argv);
 
   FlutterDesktopPluginRegistrarRef GetRegistrarForPlugin(
-      const std::string &plugin_name);
+      const std::string &plugin_name) override;
 
   // The switches to pass to the Flutter engine.
   // Custom switches may be added before `OnCreate` is called.

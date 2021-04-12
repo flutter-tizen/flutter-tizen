@@ -29,6 +29,10 @@ bool FlutterApp::OnCreate() {
   std::string res_path;
   {
     auto path = app_get_resource_path();
+    if (path == nullptr) {
+      TizenLog::Error("Could not obtain the app directory info.");
+      return false;
+    }
     res_path = path;
     free(path);
   }
