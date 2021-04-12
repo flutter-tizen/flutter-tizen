@@ -18,6 +18,7 @@ import 'package:flutter_tools/src/build_system/exceptions.dart';
 import 'package:flutter_tools/src/build_system/source.dart';
 import 'package:flutter_tools/src/build_system/targets/android.dart';
 import 'package:flutter_tools/src/build_system/targets/common.dart';
+import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/project.dart';
 
@@ -425,17 +426,17 @@ class DotnetTpk {
       final Directory engineDir = tizenArtifacts.getEngineDirectory(
           getTargetPlatformForArch(arch), buildMode);
       final File engineBinary = engineDir.childFile('libflutter_engine.so');
-      final File embedding = engineDir.childFile('libflutter_tizen.so');
+      final File embedder = engineDir.childFile('libflutter_tizen.so');
       final File icuData =
           engineDir.parent.childDirectory('common').childFile('icudtl.dat');
 
       engineBinary.copySync(libDir.childFile(engineBinary.basename).path);
-      embedding.copySync(libDir.childFile(embedding.basename).path);
+      embedder.copySync(libDir.childFile(embedder.basename).path);
       icuData.copySync(resDir.childFile(icuData.basename).path);
 
       if (tizenProject.apiVersion.startsWith('4')) {
-        final File embedding40 = engineDir.childFile('libflutter_tizen40.so');
-        embedding40.copySync(libDir.childFile(embedding40.basename).path);
+        final File embedder40 = engineDir.childFile('libflutter_tizen40.so');
+        embedder40.copySync(libDir.childFile(embedder40.basename).path);
       }
       if (buildMode.isPrecompiled) {
         final File aotSharedLib =
@@ -655,12 +656,12 @@ class NativeTpk {
     final Directory engineDir = tizenArtifacts.getEngineDirectory(
         getTargetPlatformForArch(targetArch), buildMode);
     final File engineBinary = engineDir.childFile('libflutter_engine.so');
-    final File embedding = engineDir.childFile('libflutter_tizen.so');
+    final File embedder = engineDir.childFile('libflutter_tizen.so');
     final File icuData =
         engineDir.parent.childDirectory('common').childFile('icudtl.dat');
 
     engineBinary.copySync(libDir.childFile(engineBinary.basename).path);
-    embedding.copySync(libDir.childFile(embedding.basename).path);
+    embedder.copySync(libDir.childFile(embedder.basename).path);
     icuData.copySync(resDir.childFile(icuData.basename).path);
 
     if (libDir.childFile('libapp.so').existsSync()) {
@@ -675,9 +676,18 @@ class NativeTpk {
     // Prepare for build.
     final String buildConfig = buildMode.isPrecompiled ? 'Release' : 'Debug';
     final Directory buildDir = tizenDir.childDirectory(buildConfig);
+    final Directory embeddingDir = environment.fileSystem
+        .directory(Cache.flutterRoot)
+        .parent
+        .childDirectory('embedding')
+        .childDirectory('cpp');
 
-    final List<String> userIncludes = <String>[];
-    final List<String> userSources = <String>[];
+    final List<String> userIncludes = <String>[
+      embeddingDir.childDirectory('include').path,
+    ];
+    final List<String> userSources = <String>[
+      embeddingDir.childFile('*.cc').path,
+    ];
 
     final List<TizenPlugin> nativePlugins =
         await findTizenPlugins(project, nativeOnly: true);

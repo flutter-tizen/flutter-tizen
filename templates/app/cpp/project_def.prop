@@ -1,12 +1,12 @@
 # See https://docs.tizen.org/application/tizen-studio/native-tools/project-conversion
 # for details.
 
-APPNAME = flutterapp
+APPNAME = runner
 type = app
 profile = common-4.0
 
 # Source files
-USER_SRCS += src/flutterapp.cc
+USER_SRCS += src/runner.cc
 
 # User defines
 USER_DEFS =
