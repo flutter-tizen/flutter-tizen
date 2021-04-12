@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "include/flutter.h"
+#include "include/flutter_app.h"
 
 #include <system_info.h>
 
@@ -19,9 +19,9 @@ bool FlutterApp::OnCreate() {
   window_prop.x = 0;
   window_prop.y = 0;
   if (system_info_get_platform_int("http://tizen.org/feature/screen.width",
-                                    &window_prop.width) != 0 ||
+                                   &window_prop.width) != 0 ||
       system_info_get_platform_int("http://tizen.org/feature/screen.height",
-                                    &window_prop.height) != 0) {
+                                   &window_prop.height) != 0) {
     TizenLog::Error("Could not obtain the screen size.");
     return false;
   }
@@ -177,6 +177,7 @@ FlutterDesktopPluginRegistrarRef FlutterApp::GetRegistrarForPlugin(
 void FlutterApp::ParseEngineArgs() {
   char *app_id;
   if (app_get_id(&app_id) != 0) {
+    TizenLog::Warn("App id is not found.");
     return;
   }
   std::string temp_path("/home/owner/share/tmp/sdk_tools/" +
@@ -193,6 +194,6 @@ void FlutterApp::ParseEngineArgs() {
 
   // Note: std::filesystem is not available on Tizen 5.5 or older.
   if (remove(temp_path.c_str()) != 0) {
-    TizenLog::Error("Error removing file: %s", strerror(errno));
+    TizenLog::Warn("Error removing file: %s", strerror(errno));
   }
 }
