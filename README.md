@@ -12,9 +12,9 @@ _Flutter and the related logo are trademarks of Google LLC. We are not endorsed 
 
 ## Supported devices
 
-- **Watch**: Tizen 4.0 (2018) or later
-- **TV**: Tizen 6.0 (2021) or later (older models are not supported due to security reasons)
-- **Emulator**: Tizen 4.0 or later
+- **Galaxy Watch**: Tizen 4.0 (2018) or later
+- **Smart TV**: Tizen 6.0 (2021) or later (older models are not supported due to security reasons)
+- **IoT (RPi4)**: Tizen 6.0 or later
 
 ## Installation
 
@@ -28,13 +28,13 @@ _Flutter and the related logo are trademarks of Google LLC. We are not endorsed 
 
 ```sh
 # Inspect the installed tooling and connected devices.
-flutter-tizen doctor
+flutter-tizen doctor -v
 flutter-tizen devices
 
 # Set up a new project in the current directory, or add Tizen files if a Flutter project already exists.
 flutter-tizen create .
 
-# Build the project and run on a Tizen device. Use `-d [id]` to specify a device ID.
+# Build the project and run on a Tizen device (either in debug or release mode).
 flutter-tizen run
 flutter-tizen run --release
 ```

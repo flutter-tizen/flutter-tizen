@@ -22,7 +22,7 @@ The following packages are required by the flutter-tizen tool.
   - _[Extension SDK] - [Samsung Certificate Extension]_
 - **Optional**
   - _[5.5 Wearable] - [Emulator]_
-  - _[Extension SDK] - [TV Extensions-5.5] - [Emulator]_
+  - _[Extension SDK] - [TV Extensions-x.x] - [Emulator]_
 
 If you cannot see extension packages in the _Extension SDK_ tab, click the configuration button (⚙️) and make sure you are using the latest official distribution.
 
