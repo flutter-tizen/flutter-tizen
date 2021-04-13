@@ -108,48 +108,51 @@ class TizenSdk {
 
   String get defaultGccVersion => '9.2';
 
-  File getFlutterRootstrapFile({
+  Rootstrap getFlutterRootstrap({
     String profile,
     @required String arch,
   }) {
     final String type = arch == 'x86' ? 'emulator' : 'device';
-    final String rootstrapName = profile == null
+    final String id = profile == null
         ? 'wearable-$defaultTargetPlatform-$type.flutter'
         : '${profile.replaceFirst('common', 'wearable')}-$type.flutter';
 
-    final File rootstrapTarget = globals.fs
+    final File manifestFile = globals.fs
         .directory(Cache.flutterRoot)
         .parent
         .childDirectory('rootstraps')
-        .childFile('$rootstrapName.xml');
-    if (!rootstrapTarget.existsSync()) {
+        .childFile('$id.xml');
+    if (!manifestFile.existsSync()) {
       throwToolExit(
-        'File not found: ${rootstrapTarget.absolute.path}\n'
+        'File not found: ${manifestFile.absolute.path}\n'
         'Make sure your tizen-manifest.xml contains correct information for build.',
       );
     }
-    return rootstrapTarget;
-  }
-
-  String getFlutterRootstrap({
-    String profile,
-    @required String arch,
-  }) {
-    final File rootstrapTarget =
-        getFlutterRootstrapFile(profile: profile, arch: arch);
 
     // Tizen SBI creates a list of rootstraps from this directory.
     final Directory pluginsDir = toolsDirectory
         .childDirectory('smart-build-interface')
         .childDirectory('plugins');
-    final Link rootstrapLink = pluginsDir.childLink(rootstrapTarget.basename);
-    if (rootstrapLink.existsSync()) {
-      rootstrapLink.deleteSync(recursive: true);
+    final File manifestCopy = pluginsDir.childFile('$id.xml');
+    if (manifestCopy.existsSync()) {
+      manifestCopy.deleteSync(recursive: true);
     }
-    rootstrapLink.createSync(rootstrapTarget.path, recursive: true);
+    manifestFile.copySync(manifestCopy.path);
 
-    return rootstrapTarget.basename.replaceFirst('.xml', '');
+    return Rootstrap(id, manifestFile);
   }
+}
+
+/// Tizen rootstrap definition.
+///
+/// The rootstrap (or sysroot), which is downloaded as part of Tizen native SDK,
+/// contains a set of headers and libraries required for cross building Tizen
+/// native apps and libraries.
+class Rootstrap {
+  const Rootstrap(this.id, this.manifestFile);
+
+  final String id;
+  final File manifestFile;
 }
 
 /// Source: [parseIniLines] in `android_emulator.dart`

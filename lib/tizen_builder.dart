@@ -30,6 +30,7 @@ import 'package:path/path.dart';
 import 'tizen_artifacts.dart';
 import 'tizen_build_target.dart';
 import 'tizen_project.dart';
+import 'tizen_sdk.dart';
 import 'tizen_tpk.dart';
 
 /// The define to control what Tizen architectures are built for.
@@ -77,6 +78,12 @@ class TizenBuilder {
     if (!tizenProject.isDotnet && tizenBuildInfo.targetArchs.length > 1) {
       throwToolExit(
           'Tizen native projects cannot be built for multiple target archs.');
+    }
+    if (tizenSdk == null || !tizenSdk.tizenCli.existsSync()) {
+      throwToolExit(
+        'Unable to locate Tizen CLI executable.\n'
+        'Run "flutter-tizen doctor" and install required components.',
+      );
     }
 
     updateManifest(tizenProject, tizenBuildInfo.buildInfo);
