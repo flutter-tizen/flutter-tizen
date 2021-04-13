@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <extension point="rootstrapDefinition">
-  <rootstrap id="wearable-4.0-emulator.flutter" name="Tizen Emulator 4.0" version="Wearable 4.0" architecture="i586" path="#{SBI_HOME}/../../platforms/tizen-4.0/wearable/rootstraps/wearable-4.0-emulator.core" supportToolchainType="tizen.core">
+  <rootstrap id="wearable-4.0-x86.flutter" name="Tizen Emulator 4.0" version="Wearable 4.0" architecture="i586" path="#{SBI_HOME}/../../platforms/tizen-4.0/wearable/rootstraps/wearable-4.0-emulator.core" supportToolchainType="tizen.core">
     <property key="DEV_PACKAGE_CONFIG_PATH" value="#{SBI_HOME}/../../platforms/tizen-4.0/wearable/rootstraps/info/wearable-4.0-emulator.core.dev.xml" />
     <property key="LINKER_MISCELLANEOUS_OPTION" value="" />
     <property key="COMPILER_MISCELLANEOUS_OPTION" value="-std=c++17" />
