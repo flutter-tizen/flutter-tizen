@@ -435,7 +435,7 @@ class DotnetTpk {
       embedder.copySync(libDir.childFile(embedder.basename).path);
       icuData.copySync(resDir.childFile(icuData.basename).path);
 
-      if (tizenProject.apiVersion.startsWith('4')) {
+      if (tizenProject.apiVersion.startsWith('4') && arch != 'aarch64') {
         final File embedder40 = engineDir.childFile('libflutter_tizen40.so');
         embedder40.copySync(libDir.childFile(embedder40.basename).path);
       }
