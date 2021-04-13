@@ -210,8 +210,8 @@ class TizenPlugins extends Target {
       final Directory buildDir = pluginDir.childDirectory(buildConfig);
 
       for (final String arch in buildInfo.targetArchs) {
-        final Directory engineDir = tizenArtifacts.getEngineDirectory(
-            getTargetPlatformForArch(arch), buildMode);
+        final Directory engineDir =
+            tizenArtifacts.getEngineDirectory(arch, buildMode);
         final Directory commonDir = engineDir.parent.childDirectory('common');
         final Directory clientWrapperDir =
             commonDir.childDirectory('client_wrapper');
@@ -328,8 +328,8 @@ class TizenPlugins extends Target {
     inputs.add(tizenProject.manifestFile);
 
     for (final String arch in buildInfo.targetArchs) {
-      final Directory engineBinaryDir = tizenArtifacts.getEngineDirectory(
-          getTargetPlatformForArch(arch), buildInfo.buildInfo.mode);
+      final Directory engineBinaryDir =
+          tizenArtifacts.getEngineDirectory(arch, buildInfo.buildInfo.mode);
       final File engineBinary =
           engineBinaryDir.childFile('libflutter_tizen.so');
       inputs.add(engineBinary);
@@ -424,8 +424,8 @@ class DotnetTpk {
           .childDirectory(arch)
             ..createSync(recursive: true);
 
-      final Directory engineDir = tizenArtifacts.getEngineDirectory(
-          getTargetPlatformForArch(arch), buildMode);
+      final Directory engineDir =
+          tizenArtifacts.getEngineDirectory(arch, buildMode);
       final File engineBinary = engineDir.childFile('libflutter_engine.so');
       final File embedder = engineDir.childFile('libflutter_tizen.so');
       final File icuData =
@@ -651,8 +651,8 @@ class NativeTpk {
     final Directory libDir = tizenDir.childDirectory('lib')
       ..createSync(recursive: true);
 
-    final Directory engineDir = tizenArtifacts.getEngineDirectory(
-        getTargetPlatformForArch(targetArch), buildMode);
+    final Directory engineDir =
+        tizenArtifacts.getEngineDirectory(targetArch, buildMode);
     final File engineBinary = engineDir.childFile('libflutter_engine.so');
     final File embedder = engineDir.childFile('libflutter_tizen.so');
     final File icuData =

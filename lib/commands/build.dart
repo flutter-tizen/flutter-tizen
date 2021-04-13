@@ -31,7 +31,7 @@ class BuildTpkCommand extends BuildSubCommand with TizenExtension {
       'target-arch',
       splitCommas: true,
       defaultsTo: <String>['arm'],
-      allowed: <String>['arm', 'aarch64', 'x86'],
+      allowed: <String>['arm', 'arm64', 'x86'],
       help: 'Target architectures to compile the application for',
     );
     argParser.addOption(
@@ -73,9 +73,14 @@ class BuildTpkCommand extends BuildSubCommand with TizenExtension {
   @override
   Future<FlutterCommandResult> runCommand() async {
     final BuildInfo buildInfo = await getBuildInfo();
+    // 'aarch64' is preferred over 'arm64' to be compatible with the Tizen CLI
+    // builder.
+    final List<String> targetArchs = stringsArg('target-arch')
+        .map((String arch) => arch.replaceFirst('arm64', 'aarch64'))
+        .toList();
     final TizenBuildInfo tizenBuildInfo = TizenBuildInfo(
       buildInfo,
-      targetArchs: stringsArg('target-arch'),
+      targetArchs: targetArchs,
       deviceProfile: stringArg('device-profile'),
       securityProfile: stringArg('security-profile'),
     );

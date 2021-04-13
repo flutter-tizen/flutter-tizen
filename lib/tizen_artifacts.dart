@@ -49,9 +49,11 @@ class TizenArtifacts extends CachedArtifacts {
         .childDirectory(name);
   }
 
-  Directory getEngineDirectory(TargetPlatform platform, BuildMode mode) {
-    return getArtifactDirectory('engine')
-        .childDirectory(getEngineType(platform, mode));
+  /// See: [CachedArtifacts._getEngineArtifactsPath]
+  Directory getEngineDirectory(String arch, BuildMode mode) {
+    assert(mode != null, 'Need to specify a build mode.');
+    return getArtifactDirectory('engine').childDirectory(
+        'tizen-${arch.replaceFirst('aarch64', 'arm64')}-${mode.name}');
   }
 
   /// See: [CachedArtifacts._getAndroidArtifactPath] in `artifacts.dart`
@@ -66,9 +68,10 @@ class TizenArtifacts extends CachedArtifacts {
       case Artifact.genSnapshot:
         assert(mode != BuildMode.debug,
             'Artifact $artifact only available in non-debug mode.');
+        final String arch = getArchForTargetPlatform(platform);
         final String hostPlatform =
             getNameForHostPlatform(getCurrentHostPlatform());
-        return getEngineDirectory(platform, mode)
+        return getEngineDirectory(arch, mode)
             .childDirectory(hostPlatform)
             .childFile(globals.platform.isWindows
                 ? 'gen_snapshot.exe'
@@ -82,7 +85,8 @@ class TizenArtifacts extends CachedArtifacts {
 
   @override
   String getEngineType(TargetPlatform platform, [BuildMode mode]) {
-    return 'tizen-${getArchForTargetPlatform(platform)}-${mode?.name}';
+    final String arch = getArchForTargetPlatform(platform);
+    return getEngineDirectory(arch, mode).basename;
   }
 
   @override
