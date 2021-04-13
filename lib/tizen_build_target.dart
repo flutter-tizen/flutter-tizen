@@ -276,9 +276,10 @@ class TizenPlugins extends Target {
         sharedLib.copySync(outputDir.childFile(sharedLib.basename).path);
 
         // copy binaries that plugin depends on
-        final Directory pluginLibDir = pluginDir
-            .childDirectory('lib')
-            .childDirectory(arch == 'arm' ? 'armel' : 'i586');
+        final String pluginArch =
+            arch == 'arm' ? 'armel' : (arch == 'x86' ? 'i586' : arch);
+        final Directory pluginLibDir =
+            pluginDir.childDirectory('lib').childDirectory(pluginArch);
 
         if (pluginLibDir.existsSync()) {
           globals.fsUtils.copyDirectorySync(pluginLibDir, outputDir);
@@ -370,9 +371,10 @@ class TizenPlugins extends Target {
             .childFile('lib' + (plugin.toMap()['sofile'] as String));
         outputs.add(sharedLib);
 
-        final Directory pluginLibDir = pluginDir
-            .childDirectory('lib')
-            .childDirectory(arch == 'arm' ? 'armel' : 'i586');
+        final String pluginArch =
+            arch == 'arm' ? 'armel' : (arch == 'x86' ? 'i586' : arch);
+        final Directory pluginLibDir =
+            pluginDir.childDirectory('lib').childDirectory(pluginArch);
         if (pluginLibDir.existsSync()) {
           final List<File> pluginLibFiles =
               pluginLibDir.listSync(recursive: true).whereType<File>().toList();
@@ -647,12 +649,12 @@ class NativeTpk {
         resDir.childDirectory('flutter_assets'));
 
     assert(buildInfo.targetArchs.length == 1);
-    final String targetArch = buildInfo.targetArchs.first;
+    final String arch = buildInfo.targetArchs.first;
     final Directory libDir = tizenDir.childDirectory('lib')
       ..createSync(recursive: true);
 
     final Directory engineDir =
-        tizenArtifacts.getEngineDirectory(targetArch, buildMode);
+        tizenArtifacts.getEngineDirectory(arch, buildMode);
     final File engineBinary = engineDir.childFile('libflutter_engine.so');
     final File embedder = engineDir.childFile('libflutter_tizen.so');
     final File icuData =
@@ -667,7 +669,7 @@ class NativeTpk {
     }
     if (buildMode.isPrecompiled) {
       final File aotSharedLib =
-          environment.buildDir.childDirectory(targetArch).childFile('app.so');
+          environment.buildDir.childDirectory(arch).childFile('app.so');
       aotSharedLib.copySync(libDir.childFile('libapp.so').path);
     }
 
@@ -723,7 +725,7 @@ class NativeTpk {
 
     assert(tizenSdk != null);
     final Rootstrap rootstrap =
-        tizenSdk.getFlutterRootstrap(profile: profile, arch: targetArch);
+        tizenSdk.getFlutterRootstrap(profile: profile, arch: arch);
 
     // Run native build.
     if (buildDir.existsSync()) {
@@ -733,7 +735,7 @@ class NativeTpk {
       tizenSdk.tizenCli.path,
       'build-native',
       '-a',
-      targetArch,
+      arch,
       '-C',
       buildConfig,
       '-c',
@@ -764,7 +766,7 @@ class NativeTpk {
       throwToolExit('Failed to generate TPK:\n$result');
     }
 
-    final String nativeArch = targetArch == 'x86' ? 'i586' : targetArch;
+    final String nativeArch = arch == 'x86' ? 'i586' : arch;
     final String nativeTpkName =
         tizenProject.outputTpkName.replaceFirst('.tpk', '-$nativeArch.tpk');
     if (buildDir.childFile(nativeTpkName).existsSync()) {

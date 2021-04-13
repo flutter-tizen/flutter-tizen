@@ -112,10 +112,9 @@ class TizenSdk {
     String profile,
     @required String arch,
   }) {
-    final String type = arch == 'x86' ? 'emulator' : 'device';
     final String id = profile == null
-        ? 'wearable-$defaultTargetPlatform-$type.flutter'
-        : '${profile.replaceFirst('common', 'wearable')}-$type.flutter';
+        ? 'wearable-$defaultTargetPlatform-$arch.flutter'
+        : '${profile.replaceFirst('common', 'wearable')}-$arch.flutter';
 
     final File manifestFile = globals.fs
         .directory(Cache.flutterRoot)
