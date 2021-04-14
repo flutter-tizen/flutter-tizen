@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using Tizen.Applications;
@@ -130,12 +131,16 @@ namespace Tizen.Flutter.Embedding
         {
             base.OnResume();
 
+            Debug.Assert(Handle);
+
             FlutterNotifyAppIsResumed(Handle);
         }
 
         protected override void OnPause()
         {
             base.OnPause();
+
+            Debug.Assert(Handle);
 
             FlutterNotifyAppIsPaused(Handle);
         }
@@ -144,12 +149,16 @@ namespace Tizen.Flutter.Embedding
         {
             base.OnTerminate();
 
+            Debug.Assert(Handle);
+
             FlutterDestroyWindow(Handle);
         }
 
         protected override void OnLowMemory(LowMemoryEventArgs e)
         {
             base.OnLowMemory(e);
+
+            Debug.Assert(Handle);
 
             FlutterNotifyLowMemoryWarning(Handle);
         }
@@ -158,12 +167,16 @@ namespace Tizen.Flutter.Embedding
         {
             base.OnLocaleChanged(e);
 
+            Debug.Assert(Handle);
+
             FlutterNotifyLocaleChange(Handle);
         }
 
         protected override void OnRegionFormatChanged(RegionFormatChangedEventArgs e)
         {
             base.OnRegionFormatChanged(e);
+
+            Debug.Assert(Handle);
 
             FlutterNotifyLocaleChange(Handle);
         }
@@ -174,7 +187,7 @@ namespace Tizen.Flutter.Embedding
         /// </summary>
         public IntPtr GetPluginRegistrar(string pluginName)
         {
-            if (!Handle.IsInvalid)
+            if (Handle)
             {
                 return FlutterDesktopGetPluginRegistrar(Handle, pluginName);
             }
