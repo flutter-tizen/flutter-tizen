@@ -16,7 +16,7 @@ namespace Tizen.Flutter.Embedding
     /// <summary>
     /// The application base class which creates and manages the Flutter engine instance.
     /// </summary>
-    public class FlutterApplication : CoreUIApplication
+    public class FlutterApplication : CoreUIApplication, IPluginRegistry
     {
         protected const string LogTag = "ConsoleMessage";
 
@@ -185,7 +185,7 @@ namespace Tizen.Flutter.Embedding
         /// Returns the plugin registrar handle for the plugin with the given name.
         /// The name must be unique across the application.
         /// </summary>
-        public IntPtr GetPluginRegistrar(string pluginName)
+        public IntPtr GetRegistrarForPlugin(string pluginName)
         {
             if (Handle)
             {
