@@ -114,7 +114,7 @@ class TizenTpk extends ApplicationPackage {
 ///
 /// See: [ApkManifestData] in `application_package.dart`
 class TizenManifest {
-  TizenManifest(this._document);
+  TizenManifest(this._document) : applicationId = _findApplicationId(_document);
 
   factory TizenManifest.parseFromXml(File xmlFile) {
     if (xmlFile == null || !xmlFile.existsSync()) {
@@ -139,6 +139,9 @@ class TizenManifest {
 
   XmlElement get _manifest => _document.rootElement;
 
+  /// The unique application id used for launching and terminating applications.
+  final String applicationId;
+
   /// The package name.
   String get packageId => _manifest.getAttribute('package');
 
@@ -156,11 +159,46 @@ class TizenManifest {
   /// The fully qualified profile string. (e.g. `wearable-5.5`)
   String get profile => '$profileName-$apiVersion';
 
-  /// The unique application id used for launching and terminating applications.
-  String get applicationId {
-    final XmlElement parent = _manifest.findElements('ui-application').first;
-    return parent.getAttribute('appid');
+  static String _findApplicationId(XmlDocument _document) {
+    int count = 0;
+    String tag, applicationId;
+    for (final XmlNode child in _document.rootElement.children.where(
+        (XmlNode n) =>
+            n.nodeType == XmlNodeType.ELEMENT &&
+            (n as XmlElement).name.local.endsWith('-application'))) {
+      final XmlElement element = child as XmlElement;
+      ++count;
+      if (applicationId == null) {
+        tag = element.name.local;
+        applicationId = element.getAttribute('appid');
+      }
+    }
+    if (applicationId == null) {
+      throwToolExit('Found no *-application element with appid attribute'
+          ' in tizen-manifest.xml');
+    }
+    if (!_warningShown) {
+      if (count > 1) {
+        globals.printStatus(
+          'Warning: tizen-manifest.xml: Found $count application declarations.'
+          ' Using the first one: <$tag appid="$applicationId">',
+          color: TerminalColor.yellow,
+        );
+        _warningShown = true;
+      }
+      if (tag != 'ui-application') {
+        globals.printStatus(
+          'Warning: tizen-manifest.xml: <$tag> is not officially supported.',
+          color: TerminalColor.yellow,
+        );
+        _warningShown = true;
+      }
+    }
+    return applicationId;
   }
+
+  /// To prevent spamming log with warnings, remember they have been shown
+  static bool _warningShown = false;
 
   @override
   String toString() => _document.toXmlString(pretty: true, indent: '    ');
