@@ -19,9 +19,10 @@ The following packages are required by the flutter-tizen tool.
   - _[Tizen SDK tools] - [Baseline SDK] - [Certificate Manager]_
   - _[4.0 Wearable] - [Advanced] - [Native app. development (CLI)]_
   - _[5.5 Wearable] - [Advanced] - [Native app. development (CLI)]_
+  - _[6.0 Wearable] - [Advanced] - [Native app. development (CLI)]_
   - _[Extension SDK] - [Samsung Certificate Extension]_
 - **Optional**
-  - _[5.5 Wearable] - [Emulator]_
+  - _[6.0 Wearable] - [Emulator]_
   - _[Extension SDK] - [TV Extensions-x.x] - [Emulator]_
 
 If you cannot see extension packages in the _Extension SDK_ tab, click the configuration button (⚙️) and make sure you are using the latest official distribution.

@@ -102,7 +102,7 @@ class TizenSdk {
   SecurityProfiles get securityProfiles =>
       SecurityProfiles.parseFromXml(securityProfilesFile);
 
-  String get defaultTargetPlatform => '4.0';
+  List<String> get nativeSdkVersions => <String>['4.0', '5.5', '6.0'];
 
   String get defaultNativeCompiler => 'llvm-10.0';
 
@@ -113,7 +113,7 @@ class TizenSdk {
     @required String arch,
   }) {
     final String id = profile == null
-        ? 'wearable-$defaultTargetPlatform-$arch.flutter'
+        ? 'wearable-4.0-$arch.flutter'
         : '${profile.replaceFirst('common', 'wearable')}-$arch.flutter';
 
     final File manifestFile = globals.fs
