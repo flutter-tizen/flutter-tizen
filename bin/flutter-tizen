@@ -130,9 +130,8 @@ def main():
             f.write(revision(rootDir))
 
     # Download and extract engine artifacts.
-    # Artifact caching is usually done by the flutter SDK when a build is
-    # requested for a certain platform (in Dart code). However, we do it a
-    # little earlier because the implementation is much simpler in Python.
+    # The following logic might be re-implemented in Dart in the future.
+    # Issue: https://github.com/flutter-tizen/flutter-tizen/issues/77
     engineCacheDir = cacheDir + '/artifacts/engine'
     engineVersionPath = rootDir + '/bin/engine.version'
     engineVersion = read(engineVersionPath)
