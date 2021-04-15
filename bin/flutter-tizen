@@ -26,13 +26,15 @@ def read(filePath):
 def download(message, url, location):
     size = 0
     with urllib.request.urlopen(url) as res, open(location, 'wb') as f:
+        length = res.getheader('content-length')
+        total = f' of {int(length) / 1024 / 1024:.1f}' if length else ''
         while True:
             buf = res.read(64 * 1024)
             if not buf:
                 break
             size += f.write(buf)
-            print(f'{message} {size / 1024 / 1024:.1f} MB\r', end='')
-        print(f'{message} Done     ')
+            print(f'{message} {size / 1024 / 1024:.1f}{total} MB\r', end='')
+        print(f'{message} Done' + ' ' * 15)
 
 def main():
     if not machine().endswith('64'):
