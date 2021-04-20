@@ -13,7 +13,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Tizen.Flutter.Embedding" Version="$(FlutterEmbeddingVersion)" />
+    <PackageReference Include="Tizen.Flutter.Embedding" Version="$(FlutterEmbeddingVersion)*" />
   </ItemGroup>
 
   <ItemGroup>

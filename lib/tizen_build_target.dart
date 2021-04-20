@@ -446,9 +446,8 @@ class DotnetTpk {
       }
     }
 
-    // For now a constant value is used instead of reading from a file.
     // Keep this value in sync with the latest published nuget version.
-    const String embeddingVersion = '1.3.0';
+    const String embeddingVersion = '1.4.0';
 
     // Clear tpkroot directory
     final Directory tpkRootDir = outputDir.childDirectory('tpkroot');

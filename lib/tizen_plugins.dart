@@ -368,10 +368,11 @@ namespace Runner
         public static extern void {{class}}RegisterWithRegistrar(IntPtr registrar);
       {{/plugins}}
 
-        public static void RegisterPlugins(FlutterApplication app)
+        public static void RegisterPlugins(IPluginRegistry registry)
         {
           {{#plugins}}
-            {{class}}RegisterWithRegistrar(app.GetPluginRegistrar("{{class}}"));
+            {{class}}RegisterWithRegistrar(
+                registry.GetRegistrarForPlugin("{{class}}"));
           {{/plugins}}
         }
     }
