@@ -7,13 +7,11 @@ Download and install the latest release of Tizen Studio from the below link. It 
 
 ## Install required packages
 
-After installing Tizen Studio, the _Package Manager_ window will automatically pop up (otherwise launch it manually).
+After installing Tizen Studio, the _Package Manager_ window will automatically pop up (otherwise launch it manually). Install the following packages required by flutter-tizen.
 
 ![Tizen Package Manager](images/package-manager.png)
 
-The following packages are required by the flutter-tizen tool.
-
-- **Mandatory**
+- **Required**
   - _[Tizen SDK tools] - [Native CLI]_
   - _[Tizen SDK tools] - [Native toolchain] - [Gcc 9.2 toolchain]_
   - _[Tizen SDK tools] - [Baseline SDK] - [Certificate Manager]_
@@ -23,7 +21,7 @@ The following packages are required by the flutter-tizen tool.
   - _[5.5 Wearable] - [Emulator]_
   - _[Extension SDK] - [TV Extensions-x.x] - [Emulator]_
 
-If you're on CLI, follow the instructions of `flutter-tizen doctor -v` after installing _flutter-tizen_.
+You can also install these packages from the command line by following the instructions of `flutter-tizen doctor -v` after installing flutter-tizen.
 
 If you cannot see extension packages in the _Extension SDK_ tab, click the configuration button (⚙️) and make sure you are using the latest official distribution.
 
