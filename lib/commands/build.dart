@@ -73,14 +73,9 @@ class BuildTpkCommand extends BuildSubCommand with TizenExtension {
   @override
   Future<FlutterCommandResult> runCommand() async {
     final BuildInfo buildInfo = await getBuildInfo();
-    // 'aarch64' is preferred over 'arm64' because it's more commonly used by
-    // Tizen SDK.
-    final List<String> targetArchs = stringsArg('target-arch')
-        .map((String arch) => arch.replaceFirst('arm64', 'aarch64'))
-        .toList();
     final TizenBuildInfo tizenBuildInfo = TizenBuildInfo(
       buildInfo,
-      targetArchs: targetArchs,
+      targetArchs: stringsArg('target-arch'),
       deviceProfile: stringArg('device-profile'),
       securityProfile: stringArg('security-profile'),
     );

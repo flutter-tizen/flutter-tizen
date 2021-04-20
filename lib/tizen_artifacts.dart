@@ -15,7 +15,7 @@ TizenArtifacts get tizenArtifacts => context.get<TizenArtifacts>();
 String getArchForTargetPlatform(TargetPlatform platform) {
   switch (platform) {
     case TargetPlatform.android_arm64:
-      return 'aarch64';
+      return 'arm64';
     case TargetPlatform.android_x86:
       return 'x86';
     default:
@@ -26,7 +26,7 @@ String getArchForTargetPlatform(TargetPlatform platform) {
 /// See: [getTargetPlatformForName] in `build_info.dart`
 TargetPlatform getTargetPlatformForArch(String arch) {
   switch (arch) {
-    case 'aarch64':
+    case 'arm64':
       return TargetPlatform.android_arm64;
     case 'x86':
       return TargetPlatform.android_x86;
@@ -52,8 +52,8 @@ class TizenArtifacts extends CachedArtifacts {
   /// See: [CachedArtifacts._getEngineArtifactsPath]
   Directory getEngineDirectory(String arch, BuildMode mode) {
     assert(mode != null, 'Need to specify a build mode.');
-    return getArtifactDirectory('engine').childDirectory(
-        'tizen-${arch.replaceFirst('aarch64', 'arm64')}-${mode.name}');
+    return getArtifactDirectory('engine')
+        .childDirectory('tizen-$arch-${mode.name}');
   }
 
   /// See: [CachedArtifacts._getAndroidArtifactPath] in `artifacts.dart`

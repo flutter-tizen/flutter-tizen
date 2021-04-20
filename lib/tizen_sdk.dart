@@ -114,8 +114,8 @@ class TizenSdk {
     profile = profile.replaceFirst('common', 'wearable');
 
     String id;
-    if (arch == 'aarch64') {
-      // aarch64 build always uses the iot-headed-6.0 rootstrap.
+    if (arch == 'arm64') {
+      // The arm64 build always uses the iot-headed-6.0 rootstrap.
       profile = 'iot-headed-6.0';
       id = '$profile-device64.core';
     } else {
@@ -139,7 +139,7 @@ class TizenSdk {
     }
 
     // Create a custom rootstrap to force the use of GCC 9.2 for Tizen 4.0/5.5.
-    if (arch != 'aarch64' && !profile.endsWith('6.0')) {
+    if (arch != 'arm64' && !profile.endsWith('6.0')) {
       id = '$profile-$arch.flutter';
 
       manifestFile = globals.fs
