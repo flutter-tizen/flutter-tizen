@@ -3,7 +3,7 @@
   <rootstrap id="wearable-5.5-arm.flutter" name="Tizen Device 5.5" version="Wearable 5.5" architecture="armel" path="#{SBI_HOME}/../../platforms/tizen-5.5/wearable/rootstraps/wearable-5.5-device.core" supportToolchainType="tizen.core">
     <property key="DEV_PACKAGE_CONFIG_PATH" value="#{SBI_HOME}/../../platforms/tizen-5.5/wearable/rootstraps/info/wearable-5.5-device.core.dev.xml" />
     <property key="LINKER_MISCELLANEOUS_OPTION" value="" />
-    <property key="COMPILER_MISCELLANEOUS_OPTION" value="-std=c++17" />
+    <property key="COMPILER_MISCELLANEOUS_OPTION" value="" />
     <toolchain name="gcc" version="9.2" />
     <tool name="EDJE_CC" version="" path="#{SBI_HOME}/../../platforms/tizen-5.5/common/efl-tool/efl-tools/bin/edje_cc" />
   </rootstrap>

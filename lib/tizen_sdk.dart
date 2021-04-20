@@ -115,7 +115,7 @@ class TizenSdk {
 
     String id;
     if (arch == 'arm64') {
-      // The arm64 build always uses the iot-headed-6.0 rootstrap.
+      // The arm64 build is only supported by the iot-headed-6.0 profile.
       profile = 'iot-headed-6.0';
       id = '$profile-device64.core';
     } else {
