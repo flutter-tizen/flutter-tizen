@@ -229,6 +229,7 @@ class TizenPlugins extends Target {
         final List<String> extraOptions = <String>[
           '-lflutter_tizen',
           '-L${getUnixPath(engineDir.path)}',
+          '-std=c++17',
           '-I${getUnixPath(clientWrapperDir.childDirectory('include').path)}',
           '-I${getUnixPath(commonDir.childDirectory('public').path)}',
           '-D${buildInfo.deviceProfile.toUpperCase()}_PROFILE',
@@ -716,6 +717,7 @@ class NativeTpk {
     final List<String> extraOptions = <String>[
       '-lflutter_tizen',
       '-L${getUnixPath(libDir.path)}',
+      '-std=c++17',
       '-I${getUnixPath(clientWrapperDir.childDirectory('include').path)}',
       '-I${getUnixPath(commonDir.childDirectory('public').path)}',
       ...userIncludes.map(getUnixPath).map((String p) => '-I' + p),
