@@ -15,7 +15,7 @@ TizenArtifacts get tizenArtifacts => context.get<TizenArtifacts>();
 String getArchForTargetPlatform(TargetPlatform platform) {
   switch (platform) {
     case TargetPlatform.android_arm64:
-      return 'aarch64';
+      return 'arm64';
     case TargetPlatform.android_x86:
       return 'x86';
     default:
@@ -26,7 +26,7 @@ String getArchForTargetPlatform(TargetPlatform platform) {
 /// See: [getTargetPlatformForName] in `build_info.dart`
 TargetPlatform getTargetPlatformForArch(String arch) {
   switch (arch) {
-    case 'aarch64':
+    case 'arm64':
       return TargetPlatform.android_arm64;
     case 'x86':
       return TargetPlatform.android_x86;
@@ -49,9 +49,11 @@ class TizenArtifacts extends CachedArtifacts {
         .childDirectory(name);
   }
 
-  Directory getEngineDirectory(TargetPlatform platform, BuildMode mode) {
+  /// See: [CachedArtifacts._getEngineArtifactsPath]
+  Directory getEngineDirectory(String arch, BuildMode mode) {
+    assert(mode != null, 'Need to specify a build mode.');
     return getArtifactDirectory('engine')
-        .childDirectory(getEngineType(platform, mode));
+        .childDirectory('tizen-$arch-${mode.name}');
   }
 
   /// See: [CachedArtifacts._getAndroidArtifactPath] in `artifacts.dart`
@@ -66,9 +68,10 @@ class TizenArtifacts extends CachedArtifacts {
       case Artifact.genSnapshot:
         assert(mode != BuildMode.debug,
             'Artifact $artifact only available in non-debug mode.');
+        final String arch = getArchForTargetPlatform(platform);
         final String hostPlatform =
             getNameForHostPlatform(getCurrentHostPlatform());
-        return getEngineDirectory(platform, mode)
+        return getEngineDirectory(arch, mode)
             .childDirectory(hostPlatform)
             .childFile(globals.platform.isWindows
                 ? 'gen_snapshot.exe'
@@ -82,7 +85,8 @@ class TizenArtifacts extends CachedArtifacts {
 
   @override
   String getEngineType(TargetPlatform platform, [BuildMode mode]) {
-    return 'tizen-${getArchForTargetPlatform(platform)}-${mode?.name}';
+    final String arch = getArchForTargetPlatform(platform);
+    return getEngineDirectory(arch, mode).basename;
   }
 
   @override

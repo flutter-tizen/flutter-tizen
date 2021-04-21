@@ -43,7 +43,6 @@ class TizenValidator extends DoctorValidator {
 
   bool _validatePackages(List<ValidationMessage> messages) {
     // tizenSdk is not null here.
-    final String platformVersion = tizenSdk.defaultTargetPlatform;
     final String gccVersion = tizenSdk.defaultGccVersion;
     final String packageManager = tizenSdk.packageManagerCli.path;
     final List<String> missingPackages = <String>[];
@@ -57,11 +56,11 @@ class TizenValidator extends DoctorValidator {
       missingPackages.add('NativeToolchain-Gcc-$gccVersion');
     }
     if (!tizenSdk.platformsDirectory
-        .childDirectory('tizen-$platformVersion')
+        .childDirectory('tizen-4.0')
         .childDirectory('wearable')
         .childDirectory('rootstraps')
         .existsSync()) {
-      missingPackages.add('WEARABLE-$platformVersion-NativeAppDevelopment-CLI');
+      missingPackages.add('WEARABLE-4.0-NativeAppDevelopment-CLI');
     }
 
     if (missingPackages.isNotEmpty) {

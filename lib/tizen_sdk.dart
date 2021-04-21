@@ -102,42 +102,64 @@ class TizenSdk {
   SecurityProfiles get securityProfiles =>
       SecurityProfiles.parseFromXml(securityProfilesFile);
 
-  String get defaultTargetPlatform => '4.0';
-
   String get defaultNativeCompiler => 'llvm-10.0';
 
   String get defaultGccVersion => '9.2';
 
   Rootstrap getFlutterRootstrap({
-    String profile,
+    String profile = 'common-4.0',
     @required String arch,
   }) {
-    final String type = arch == 'x86' ? 'emulator' : 'device';
-    final String id = profile == null
-        ? 'wearable-$defaultTargetPlatform-$type.flutter'
-        : '${profile.replaceFirst('common', 'wearable')}-$type.flutter';
+    // Defaults to wearable if the profile name is common.
+    profile = profile.replaceFirst('common', 'wearable');
 
-    final File manifestFile = globals.fs
-        .directory(Cache.flutterRoot)
-        .parent
-        .childDirectory('rootstraps')
-        .childFile('$id.xml');
-    if (!manifestFile.existsSync()) {
-      throwToolExit(
-        'File not found: ${manifestFile.absolute.path}\n'
-        'Make sure your tizen-manifest.xml contains correct information for build.',
-      );
+    String id;
+    if (arch == 'arm64') {
+      // The arm64 build is only supported by the iot-headed-6.0 profile.
+      profile = 'iot-headed-6.0';
+      id = '$profile-device64.core';
+    } else {
+      id = '$profile-${arch == 'x86' ? 'emulator' : 'device'}.core';
     }
 
-    // Tizen SBI creates a list of rootstraps from this directory.
+    // Tizen SBI reads rootstrap definitions from this directory.
     final Directory pluginsDir = toolsDirectory
         .childDirectory('smart-build-interface')
         .childDirectory('plugins');
-    final File manifestCopy = pluginsDir.childFile('$id.xml');
-    if (manifestCopy.existsSync()) {
-      manifestCopy.deleteSync(recursive: true);
+
+    File manifestFile = pluginsDir.childFile('$id.xml');
+    if (!manifestFile.existsSync()) {
+      final String profileUpperCase =
+          profile.toUpperCase().replaceAll('HEADED', 'Headed');
+      throwToolExit(
+        'The rootstrap definition for the $profile profile could not be found.\n'
+        'Try with another profile or run this command to install missing packages:\n'
+        '${packageManagerCli.path} install $profileUpperCase-NativeAppDevelopment-CLI',
+      );
     }
-    manifestFile.copySync(manifestCopy.path);
+
+    // Create a custom rootstrap to force the use of GCC 9.2 for Tizen 4.0/5.5.
+    if (arch != 'arm64' && !profile.endsWith('6.0')) {
+      id = '$profile-$arch.flutter';
+
+      manifestFile = globals.fs
+          .directory(Cache.flutterRoot)
+          .parent
+          .childDirectory('rootstraps')
+          .childFile('$id.xml');
+      if (!manifestFile.existsSync()) {
+        throwToolExit(
+          'The $profile profile is not currently supported by flutter-tizen.\n'
+          'Try with another profile or file an issue in https://github.com/flutter-tizen/flutter-tizen/issues.',
+        );
+      }
+
+      final File manifestCopy = pluginsDir.childFile('$id.xml');
+      if (manifestCopy.existsSync()) {
+        manifestCopy.deleteSync(recursive: true);
+      }
+      manifestFile.copySync(manifestCopy.path);
+    }
 
     return Rootstrap(id, manifestFile);
   }

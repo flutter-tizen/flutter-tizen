@@ -31,7 +31,7 @@ class BuildTpkCommand extends BuildSubCommand with TizenExtension {
       'target-arch',
       splitCommas: true,
       defaultsTo: <String>['arm'],
-      allowed: <String>['arm', 'aarch64', 'x86'],
+      allowed: <String>['arm', 'arm64', 'x86'],
       help: 'Target architectures to compile the application for',
     );
     argParser.addOption(
@@ -58,9 +58,6 @@ class BuildTpkCommand extends BuildSubCommand with TizenExtension {
 
   /// See: [android.validateBuild] in `build_validation.dart`
   void validateBuild(TizenBuildInfo tizenBuildInfo) {
-    if (tizenBuildInfo.targetArchs.contains('aarch64')) {
-      throwToolExit('Not supported arch: aarch64');
-    }
     if (tizenBuildInfo.buildInfo.codeSizeDirectory != null &&
         tizenBuildInfo.targetArchs.length > 1) {
       throwToolExit(

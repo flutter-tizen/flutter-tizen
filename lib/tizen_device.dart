@@ -146,14 +146,14 @@ class TizenDevice extends Device {
     if (_emulatorArchs.contains(cpuArch)) {
       return cpuArch;
     } else if (usesSecureProtocol) {
-      return cpuArch == 'armv7' ? 'arm' : 'aarch64';
+      return cpuArch == 'armv7' ? 'arm' : 'arm64';
     } else {
       // Reading the cpu_arch capability value is not a reliable way to get the
       // runtime architecture from devices like Raspberry Pi. The following is a
       // little workaround.
       final String stdout =
           runSdbSync(<String>['shell', 'ls', '/usr/lib64']).stdout.trim();
-      return stdout.contains('No such file or directory') ? 'arm' : 'aarch64';
+      return stdout.contains('No such file or directory') ? 'arm' : 'arm64';
     }
   }
 
