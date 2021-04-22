@@ -5,6 +5,7 @@
 import 'package:flutter_tools/src/android/build_validation.dart' as android;
 import 'package:flutter_tools/src/base/analyze_size.dart';
 import 'package:flutter_tools/src/base/common.dart';
+import 'package:flutter_tools/src/base/terminal.dart';
 import 'package:flutter_tools/src/build_info.dart';
 import 'package:flutter_tools/src/commands/build.dart';
 import 'package:flutter_tools/src/commands/build_apk.dart';
@@ -36,7 +37,6 @@ class BuildTpkCommand extends BuildSubCommand with TizenExtension {
     );
     argParser.addOption(
       'device-profile',
-      defaultsTo: 'wearable',
       allowed: <String>['mobile', 'wearable', 'tv', 'common'],
       help: 'Target device type that the app will run on. Choose \'wearable\' '
           'for watches and \'common\' for IoT (Raspberry Pi) devices.',
@@ -71,11 +71,20 @@ class BuildTpkCommand extends BuildSubCommand with TizenExtension {
   /// See: [BuildApkCommand.runCommand] in `build_apk.dart`
   @override
   Future<FlutterCommandResult> runCommand() async {
+    String deviceProfile = stringArg('device-profile');
+    if (deviceProfile == null) {
+      globals.printStatus(
+        'The "--device-profile" option is not set. Specify the target profile '
+        'for which you want to build your app.',
+        color: TerminalColor.yellow,
+      );
+      deviceProfile = 'common';
+    }
     final BuildInfo buildInfo = await getBuildInfo();
     final TizenBuildInfo tizenBuildInfo = TizenBuildInfo(
       buildInfo,
       targetArchs: stringsArg('target-arch'),
-      deviceProfile: stringArg('device-profile'),
+      deviceProfile: deviceProfile,
       securityProfile: stringArg('security-profile'),
     );
     validateBuild(tizenBuildInfo);
