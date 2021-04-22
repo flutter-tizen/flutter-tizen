@@ -214,7 +214,7 @@ class TizenPlugins extends Target {
             tizenArtifacts.getEngineDirectory(arch, buildMode);
         final Directory commonDir = engineDir.parent.childDirectory('common');
         final Directory clientWrapperDir =
-            commonDir.childDirectory('client_wrapper');
+            commonDir.childDirectory('cpp_client_wrapper');
 
         if (!engineDir.existsSync() || !clientWrapperDir.existsSync()) {
           throwToolExit(
@@ -227,7 +227,7 @@ class TizenPlugins extends Target {
           'USER_SRCS': getUnixPath(clientWrapperDir.childFile('*.cc').path)
         };
         final List<String> extraOptions = <String>[
-          '-lflutter_tizen',
+          '-lflutter_tizen_${buildInfo.deviceProfile}',
           '-L${getUnixPath(engineDir.path)}',
           '-std=c++17',
           '-I${getUnixPath(clientWrapperDir.childDirectory('include').path)}',
@@ -277,7 +277,7 @@ class TizenPlugins extends Target {
               ..createSync(recursive: true);
         sharedLib.copySync(outputDir.childFile(sharedLib.basename).path);
 
-        // copy binaries that plugin depends on
+        // Copy binaries that the plugin depends on.
         final String pluginArch =
             arch == 'arm' ? 'armel' : (arch == 'x86' ? 'i586' : arch);
         final Directory pluginLibDir =
@@ -313,7 +313,7 @@ class TizenPlugins extends Target {
     final Directory commonDir =
         tizenArtifacts.getArtifactDirectory('engine').childDirectory('common');
     final Directory clientWrapperDir =
-        commonDir.childDirectory('client_wrapper');
+        commonDir.childDirectory('cpp_client_wrapper');
     final Directory publicDir = commonDir.childDirectory('public');
 
     clientWrapperDir
@@ -331,11 +331,11 @@ class TizenPlugins extends Target {
     inputs.add(tizenProject.manifestFile);
 
     for (final String arch in buildInfo.targetArchs) {
-      final Directory engineBinaryDir =
+      final Directory engineDir =
           tizenArtifacts.getEngineDirectory(arch, buildInfo.buildInfo.mode);
-      final File engineBinary =
-          engineBinaryDir.childFile('libflutter_tizen.so');
-      inputs.add(engineBinary);
+      final File embedder =
+          engineDir.childFile('libflutter_tizen_${buildInfo.deviceProfile}.so');
+      inputs.add(embedder);
 
       final Rootstrap rootstrap =
           tizenSdk.getFlutterRootstrap(profile: profile, arch: arch);
@@ -433,18 +433,19 @@ class DotnetTpk {
       final Directory engineDir =
           tizenArtifacts.getEngineDirectory(arch, buildMode);
       final File engineBinary = engineDir.childFile('libflutter_engine.so');
-      final File embedder = engineDir.childFile('libflutter_tizen.so');
-      final File icuData =
-          engineDir.parent.childDirectory('common').childFile('icudtl.dat');
+      final File embedder =
+          engineDir.childFile('libflutter_tizen_${buildInfo.deviceProfile}.so');
+      final File icuData = engineDir.parent
+          .childDirectory('common')
+          .childDirectory('icu')
+          .childFile('icudtl.dat');
 
       engineBinary.copySync(libDir.childFile(engineBinary.basename).path);
-      embedder.copySync(libDir.childFile(embedder.basename).path);
+      // The embedder so name is statically defined in C# code and cannot be
+      // provided at runtime, so the file name must be fixed.
+      embedder.copySync(libDir.childFile('libflutter_tizen.so').path);
       icuData.copySync(resDir.childFile(icuData.basename).path);
 
-      if (tizenProject.apiVersion.startsWith('4') && arch != 'arm64') {
-        final File embedder40 = engineDir.childFile('libflutter_tizen40.so');
-        embedder40.copySync(libDir.childFile(embedder40.basename).path);
-      }
       if (buildMode.isPrecompiled) {
         final File aotSharedLib =
             environment.buildDir.childDirectory(arch).childFile('app.so');
@@ -659,9 +660,12 @@ class NativeTpk {
     final Directory engineDir =
         tizenArtifacts.getEngineDirectory(arch, buildMode);
     final File engineBinary = engineDir.childFile('libflutter_engine.so');
-    final File embedder = engineDir.childFile('libflutter_tizen.so');
-    final File icuData =
-        engineDir.parent.childDirectory('common').childFile('icudtl.dat');
+    final File embedder =
+        engineDir.childFile('libflutter_tizen_${buildInfo.deviceProfile}.so');
+    final File icuData = engineDir.parent
+        .childDirectory('common')
+        .childDirectory('icu')
+        .childFile('icudtl.dat');
 
     engineBinary.copySync(libDir.childFile(engineBinary.basename).path);
     embedder.copySync(libDir.childFile(embedder.basename).path);
@@ -706,7 +710,7 @@ class NativeTpk {
 
     final Directory commonDir = engineDir.parent.childDirectory('common');
     final Directory clientWrapperDir =
-        commonDir.childDirectory('client_wrapper');
+        commonDir.childDirectory('cpp_client_wrapper');
     userSources.add(clientWrapperDir.childFile('*.cc').path);
 
     if (!engineDir.existsSync() || !clientWrapperDir.existsSync()) {
@@ -717,7 +721,7 @@ class NativeTpk {
       'USER_SRCS': userSources.map(getUnixPath).join(' '),
     };
     final List<String> extraOptions = <String>[
-      '-lflutter_tizen',
+      '-lflutter_tizen_${buildInfo.deviceProfile}',
       '-L${getUnixPath(libDir.path)}',
       '-std=c++17',
       '-I${getUnixPath(clientWrapperDir.childDirectory('include').path)}',

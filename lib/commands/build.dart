@@ -36,11 +36,10 @@ class BuildTpkCommand extends BuildSubCommand with TizenExtension {
     );
     argParser.addOption(
       'device-profile',
-      defaultsTo: 'common',
-      allowed: <String>['common', 'wearable', 'tv'],
-      help: 'The type of Tizen device the application will operate on. It is '
-          'recommended to choose a right profile for your target device rather '
-          'than just "common". Otherwise, some plugins may fail to load.',
+      defaultsTo: 'wearable',
+      allowed: <String>['mobile', 'wearable', 'tv', 'common'],
+      help: 'Target device type that the app will run on. Choose \'wearable\' '
+          'for watches and \'common\' for IoT (Raspberry Pi) devices.',
     );
     argParser.addOption(
       'security-profile',
