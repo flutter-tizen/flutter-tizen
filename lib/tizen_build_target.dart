@@ -454,7 +454,7 @@ class DotnetTpk {
     }
 
     // Keep this value in sync with the latest published nuget version.
-    const String embeddingVersion = '1.4.0';
+    const String embeddingVersion = '1.5.0';
 
     // Clear tpkroot directory
     final Directory tpkRootDir = outputDir.childDirectory('tpkroot');
