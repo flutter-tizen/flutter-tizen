@@ -696,10 +696,13 @@ class NativeTpk {
     final List<TizenPlugin> nativePlugins =
         await findTizenPlugins(project, nativeOnly: true);
 
+    final String pluginArch =
+        arch == 'arm' ? 'armel' : (arch == 'x86' ? 'i586' : arch);
     for (final TizenPlugin plugin in nativePlugins) {
       final TizenLibrary library = TizenLibrary(plugin.path);
-      // TODO(swift-kim): Currently only checks for USER_INC_DIRS, USER_SRCS, and USER_LIBS.
-      // More properties should be parsed to fully support plugin builds.
+      // TODO(swift-kim): Currently only checks for USER_INC_DIRS, USER_SRCS,
+      // and USER_LIBS. More properties should be parsed to fully support
+      // plugin builds.
       userIncludes.addAll(library.getPropertyAsAbsolutePaths('USER_INC_DIRS'));
       userSources.addAll(library.getPropertyAsAbsolutePaths('USER_SRCS'));
 
@@ -707,8 +710,7 @@ class NativeTpk {
           in library.getProperty('USER_LIBS').split(' ')) {
         final File libFile = library.directory
             .childDirectory('lib')
-            .childDirectory(
-                arch == 'arm' ? 'armel' : (arch == 'x86' ? 'i586' : arch))
+            .childDirectory(pluginArch)
             .childFile('lib$userLib.so');
         if (libFile.existsSync()) {
           libFile.copySync(libDir.childFile(libFile.basename).path);
@@ -731,12 +733,12 @@ class NativeTpk {
     };
     final List<String> extraOptions = <String>[
       '-lflutter_tizen',
-      ...userLibs.map((String lib) => '-l' + lib),
       '-L${getUnixPath(libDir.path)}',
       '-std=c++17',
       '-I${getUnixPath(clientWrapperDir.childDirectory('include').path)}',
       '-I${getUnixPath(commonDir.childDirectory('public').path)}',
       ...userIncludes.map(getUnixPath).map((String p) => '-I' + p),
+      ...userLibs.map((String lib) => '-l' + lib),
       '-D${buildInfo.deviceProfile.toUpperCase()}_PROFILE',
       '-Wl,-unresolved-symbols=ignore-in-shared-libs',
     ];
