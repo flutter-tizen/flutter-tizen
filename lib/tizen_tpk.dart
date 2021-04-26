@@ -16,6 +16,15 @@ import 'tizen_project.dart';
 
 /// [ApplicationPackageFactory] extended for Tizen.
 class TpkFactory extends ApplicationPackageFactory {
+  TpkFactory()
+      : super(
+          androidSdk: globals.androidSdk,
+          processManager: globals.processManager,
+          logger: globals.logger,
+          userMessages: globals.userMessages,
+          fileSystem: globals.fs,
+        );
+
   @override
   Future<ApplicationPackage> getPackageForPlatform(
     TargetPlatform platform, {
