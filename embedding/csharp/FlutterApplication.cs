@@ -47,18 +47,6 @@ namespace Tizen.Flutter.Embedding
         {
             base.OnCreate();
 
-            // Get the screen size of the currently running device.
-            if (!Information.TryGetValue("http://tizen.org/feature/screen.width", out int width) ||
-                !Information.TryGetValue("http://tizen.org/feature/screen.height", out int height))
-            {
-                throw new Exception("Could not obtain the screen size.");
-            }
-            var windowProperties = new FlutterWindowProperties
-            {
-                width = width,
-                height = height
-            };
-
             // Get paths to resources required for launch.
             string resPath = Current.DirectoryInfo.Resource;
             string assetsPath = $"{resPath}/flutter_assets";
@@ -93,7 +81,7 @@ namespace Tizen.Flutter.Embedding
                 InternalLog.Debug(LogTag, "Running in AOT mode.");
             }
 
-            Handle = FlutterCreateWindow(ref windowProperties, ref engineProperties);
+            Handle = FlutterCreateWindow(ref engineProperties);
             if (Handle.IsInvalid)
             {
                 throw new Exception("Could not launch a Flutter application.");
