@@ -695,17 +695,32 @@ class NativeTpk {
     final List<String> userSources = <String>[
       embeddingDir.childFile('*.cc').path,
     ];
+    final List<String> userLibs = <String>[];
 
     final List<TizenPlugin> nativePlugins =
         await findTizenPlugins(project, nativeOnly: true);
 
+    final String pluginArch =
+        arch == 'arm' ? 'armel' : (arch == 'x86' ? 'i586' : arch);
     for (final TizenPlugin plugin in nativePlugins) {
       final TizenLibrary library = TizenLibrary(plugin.path);
-      // TODO(swift-kim): Currently only checks for USER_INC_DIRS and USER_SRCS.
-      // More properties (such as USER_LIBS) should be parsed to fully support
+      // TODO(swift-kim): Currently only checks for USER_INC_DIRS, USER_SRCS,
+      // and USER_LIBS. More properties should be parsed to fully support
       // plugin builds.
       userIncludes.addAll(library.getPropertyAsAbsolutePaths('USER_INC_DIRS'));
       userSources.addAll(library.getPropertyAsAbsolutePaths('USER_SRCS'));
+
+      for (final String userLib
+          in library.getProperty('USER_LIBS').split(' ')) {
+        final File libFile = library.directory
+            .childDirectory('lib')
+            .childDirectory(pluginArch)
+            .childFile('lib$userLib.so');
+        if (libFile.existsSync()) {
+          libFile.copySync(libDir.childFile(libFile.basename).path);
+          userLibs.add(userLib);
+        }
+      }
     }
 
     final Directory commonDir = engineDir.parent.childDirectory('common');
@@ -727,6 +742,7 @@ class NativeTpk {
       '-I${getUnixPath(clientWrapperDir.childDirectory('include').path)}',
       '-I${getUnixPath(commonDir.childDirectory('public').path)}',
       ...userIncludes.map(getUnixPath).map((String p) => '-I' + p),
+      ...userLibs.map((String lib) => '-l' + lib),
       '-D${buildInfo.deviceProfile.toUpperCase()}_PROFILE',
       '-Wl,-unresolved-symbols=ignore-in-shared-libs',
     ];
