@@ -208,9 +208,8 @@ class TizenPlugins extends Target {
       final String buildConfig = buildMode.isPrecompiled ? 'Release' : 'Debug';
       final Directory buildDir = pluginDir.childDirectory(buildConfig);
 
-      final String targetArch = buildInfo.targetArch;
       final Directory engineDir =
-          tizenArtifacts.getEngineDirectory(targetArch, buildMode);
+          tizenArtifacts.getEngineDirectory(buildInfo.targetArch, buildMode);
       final Directory commonDir = engineDir.parent.childDirectory('common');
       final Directory clientWrapperDir =
           commonDir.childDirectory('cpp_client_wrapper');
@@ -235,8 +234,8 @@ class TizenPlugins extends Target {
       ];
 
       assert(tizenSdk != null);
-      final Rootstrap rootstrap =
-          tizenSdk.getFlutterRootstrap(profile: profile, arch: targetArch);
+      final Rootstrap rootstrap = tizenSdk.getFlutterRootstrap(
+          profile: profile, arch: buildInfo.targetArch);
 
       if (buildDir.existsSync()) {
         buildDir.deleteSync(recursive: true);
@@ -245,7 +244,7 @@ class TizenPlugins extends Target {
         tizenSdk.tizenCli.path,
         'build-native',
         '-a',
-        targetArch.replaceFirst('arm64', 'aarch64'),
+        getTizenCliArch(buildInfo.targetArch),
         '-C',
         buildConfig,
         '-c',
@@ -274,13 +273,9 @@ class TizenPlugins extends Target {
       sharedLib.copySync(outputDir.childFile(sharedLib.basename).path);
 
       // Copy binaries that the plugin depends on.
-      final String pluginArch = targetArch
-          .replaceFirst('arm64', 'aarch64')
-          .replaceFirst('arm', 'armel')
-          .replaceFirst('x86', 'i586');
-      final Directory pluginLibDir =
-          pluginDir.childDirectory('lib').childDirectory(pluginArch);
-
+      final Directory pluginLibDir = pluginDir
+          .childDirectory('lib')
+          .childDirectory(getTizenBuildArch(buildInfo.targetArch));
       if (pluginLibDir.existsSync()) {
         globals.fsUtils.copyDirectorySync(pluginLibDir, outputDir);
       }
@@ -327,15 +322,14 @@ class TizenPlugins extends Target {
         TizenManifest.parseFromXml(tizenProject.manifestFile)?.profile;
     inputs.add(tizenProject.manifestFile);
 
-    final String targetArch = buildInfo.targetArch;
-    final Directory engineDir =
-        tizenArtifacts.getEngineDirectory(targetArch, buildInfo.buildInfo.mode);
+    final Directory engineDir = tizenArtifacts.getEngineDirectory(
+        buildInfo.targetArch, buildInfo.buildInfo.mode);
     final File embedder =
         engineDir.childFile('libflutter_tizen_${buildInfo.deviceProfile}.so');
     inputs.add(embedder);
 
-    final Rootstrap rootstrap =
-        tizenSdk.getFlutterRootstrap(profile: profile, arch: targetArch);
+    final Rootstrap rootstrap = tizenSdk.getFlutterRootstrap(
+        profile: profile, arch: buildInfo.targetArch);
     inputs.add(rootstrap.manifestFile);
 
     final Directory ephemeralDir = tizenProject.ephemeralDirectory;
@@ -367,12 +361,9 @@ class TizenPlugins extends Target {
           .childFile('lib' + (plugin.toMap()['sofile'] as String));
       outputs.add(sharedLib);
 
-      final String pluginArch = targetArch
-          .replaceFirst('arm64', 'aarch64')
-          .replaceFirst('arm', 'armel')
-          .replaceFirst('x86', 'i586');
-      final Directory pluginLibDir =
-          pluginDir.childDirectory('lib').childDirectory(pluginArch);
+      final Directory pluginLibDir = pluginDir
+          .childDirectory('lib')
+          .childDirectory(getTizenBuildArch(buildInfo.targetArch));
       if (pluginLibDir.existsSync()) {
         final List<File> pluginLibFiles =
             pluginLibDir.listSync(recursive: true).whereType<File>().toList();
@@ -420,9 +411,8 @@ class DotnetTpk {
     final Directory libDir = ephemeralDir.childDirectory('lib')
       ..createSync(recursive: true);
 
-    final String targetArch = buildInfo.targetArch;
     final Directory engineDir =
-        tizenArtifacts.getEngineDirectory(targetArch, buildMode);
+        tizenArtifacts.getEngineDirectory(buildInfo.targetArch, buildMode);
     final File engineBinary = engineDir.childFile('libflutter_engine.so');
     final File embedder =
         engineDir.childFile('libflutter_tizen_${buildInfo.deviceProfile}.so');
@@ -582,9 +572,8 @@ class NativeTpk {
     final Directory libDir = tizenDir.childDirectory('lib')
       ..createSync(recursive: true);
 
-    final String targetArch = buildInfo.targetArch;
     final Directory engineDir =
-        tizenArtifacts.getEngineDirectory(targetArch, buildMode);
+        tizenArtifacts.getEngineDirectory(buildInfo.targetArch, buildMode);
     final File engineBinary = engineDir.childFile('libflutter_engine.so');
     final File embedder =
         engineDir.childFile('libflutter_tizen_${buildInfo.deviceProfile}.so');
@@ -625,10 +614,6 @@ class NativeTpk {
     final List<TizenPlugin> nativePlugins =
         await findTizenPlugins(project, nativeOnly: true);
 
-    final String pluginArch = targetArch
-        .replaceFirst('arm64', 'aarch64')
-        .replaceFirst('arm', 'armel')
-        .replaceFirst('x86', 'i586');
     for (final TizenPlugin plugin in nativePlugins) {
       final TizenLibrary library = TizenLibrary(plugin.path);
       // TODO(swift-kim): Currently only checks for USER_INC_DIRS, USER_SRCS,
@@ -641,7 +626,7 @@ class NativeTpk {
           in library.getProperty('USER_LIBS').split(' ')) {
         final File libFile = library.directory
             .childDirectory('lib')
-            .childDirectory(pluginArch)
+            .childDirectory(getTizenBuildArch(buildInfo.targetArch))
             .childFile('lib$userLib.so');
         if (libFile.existsSync()) {
           libFile.copySync(libDir.childFile(libFile.basename).path);
@@ -675,8 +660,8 @@ class NativeTpk {
     ];
 
     assert(tizenSdk != null);
-    final Rootstrap rootstrap =
-        tizenSdk.getFlutterRootstrap(profile: profile, arch: targetArch);
+    final Rootstrap rootstrap = tizenSdk.getFlutterRootstrap(
+        profile: profile, arch: buildInfo.targetArch);
 
     // Run native build.
     if (buildDir.existsSync()) {
@@ -686,7 +671,7 @@ class NativeTpk {
       tizenSdk.tizenCli.path,
       'build-native',
       '-a',
-      targetArch.replaceFirst('arm64', 'aarch64'),
+      getTizenCliArch(buildInfo.targetArch),
       '-C',
       buildConfig,
       '-c',
@@ -717,10 +702,11 @@ class NativeTpk {
       throwToolExit('Failed to generate TPK:\n$result');
     }
 
-    final String nativeArch =
-        targetArch.replaceFirst('arm64', 'aarch64').replaceFirst('x86', 'i586');
+    final String tpkArch = buildInfo.targetArch
+        .replaceFirst('arm64', 'aarch64')
+        .replaceFirst('x86', 'i586');
     final String nativeTpkName =
-        tizenProject.outputTpkName.replaceFirst('.tpk', '-$nativeArch.tpk');
+        tizenProject.outputTpkName.replaceFirst('.tpk', '-$tpkArch.tpk');
     if (buildDir.childFile(nativeTpkName).existsSync()) {
       buildDir
           .childFile(nativeTpkName)
@@ -729,6 +715,31 @@ class NativeTpk {
       throwToolExit(
           'Build succeeded but the expected TPK not found:\n${result.stdout}');
     }
+  }
+}
+
+/// Converts [targetArch] to an arch name that the Tizen CLI expects.
+String getTizenCliArch(String targetArch) {
+  switch (targetArch) {
+    case 'arm64':
+      return 'aarch64';
+    default:
+      return targetArch;
+  }
+}
+
+/// Converts [targetArch] to an arch name that corresponds to the `BUILD_ARCH`
+/// value used by the Tizen native builder.
+String getTizenBuildArch(String targetArch) {
+  switch (targetArch) {
+    case 'arm':
+      return 'armel';
+    case 'arm64':
+      return 'aarch64';
+    case 'x86':
+      return 'i586';
+    default:
+      return targetArch;
   }
 }
 
