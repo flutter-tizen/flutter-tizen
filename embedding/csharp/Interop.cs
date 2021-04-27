@@ -9,6 +9,9 @@ namespace Tizen.Flutter.Embedding
 {
     internal static class Interop
     {
+        [DllImport("flutter_engine.so")]
+        public static extern bool FlutterEngineRunsAOTCompiledDartCode();
+
         [StructLayout(LayoutKind.Sequential)]
         public struct FlutterWindowProperties
         {
@@ -29,142 +32,33 @@ namespace Tizen.Flutter.Embedding
             public uint switches_count;
         }
 
-        public static string PlatformVersion = string.Empty;
-
-        private static bool IsTizen40 => PlatformVersion.StartsWith("4.0");
-
-        public static FlutterWindowControllerHandle FlutterCreateWindow(
+        [DllImport("flutter_tizen.so")]
+        public static extern FlutterWindowControllerHandle FlutterCreateWindow(
             ref FlutterWindowProperties window_properties,
-            ref FlutterEngineProperties engine_properties)
-        {
-            if (IsTizen40)
-                return Tizen40Embedder.FlutterCreateWindow(ref window_properties, ref engine_properties);
-            else
-                return DefaultEmbedder.FlutterCreateWindow(ref window_properties, ref engine_properties);
-        }
+            ref FlutterEngineProperties engine_properties);
 
-        public static void FlutterDestroyWindow(FlutterWindowControllerHandle window)
-        {
-            if (IsTizen40)
-                Tizen40Embedder.FlutterDestroyWindow(window);
-            else
-                DefaultEmbedder.FlutterDestroyWindow(window);
-        }
+        [DllImport("flutter_tizen.so")]
+        public static extern void FlutterDestroyWindow(
+            FlutterWindowControllerHandle window);
 
-        public static void FlutterNotifyLocaleChange(FlutterWindowControllerHandle window)
-        {
-            if (IsTizen40)
-                Tizen40Embedder.FlutterNotifyLocaleChange(window);
-            else
-                DefaultEmbedder.FlutterNotifyLocaleChange(window);
-        }
+        [DllImport("flutter_tizen.so")]
+        public static extern void FlutterNotifyLocaleChange(
+            FlutterWindowControllerHandle window);
 
-        public static void FlutterNotifyLowMemoryWarning(FlutterWindowControllerHandle window)
-        {
-            if (IsTizen40)
-                Tizen40Embedder.FlutterNotifyLowMemoryWarning(window);
-            else
-                DefaultEmbedder.FlutterNotifyLowMemoryWarning(window);
-        }
+        [DllImport("flutter_tizen.so")]
+        public static extern void FlutterNotifyLowMemoryWarning(
+            FlutterWindowControllerHandle window);
 
-        public static void FlutterNotifyAppIsResumed(FlutterWindowControllerHandle window)
-        {
-            if (IsTizen40)
-                Tizen40Embedder.FlutterNotifyAppIsResumed(window);
-            else
-                DefaultEmbedder.FlutterNotifyAppIsResumed(window);
-        }
+        [DllImport("flutter_tizen.so")]
+        public static extern void FlutterNotifyAppIsResumed(
+            FlutterWindowControllerHandle window);
 
-        public static void FlutterNotifyAppIsPaused(FlutterWindowControllerHandle window)
-        {
-            if (IsTizen40)
-                Tizen40Embedder.FlutterNotifyAppIsPaused(window);
-            else
-                DefaultEmbedder.FlutterNotifyAppIsPaused(window);
-        }
+        [DllImport("flutter_tizen.so")]
+        public static extern void FlutterNotifyAppIsPaused(
+            FlutterWindowControllerHandle window);
 
-        public static IntPtr FlutterDesktopGetPluginRegistrar(
-            FlutterWindowControllerHandle window, string plugin_name)
-        {
-            if (IsTizen40)
-                return Tizen40Embedder.FlutterDesktopGetPluginRegistrar(window, plugin_name);
-            else
-                return DefaultEmbedder.FlutterDesktopGetPluginRegistrar(window, plugin_name);
-        }
-
-        [DllImport("flutter_engine.so")]
-        public static extern bool FlutterEngineRunsAOTCompiledDartCode();
-
-        #region Default
-        private static class DefaultEmbedder
-        {
-            private const string SharedLibrary = "flutter_tizen.so";
-
-            [DllImport(SharedLibrary)]
-            public static extern FlutterWindowControllerHandle FlutterCreateWindow(
-                ref FlutterWindowProperties window_properties,
-                ref FlutterEngineProperties engine_properties);
-
-            [DllImport(SharedLibrary)]
-            public static extern void FlutterDestroyWindow(
-                FlutterWindowControllerHandle window);
-
-            [DllImport(SharedLibrary)]
-            public static extern void FlutterNotifyLocaleChange(
-                FlutterWindowControllerHandle window);
-
-            [DllImport(SharedLibrary)]
-            public static extern void FlutterNotifyLowMemoryWarning(
-                FlutterWindowControllerHandle window);
-
-            [DllImport(SharedLibrary)]
-            public static extern void FlutterNotifyAppIsResumed(
-                FlutterWindowControllerHandle window);
-
-            [DllImport(SharedLibrary)]
-            public static extern void FlutterNotifyAppIsPaused(
-                FlutterWindowControllerHandle window);
-
-            [DllImport(SharedLibrary)]
-            public static extern IntPtr FlutterDesktopGetPluginRegistrar(
-                FlutterWindowControllerHandle window, string plugin_name);
-        }
-        #endregion
-
-        #region Tizen40
-        private class Tizen40Embedder
-        {
-            private const string SharedLibrary = "flutter_tizen40.so";
-
-            [DllImport(SharedLibrary)]
-            public static extern FlutterWindowControllerHandle FlutterCreateWindow(
-                ref FlutterWindowProperties window_properties,
-                ref FlutterEngineProperties engine_properties);
-
-            [DllImport(SharedLibrary)]
-            public static extern void FlutterDestroyWindow(
-                FlutterWindowControllerHandle window);
-
-            [DllImport(SharedLibrary)]
-            public static extern void FlutterNotifyLocaleChange(
-                FlutterWindowControllerHandle window);
-
-            [DllImport(SharedLibrary)]
-            public static extern void FlutterNotifyLowMemoryWarning(
-                FlutterWindowControllerHandle window);
-
-            [DllImport(SharedLibrary)]
-            public static extern void FlutterNotifyAppIsResumed(
-                FlutterWindowControllerHandle window);
-
-            [DllImport(SharedLibrary)]
-            public static extern void FlutterNotifyAppIsPaused(
-                FlutterWindowControllerHandle window);
-
-            [DllImport(SharedLibrary)]
-            public static extern IntPtr FlutterDesktopGetPluginRegistrar(
-                FlutterWindowControllerHandle window, string plugin_name);
-        }
-        #endregion
+        [DllImport("flutter_tizen.so")]
+        public static extern IntPtr FlutterDesktopGetPluginRegistrar(
+            FlutterWindowControllerHandle window, string plugin_name);
     }
 }

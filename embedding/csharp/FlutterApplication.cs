@@ -47,9 +47,6 @@ namespace Tizen.Flutter.Embedding
         {
             base.OnCreate();
 
-            // Read the current platform version and choose a Tizen 4.0 embedder if applicable.
-            Information.TryGetValue("http://tizen.org/feature/platform.version", out PlatformVersion);
-
             // Get the screen size of the currently running device.
             if (!Information.TryGetValue("http://tizen.org/feature/screen.width", out int width) ||
                 !Information.TryGetValue("http://tizen.org/feature/screen.height", out int height))
