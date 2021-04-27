@@ -13,16 +13,6 @@ namespace Tizen.Flutter.Embedding
         public static extern bool FlutterEngineRunsAOTCompiledDartCode();
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct FlutterWindowProperties
-        {
-            public string title;
-            public int x;
-            public int y;
-            public int width;
-            public int height;
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
         public struct FlutterEngineProperties
         {
             public string assets_path;
@@ -34,7 +24,6 @@ namespace Tizen.Flutter.Embedding
 
         [DllImport("flutter_tizen.so")]
         public static extern FlutterWindowControllerHandle FlutterCreateWindow(
-            ref FlutterWindowProperties window_properties,
             ref FlutterEngineProperties engine_properties);
 
         [DllImport("flutter_tizen.so")]

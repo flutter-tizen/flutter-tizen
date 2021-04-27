@@ -15,17 +15,6 @@
 bool FlutterApp::OnCreate() {
   TizenLog::Debug("Launching a Flutter application...");
 
-  FlutterWindowProperties window_prop = {};
-  window_prop.x = 0;
-  window_prop.y = 0;
-  if (system_info_get_platform_int("http://tizen.org/feature/screen.width",
-                                   &window_prop.width) != 0 ||
-      system_info_get_platform_int("http://tizen.org/feature/screen.height",
-                                   &window_prop.height) != 0) {
-    TizenLog::Error("Could not obtain the screen size.");
-    return false;
-  }
-
   std::string res_path;
   {
     auto path = app_get_resource_path();
@@ -55,7 +44,7 @@ bool FlutterApp::OnCreate() {
   engine_prop.switches = switches.data();
   engine_prop.switches_count = switches.size();
 
-  handle = FlutterCreateWindow(window_prop, engine_prop);
+  handle = FlutterCreateWindow(engine_prop);
   if (!handle) {
     TizenLog::Error("Could not launch a Flutter application.");
     return false;
