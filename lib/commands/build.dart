@@ -28,12 +28,11 @@ class BuildTpkCommand extends BuildSubCommand with TizenExtension {
   BuildTpkCommand({bool verboseHelp = false}) {
     addCommonDesktopBuildOptions(verboseHelp: verboseHelp);
     usesBuildNameOption();
-    argParser.addMultiOption(
+    argParser.addOption(
       'target-arch',
-      splitCommas: true,
-      defaultsTo: <String>['arm'],
+      defaultsTo: 'arm',
       allowed: <String>['arm', 'arm64', 'x86'],
-      help: 'Target architectures to compile the application for',
+      help: 'Target architecture for which the the app is compiled',
     );
     argParser.addOption(
       'device-profile',
@@ -57,13 +56,8 @@ class BuildTpkCommand extends BuildSubCommand with TizenExtension {
 
   /// See: [android.validateBuild] in `build_validation.dart`
   void validateBuild(TizenBuildInfo tizenBuildInfo) {
-    if (tizenBuildInfo.buildInfo.codeSizeDirectory != null &&
-        tizenBuildInfo.targetArchs.length > 1) {
-      throwToolExit(
-          'Cannot perform code size analysis when building for multiple ABIs.');
-    }
     if (tizenBuildInfo.buildInfo.mode.isPrecompiled &&
-        tizenBuildInfo.targetArchs.contains('x86')) {
+        tizenBuildInfo.targetArch == 'x86') {
       throwToolExit('x86 ABI does not support AOT compilation.');
     }
   }
@@ -83,7 +77,7 @@ class BuildTpkCommand extends BuildSubCommand with TizenExtension {
     final BuildInfo buildInfo = await getBuildInfo();
     final TizenBuildInfo tizenBuildInfo = TizenBuildInfo(
       buildInfo,
-      targetArchs: stringsArg('target-arch'),
+      targetArch: stringArg('target-arch'),
       deviceProfile: deviceProfile,
       securityProfile: stringArg('security-profile'),
     );

@@ -313,7 +313,7 @@ class TizenDevice extends Device {
         targetFile: mainPath,
         tizenBuildInfo: TizenBuildInfo(
           debuggingOptions.buildInfo,
-          targetArchs: <String>[architecture],
+          targetArch: architecture,
           deviceProfile: getCapability('profile_name'),
         ),
       );
