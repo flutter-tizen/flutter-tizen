@@ -50,9 +50,9 @@ class TizenTpk extends ApplicationPackage {
   })  : assert(file != null),
         super(id: manifest?.packageId);
 
-  static Future<TizenTpk> fromTpk(File tpk) async {
+  static Future<TizenTpk> fromTpk(File tpkFile) async {
     final Directory tempDir = globals.fs.systemTempDirectory.createTempSync();
-    globals.os.unzip(tpk, tempDir);
+    globals.os.unzip(tpkFile, tempDir);
 
     // We have to manually restore permissions for files zipped by
     // build-task-tizen on Unix.
@@ -70,7 +70,7 @@ class TizenTpk extends ApplicationPackage {
     final File signatureFile = tempDir.childFile('author-signature.xml');
 
     return TizenTpk(
-      file: tpk,
+      file: tpkFile,
       manifest: TizenManifest.parseFromXml(manifestFile),
       signature: Signature.parseFromXml(signatureFile),
     );
@@ -85,6 +85,7 @@ class TizenTpk extends ApplicationPackage {
     final File tpkFile = flutterProject.directory
         .childDirectory('build')
         .childDirectory('tizen')
+        .childDirectory('tpk')
         .childFile(project.outputTpkName);
     if (tpkFile.existsSync()) {
       return await TizenTpk.fromTpk(tpkFile);

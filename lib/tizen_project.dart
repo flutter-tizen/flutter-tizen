@@ -6,7 +6,6 @@
 import 'dart:io';
 
 import 'package:flutter_tools/src/base/file_system.dart';
-import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/project.dart';
 
 import 'tizen_plugins.dart';
@@ -53,59 +52,4 @@ class TizenProject extends FlutterProjectPlatform {
   }
 
   Future<void> ensureReadyForPlatformSpecificTooling() async {}
-}
-
-/// Used for parsing native plugin's `project_def.prop`.
-class TizenLibrary {
-  TizenLibrary(this.path);
-
-  final String path;
-
-  Directory get directory => globals.fs.directory(path).absolute;
-
-  File get projectFile => directory.childFile('project_def.prop');
-
-  bool get isValid => projectFile.existsSync();
-
-  final RegExp _propertyFormat = RegExp(r'(\S+)\s*\+?=(.*)');
-
-  Map<String, String> _properties;
-
-  String getProperty(String key) {
-    if (_properties == null) {
-      if (!isValid) {
-        return null;
-      }
-      _properties = <String, String>{};
-
-      for (final String line in projectFile.readAsLinesSync()) {
-        final Match match = _propertyFormat.firstMatch(line);
-        if (match == null) {
-          continue;
-        }
-        final String key = match.group(1);
-        final String value = match.group(2).trim();
-        _properties[key] = value;
-      }
-    }
-    return _properties.containsKey(key) ? _properties[key] : null;
-  }
-
-  List<String> getPropertyAsAbsolutePaths(String key) {
-    final String property = getProperty(key);
-    if (property == null) {
-      return <String>[];
-    }
-
-    final List<String> paths = <String>[];
-    for (final String element in property.split(' ')) {
-      if (globals.fs.path.isAbsolute(element)) {
-        paths.add(element);
-      } else {
-        paths.add(globals.fs.path
-            .normalize(globals.fs.path.join(directory.path, element)));
-      }
-    }
-    return paths;
-  }
 }
