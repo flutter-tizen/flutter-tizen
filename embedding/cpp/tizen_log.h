@@ -17,24 +17,28 @@ class TizenLog {
     va_list args;
     va_start(args, format);
     dlog_vprint(DLOG_DEBUG, tag, format, args);
+    va_end(args);
   }
 
   static void Info(const char *format, ...) {
     va_list args;
     va_start(args, format);
     dlog_vprint(DLOG_INFO, tag, format, args);
+    va_end(args);
   }
 
   static void Warn(const char *format, ...) {
     va_list args;
     va_start(args, format);
     dlog_vprint(DLOG_WARN, tag, format, args);
+    va_end(args);
   }
 
   static void Error(const char *format, ...) {
     va_list args;
     va_start(args, format);
     dlog_vprint(DLOG_ERROR, tag, format, args);
+    va_end(args);
   }
 
  private:
