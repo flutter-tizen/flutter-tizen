@@ -1,0 +1,30 @@
+# See https://docs.tizen.org/application/tizen-studio/native-tools/project-conversion
+# for details.
+
+APPNAME = runner
+type = app
+profile = common-4.0
+
+# Source files
+USER_SRCS += src/runner.cc
+
+# User defines
+USER_DEFS =
+USER_UNDEFS =
+USER_CPP_DEFS = TIZEN_DEPRECATION DEPRECATION_WARNING
+USER_CPP_UNDEFS =
+
+# Compiler/linker flags
+USER_CFLAGS_MISC =
+USER_CPPFLAGS_MISC = -c -fmessage-length=0
+USER_LFLAGS = -Wl,-E
+
+# Libraries and objects
+USER_LIB_DIRS = lib
+USER_LIBS =
+USER_OBJS =
+
+# User includes
+USER_INC_DIRS = inc flutter src
+USER_INC_FILES =
+USER_CPP_INC_FILES =

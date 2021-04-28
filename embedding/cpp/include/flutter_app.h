@@ -6,6 +6,8 @@
 #define FLUTTER_TIZEN_EMBEDDING_CPP_INCLUDE_FLUTTER_APP_H_
 
 #include <app.h>
+#include <service_app.h>
+
 #include <flutter/plugin_registry.h>
 #include <flutter_tizen.h>
 
@@ -52,8 +54,19 @@ class FlutterApp : public flutter::PluginRegistry {
   // The Flutter engine instance handle.
   FlutterDesktopEngineRef handle;
 
- private:
+ protected:
   void ParseEngineArgs();
+};
+
+// The app base class for headless execution.
+class FlutterServiceApp : public FlutterApp {
+ public:
+  explicit FlutterServiceApp() {}
+  ~FlutterServiceApp() {}
+
+  bool OnCreate() override;
+
+  int Run(int argc, char **argv) override;
 };
 
 #endif /* FLUTTER_TIZEN_EMBEDDING_CPP_INCLUDE_FLUTTER_APP_H_ */

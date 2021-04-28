@@ -23,6 +23,13 @@ class TizenCreateCommand extends CreateCommand {
       defaultsTo: 'csharp',
       allowed: <String>['cpp', 'csharp'],
     );
+    argParser.addFlag(
+      'tizen-service',
+      defaultsTo: false,
+      negatable: false,
+      help: 'Create service application on Tizen. '
+          'Available only with tizen-language option set to cpp.',
+    );
   }
 
   @override
@@ -112,6 +119,12 @@ class TizenCreateCommand extends CreateCommand {
     tizenTemplateManifest.copySync(templateManifest.path);
 
     final String language = stringArg('tizen-language');
+    final bool isTizenService = boolArg('tizen-service');
+    if (isTizenService && 'cpp' != language) {
+      throwToolExit(
+          'Service application can be used only when tizen-language is set to cpp.');
+    }
+
     // The dart plugin template is not supported at the moment.
     const String pluginType = 'cpp';
     final List<Directory> created = <Directory>[];
@@ -129,7 +142,16 @@ class TizenCreateCommand extends CreateCommand {
         if (dest.existsSync()) {
           dest.deleteSync(recursive: true);
         }
-        globals.fsUtils.copyDirectorySync(source, dest);
+        if (projectType.basename == 'app') {
+          final Directory application =
+              source.childDirectory(isTizenService ? 'service-app' : 'ui-app');
+          if (!application.existsSync()) {
+            throwToolExit('Could not locate app template.');
+          }
+          globals.fsUtils.copyDirectorySync(application, dest);
+        } else {
+          globals.fsUtils.copyDirectorySync(source, dest);
+        }
         created.add(dest);
       }
       return await runInternal();
