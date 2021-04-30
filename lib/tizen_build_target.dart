@@ -229,7 +229,8 @@ USER_LIB_DIRS = lib
     final BuildMode buildMode = buildInfo.buildInfo.mode;
     final String buildConfig = buildMode.isPrecompiled ? 'Release' : 'Debug';
     final Directory buildDir = rootDir.childDirectory(buildConfig);
-    final Directory includeDir = rootDir.childDirectory('include');
+    final Directory includeDir = rootDir.childDirectory('include')
+      ..createSync(recursive: true);
     final Directory libDir = rootDir.childDirectory('lib')
       ..createSync(recursive: true);
 
@@ -268,7 +269,7 @@ USER_LIB_DIRS = lib
         }
       }
 
-      // The plugin header is required when building native apps.
+      // The plugin header is used when building native apps.
       final File header = headerDir.childFile(plugin.fileName);
       header.copySync(includeDir.childFile(header.basename).path);
       outputs.add(includeDir.childFile(header.basename));
@@ -541,16 +542,16 @@ class NativeTpk {
 
     // Clean up the intermediate and output directories.
     final Directory tizenDir = tizenProject.editableDirectory;
-    final Directory resDir = tizenDir.childDirectory('res')
-      ..createSync(recursive: true);
+    final Directory resDir = tizenDir.childDirectory('res');
     if (resDir.existsSync()) {
       resDir.deleteSync(recursive: true);
     }
-    final Directory libDir = tizenDir.childDirectory('lib')
-      ..createSync(recursive: true);
+    resDir.createSync(recursive: true);
+    final Directory libDir = tizenDir.childDirectory('lib');
     if (libDir.existsSync()) {
       libDir.deleteSync(recursive: true);
     }
+    libDir.createSync(recursive: true);
 
     final Directory outputDir = environment.outputDir.childDirectory('tpk');
     if (outputDir.existsSync()) {
@@ -669,6 +670,8 @@ class NativeTpk {
       throwToolExit('Failed to build native application:\n$result');
     }
 
+    // The output tpk is signed with an active profile unless otherwise
+    // specified.
     String securityProfile = buildInfo.securityProfile;
     if (securityProfile != null) {
       if (tizenSdk.securityProfiles == null ||
@@ -705,10 +708,10 @@ class NativeTpk {
           'Build succeeded but the expected TPK not found:\n${result.stdout}');
     }
 
-    // Copy and rename the file.
+    // Copy and rename the output tpk.
     outputTpk.copySync(outputDir.childFile(tizenProject.outputTpkName).path);
 
-    // Extract the file to support code size analysis.
+    // Extract the contents of the tpk to support code size analysis.
     globals.os.unzip(outputTpk, outputDir.childDirectory('tpkroot'));
   }
 }
