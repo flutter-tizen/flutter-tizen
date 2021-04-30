@@ -141,6 +141,8 @@ class TizenBuilder {
         throwToolExit('The build failed.');
       }
 
+      // These pseudo targets cannot be skipped and should be invoked whenever
+      // the build is run.
       if (tizenProject.isDotnet) {
         await DotnetTpk(tizenBuildInfo).build(environment);
       } else {

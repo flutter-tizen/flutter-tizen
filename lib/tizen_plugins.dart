@@ -34,7 +34,7 @@ class TizenPlugin extends PluginPlatform implements NativeOrDartPlugin {
     @required this.directory,
     this.pluginClass,
     this.dartPluginClass,
-    @required this.fileName,
+    this.fileName,
   }) : assert(pluginClass != null || dartPluginClass != null);
 
   factory TizenPlugin.fromYaml(String name, Directory directory, YamlMap yaml) {
