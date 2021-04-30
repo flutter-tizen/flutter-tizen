@@ -6,9 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Runtime.InteropServices;
 using Tizen.Applications;
-using Tizen.System;
 using static Tizen.Flutter.Embedding.Interop;
 
 namespace Tizen.Flutter.Embedding
@@ -51,15 +49,7 @@ namespace Tizen.Flutter.Embedding
             string resPath = Current.DirectoryInfo.Resource;
             string assetsPath = $"{resPath}/flutter_assets";
             string icuDataPath = $"{resPath}/icudtl.dat";
-            string arch = RuntimeInformation.ProcessArchitecture switch
-            {
-                Architecture.X86 => "x86",
-                Architecture.X64 => "x64",
-                Architecture.Arm => "arm",
-                Architecture.Arm64 => "aarch64",
-                _ => "",
-            };
-            string aotLibPath = $"{resPath}/../lib/{arch}/libapp.so";
+            string aotLibPath = $"{resPath}/../lib/libapp.so";
 
             // Read engine arguments passed from the tool.
             ParseEngineArgs();

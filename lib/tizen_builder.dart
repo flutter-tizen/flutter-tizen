@@ -33,10 +33,6 @@ import 'tizen_project.dart';
 import 'tizen_sdk.dart';
 import 'tizen_tpk.dart';
 
-/// The define to control what Tizen architectures are built for.
-/// This is expected to be a comma-separated list of architectures.
-const String kTizenArchs = 'TizenArchs';
-
 /// The define to control what Tizen device is built for.
 const String kDeviceProfile = 'DeviceProfile';
 
@@ -44,13 +40,14 @@ const String kDeviceProfile = 'DeviceProfile';
 class TizenBuildInfo {
   const TizenBuildInfo(
     this.buildInfo, {
-    @required this.targetArchs,
-    this.deviceProfile,
+    @required this.targetArch,
+    @required this.deviceProfile,
     this.securityProfile,
-  });
+  })  : assert(targetArch != null),
+        assert(deviceProfile != null);
 
   final BuildInfo buildInfo;
-  final List<String> targetArchs;
+  final String targetArch;
   final String deviceProfile;
   final String securityProfile;
 }
@@ -75,10 +72,6 @@ class TizenBuilder {
         'To fix this problem, create a new project by running `flutter-tizen create <app-dir>`.',
       );
     }
-    if (!tizenProject.isDotnet && tizenBuildInfo.targetArchs.length > 1) {
-      throwToolExit(
-          'Tizen native projects cannot be built for multiple target archs.');
-    }
     if (tizenSdk == null || !tizenSdk.tizenCli.existsSync()) {
       throwToolExit(
         'Unable to locate Tizen CLI executable.\n'
@@ -91,6 +84,9 @@ class TizenBuilder {
     final BuildInfo buildInfo = tizenBuildInfo.buildInfo;
     final Directory outputDir =
         project.directory.childDirectory('build').childDirectory('tizen');
+    // Used by AotElfBase to generate an AOT snapshot.
+    final String targetPlatform = getNameForTargetPlatform(
+        getTargetPlatformForArch(tizenBuildInfo.targetArch));
 
     final Environment environment = Environment(
       projectDir: project.directory,
@@ -102,11 +98,9 @@ class TizenBuilder {
           ? null
           : globals.flutterVersion.engineRevision,
       defines: <String, String>{
-        kTizenArchs: tizenBuildInfo.targetArchs.join(','),
         kTargetFile: targetFile,
         kBuildMode: getNameForBuildMode(buildInfo.mode),
-        kDeviceProfile: tizenBuildInfo.deviceProfile,
-        kTargetPlatform: getNameForTargetPlatform(TargetPlatform.android),
+        kTargetPlatform: targetPlatform,
         kDartObfuscation: buildInfo.dartObfuscation.toString(),
         kSplitDebugInfo: buildInfo.splitDebugInfoPath,
         kIconTreeShakerFlag: buildInfo.treeShakeIcons.toString(),
@@ -118,6 +112,7 @@ class TizenBuilder {
           kExtraGenSnapshotOptions: buildInfo.extraGenSnapshotOptions.join(','),
         if (buildInfo.extraFrontEndOptions?.isNotEmpty ?? false)
           kExtraFrontEndOptions: buildInfo.extraFrontEndOptions.join(','),
+        kDeviceProfile: tizenBuildInfo.deviceProfile,
       },
       inputs: <String, String>{
         kBundleSkSLPath: buildInfo.bundleSkSLPath,
@@ -169,13 +164,12 @@ class TizenBuilder {
     );
 
     if (buildInfo.codeSizeDirectory != null && sizeAnalyzer != null) {
-      final String arch = tizenBuildInfo.targetArchs.first;
       final File codeSizeFile = globals.fs
           .directory(buildInfo.codeSizeDirectory)
-          .childFile('snapshot.$arch.json');
+          .childFile('snapshot.$targetPlatform.json');
       final File precompilerTrace = globals.fs
           .directory(buildInfo.codeSizeDirectory)
-          .childFile('trace.$arch.json');
+          .childFile('trace.$targetPlatform.json');
       final Map<String, Object> output = await sizeAnalyzer.analyzeAotSnapshot(
         aotSnapshot: codeSizeFile,
         outputDirectory: outputDir.childDirectory('tpkroot'),
