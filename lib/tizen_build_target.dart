@@ -88,7 +88,7 @@ abstract class TizenAssetBundle extends Target {
     final Depfile assetDepfile = await copyAssets(
       environment,
       outputDirectory,
-      targetPlatform: TargetPlatform.android,
+      targetPlatform: null, // corresponds to flutter-tester
     );
     final DepfileService depfileService = DepfileService(
       fileSystem: environment.fileSystem,
