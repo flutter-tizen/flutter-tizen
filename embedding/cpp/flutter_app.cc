@@ -178,6 +178,9 @@ void FlutterApp::ParseEngineArgs() {
   free(app_id);
 
   std::ifstream file(temp_path);
+  if (!file.is_open()) {
+    return;
+  }
   std::string line;
   while (file && !file.eof() && std::getline(file, line)) {
     TizenLog::Info("Enabled: %s", line.c_str());
