@@ -267,7 +267,14 @@ class TizenDevice extends Device {
       }
     }
     _logger.printTrace('Installing TPK.');
-    if (!await installApp(package)) {
+    if (await installApp(package)) {
+      // On TV emulator, a tpk must be installed twice if it's being installed
+      // for the first time in order to prevent a library loading error.
+      // Issue: https://github.com/flutter-tizen/flutter-tizen/issues/50
+      if (!wasInstalled && usesSecureProtocol && await isLocalEmulator) {
+        await installApp(package);
+      }
+    } else {
       _logger.printTrace('Warning: Failed to install TPK.');
       if (wasInstalled) {
         _logger.printStatus('Uninstalling old version...');

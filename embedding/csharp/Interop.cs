@@ -9,9 +9,6 @@ namespace Tizen.Flutter.Embedding
 {
     internal static class Interop
     {
-        [DllImport("flutter_engine.so")]
-        public static extern bool FlutterEngineRunsAOTCompiledDartCode();
-
         [StructLayout(LayoutKind.Sequential)]
         public struct FlutterEngineProperties
         {

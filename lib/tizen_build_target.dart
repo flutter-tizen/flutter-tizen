@@ -428,7 +428,7 @@ class DotnetTpk {
     }
 
     // Keep this value in sync with the latest published nuget version.
-    const String embeddingVersion = '1.7.0';
+    const String embeddingVersion = '1.7.1';
 
     // Run the .NET build.
     if (dotnetCli == null) {

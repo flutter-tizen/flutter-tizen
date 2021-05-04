@@ -64,13 +64,6 @@ namespace Tizen.Flutter.Embedding
                 switches_count = (uint)switches.Length,
             };
 
-            // This check is not actually required, but we want to make sure that libflutter_engine.so is loaded
-            // before a call to FlutterCreateWindow() is made to avoid library loading issues on TV emulator.
-            if (FlutterEngineRunsAOTCompiledDartCode())
-            {
-                InternalLog.Debug(LogTag, "Running in AOT mode.");
-            }
-
             Handle = FlutterCreateWindow(ref engineProperties);
             if (Handle.IsInvalid)
             {
