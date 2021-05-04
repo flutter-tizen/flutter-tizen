@@ -427,7 +427,9 @@ class DotnetTpk {
           (File lib) => lib.copySync(libDir.childFile(lib.basename).path));
     }
 
-    // Keep this value in sync with the latest published nuget version.
+    // TODO(swift-kim): This property is used by projects created before May
+    // 2021. Keep the value up to date until majority of projects are migrated
+    // to use ProjectReference.
     const String embeddingVersion = '1.7.0';
 
     // Run the .NET build.

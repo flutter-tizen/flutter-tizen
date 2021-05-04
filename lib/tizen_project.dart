@@ -6,7 +6,10 @@
 import 'dart:io';
 
 import 'package:flutter_tools/src/base/file_system.dart';
+import 'package:flutter_tools/src/cache.dart';
+import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/project.dart';
+import 'package:xml/xml.dart';
 
 import 'tizen_plugins.dart';
 import 'tizen_tpk.dart';
@@ -51,5 +54,56 @@ class TizenProject extends FlutterProjectPlatform {
     return '${manifest.packageId}-${manifest.version}.tpk';
   }
 
-  Future<void> ensureReadyForPlatformSpecificTooling() async {}
+  Future<void> ensureReadyForPlatformSpecificTooling() async {
+    if (!editableDirectory.existsSync() || !isDotnet) {
+      return;
+    }
+
+    final File userFile = editableDirectory.childFile('Runner.csproj.user');
+    const String initialXmlContent = '''
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup />
+</Project>
+''';
+    if (!userFile.existsSync()) {
+      userFile.writeAsStringSync(initialXmlContent);
+    }
+
+    XmlDocument document;
+    try {
+      document = XmlDocument.parse(userFile.readAsStringSync().trim());
+    } on XmlException {
+      globals.printStatus('Overwriting ${userFile.basename}...');
+      userFile.writeAsStringSync(initialXmlContent);
+    }
+
+    final File embeddingProjectFile = globals.fs
+        .directory(Cache.flutterRoot)
+        .parent
+        .childDirectory('embedding')
+        .childDirectory('csharp')
+        .childFile('Tizen.Flutter.Embedding.csproj');
+    final Iterable<XmlElement> elements =
+        document.findAllElements('FlutterEmbeddingPath');
+    if (elements.isEmpty) {
+      // Create an element if not exists.
+      final XmlBuilder builder = XmlBuilder();
+      builder.element('PropertyGroup', nest: () {
+        builder.element(
+          'FlutterEmbeddingPath',
+          nest: embeddingProjectFile.absolute.path,
+        );
+      });
+      document.rootElement.children.add(builder.buildFragment());
+    } else {
+      // Update existing element(s).
+      for (final XmlElement element in elements) {
+        element.innerText = embeddingProjectFile.absolute.path;
+      }
+    }
+    userFile.writeAsStringSync(
+      document.toXmlString(pretty: true, indent: '  '),
+    );
+  }
 }
