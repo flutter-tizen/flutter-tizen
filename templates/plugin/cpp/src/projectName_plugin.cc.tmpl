@@ -14,6 +14,8 @@
 
 #include "log.h"
 
+namespace {
+
 class {{pluginClass}} : public flutter::Plugin {
  public:
   static void RegisterWithRegistrar(flutter::PluginRegistrar *registrar) {
@@ -58,6 +60,8 @@ class {{pluginClass}} : public flutter::Plugin {
     }
   }
 };
+
+}  // namespace
 
 void {{pluginClass}}RegisterWithRegistrar(
     FlutterDesktopPluginRegistrarRef registrar) {

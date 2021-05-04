@@ -29,19 +29,19 @@ import 'tizen_project.dart';
 ///
 /// Source: [LinuxPlugin] in `platform_plugins.dart`
 class TizenPlugin extends PluginPlatform implements NativeOrDartPlugin {
-  const TizenPlugin({
+  TizenPlugin({
     @required this.name,
-    @required this.path,
+    @required this.directory,
     this.pluginClass,
     this.dartPluginClass,
-    @required this.fileName,
+    this.fileName,
   }) : assert(pluginClass != null || dartPluginClass != null);
 
-  factory TizenPlugin.fromYaml(String name, String path, YamlMap yaml) {
+  factory TizenPlugin.fromYaml(String name, Directory directory, YamlMap yaml) {
     assert(validate(yaml));
     return TizenPlugin(
       name: name,
-      path: path,
+      directory: directory,
       pluginClass: yaml[kPluginClass] as String,
       dartPluginClass: yaml[kDartPluginClass] as String,
       fileName: yaml['fileName'] as String,
@@ -58,7 +58,7 @@ class TizenPlugin extends PluginPlatform implements NativeOrDartPlugin {
   static const String kConfigKey = 'tizen';
 
   final String name;
-  final String path;
+  final Directory directory;
   final String pluginClass;
   final String dartPluginClass;
   final String fileName;
@@ -73,9 +73,51 @@ class TizenPlugin extends PluginPlatform implements NativeOrDartPlugin {
       if (pluginClass != null) 'class': pluginClass,
       if (dartPluginClass != null) 'dartPluginClass': dartPluginClass,
       'file': fileName,
-      if (pluginClass != null)
-        'sofile': fileName.toLowerCase().replaceFirst('.h', '.so'),
     };
+  }
+
+  File get projectFile => directory.childFile('project_def.prop');
+
+  final RegExp _propertyFormat = RegExp(r'(\S+)\s*\+?=(.*)');
+
+  Map<String, String> _properties;
+
+  String getProperty(String key) {
+    if (_properties == null) {
+      if (!projectFile.existsSync()) {
+        return null;
+      }
+      _properties = <String, String>{};
+
+      for (final String line in projectFile.readAsLinesSync()) {
+        final Match match = _propertyFormat.firstMatch(line);
+        if (match == null) {
+          continue;
+        }
+        final String key = match.group(1);
+        final String value = match.group(2).trim();
+        _properties[key] = value;
+      }
+    }
+    return _properties.containsKey(key) ? _properties[key] : null;
+  }
+
+  List<String> getPropertyAsAbsolutePaths(String key) {
+    final String property = getProperty(key);
+    if (property == null) {
+      return <String>[];
+    }
+
+    final List<String> paths = <String>[];
+    for (final String element in property.split(' ')) {
+      if (globals.fs.path.isAbsolute(element)) {
+        paths.add(element);
+      } else {
+        paths.add(globals.fs.path
+            .normalize(globals.fs.path.join(directory.path, element)));
+      }
+    }
+    return paths;
   }
 }
 
@@ -264,7 +306,7 @@ TizenPlugin _pluginFromPackage(String name, Uri packageRoot) {
   }
   return TizenPlugin.fromYaml(
     name,
-    packageDir.childDirectory('tizen').path,
+    packageDir.childDirectory('tizen'),
     platformsYaml[TizenPlugin.kConfigKey] as YamlMap,
   );
 }
@@ -364,7 +406,7 @@ namespace Runner
     internal class GeneratedPluginRegistrant
     {
       {{#plugins}}
-        [DllImport("{{sofile}}")]
+        [DllImport("flutter_plugins.so")]
         public static extern void {{class}}RegisterWithRegistrar(IntPtr registrar);
       {{/plugins}}
 

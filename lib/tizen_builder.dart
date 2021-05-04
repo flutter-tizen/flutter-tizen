@@ -81,9 +81,10 @@ class TizenBuilder {
 
     updateManifest(tizenProject, tizenBuildInfo.buildInfo);
 
-    final BuildInfo buildInfo = tizenBuildInfo.buildInfo;
     final Directory outputDir =
         project.directory.childDirectory('build').childDirectory('tizen');
+    final BuildInfo buildInfo = tizenBuildInfo.buildInfo;
+    final String buildModeName = getNameForBuildMode(buildInfo.mode);
     // Used by AotElfBase to generate an AOT snapshot.
     final String targetPlatform = getNameForTargetPlatform(
         getTargetPlatformForArch(tizenBuildInfo.targetArch));
@@ -99,7 +100,7 @@ class TizenBuilder {
           : globals.flutterVersion.engineRevision,
       defines: <String, String>{
         kTargetFile: targetFile,
-        kBuildMode: getNameForBuildMode(buildInfo.mode),
+        kBuildMode: buildModeName,
         kTargetPlatform: targetPlatform,
         kDartObfuscation: buildInfo.dartObfuscation.toString(),
         kSplitDebugInfo: buildInfo.splitDebugInfoPath,
@@ -124,10 +125,9 @@ class TizenBuilder {
     );
 
     final Target target = buildInfo.isDebug
-        ? DebugTizenApplication(project, tizenBuildInfo)
-        : ReleaseTizenApplication(project, tizenBuildInfo);
+        ? DebugTizenApplication(tizenBuildInfo)
+        : ReleaseTizenApplication(tizenBuildInfo);
 
-    final String buildModeName = getNameForBuildMode(buildInfo.mode);
     final Status status = globals.logger.startProgress(
         'Building a Tizen application in $buildModeName mode...');
     try {
@@ -141,10 +141,12 @@ class TizenBuilder {
         throwToolExit('The build failed.');
       }
 
+      // These pseudo targets cannot be skipped and should be invoked whenever
+      // the build is run.
       if (tizenProject.isDotnet) {
-        await DotnetTpk(project, tizenBuildInfo).build(environment);
+        await DotnetTpk(tizenBuildInfo).build(environment);
       } else {
-        await NativeTpk(project, tizenBuildInfo).build(environment);
+        await NativeTpk(tizenBuildInfo).build(environment);
       }
 
       if (buildInfo.performanceMeasurementFile != null) {
@@ -156,7 +158,8 @@ class TizenBuilder {
       status.stop();
     }
 
-    final File tpkFile = outputDir.childFile(tizenProject.outputTpkName);
+    final Directory tpkDir = outputDir.childDirectory('tpk');
+    final File tpkFile = tpkDir.childFile(tizenProject.outputTpkName);
     final String tpkSize = getSizeAsMB(tpkFile.lengthSync());
     globals.printStatus(
       '$successMark Built ${relative(tpkFile.path)} ($tpkSize).',
@@ -172,7 +175,7 @@ class TizenBuilder {
           .childFile('trace.$targetPlatform.json');
       final Map<String, Object> output = await sizeAnalyzer.analyzeAotSnapshot(
         aotSnapshot: codeSizeFile,
-        outputDirectory: outputDir.childDirectory('tpkroot'),
+        outputDirectory: tpkDir.childDirectory('tpkroot'),
         precompilerTrace: precompilerTrace,
         type: 'linux',
       );

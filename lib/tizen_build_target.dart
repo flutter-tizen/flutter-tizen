@@ -88,7 +88,7 @@ abstract class TizenAssetBundle extends Target {
     final Depfile assetDepfile = await copyAssets(
       environment,
       outputDirectory,
-      targetPlatform: TargetPlatform.android,
+      targetPlatform: null, // corresponds to flutter-tester
     );
     final DepfileService depfileService = DepfileService(
       fileSystem: environment.fileSystem,
@@ -103,9 +103,8 @@ abstract class TizenAssetBundle extends Target {
 
 /// Source: [DebugAndroidApplication] in `android.dart`
 class DebugTizenApplication extends TizenAssetBundle {
-  DebugTizenApplication(this.project, this.buildInfo);
+  DebugTizenApplication(this.buildInfo);
 
-  final FlutterProject project;
   final TizenBuildInfo buildInfo;
 
   @override
@@ -131,16 +130,14 @@ class DebugTizenApplication extends TizenAssetBundle {
   @override
   List<Target> get dependencies => <Target>[
         ...super.dependencies,
-        if (TizenProject.fromFlutter(project).isDotnet)
-          TizenPlugins(project, buildInfo),
+        TizenPlugins(buildInfo),
       ];
 }
 
 /// See: [ReleaseAndroidApplication] in `android.dart`
 class ReleaseTizenApplication extends TizenAssetBundle {
-  ReleaseTizenApplication(this.project, this.buildInfo);
+  ReleaseTizenApplication(this.buildInfo);
 
-  final FlutterProject project;
   final TizenBuildInfo buildInfo;
 
   @override
@@ -150,16 +147,14 @@ class ReleaseTizenApplication extends TizenAssetBundle {
   List<Target> get dependencies => <Target>[
         ...super.dependencies,
         TizenAotElf(),
-        if (TizenProject.fromFlutter(project).isDotnet)
-          TizenPlugins(project, buildInfo),
+        TizenPlugins(buildInfo),
       ];
 }
 
-/// Compiles Tizen native plugins into shared objects.
+/// Compiles Tizen native plugins into a single shared object.
 class TizenPlugins extends Target {
-  TizenPlugins(this.project, this.buildInfo);
+  TizenPlugins(this.buildInfo);
 
-  final FlutterProject project;
   final TizenBuildInfo buildInfo;
 
   final ProcessUtils _processUtils = ProcessUtils(
@@ -170,6 +165,7 @@ class TizenPlugins extends Target {
 
   @override
   List<Source> get inputs => const <Source>[
+        Source.pattern('{FLUTTER_ROOT}/../lib/tizen_build_target.dart'),
         Source.pattern('{PROJECT_DIR}/.packages'),
       ];
 
@@ -186,231 +182,215 @@ class TizenPlugins extends Target {
 
   @override
   Future<void> build(Environment environment) async {
-    final BuildMode buildMode =
-        getBuildModeForName(environment.defines[kBuildMode]);
-
-    final TizenProject tizenProject = TizenProject.fromFlutter(project);
-    final String profile =
-        TizenManifest.parseFromXml(tizenProject.manifestFile)?.profile;
-
-    // Clear the output directory.
-    final Directory ephemeralDir = tizenProject.ephemeralDirectory;
-    if (ephemeralDir.existsSync()) {
-      ephemeralDir.deleteSync(recursive: true);
-    }
-    ephemeralDir.createSync(recursive: true);
-
-    final List<TizenPlugin> nativePlugins =
-        await findTizenPlugins(project, nativeOnly: true);
-
-    for (final TizenPlugin plugin in nativePlugins) {
-      final Directory pluginDir = environment.fileSystem.directory(plugin.path);
-      final String buildConfig = buildMode.isPrecompiled ? 'Release' : 'Debug';
-      final Directory buildDir = pluginDir.childDirectory(buildConfig);
-
-      final Directory engineDir =
-          tizenArtifacts.getEngineDirectory(buildInfo.targetArch, buildMode);
-      final Directory commonDir = engineDir.parent.childDirectory('common');
-      final Directory clientWrapperDir =
-          commonDir.childDirectory('cpp_client_wrapper');
-
-      if (!engineDir.existsSync() || !clientWrapperDir.existsSync()) {
-        throwToolExit(
-          'The flutter engine artifacts were corrupted or invalid.\n'
-          'Unable to build ${plugin.name} plugin.',
-        );
-      }
-      final Map<String, String> variables = <String, String>{
-        'PATH': getDefaultPathVariable(),
-        'USER_SRCS': getUnixPath(clientWrapperDir.childFile('*.cc').path)
-      };
-      final List<String> extraOptions = <String>[
-        '-lflutter_tizen_${buildInfo.deviceProfile}',
-        '-L${getUnixPath(engineDir.path)}',
-        '-std=c++17',
-        '-I${getUnixPath(clientWrapperDir.childDirectory('include').path)}',
-        '-I${getUnixPath(commonDir.childDirectory('public').path)}',
-        '-D${buildInfo.deviceProfile.toUpperCase()}_PROFILE',
-      ];
-
-      assert(tizenSdk != null);
-      final Rootstrap rootstrap = tizenSdk.getFlutterRootstrap(
-          profile: profile, arch: buildInfo.targetArch);
-
-      if (buildDir.existsSync()) {
-        buildDir.deleteSync(recursive: true);
-      }
-      final RunResult result = await _processUtils.run(<String>[
-        tizenSdk.tizenCli.path,
-        'build-native',
-        '-a',
-        getTizenCliArch(buildInfo.targetArch),
-        '-C',
-        buildConfig,
-        '-c',
-        tizenSdk.defaultNativeCompiler,
-        '-r',
-        rootstrap.id,
-        '-e',
-        extraOptions.join(' '),
-        '--',
-        pluginDir.path,
-      ], environment: variables);
-      if (result.exitCode != 0) {
-        throwToolExit('Failed to build ${plugin.name} plugin:\n$result');
-      }
-
-      final File sharedLib =
-          buildDir.childFile('lib' + (plugin.toMap()['sofile'] as String));
-      if (!sharedLib.existsSync()) {
-        throwToolExit(
-          'Built ${plugin.name} but the file ${sharedLib.path} is not found:\n'
-          '${result.stdout}',
-        );
-      }
-      final Directory outputDir = ephemeralDir.childDirectory('lib')
-        ..createSync(recursive: true);
-      sharedLib.copySync(outputDir.childFile(sharedLib.basename).path);
-
-      // Copy binaries that the plugin depends on.
-      final Directory pluginLibDir = pluginDir
-          .childDirectory('lib')
-          .childDirectory(getTizenBuildArch(buildInfo.targetArch));
-      if (pluginLibDir.existsSync()) {
-        globals.fsUtils.copyDirectorySync(pluginLibDir, outputDir);
-      }
-    }
-
-    final Depfile pluginDepfile = await _createDepfile(environment);
+    final List<File> inputs = <File>[];
+    final List<File> outputs = <File>[];
     final DepfileService depfileService = DepfileService(
       fileSystem: environment.fileSystem,
       logger: environment.logger,
     );
-    depfileService.writeToFile(
-      pluginDepfile,
-      environment.buildDir.childFile('tizen_plugins.d'),
-    );
-  }
 
-  // Helper method that creates a depfile which lists dependent input files
-  // and the generated output binary from the build() process.
-  // The files collected here should be synced with the files used and created in compiling.
-  //
-  // TODO(HakkyuKim): Refactor so that this method doesn't duplicate codes in
-  // the build() method without mixing the code lines between two method.
-  Future<Depfile> _createDepfile(Environment environment) async {
-    final List<File> inputs = <File>[];
-    final List<File> outputs = <File>[];
-
-    final Directory commonDir =
-        tizenArtifacts.getArtifactDirectory('engine').childDirectory('common');
-    final Directory clientWrapperDir =
-        commonDir.childDirectory('cpp_client_wrapper');
-    final Directory publicDir = commonDir.childDirectory('public');
-
-    clientWrapperDir
-        .listSync(recursive: true)
-        .whereType<File>()
-        .forEach((File file) => inputs.add(file));
-    publicDir
-        .listSync(recursive: true)
-        .whereType<File>()
-        .forEach((File file) => inputs.add(file));
-
+    final FlutterProject project =
+        FlutterProject.fromDirectory(environment.projectDir);
     final TizenProject tizenProject = TizenProject.fromFlutter(project);
+
+    // Create a dummy project in the build directory.
+    final Directory rootDir = environment.buildDir
+        .childDirectory('tizen_plugins')
+          ..createSync(recursive: true);
     final String profile =
         TizenManifest.parseFromXml(tizenProject.manifestFile)?.profile;
     inputs.add(tizenProject.manifestFile);
 
-    final Directory engineDir = tizenArtifacts.getEngineDirectory(
-        buildInfo.targetArch, buildInfo.buildInfo.mode);
+    rootDir.childFile('project_def.prop').writeAsStringSync('''
+APPNAME = flutter_plugins
+type = sharedLib
+profile = $profile
+
+USER_CPP_DEFS = TIZEN_DEPRECATION DEPRECATION_WARNING FLUTTER_PLUGIN_IMPL
+USER_CPPFLAGS_MISC = -c -fmessage-length=0
+USER_LFLAGS = -Wl,-rpath='\$\$ORIGIN'
+USER_LIB_DIRS = lib
+''');
+
+    // Check if there's anything to build.
+    final List<TizenPlugin> nativePlugins =
+        await findTizenPlugins(project, nativeOnly: true);
+    if (nativePlugins.isEmpty) {
+      rootDir.deleteSync(recursive: true);
+
+      depfileService.writeToFile(
+        Depfile(inputs, outputs),
+        environment.buildDir.childFile('tizen_plugins.d'),
+      );
+      return;
+    }
+
+    // Prepare for build.
+    final BuildMode buildMode = buildInfo.buildInfo.mode;
+    final String buildConfig = buildMode.isPrecompiled ? 'Release' : 'Debug';
+    final Directory buildDir = rootDir.childDirectory(buildConfig);
+    final Directory includeDir = rootDir.childDirectory('include')
+      ..createSync(recursive: true);
+    final Directory libDir = rootDir.childDirectory('lib')
+      ..createSync(recursive: true);
+
+    final List<String> userIncludes = <String>[];
+    final List<String> userSources = <String>[];
+    final List<String> userLibs = <String>[];
+
+    for (final TizenPlugin plugin in nativePlugins) {
+      inputs.add(plugin.projectFile);
+
+      // TODO(swift-kim): Currently only checks for USER_INC_DIRS, USER_SRCS,
+      // and USER_LIBS. More properties may be parsed in the future.
+      userIncludes.addAll(plugin.getPropertyAsAbsolutePaths('USER_INC_DIRS'));
+      userSources.addAll(plugin.getPropertyAsAbsolutePaths('USER_SRCS'));
+
+      final Directory headerDir = plugin.directory.childDirectory('inc');
+      if (headerDir.existsSync()) {
+        headerDir.listSync(recursive: true).whereType<File>().map(inputs.add);
+      }
+      final Directory sourceDir = plugin.directory.childDirectory('src');
+      if (sourceDir.existsSync()) {
+        sourceDir.listSync(recursive: true).whereType<File>().map(inputs.add);
+      }
+
+      for (final String libName in plugin.getProperty('USER_LIBS').split(' ')) {
+        final File libFile = plugin.directory
+            .childDirectory('lib')
+            .childDirectory(getTizenBuildArch(buildInfo.targetArch))
+            .childFile('lib$libName.so');
+        if (libFile.existsSync()) {
+          userLibs.add(libName);
+          libFile.copySync(libDir.childFile(libFile.basename).path);
+
+          inputs.add(libFile);
+          outputs.add(libDir.childFile(libFile.basename));
+        }
+      }
+
+      // The plugin header is used when building native apps.
+      final File header = headerDir.childFile(plugin.fileName);
+      header.copySync(includeDir.childFile(header.basename).path);
+      outputs.add(includeDir.childFile(header.basename));
+    }
+
+    final Directory engineDir =
+        tizenArtifacts.getEngineDirectory(buildInfo.targetArch, buildMode);
     final File embedder =
         engineDir.childFile('libflutter_tizen_${buildInfo.deviceProfile}.so');
     inputs.add(embedder);
 
+    final Directory commonDir = engineDir.parent.childDirectory('common');
+    final Directory clientWrapperDir =
+        commonDir.childDirectory('cpp_client_wrapper');
+    final Directory publicDir = commonDir.childDirectory('public');
+    clientWrapperDir
+        .listSync(recursive: true)
+        .whereType<File>()
+        .map(inputs.add);
+    publicDir.listSync(recursive: true).whereType<File>().map(inputs.add);
+
+    userSources.add(clientWrapperDir.childFile('*.cc').path);
+
+    final Map<String, String> variables = <String, String>{
+      'PATH': getDefaultPathVariable(),
+      'USER_SRCS': userSources.map(getUnixPath).join(' '),
+    };
+    final List<String> extraOptions = <String>[
+      '-lflutter_tizen_${buildInfo.deviceProfile}',
+      '-L${getUnixPath(engineDir.path)}',
+      '-std=c++17',
+      '-I${getUnixPath(clientWrapperDir.childDirectory('include').path)}',
+      '-I${getUnixPath(publicDir.path)}',
+      ...userIncludes.map(getUnixPath).map((String p) => '-I' + p),
+      ...userLibs.map((String lib) => '-l' + lib),
+      '-L${getUnixPath(libDir.path)}',
+      '-D${buildInfo.deviceProfile.toUpperCase()}_PROFILE',
+    ];
+
+    assert(tizenSdk != null);
     final Rootstrap rootstrap = tizenSdk.getFlutterRootstrap(
         profile: profile, arch: buildInfo.targetArch);
     inputs.add(rootstrap.manifestFile);
 
-    final Directory ephemeralDir = tizenProject.ephemeralDirectory;
-
-    final List<TizenPlugin> nativePlugins =
-        await findTizenPlugins(project, nativeOnly: true);
-
-    for (final TizenPlugin plugin in nativePlugins) {
-      final Directory pluginDir = environment.fileSystem.directory(plugin.path);
-      final Directory headerDir = pluginDir.childDirectory('inc');
-      final Directory sourceDir = pluginDir.childDirectory('src');
-
-      inputs.add(pluginDir.childFile('project_def.prop'));
-      if (headerDir.existsSync()) {
-        headerDir
-            .listSync(recursive: true)
-            .whereType<File>()
-            .forEach((File file) => inputs.add(file));
-      }
-      if (sourceDir.existsSync()) {
-        sourceDir
-            .listSync(recursive: true)
-            .whereType<File>()
-            .forEach((File file) => inputs.add(file));
-      }
-
-      final File sharedLib = ephemeralDir
-          .childDirectory('lib')
-          .childFile('lib' + (plugin.toMap()['sofile'] as String));
-      outputs.add(sharedLib);
-
-      final Directory pluginLibDir = pluginDir
-          .childDirectory('lib')
-          .childDirectory(getTizenBuildArch(buildInfo.targetArch));
-      if (pluginLibDir.existsSync()) {
-        final List<File> pluginLibFiles =
-            pluginLibDir.listSync(recursive: true).whereType<File>().toList();
-        for (final File file in pluginLibFiles) {
-          inputs.add(file);
-          final String relativePath =
-              file.path.replaceFirst('${pluginLibDir.path}/', '');
-          final String outputPath = environment.fileSystem.path.join(
-            ephemeralDir.childDirectory('lib').path,
-            relativePath,
-          );
-          outputs.add(environment.fileSystem.file(outputPath));
-        }
-      }
+    // Run the native build.
+    if (buildDir.existsSync()) {
+      buildDir.deleteSync(recursive: true);
     }
-    return Depfile(inputs, outputs);
+    final RunResult result = await _processUtils.run(<String>[
+      tizenSdk.tizenCli.path,
+      'build-native',
+      '-a',
+      getTizenCliArch(buildInfo.targetArch),
+      '-C',
+      buildConfig,
+      '-c',
+      tizenSdk.defaultNativeCompiler,
+      '-r',
+      rootstrap.id,
+      '-e',
+      extraOptions.join(' '),
+      '--',
+      rootDir.path,
+    ], environment: variables);
+    if (result.exitCode != 0) {
+      throwToolExit('Failed to build Flutter plugins:\n$result');
+    }
+
+    final File outputLib = buildDir.childFile('libflutter_plugins.so');
+    if (!outputLib.existsSync()) {
+      throwToolExit(
+        'Build succeeded but the file ${outputLib.path} is not found:\n'
+        '${result.stdout}',
+      );
+    }
+    outputs.add(outputLib);
+
+    depfileService.writeToFile(
+      Depfile(inputs, outputs),
+      environment.buildDir.childFile('tizen_plugins.d'),
+    );
   }
 }
 
 class DotnetTpk {
-  DotnetTpk(this.project, this.buildInfo);
+  DotnetTpk(this.buildInfo);
 
-  final FlutterProject project;
   final TizenBuildInfo buildInfo;
 
   final ProcessUtils _processUtils = ProcessUtils(
       logger: globals.logger, processManager: globals.processManager);
 
   Future<void> build(Environment environment) async {
-    final BuildMode buildMode =
-        getBuildModeForName(environment.defines[kBuildMode]);
-
-    final Directory outputDir = environment.outputDir;
+    final FlutterProject project =
+        FlutterProject.fromDirectory(environment.projectDir);
     final TizenProject tizenProject = TizenProject.fromFlutter(project);
+
+    // Clean up the intermediate and output directories.
     final Directory ephemeralDir = tizenProject.ephemeralDirectory;
-    final Directory resDir = ephemeralDir.childDirectory('res');
-    final Directory flutterAssetsDir = resDir.childDirectory('flutter_assets');
-
-    if (flutterAssetsDir.existsSync()) {
-      flutterAssetsDir.deleteSync(recursive: true);
+    if (ephemeralDir.existsSync()) {
+      ephemeralDir.deleteSync(recursive: true);
     }
-    globals.fsUtils.copyDirectorySync(
-        outputDir.childDirectory('flutter_assets'), flutterAssetsDir);
-
+    final Directory resDir = ephemeralDir.childDirectory('res')
+      ..createSync(recursive: true);
     final Directory libDir = ephemeralDir.childDirectory('lib')
       ..createSync(recursive: true);
 
+    final Directory outputDir = environment.outputDir.childDirectory('tpk');
+    if (outputDir.existsSync()) {
+      outputDir.deleteSync(recursive: true);
+    }
+    outputDir.createSync(recursive: true);
+
+    // Copy necessary files.
+    final Directory flutterAssetsDir = resDir.childDirectory('flutter_assets');
+    globals.fsUtils.copyDirectorySync(
+      environment.outputDir.childDirectory('flutter_assets'),
+      flutterAssetsDir,
+    );
+
+    final BuildMode buildMode = buildInfo.buildInfo.mode;
     final Directory engineDir =
         tizenArtifacts.getEngineDirectory(buildInfo.targetArch, buildMode);
     final File engineBinary = engineDir.childFile('libflutter_engine.so');
@@ -423,7 +403,7 @@ class DotnetTpk {
 
     engineBinary.copySync(libDir.childFile(engineBinary.basename).path);
     // The embedder so name is statically defined in C# code and cannot be
-    // provided at runtime, so the file name must be fixed.
+    // provided at runtime, so the file name must be a constant.
     embedder.copySync(libDir.childFile('libflutter_tizen.so').path);
     icuData.copySync(resDir.childFile(icuData.basename).path);
 
@@ -432,16 +412,25 @@ class DotnetTpk {
       aotSharedLib.copySync(libDir.childFile('libapp.so').path);
     }
 
+    final Directory pluginsDir =
+        environment.buildDir.childDirectory('tizen_plugins');
+    final String buildConfig = buildMode.isPrecompiled ? 'Release' : 'Debug';
+    final File pluginsLib = pluginsDir
+        .childDirectory(buildConfig)
+        .childFile('libflutter_plugins.so');
+    if (pluginsLib.existsSync()) {
+      pluginsLib.copySync(libDir.childFile(pluginsLib.basename).path);
+    }
+    final Directory pluginsUserLibDir = pluginsDir.childDirectory('lib');
+    if (pluginsUserLibDir.existsSync()) {
+      pluginsUserLibDir.listSync().whereType<File>().forEach(
+          (File lib) => lib.copySync(libDir.childFile(lib.basename).path));
+    }
+
     // Keep this value in sync with the latest published nuget version.
     const String embeddingVersion = '1.7.0';
 
-    // Clear tpkroot directory
-    final Directory tpkRootDir = outputDir.childDirectory('tpkroot');
-    if (tpkRootDir.existsSync()) {
-      tpkRootDir.deleteSync(recursive: true);
-    }
-
-    // Run .NET build.
+    // Run the .NET build.
     if (dotnetCli == null) {
       throwToolExit(
         'Unable to locate .NET CLI executable.\n'
@@ -462,15 +451,14 @@ class DotnetTpk {
       throwToolExit('Failed to build .NET application:\n$result');
     }
 
-    if (!outputDir.childFile(tizenProject.outputTpkName).existsSync()) {
+    final File outputTpk = outputDir.childFile(tizenProject.outputTpkName);
+    if (!outputTpk.existsSync()) {
       throwToolExit(
           'Build succeeded but the expected TPK not found:\n${result.stdout}');
     }
 
     // build-task-tizen signs the output TPK with a dummy profile by default.
     // We need to re-generate the TPK by signing with a correct profile.
-    // TODO(swift-kim): Apply the profile during .NET build for efficiency.
-    // Password descryption by secret-tool will be needed for full automation.
     String securityProfile = buildInfo.securityProfile;
     assert(tizenSdk != null);
 
@@ -493,7 +481,7 @@ class DotnetTpk {
         '-s',
         securityProfile,
         '--',
-        outputDir.childFile(tizenProject.outputTpkName).path,
+        outputTpk.path,
       ]);
       if (result.exitCode != 0) {
         throwToolExit('Failed to sign the TPK:\n$result');
@@ -540,38 +528,45 @@ class TizenAotElf extends AotElfBase {
 }
 
 class NativeTpk {
-  NativeTpk(this.project, this.buildInfo);
+  NativeTpk(this.buildInfo);
 
-  final FlutterProject project;
   final TizenBuildInfo buildInfo;
 
   final ProcessUtils _processUtils = ProcessUtils(
       logger: globals.logger, processManager: globals.processManager);
 
   Future<void> build(Environment environment) async {
-    final BuildMode buildMode =
-        getBuildModeForName(environment.defines[kBuildMode]);
-
+    final FlutterProject project =
+        FlutterProject.fromDirectory(environment.projectDir);
     final TizenProject tizenProject = TizenProject.fromFlutter(project);
-    final String profile =
-        TizenManifest.parseFromXml(tizenProject.manifestFile)?.profile;
 
-    // Copy ephemeral files.
-    // TODO(swift-kim): Use ephemeral directory instead of editable directory.
-    final Directory outputDir = environment.outputDir;
+    // Clean up the intermediate and output directories.
     final Directory tizenDir = tizenProject.editableDirectory;
-    final Directory resDir = tizenDir.childDirectory('res')
-      ..createSync(recursive: true);
-    if (resDir.childDirectory('flutter_assets').existsSync()) {
-      resDir.childDirectory('flutter_assets').deleteSync(recursive: true);
+    final Directory resDir = tizenDir.childDirectory('res');
+    if (resDir.existsSync()) {
+      resDir.deleteSync(recursive: true);
     }
+    resDir.createSync(recursive: true);
+    final Directory libDir = tizenDir.childDirectory('lib');
+    if (libDir.existsSync()) {
+      libDir.deleteSync(recursive: true);
+    }
+    libDir.createSync(recursive: true);
+
+    final Directory outputDir = environment.outputDir.childDirectory('tpk');
+    if (outputDir.existsSync()) {
+      outputDir.deleteSync(recursive: true);
+    }
+    outputDir.createSync(recursive: true);
+
+    // Copy necessary files.
+    final Directory flutterAssetsDir = resDir.childDirectory('flutter_assets');
     globals.fsUtils.copyDirectorySync(
-        outputDir.childDirectory('flutter_assets'),
-        resDir.childDirectory('flutter_assets'));
+      environment.outputDir.childDirectory('flutter_assets'),
+      flutterAssetsDir,
+    );
 
-    final Directory libDir = tizenDir.childDirectory('lib')
-      ..createSync(recursive: true);
-
+    final BuildMode buildMode = buildInfo.buildInfo.mode;
     final Directory engineDir =
         tizenArtifacts.getEngineDirectory(buildInfo.targetArch, buildMode);
     final File engineBinary = engineDir.childFile('libflutter_engine.so');
@@ -586,16 +581,27 @@ class NativeTpk {
     embedder.copySync(libDir.childFile(embedder.basename).path);
     icuData.copySync(resDir.childFile(icuData.basename).path);
 
-    if (libDir.childFile('libapp.so').existsSync()) {
-      libDir.childFile('libapp.so').deleteSync(recursive: true);
-    }
     if (buildMode.isPrecompiled) {
       final File aotSharedLib = environment.buildDir.childFile('app.so');
       aotSharedLib.copySync(libDir.childFile('libapp.so').path);
     }
 
-    // Prepare for build.
+    final Directory pluginsDir =
+        environment.buildDir.childDirectory('tizen_plugins');
     final String buildConfig = buildMode.isPrecompiled ? 'Release' : 'Debug';
+    final File pluginsLib = pluginsDir
+        .childDirectory(buildConfig)
+        .childFile('libflutter_plugins.so');
+    if (pluginsLib.existsSync()) {
+      pluginsLib.copySync(libDir.childFile(pluginsLib.basename).path);
+    }
+    final Directory pluginsUserLibDir = pluginsDir.childDirectory('lib');
+    if (pluginsUserLibDir.existsSync()) {
+      pluginsUserLibDir.listSync().whereType<File>().forEach(
+          (File lib) => lib.copySync(libDir.childFile(lib.basename).path));
+    }
+
+    // Prepare for build.
     final Directory buildDir = tizenDir.childDirectory(buildConfig);
     final Directory embeddingDir = environment.fileSystem
         .directory(Cache.flutterRoot)
@@ -605,44 +611,19 @@ class NativeTpk {
 
     final List<String> userIncludes = <String>[
       embeddingDir.childDirectory('include').path,
+      pluginsDir.childDirectory('include').path,
     ];
     final List<String> userSources = <String>[
       embeddingDir.childFile('*.cc').path,
     ];
-    final List<String> userLibs = <String>[];
-
-    final List<TizenPlugin> nativePlugins =
-        await findTizenPlugins(project, nativeOnly: true);
-
-    for (final TizenPlugin plugin in nativePlugins) {
-      final TizenLibrary library = TizenLibrary(plugin.path);
-      // TODO(swift-kim): Currently only checks for USER_INC_DIRS, USER_SRCS,
-      // and USER_LIBS. More properties should be parsed to fully support
-      // plugin builds.
-      userIncludes.addAll(library.getPropertyAsAbsolutePaths('USER_INC_DIRS'));
-      userSources.addAll(library.getPropertyAsAbsolutePaths('USER_SRCS'));
-
-      for (final String userLib
-          in library.getProperty('USER_LIBS').split(' ')) {
-        final File libFile = library.directory
-            .childDirectory('lib')
-            .childDirectory(getTizenBuildArch(buildInfo.targetArch))
-            .childFile('lib$userLib.so');
-        if (libFile.existsSync()) {
-          libFile.copySync(libDir.childFile(libFile.basename).path);
-          userLibs.add(userLib);
-        }
-      }
-    }
 
     final Directory commonDir = engineDir.parent.childDirectory('common');
     final Directory clientWrapperDir =
         commonDir.childDirectory('cpp_client_wrapper');
+    final Directory publicDir = commonDir.childDirectory('public');
+
     userSources.add(clientWrapperDir.childFile('*.cc').path);
 
-    if (!engineDir.existsSync() || !clientWrapperDir.existsSync()) {
-      throwToolExit('The flutter engine artifacts were corrupted or invalid.');
-    }
     final Map<String, String> variables = <String, String>{
       'PATH': getDefaultPathVariable(),
       'USER_SRCS': userSources.map(getUnixPath).join(' '),
@@ -652,18 +633,20 @@ class NativeTpk {
       '-L${getUnixPath(libDir.path)}',
       '-std=c++17',
       '-I${getUnixPath(clientWrapperDir.childDirectory('include').path)}',
-      '-I${getUnixPath(commonDir.childDirectory('public').path)}',
+      '-I${getUnixPath(publicDir.path)}',
       ...userIncludes.map(getUnixPath).map((String p) => '-I' + p),
-      ...userLibs.map((String lib) => '-l' + lib),
+      if (pluginsLib.existsSync()) '-lflutter_plugins',
       '-D${buildInfo.deviceProfile.toUpperCase()}_PROFILE',
       '-Wl,-unresolved-symbols=ignore-in-shared-libs',
     ];
 
     assert(tizenSdk != null);
+    final String profile =
+        TizenManifest.parseFromXml(tizenProject.manifestFile)?.profile;
     final Rootstrap rootstrap = tizenSdk.getFlutterRootstrap(
         profile: profile, arch: buildInfo.targetArch);
 
-    // Run native build.
+    // Run the native build.
     if (buildDir.existsSync()) {
       buildDir.deleteSync(recursive: true);
     }
@@ -684,17 +667,30 @@ class NativeTpk {
       tizenDir.path,
     ], environment: variables);
     if (result.exitCode != 0) {
-      throwToolExit('Failed to compile native application:\n$result');
+      throwToolExit('Failed to build native application:\n$result');
+    }
+
+    // The output tpk is signed with an active profile unless otherwise
+    // specified.
+    String securityProfile = buildInfo.securityProfile;
+    if (securityProfile != null) {
+      if (tizenSdk.securityProfiles == null ||
+          !tizenSdk.securityProfiles.names.contains(securityProfile)) {
+        throwToolExit('The profile $securityProfile does not exist.');
+      }
+    }
+    securityProfile ??= tizenSdk.securityProfiles?.active?.name;
+
+    if (securityProfile != null) {
+      environment.logger
+          .printStatus('The $securityProfile profile is used for signing.');
     }
     result = await _processUtils.run(<String>[
       tizenSdk.tizenCli.path,
       'package',
       '-t',
       'tpk',
-      if (buildInfo.securityProfile?.isNotEmpty ?? false) ...<String>[
-        '-s',
-        buildInfo.securityProfile,
-      ],
+      if (securityProfile != null) ...<String>['-s', securityProfile],
       '--',
       buildDir.path,
     ]);
@@ -705,16 +701,18 @@ class NativeTpk {
     final String tpkArch = buildInfo.targetArch
         .replaceFirst('arm64', 'aarch64')
         .replaceFirst('x86', 'i586');
-    final String nativeTpkName =
-        tizenProject.outputTpkName.replaceFirst('.tpk', '-$tpkArch.tpk');
-    if (buildDir.childFile(nativeTpkName).existsSync()) {
-      buildDir
-          .childFile(nativeTpkName)
-          .renameSync(outputDir.childFile(tizenProject.outputTpkName).path);
-    } else {
+    final File outputTpk = buildDir.childFile(
+        tizenProject.outputTpkName.replaceFirst('.tpk', '-$tpkArch.tpk'));
+    if (!outputTpk.existsSync()) {
       throwToolExit(
           'Build succeeded but the expected TPK not found:\n${result.stdout}');
     }
+
+    // Copy and rename the output tpk.
+    outputTpk.copySync(outputDir.childFile(tizenProject.outputTpkName).path);
+
+    // Extract the contents of the tpk to support code size analysis.
+    globals.os.unzip(outputTpk, outputDir.childDirectory('tpkroot'));
   }
 }
 
