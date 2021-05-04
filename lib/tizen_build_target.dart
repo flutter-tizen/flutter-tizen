@@ -248,11 +248,17 @@ USER_LIB_DIRS = lib
 
       final Directory headerDir = plugin.directory.childDirectory('inc');
       if (headerDir.existsSync()) {
-        headerDir.listSync(recursive: true).whereType<File>().map(inputs.add);
+        headerDir
+            .listSync(recursive: true)
+            .whereType<File>()
+            .forEach(inputs.add);
       }
       final Directory sourceDir = plugin.directory.childDirectory('src');
       if (sourceDir.existsSync()) {
-        sourceDir.listSync(recursive: true).whereType<File>().map(inputs.add);
+        sourceDir
+            .listSync(recursive: true)
+            .whereType<File>()
+            .forEach(inputs.add);
       }
 
       for (final String libName in plugin.getProperty('USER_LIBS').split(' ')) {
@@ -288,8 +294,8 @@ USER_LIB_DIRS = lib
     clientWrapperDir
         .listSync(recursive: true)
         .whereType<File>()
-        .map(inputs.add);
-    publicDir.listSync(recursive: true).whereType<File>().map(inputs.add);
+        .forEach(inputs.add);
+    publicDir.listSync(recursive: true).whereType<File>().forEach(inputs.add);
 
     userSources.add(clientWrapperDir.childFile('*.cc').path);
 
