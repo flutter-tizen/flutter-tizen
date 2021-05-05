@@ -43,14 +43,14 @@ Not all commands in the [`flutter`](https://flutter.dev/docs/reference/flutter-c
   Flutter build command. See `flutter-tizen build -h` for subcommands.
 
   ```sh
-  # Build a TPK without installing on a device.
-  flutter-tizen build tpk
+  # Build a TPK for watch devices.
+  flutter-tizen build tpk --device-profile wearable
 
-  # Build for a TV device.
-  flutter-tizen build tpk --device-profile tv
+  # Build a TPK signed with a specific distributor certificate.
+  flutter-tizen build tpk --device-profile wearable --security-profile foo
 
-  # Build for an emulator.
-  flutter-tizen build tpk --debug --target-arch x86
+  # Build for emulator.
+  flutter-tizen build tpk --device-profile wearable --debug --target-arch x86
   ```
 
 - ### `clean`
@@ -79,6 +79,11 @@ Not all commands in the [`flutter`](https://flutter.dev/docs/reference/flutter-c
   # If a project already exists in the current directory, only missing files are added.
   flutter-tizen create .
 
+  # Choose the native app type when creating a Tizen project.
+  # Native apps have better performance and memory footprint than .NET (default) apps,
+  # but do not run on TV devices.
+  flutter-tizen create --tizen-language cpp .
+
   # Create a new plugin project in `foobar_tizen` directory.
   flutter-tizen create --template plugin --org com.example foobar_tizen
   ```
@@ -96,12 +101,12 @@ Not all commands in the [`flutter`](https://flutter.dev/docs/reference/flutter-c
   Show information about the installed tooling.
 
   ```sh
-  flutter-tizen doctor
+  flutter-tizen doctor -v
   ```
 
 - ### `drive`
 
-  Run integration tests for the project on an attached device. For details, see [`integration_test`](https://github.com/flutter/flutter/tree/master/packages/integration_test).
+  Run integration tests for the project on an attached device. For detailed usage, see [`integration_test`](https://github.com/flutter/flutter/tree/master/packages/integration_test).
 
   ```sh
   # Launch `foo_test.dart` on a Tizen device.
@@ -201,8 +206,9 @@ Not all commands in the [`flutter`](https://flutter.dev/docs/reference/flutter-c
 
 - ### `test`
 
-  Run Flutter unit tests for the current project.
+  Run Flutter unit tests for the current project. (cf. [`drive`](#drive) for integration tests)
 
   ```sh
+  # Run all tests in the `test/general` directory.
   flutter-tizen test test/general
   ```

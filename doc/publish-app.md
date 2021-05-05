@@ -26,10 +26,8 @@
 
 ## Release a watch app
 
-_**Note: As of Feb 2021, any Flutter app submitted to Galaxy Store Seller Portal is automatically rejected for use of undocumented APIs in `libflutter_tizen.so`. This issue is currently being investigated and will be resolved soon.**_
-
 To get started with releasing your watch app on Samsung Galaxy Store, go to [**Galaxy Store Seller Portal**](https://seller.samsungapps.com) and sign up for an account. After logging in, follow the steps in [this PDF file](https://developer.samsung.com/glxygames/file/8d1b5610-1a28-411b-846d-f58e15cf9711) to register your app. To learn more about the Seller Portal, visit [Samsung Developers: Get Started in Galaxy Store](https://developer.samsung.com/galaxy-games/get-started-in-galaxy-store.html).
 
 ## Release a TV app
 
-_**Not supported yet.**_
+**To be detailed.**
