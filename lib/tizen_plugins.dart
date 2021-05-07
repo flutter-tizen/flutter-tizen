@@ -134,7 +134,7 @@ mixin TizenExtension on FlutterCommand {
   Future<FlutterCommandResult> verifyThenRunCommand(String commandPath) async {
     if (super.shouldRunPub) {
       // TODO(swift-kim): Should run pub get first before injecting plugins.
-      await injectTizenPlugins(FlutterProject.current());
+      await ensureReadyForTizenTooling(FlutterProject.current());
     }
     if (_usesTargetOption) {
       _entrypoint =
@@ -198,28 +198,41 @@ Future<void> main() async {
 }
 
 const List<String> _knownPlugins = <String>[
+  'audioplayers',
   'battery',
   'connectivity',
   'device_info',
+  'flutter_tts',
   'image_picker',
   'integration_test',
   'package_info',
   'path_provider',
+  'permission_handler',
   'sensors',
   'share',
   'shared_preferences',
   'url_launcher',
+  'video_player',
+  'webview_flutter',
+  'wifi_info_flutter',
 ];
 
-/// This method must be called whenever [injectPlugins] is called.
-/// [injectPlugins] is commonly called by [FlutterProject.regeneratePlatformSpecificTooling].
+/// This function must be called whenever [FlutterProject.regeneratePlatformSpecificTooling]
+/// or [FlutterProject.ensureReadyForPlatformSpecificTooling] is called.
 ///
-/// See: [injectPlugins] in `plugins.dart`
-Future<void> injectTizenPlugins(FlutterProject project) async {
+/// See: [FlutterProject.ensureReadyForPlatformSpecificTooling] in `project.dart`
+Future<void> ensureReadyForTizenTooling(FlutterProject project) async {
   if (!project.directory.existsSync() || project.hasExampleApp) {
     return;
   }
+  final TizenProject tizenProject = TizenProject.fromFlutter(project);
+  await tizenProject.ensureReadyForPlatformSpecificTooling();
 
+  await injectTizenPlugins(project);
+}
+
+/// See: [injectPlugins] in `plugins.dart`
+Future<void> injectTizenPlugins(FlutterProject project) async {
   final TizenProject tizenProject = TizenProject.fromFlutter(project);
   if (tizenProject.existsSync()) {
     final List<TizenPlugin> dartPlugins =

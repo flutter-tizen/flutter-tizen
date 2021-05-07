@@ -89,9 +89,9 @@ mixin _PostRunPluginInjection on FlutterCommand {
         return result;
       }
       final FlutterProject rootProject = FlutterProject.fromPath(target);
-      await injectTizenPlugins(rootProject);
+      await ensureReadyForTizenTooling(rootProject);
       if (rootProject.hasExampleApp) {
-        await injectTizenPlugins(rootProject.example);
+        await ensureReadyForTizenTooling(rootProject.example);
       }
     }
 

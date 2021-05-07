@@ -4,7 +4,6 @@
     "files": [
         "templates/app/tizen.tmpl/.gitignore",
         "templates/app/tizen.tmpl/App.cs",
-        "templates/app/tizen.tmpl/NuGet.Config",
         "templates/app/tizen.tmpl/Runner.csproj",
         "templates/app/tizen.tmpl/tizen-manifest.xml.tmpl",
         "templates/app/tizen.tmpl/shared/res/ic_launcher.png",

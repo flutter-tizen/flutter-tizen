@@ -433,8 +433,24 @@ class DotnetTpk {
           (File lib) => lib.copySync(libDir.childFile(lib.basename).path));
     }
 
-    // Keep this value in sync with the latest published nuget version.
+    // TODO(swift-kim): This property is used by projects created before May
+    // 2021. Keep the value up to date until majority of projects are migrated
+    // to use ProjectReference.
     const String embeddingVersion = '1.7.0';
+    final bool migrated = !tizenProject.projectFile
+        .readAsStringSync()
+        .contains(r'$(FlutterEmbeddingVersion)');
+    if (!migrated) {
+      final Function relative = environment.fileSystem.path.relative;
+      environment.logger.printStatus(
+        'The use of PackageReference in ${tizenProject.projectFile.basename} is deprecated. '
+        'To migrate your project, run:\n'
+        '  rm ${relative(tizenProject.projectFile.path)}\n'
+        '  flutter-tizen create ${relative(project.directory.path)}',
+        color: TerminalColor.yellow,
+      );
+      environment.logger.printStatus('');
+    }
 
     // Run the .NET build.
     if (dotnetCli == null) {

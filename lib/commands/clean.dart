@@ -33,6 +33,7 @@ class TizenCleanCommand extends CleanCommand {
     if (project.isDotnet) {
       _deleteFile(project.editableDirectory.childDirectory('bin'));
       _deleteFile(project.editableDirectory.childDirectory('obj'));
+      _deleteFile(project.editableDirectory.childFile('Runner.csproj.user'));
     } else {
       _deleteFile(project.editableDirectory.childDirectory('Debug'));
       _deleteFile(project.editableDirectory.childDirectory('Release'));

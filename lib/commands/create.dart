@@ -73,14 +73,11 @@ class TizenCreateCommand extends CreateCommand {
       globals.printStatus('');
     }
 
-    // Actually [super.runCommand] runs [ensureReadyForPlatformSpecificTooling]
-    // based on the target project type. The following code doesn't check the
-    // project type for simplicity. Revisit if this makes any problem.
     if (boolArg('pub')) {
       final FlutterProject project = FlutterProject.fromDirectory(projectDir);
-      await injectTizenPlugins(project);
+      await ensureReadyForTizenTooling(project);
       if (project.hasExampleApp) {
-        await injectTizenPlugins(project.example);
+        await ensureReadyForTizenTooling(project.example);
       }
     }
     return result;
