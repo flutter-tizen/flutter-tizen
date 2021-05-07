@@ -248,11 +248,17 @@ USER_LIB_DIRS = lib
 
       final Directory headerDir = plugin.directory.childDirectory('inc');
       if (headerDir.existsSync()) {
-        headerDir.listSync(recursive: true).whereType<File>().map(inputs.add);
+        headerDir
+            .listSync(recursive: true)
+            .whereType<File>()
+            .forEach(inputs.add);
       }
       final Directory sourceDir = plugin.directory.childDirectory('src');
       if (sourceDir.existsSync()) {
-        sourceDir.listSync(recursive: true).whereType<File>().map(inputs.add);
+        sourceDir
+            .listSync(recursive: true)
+            .whereType<File>()
+            .forEach(inputs.add);
       }
 
       for (final String libName in plugin.getProperty('USER_LIBS').split(' ')) {
@@ -288,8 +294,8 @@ USER_LIB_DIRS = lib
     clientWrapperDir
         .listSync(recursive: true)
         .whereType<File>()
-        .map(inputs.add);
-    publicDir.listSync(recursive: true).whereType<File>().map(inputs.add);
+        .forEach(inputs.add);
+    publicDir.listSync(recursive: true).whereType<File>().forEach(inputs.add);
 
     userSources.add(clientWrapperDir.childFile('*.cc').path);
 
@@ -427,8 +433,24 @@ class DotnetTpk {
           (File lib) => lib.copySync(libDir.childFile(lib.basename).path));
     }
 
-    // Keep this value in sync with the latest published nuget version.
+    // TODO(swift-kim): This property is used by projects created before May
+    // 2021. Keep the value up to date until majority of projects are migrated
+    // to use ProjectReference.
     const String embeddingVersion = '1.7.1';
+    final bool migrated = !tizenProject.projectFile
+        .readAsStringSync()
+        .contains(r'$(FlutterEmbeddingVersion)');
+    if (!migrated) {
+      final Function relative = environment.fileSystem.path.relative;
+      environment.logger.printStatus(
+        'The use of PackageReference in ${tizenProject.projectFile.basename} is deprecated. '
+        'To migrate your project, run:\n'
+        '  rm ${relative(tizenProject.projectFile.path)}\n'
+        '  flutter-tizen create ${relative(project.directory.path)}',
+        color: TerminalColor.yellow,
+      );
+      environment.logger.printStatus('');
+    }
 
     // Run the .NET build.
     if (dotnetCli == null) {
