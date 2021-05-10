@@ -7,7 +7,7 @@
 #include <system_info.h>
 
 #include <cassert>
-#include <filesystem>
+#include <cerrno>
 #include <fstream>
 
 #include "tizen_log.h"
@@ -177,21 +177,18 @@ void FlutterApp::ParseEngineArgs() {
                         std::string(app_id) + ".rpm");
   free(app_id);
 
-  if (!std::filesystem::exists(temp_path)) {
+  std::ifstream file(temp_path);
+  if (!file.is_open()) {
     return;
   }
-  std::ifstream file(temp_path);
-  file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-
-  try {
-    std::string line;
-    while (!file.eof() && std::getline(file, line)) {
-      TizenLog::Info("Enabled: %s", line.c_str());
-      engine_args.push_back(line.c_str());
-    }
-    std::filesystem::remove(temp_path);
-  } catch (const std::exception &ex) {
-    TizenLog::Warn("Error while processing a file: %s", ex.what());
+  std::string line;
+  while (file && !file.eof() && std::getline(file, line)) {
+    TizenLog::Info("Enabled: %s", line.c_str());
+    engine_args.push_back(line.c_str());
   }
   file.close();
+
+  if (remove(temp_path.c_str()) != 0) {
+    TizenLog::Warn("Error removing file: %s", strerror(errno));
+  }
 }
