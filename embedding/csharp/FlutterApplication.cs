@@ -27,7 +27,7 @@ namespace Tizen.Flutter.Embedding
         /// <summary>
         /// The Flutter engine instance handle.
         /// </summary>
-        protected FlutterWindowControllerHandle Handle { get; private set; } = new FlutterWindowControllerHandle();
+        protected FlutterDesktopEngine Handle { get; private set; } = new FlutterDesktopEngine();
 
         public override void Run(string[] args)
         {
@@ -55,7 +55,7 @@ namespace Tizen.Flutter.Embedding
             ParseEngineArgs();
 
             using var switches = new StringArray(EngineArgs);
-            var engineProperties = new FlutterEngineProperties
+            var engineProperties = new FlutterDesktopEngineProperties
             {
                 assets_path = assetsPath,
                 icu_data_path = icuDataPath,
@@ -64,7 +64,7 @@ namespace Tizen.Flutter.Embedding
                 switches_count = (uint)switches.Length,
             };
 
-            Handle = FlutterCreateWindow(ref engineProperties);
+            Handle = FlutterDesktopRunEngine(ref engineProperties, true);
             if (Handle.IsInvalid)
             {
                 throw new Exception("Could not launch a Flutter application.");
@@ -101,7 +101,7 @@ namespace Tizen.Flutter.Embedding
 
             Debug.Assert(Handle);
 
-            FlutterNotifyAppIsResumed(Handle);
+            FlutterDesktopNotifyAppIsResumed(Handle);
         }
 
         protected override void OnPause()
@@ -110,7 +110,7 @@ namespace Tizen.Flutter.Embedding
 
             Debug.Assert(Handle);
 
-            FlutterNotifyAppIsPaused(Handle);
+            FlutterDesktopNotifyAppIsPaused(Handle);
         }
 
         protected override void OnTerminate()
@@ -119,7 +119,7 @@ namespace Tizen.Flutter.Embedding
 
             Debug.Assert(Handle);
 
-            FlutterDestroyWindow(Handle);
+            FlutterDesktopShutdownEngine(Handle);
         }
 
         protected override void OnLowMemory(LowMemoryEventArgs e)
@@ -128,7 +128,7 @@ namespace Tizen.Flutter.Embedding
 
             Debug.Assert(Handle);
 
-            FlutterNotifyLowMemoryWarning(Handle);
+            FlutterDesktopNotifyLowMemoryWarning(Handle);
         }
 
         protected override void OnLocaleChanged(LocaleChangedEventArgs e)
@@ -137,7 +137,7 @@ namespace Tizen.Flutter.Embedding
 
             Debug.Assert(Handle);
 
-            FlutterNotifyLocaleChange(Handle);
+            FlutterDesktopNotifyLocaleChange(Handle);
         }
 
         protected override void OnRegionFormatChanged(RegionFormatChangedEventArgs e)
@@ -146,20 +146,20 @@ namespace Tizen.Flutter.Embedding
 
             Debug.Assert(Handle);
 
-            FlutterNotifyLocaleChange(Handle);
+            FlutterDesktopNotifyLocaleChange(Handle);
         }
 
         /// <summary>
         /// Returns the plugin registrar handle for the plugin with the given name.
         /// The name must be unique across the application.
         /// </summary>
-        public IntPtr GetRegistrarForPlugin(string pluginName)
+        public FlutterDesktopPluginRegistrar GetRegistrarForPlugin(string pluginName)
         {
             if (Handle)
             {
                 return FlutterDesktopGetPluginRegistrar(Handle, pluginName);
             }
-            return IntPtr.Zero;
+            return new FlutterDesktopPluginRegistrar();
         }
     }
 }

@@ -37,14 +37,14 @@ bool FlutterApp::OnCreate() {
     switches.push_back(arg.c_str());
   }
 
-  FlutterEngineProperties engine_prop = {};
+  FlutterDesktopEngineProperties engine_prop = {};
   engine_prop.assets_path = assets_path.c_str();
   engine_prop.icu_data_path = icu_data_path.c_str();
   engine_prop.aot_library_path = aot_lib_path.c_str();
   engine_prop.switches = switches.data();
   engine_prop.switches_count = switches.size();
 
-  handle = FlutterCreateWindow(engine_prop);
+  handle = FlutterDesktopRunEngine(engine_prop, true);
   if (!handle) {
     TizenLog::Error("Could not launch a Flutter application.");
     return false;
@@ -56,13 +56,13 @@ bool FlutterApp::OnCreate() {
 void FlutterApp::OnResume() {
   assert(IsRunning());
 
-  FlutterNotifyAppIsResumed(handle);
+  FlutterDesktopNotifyAppIsResumed(handle);
 }
 
 void FlutterApp::OnPause() {
   assert(IsRunning());
 
-  FlutterNotifyAppIsPaused(handle);
+  FlutterDesktopNotifyAppIsPaused(handle);
 }
 
 void FlutterApp::OnTerminate() {
@@ -70,26 +70,26 @@ void FlutterApp::OnTerminate() {
 
   TizenLog::Debug("Shutting down the application...");
 
-  FlutterDestroyWindow(handle);
+  FlutterDesktopShutdownEngine(handle);
   handle = nullptr;
 }
 
 void FlutterApp::OnLowMemory(app_event_info_h event_info) {
   assert(IsRunning());
 
-  FlutterNotifyLowMemoryWarning(handle);
+  FlutterDesktopNotifyLowMemoryWarning(handle);
 }
 
 void FlutterApp::OnLanguageChanged(app_event_info_h event_info) {
   assert(IsRunning());
 
-  FlutterNotifyLocaleChange(handle);
+  FlutterDesktopNotifyLocaleChange(handle);
 }
 
 void FlutterApp::OnRegionFormatChanged(app_event_info_h event_info) {
   assert(IsRunning());
 
-  FlutterNotifyLocaleChange(handle);
+  FlutterDesktopNotifyLocaleChange(handle);
 }
 
 int FlutterApp::Run(int argc, char **argv) {

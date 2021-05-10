@@ -38,9 +38,9 @@ class FlutterApp : public flutter::PluginRegistry {
 
   virtual void OnDeviceOrientationChanged(app_event_info_h event_info) {}
 
-  bool IsRunning() { return handle != nullptr; }
+  virtual int Run(int argc, char **argv);
 
-  int Run(int argc, char **argv);
+  bool IsRunning() { return handle != nullptr; }
 
   FlutterDesktopPluginRegistrarRef GetRegistrarForPlugin(
       const std::string &plugin_name) override;
@@ -50,7 +50,7 @@ class FlutterApp : public flutter::PluginRegistry {
   std::vector<std::string> engine_args;
 
   // The Flutter engine instance handle.
-  FlutterWindowControllerRef handle;
+  FlutterDesktopEngineRef handle;
 
  private:
   void ParseEngineArgs();
