@@ -8,6 +8,6 @@ namespace Tizen.Flutter.Embedding
 {
     public interface IPluginRegistry
     {
-        public IntPtr GetRegistrarForPlugin(string pluginName);
+        public FlutterDesktopPluginRegistrar GetRegistrarForPlugin(string pluginName);
     }
 }

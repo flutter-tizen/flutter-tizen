@@ -1,4 +1,4 @@
-﻿// Copyright 2020 Samsung Electronics Co., Ltd. All rights reserved.
+﻿// Copyright 2021 Samsung Electronics Co., Ltd. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,18 +7,13 @@ using System.Runtime.InteropServices;
 
 namespace Tizen.Flutter.Embedding
 {
-    public class FlutterWindowControllerHandle : SafeHandle
+    public class FlutterDesktopMessageResponse : SafeHandle
     {
-        public FlutterWindowControllerHandle() : base(IntPtr.Zero, true)
+        public FlutterDesktopMessageResponse() : base(IntPtr.Zero, true)
         {
         }
 
         public override bool IsInvalid => handle == IntPtr.Zero;
-
-        public static implicit operator bool(FlutterWindowControllerHandle window)
-        {
-            return !window.IsInvalid;
-        }
 
         protected override bool ReleaseHandle()
         {

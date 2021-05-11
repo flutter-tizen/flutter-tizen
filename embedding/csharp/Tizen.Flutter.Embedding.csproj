@@ -7,7 +7,7 @@
     <Nullable>enable</Nullable>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>Tizen.Flutter.Embedding</PackageId>
-    <Version>1.7.1</Version>
+    <Version>1.8.0</Version>
     <Authors>flutter-tizen</Authors>
     <PackageLicenseExpression>BSD-3-Clause</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/flutter-tizen</PackageProjectUrl>
