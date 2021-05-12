@@ -4,11 +4,6 @@
 
 #include "include/flutter_service_app.h"
 
-#include <cassert>
-#include <cerrno>
-#include <fstream>
-
-#include "include/flutter_app.h"
 #include "tizen_log.h"
 
 int FlutterServiceApp::Run(int argc, char **argv) {
