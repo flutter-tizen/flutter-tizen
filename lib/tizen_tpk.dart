@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:io';
+
 import 'package:file/file.dart';
 import 'package:flutter_tools/src/application_package.dart';
 import 'package:flutter_tools/src/base/common.dart';
@@ -52,7 +54,14 @@ class TizenTpk extends ApplicationPackage {
 
   static Future<TizenTpk> fromTpk(File tpkFile) async {
     final Directory tempDir = globals.fs.systemTempDirectory.createTempSync();
-    globals.os.unzip(tpkFile, tempDir);
+    try {
+      globals.os.unzip(tpkFile, tempDir);
+    } on ProcessException {
+      throwToolExit(
+        'An error occurred while processing a file: ${globals.fs.path.relative(tpkFile.path)}\n'
+        'You may delete the file and try again.',
+      );
+    }
 
     // We have to manually restore permissions for files zipped by
     // build-task-tizen on Unix.
