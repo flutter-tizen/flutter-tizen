@@ -12,7 +12,7 @@ _Flutter and the related logo are trademarks of Google LLC. We are not endorsed 
 
 - **Galaxy Watch**: Tizen 4.0 (2018) or later
 - **Smart TV**: Tizen 6.0 (2021) or later (older models are not supported due to security reasons)
-- **IoT (RPi3/4)**: Tizen 5.5 (2020) or later
+- **IoT (RPi 3/4)**: Tizen 5.5 (2020) or later
 
 ## Installation
 
