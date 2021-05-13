@@ -6,21 +6,19 @@
 
 An extension to the [Flutter SDK](https://github.com/flutter/flutter) for building Flutter applications for Tizen devices.
 
-_**Note: This project is under development and available for testing purposes only.**_
-
 _Flutter and the related logo are trademarks of Google LLC. We are not endorsed by or affiliated with Google LLC._
 
 ## Supported devices
 
 - **Galaxy Watch**: Tizen 4.0 (2018) or later
 - **Smart TV**: Tizen 6.0 (2021) or later (older models are not supported due to security reasons)
-- **IoT (RPi4)**: Tizen 6.0 or later
+- **IoT (RPi3/4)**: Tizen 5.5 (2020) or later
 
 ## Installation
 
-- [Linux (64-bit)](doc/linux-install.md)
-- [Windows (64-bit)](doc/windows-install.md)
-- [macOS (64-bit)](doc/macos-install.md)
+- [Linux (x64)](doc/linux-install.md)
+- [Windows (x64)](doc/windows-install.md)
+- [macOS (x64)](doc/macos-install.md)
 
 ## Usage
 
@@ -67,7 +65,7 @@ flutter-tizen run --release
 
 #### Advanced
 
-- [Building the Flutter engine from source](https://github.com/flutter-tizen/engine/wiki/Building-the-engine)
+- [Building the Flutter engine from source](https://github.com/flutter-tizen/flutter-tizen/wiki/Building-the-engine-from-source)
 - [Debugging the flutter-tizen tool](doc/debug-flutter-tizen.md)
 
 ## Issues
