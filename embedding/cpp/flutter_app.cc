@@ -188,7 +188,6 @@ void FlutterApp::ParseEngineArgs() {
   }
   file.close();
 
-  // Note: std::filesystem is not available on Tizen 5.5 or older.
   if (remove(temp_path.c_str()) != 0) {
     TizenLog::Warn("Error removing file: %s", strerror(errno));
   }
