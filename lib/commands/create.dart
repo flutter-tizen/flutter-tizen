@@ -142,7 +142,7 @@ class TizenCreateCommand extends CreateCommand {
         if (dest.existsSync()) {
           dest.deleteSync(recursive: true);
         }
-        if (projectType.basename == 'app') {
+        if (projectType.basename == 'app' && language == 'cpp') {
           final Directory application =
               source.childDirectory(isTizenService ? 'service-app' : 'ui-app');
           if (!application.existsSync()) {
