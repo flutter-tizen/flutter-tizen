@@ -118,7 +118,7 @@ You need a Linux host PC (for flashing), a Raspberry Pi 3 or 4 board, and a micr
 
 1. Connect the Pi device to the same network as your host PC using an Ethernet or Wi-Fi (built-in or extra USB dongle) connection.
 
-   Alternatively, you can use some extra hardware (USB/PWR splitter) to connect Pi directly to the host PC in OTG (USB slave) mode.
+  > Alternatively, you can use some extra hardware (USB/PWR splitter) to connect Pi directly to the host PC in OTG (USB slave) mode. The Tizen device will be ready to use just after plugging the USB - the next step should be skipped.
 
 1. Find the device's IP address and connect. If `sdb` is not on your PATH, refer to the above guide for Watch/TV.
 
