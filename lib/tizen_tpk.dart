@@ -205,7 +205,7 @@ class TizenManifest {
         );
         _warningShown = true;
       }
-      if (tag != 'ui-application') {
+      if (tag != 'ui-application' && tag != 'service-application') {
         globals.printStatus(
           'Warning: tizen-manifest.xml: <$tag> is not officially supported.',
           color: TerminalColor.yellow,

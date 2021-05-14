@@ -1,0 +1,9 @@
+flutter/
+lib/*.so
+res/flutter_assets/
+res/icudtl.dat
+.cproject
+.sign
+crash-info/
+Debug/
+Release/
