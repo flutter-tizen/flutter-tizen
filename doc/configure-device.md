@@ -79,7 +79,7 @@ You need a Linux host PC (for flashing), a Raspberry Pi 3 or 4 board, and a micr
    End /dev/sdc format
    ```
 
-1. Download the Tizen OS image. Visit the links below and download two files for boot and platform. The file names end with `.tar.gz`. Choose Tizen 6.0 (arm) if you are not sure which one to download.
+1. Download the Tizen OS image. Visit the links below and download two `.tar.gz` files (for boot and platform). Choose Tizen 6.0 (arm) if you are not sure which image to download.
 
    | Tizen version | Image type | Latest image |
    |-|-|-|
