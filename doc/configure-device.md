@@ -20,6 +20,7 @@
      ![Wifi Always On](images/wifi_always_on.png)
      
      To discover your watch's IP (in order to connect) you have to open **Settings - Connections - WIFI - WIFI Networks - Click the network you are connected to - IP Address**
+     
      ![Wifi Networks](image/wifi_networks.jpg) ![Wifi Network](image/wifi_network.jpg) ![IP Address](images/Ip_address.jpg)
      
 
