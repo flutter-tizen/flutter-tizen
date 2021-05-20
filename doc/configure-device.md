@@ -21,7 +21,7 @@
      
      To discover your watch's IP (in order to connect) you have to open **Settings - Connections - WIFI - WIFI Networks - Click the network you are connected to - IP Address**
      
-     ![Wifi Networks](images/wifi_networks.jpg) ![Wifi Network](images/wifi_network.jpg) ![IP Address](images/IP_Address.jpg)
+     ![Wifi Networks](images/wifi_networks.jpg) ![Wifi Network](images/connected_wifi_network.jpg) ![IP Address](images/IP_Address.jpg)
      
 
    - **[TV]:** Open **Apps**, enter **12345** using the remote control or the on-screen number keypad, switch **Developer mode** to **On**, enter your host's IP address, and press **OK**. You will see **Develop mode** is enabled in **Apps** after rebooting the TV.
