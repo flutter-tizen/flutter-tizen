@@ -11,7 +11,7 @@
      ![About watch](images/watch-developer-option-1.png) ![Software version](images/watch-developer-option-2.png)
      
           
-     Then, make sure **Debugging mode is turned ON**
+     Then, make sure **Debugging mode is turned ON** (Under **About Watch**)
      
      After this, **Disable Bluetooth** and **Turn Wifi to Always ON**
      
