@@ -22,13 +22,13 @@
    export PATH=`pwd`/flutter-tizen/bin:$PATH
    ```
 
-   This command sets your PATH variable for the current terminal window only. To permanently add to your PATH, edit your config file (`.bash_profile` or `.bashrc` if using Bash, and `.zshrc` if using Z shell) by running:
+   This command sets your PATH variable for the current terminal window only. To permanently add to your PATH, edit your config file (`.zshrc` for zsh, and `.bash_profile` for bash) by running:
 
    ```sh
-   echo "export PATH=`pwd`/flutter-tizen/bin:\$PATH" >> ~/.bash_profile
+   echo "export PATH=`pwd`/flutter-tizen/bin:\$PATH" >> ~/.zshrc
    ```
 
-   You have to run `source ~/.bash_profile` or open a new terminal window for this change to take effect.
+   You have to run `source ~/.zshrc` or open a new terminal window for this change to take effect.
 
 1. Verify that the `fluter-tizen` command is available by running:
 
