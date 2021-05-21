@@ -152,7 +152,7 @@ class TizenDevice extends Device {
       // runtime architecture from devices like Raspberry Pi. The following is a
       // little workaround.
       final String stdout =
-          runSdbSync(<String>['shell', 'ls', '/usr/lib64']).stdout.trim();
+          runSdbSync(<String>['shell', 'ls', '/usr/lib64']).stdout;
       return stdout.contains('No such file or directory') ? 'arm' : 'arm64';
     }
   }
@@ -167,7 +167,7 @@ class TizenDevice extends Device {
       final RunResult result = await runSdbAsync(command);
       return result.stdout.contains("'${app.applicationId}'");
     } on Exception catch (error) {
-      _logger.printTrace(error.toString());
+      _logger.printError(error.toString());
       return false;
     }
   }
@@ -439,7 +439,7 @@ class TizenDevice extends Device {
     final RunResult result =
         await runSdbAsync(<String>['push', localFile.path, remotePath]);
     if (!result.stdout.contains('file(s) pushed')) {
-      _logger.printError('Failed to push a file: ${result.stdout.trim()}');
+      _logger.printError('Failed to push a file: $result');
     }
   }
 
@@ -448,10 +448,16 @@ class TizenDevice extends Device {
     if (app == null) {
       return false;
     }
-    final List<String> command = usesSecureProtocol
-        ? <String>['shell', '0', 'kill', app.applicationId]
-        : <String>['shell', 'app_launcher', '-k', app.applicationId];
-    return (await runSdbAsync(command)).stderr.isEmpty;
+    try {
+      final List<String> command = usesSecureProtocol
+          ? <String>['shell', '0', 'kill', app.applicationId]
+          : <String>['shell', 'app_launcher', '-k', app.applicationId];
+      final String stdout = (await runSdbAsync(command)).stdout;
+      return stdout.contains('Kill appId') || stdout.contains('is Terminated');
+    } on Exception catch (error) {
+      _logger.printError(error.toString());
+      return false;
+    }
   }
 
   DateTime get currentDeviceTime {
@@ -464,8 +470,8 @@ class TizenDevice extends Device {
       // Using the UTC format (appending 'Z' at the end) just prevents the
       // result from being affected by the host's time zone.
       return DateTime.parse('${result.stdout.trim()}Z');
-    } on FormatException catch (ex) {
-      _logger.printError(ex.toString());
+    } on FormatException catch (error) {
+      _logger.printError(error.toString());
       return null;
     } on Exception catch (error) {
       _logger.printError('Failed to get device time: $error');
