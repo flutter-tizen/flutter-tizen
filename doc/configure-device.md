@@ -13,15 +13,15 @@
           
      Then, make sure **Debugging mode is turned ON** (Under **About Watch**)
      
-     ![Debugging Mode](images/debugging.png)
+     ![Debugging Mode](images/debugging_mode_on.png)
      
      After this, **Disable Bluetooth** and **Turn Wifi to Always ON**
      
-     ![Wifi Always On](images/wifi_always_on.png)
+     ![Wifi Always On](images/Wi-Fi_always_on.png)
      
      To discover your watch's IP (in order to connect) you have to open **Settings - Connections - WIFI - WIFI Networks - Click the network you are connected to - IP Address**
      
-     ![Wifi Networks](images/wifi_networks.jpg) ![Wifi Network](images/connected_wifi_network.jpg) ![IP Address](images/IP_Address.jpg)
+     ![Wi-Fi Networks](images/Wi-Fi_networks.png) ![Wi-Fi Network](images/connected_Wi-Fi_network.png) ![IP Address](images/IP_Address.png)
      
 
    - **[TV]:** Open **Apps**, enter **12345** using the remote control or the on-screen number keypad, switch **Developer mode** to **On**, enter your host's IP address, and press **OK**. You will see **Develop mode** is enabled in **Apps** after rebooting the TV.
