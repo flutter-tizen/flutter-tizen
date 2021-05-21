@@ -15,11 +15,11 @@
      
      ![Debugging Mode](images/debugging_mode_on.png)
      
-     After this, **Disable Bluetooth** and **Turn Wifi to Always ON**
+     After this, **Disable Bluetooth** and **Turn Wi-Fi to Always ON**
      
      ![Wifi Always On](images/Wi-Fi_always_on.png)
      
-     To discover your watch's IP (in order to connect) you have to open **Settings - Connections - WIFI - WIFI Networks - Click the network you are connected to - IP Address**
+     To discover your watch's IP (in order to connect) you have to open **Settings - Connections - Wi-Fi - Wi-Fi Networks - Click the network you are connected to - IP Address**
      
      ![Wi-Fi Networks](images/Wi-Fi_networks.png) ![Wi-Fi Network](images/connected_Wi-Fi_network.png) ![IP Address](images/IP_Address.png)
      
