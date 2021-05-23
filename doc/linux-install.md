@@ -18,6 +18,8 @@
    git clone https://github.com/flutter-tizen/flutter-tizen.git
    ```
 
+   Note: The target path must not contain spaces.
+
 1. Add `flutter-tizen/bin` to your PATH.
 
    ```sh

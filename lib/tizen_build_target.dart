@@ -310,7 +310,7 @@ USER_LIB_DIRS = lib
       '-I"${getUnixPath(clientWrapperDir.childDirectory('include').path)}"',
       '-I"${getUnixPath(publicDir.path)}"',
       ...userIncludes.map(getUnixPath).map((String path) => '-I"$path"'),
-      ...userLibs.map((String lib) => '-l' + lib),
+      ...userLibs.map((String lib) => '-l$lib'),
       '-L"${getUnixPath(libDir.path)}"',
       '-D${buildInfo.deviceProfile.toUpperCase()}_PROFILE',
     ];
