@@ -305,14 +305,14 @@ USER_LIB_DIRS = lib
     };
     final List<String> extraOptions = <String>[
       '-lflutter_tizen_${buildInfo.deviceProfile}',
-      '-L${getUnixPath(engineDir.path)}',
+      '-L"${getUnixPath(engineDir.path)}"',
       '-fvisibility=hidden',
       '-std=c++17',
-      '-I${getUnixPath(clientWrapperDir.childDirectory('include').path)}',
-      '-I${getUnixPath(publicDir.path)}',
-      ...userIncludes.map(getUnixPath).map((String p) => '-I' + p),
-      ...userLibs.map((String lib) => '-l' + lib),
-      '-L${getUnixPath(libDir.path)}',
+      '-I"${getUnixPath(clientWrapperDir.childDirectory('include').path)}"',
+      '-I"${getUnixPath(publicDir.path)}"',
+      ...userIncludes.map(getUnixPath).map((String path) => '-I"$path"'),
+      ...userLibs.map((String lib) => '-l$lib'),
+      '-L"${getUnixPath(libDir.path)}"',
       '-D${buildInfo.deviceProfile.toUpperCase()}_PROFILE',
     ];
 
@@ -653,11 +653,11 @@ class NativeTpk {
     };
     final List<String> extraOptions = <String>[
       '-lflutter_tizen_${buildInfo.deviceProfile}',
-      '-L${getUnixPath(libDir.path)}',
+      '-L"${getUnixPath(libDir.path)}"',
       '-std=c++17',
-      '-I${getUnixPath(clientWrapperDir.childDirectory('include').path)}',
-      '-I${getUnixPath(publicDir.path)}',
-      ...userIncludes.map(getUnixPath).map((String p) => '-I' + p),
+      '-I"${getUnixPath(clientWrapperDir.childDirectory('include').path)}"',
+      '-I"${getUnixPath(publicDir.path)}"',
+      ...userIncludes.map(getUnixPath).map((String path) => '-I"$path"'),
       if (pluginsLib.existsSync()) '-lflutter_plugins',
       '-D${buildInfo.deviceProfile.toUpperCase()}_PROFILE',
       '-Wl,-unresolved-symbols=ignore-in-shared-libs',
@@ -769,12 +769,11 @@ String getTizenBuildArch(String targetArch) {
 /// On Windows, converts Windows-style [path] (e.g. 'C:\x\y') into Unix path
 /// ('/c/x/y') and returns.
 String getUnixPath(String path) {
-  if (!Platform.isWindows) {
-    return path;
-  }
-  path = path.replaceAll(r'\', '/');
-  if (path.startsWith(':', 1)) {
-    return '/${path[0].toLowerCase()}${path.substring(2)}';
+  if (Platform.isWindows) {
+    path = path.replaceAll(r'\', '/');
+    if (path.startsWith(':', 1)) {
+      path = '/${path[0].toLowerCase()}${path.substring(2)}';
+    }
   }
   return path;
 }

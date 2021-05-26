@@ -16,16 +16,18 @@
    git clone https://github.com/flutter-tizen/flutter-tizen.git
    ```
 
+   Note: The target path must not contain spaces.
+
 1. Add `flutter-tizen/bin` to your PATH.
 
    ```sh
-   export PATH=`pwd`/flutter-tizen/bin:$PATH
+   export PATH="`pwd`/flutter-tizen/bin:$PATH"
    ```
 
    This command sets your PATH variable for the current terminal window only. To permanently add to your PATH, edit your config file (`.zshrc` for zsh, and `.bash_profile` for bash) by running:
 
    ```sh
-   echo "export PATH=`pwd`/flutter-tizen/bin:\$PATH" >> ~/.zshrc
+   echo "export PATH=\"`pwd`/flutter-tizen/bin:\$PATH\"" >> ~/.zshrc
    ```
 
    You have to run `source ~/.zshrc` or open a new terminal window for this change to take effect.
