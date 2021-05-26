@@ -306,6 +306,7 @@ USER_LIB_DIRS = lib
     final List<String> extraOptions = <String>[
       '-lflutter_tizen_${buildInfo.deviceProfile}',
       '-L"${getUnixPath(engineDir.path)}"',
+      '-fvisibility=hidden',
       '-std=c++17',
       '-I"${getUnixPath(clientWrapperDir.childDirectory('include').path)}"',
       '-I"${getUnixPath(publicDir.path)}"',
