@@ -18,6 +18,7 @@ namespace Tizen.Flutter.Embedding
             public string aot_library_path;
             public IntPtr switches;
             public uint switches_count;
+            public IntPtr custom_win;
         }
 
         [DllImport("flutter_tizen.so")]

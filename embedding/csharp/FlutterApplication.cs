@@ -62,6 +62,7 @@ namespace Tizen.Flutter.Embedding
                 aot_library_path = aotLibPath,
                 switches = switches.Handle,
                 switches_count = (uint)switches.Length,
+                custom_win = IntPtr.Zero,
             };
 
             Handle = FlutterDesktopRunEngine(ref engineProperties, true);

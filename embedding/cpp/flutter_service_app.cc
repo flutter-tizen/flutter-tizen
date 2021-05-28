@@ -89,6 +89,7 @@ bool FlutterServiceApp::OnCreate() {
   engine_prop.aot_library_path = aot_lib_path.c_str();
   engine_prop.switches = switches.data();
   engine_prop.switches_count = switches.size();
+  engine_prop.custom_win = nullptr;
 
   handle = FlutterDesktopRunEngine(engine_prop, false);
   if (!handle) {
