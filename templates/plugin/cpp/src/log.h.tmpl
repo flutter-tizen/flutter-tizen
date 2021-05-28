@@ -9,8 +9,7 @@
 #define LOG_TAG "{{pluginClass}}"
 
 #ifndef __MODULE__
-#define __MODULE__ \
-  (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
+#define __MODULE__ strrchr("/" __FILE__, '/') + 1
 #endif
 
 #define LOG(prio, fmt, arg...)                                         \
