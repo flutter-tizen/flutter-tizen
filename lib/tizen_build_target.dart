@@ -201,7 +201,8 @@ class TizenPlugins extends Target {
         TizenManifest.parseFromXml(tizenProject.manifestFile)?.profile;
     inputs.add(tizenProject.manifestFile);
 
-    rootDir.childFile('project_def.prop').writeAsStringSync('''
+    final File projectDef = rootDir.childFile('project_def.prop');
+    projectDef.writeAsStringSync('''
 APPNAME = flutter_plugins
 type = sharedLib
 profile = $profile
@@ -226,9 +227,6 @@ USER_LIB_DIRS = lib
     }
 
     // Prepare for build.
-    final BuildMode buildMode = buildInfo.buildInfo.mode;
-    final String buildConfig = buildMode.isPrecompiled ? 'Release' : 'Debug';
-    final Directory buildDir = rootDir.childDirectory(buildConfig);
     final Directory includeDir = rootDir.childDirectory('include')
       ..createSync(recursive: true);
     final Directory libDir = rootDir.childDirectory('lib')
@@ -281,6 +279,7 @@ USER_LIB_DIRS = lib
       outputs.add(includeDir.childFile(header.basename));
     }
 
+    final BuildMode buildMode = buildInfo.buildInfo.mode;
     final Directory engineDir =
         tizenArtifacts.getEngineDirectory(buildInfo.targetArch, buildMode);
     final File embedder =
@@ -321,10 +320,18 @@ USER_LIB_DIRS = lib
         profile: profile, arch: buildInfo.targetArch);
     inputs.add(rootstrap.manifestFile);
 
+    // Create a temp directory to use as a build directory.
+    // This is a workaround for the long path issue on Windows:
+    // https://github.com/flutter-tizen/flutter-tizen/issues/122
+    final Directory tempDir = environment.fileSystem.systemTempDirectory
+        .childDirectory('0')
+          ..createSync(recursive: true);
+    projectDef.copySync(tempDir.childFile(projectDef.basename).path);
+
+    final String buildConfig = buildMode.isPrecompiled ? 'Release' : 'Debug';
+    final Directory buildDir = tempDir.childDirectory(buildConfig);
+
     // Run the native build.
-    if (buildDir.existsSync()) {
-      buildDir.deleteSync(recursive: true);
-    }
     final RunResult result = await _processUtils.run(<String>[
       tizenSdk.tizenCli.path,
       'build-native',
@@ -339,7 +346,7 @@ USER_LIB_DIRS = lib
       '-e',
       extraOptions.join(' '),
       '--',
-      rootDir.path,
+      tempDir.path,
     ], environment: variables);
     if (result.exitCode != 0) {
       throwToolExit('Failed to build Flutter plugins:\n$result');
@@ -352,7 +359,10 @@ USER_LIB_DIRS = lib
         '${result.stdout}',
       );
     }
-    outputs.add(outputLib);
+
+    final File outputLibCopy =
+        outputLib.copySync(rootDir.childFile(outputLib.basename).path);
+    outputs.add(outputLibCopy);
 
     depfileService.writeToFile(
       Depfile(inputs, outputs),
@@ -421,10 +431,7 @@ class DotnetTpk {
 
     final Directory pluginsDir =
         environment.buildDir.childDirectory('tizen_plugins');
-    final String buildConfig = buildMode.isPrecompiled ? 'Release' : 'Debug';
-    final File pluginsLib = pluginsDir
-        .childDirectory(buildConfig)
-        .childFile('libflutter_plugins.so');
+    final File pluginsLib = pluginsDir.childFile('libflutter_plugins.so');
     if (pluginsLib.existsSync()) {
       pluginsLib.copySync(libDir.childFile(pluginsLib.basename).path);
     }
@@ -611,10 +618,7 @@ class NativeTpk {
 
     final Directory pluginsDir =
         environment.buildDir.childDirectory('tizen_plugins');
-    final String buildConfig = buildMode.isPrecompiled ? 'Release' : 'Debug';
-    final File pluginsLib = pluginsDir
-        .childDirectory(buildConfig)
-        .childFile('libflutter_plugins.so');
+    final File pluginsLib = pluginsDir.childFile('libflutter_plugins.so');
     if (pluginsLib.existsSync()) {
       pluginsLib.copySync(libDir.childFile(pluginsLib.basename).path);
     }
@@ -625,7 +629,6 @@ class NativeTpk {
     }
 
     // Prepare for build.
-    final Directory buildDir = tizenDir.childDirectory(buildConfig);
     final Directory embeddingDir = environment.fileSystem
         .directory(Cache.flutterRoot)
         .parent
@@ -669,10 +672,13 @@ class NativeTpk {
     final Rootstrap rootstrap = tizenSdk.getFlutterRootstrap(
         profile: profile, arch: buildInfo.targetArch);
 
-    // Run the native build.
+    final String buildConfig = buildMode.isPrecompiled ? 'Release' : 'Debug';
+    final Directory buildDir = tizenDir.childDirectory(buildConfig);
     if (buildDir.existsSync()) {
       buildDir.deleteSync(recursive: true);
     }
+
+    // Run the native build.
     RunResult result = await _processUtils.run(<String>[
       tizenSdk.tizenCli.path,
       'build-native',
