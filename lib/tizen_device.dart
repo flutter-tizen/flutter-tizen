@@ -596,6 +596,12 @@ class TizenDlogReader extends DeviceLogReader {
   // 'I/ConsoleMessage(  PID): '
   final RegExp _logFormat = RegExp(r'[IWEF]\/.+?\(\s*(\d+)\):\s');
 
+  static const List<String> _filteredTexts = <String>[
+    // Issue: https://github.com/flutter-tizen/engine/issues/91
+    'xkbcommon: ERROR:',
+    'couldn\'t find a Compose file for locale',
+  ];
+
   bool _acceptedLastLine = true;
 
   void _onLine(String line) {
@@ -623,6 +629,10 @@ class TizenDlogReader extends DeviceLogReader {
             _acceptedLastLine = false;
             return;
           }
+        }
+        if (_filteredTexts.any((String text) => line.contains(text))) {
+          _acceptedLastLine = false;
+          return;
         }
         _acceptedLastLine = true;
         _linesController.add(line);
