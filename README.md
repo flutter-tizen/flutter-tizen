@@ -57,16 +57,12 @@ flutter-tizen run --release
 #### Plugins
 
 - [A list of Flutter plugins available for Tizen](https://github.com/flutter-tizen/plugins)
-- Writing a new plugin to use platform features (WIP)
+- [Writing a new plugin to use platform features](doc/develop-plugin.md)
 
-#### Publishing
+#### Others
 
 - [Publishing your app on Samsung Galaxy Store/TV App Store](doc/publish-app.md)
-
-#### Advanced
-
 - [Building the Flutter engine from source](https://github.com/flutter-tizen/flutter-tizen/wiki/Building-the-engine-from-source)
-- [Debugging the flutter-tizen tool](doc/debug-flutter-tizen.md)
 
 ## Issues
 
