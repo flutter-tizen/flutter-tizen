@@ -6,6 +6,7 @@ import 'package:flutter_tools/src/android/android_studio_validator.dart';
 import 'package:flutter_tools/src/android/android_workflow.dart';
 import 'package:flutter_tools/src/base/context.dart';
 import 'package:flutter_tools/src/doctor.dart';
+import 'package:flutter_tools/src/doctor_validator.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 
 import 'tizen_sdk.dart';

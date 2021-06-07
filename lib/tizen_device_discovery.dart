@@ -13,8 +13,10 @@ import 'package:flutter_tools/src/base/context.dart';
 import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/base/process.dart';
 import 'package:flutter_tools/src/context_runner.dart';
+import 'package:flutter_tools/src/custom_devices/custom_devices_config.dart';
 import 'package:flutter_tools/src/device.dart';
 import 'package:flutter_tools/src/features.dart';
+import 'package:flutter_tools/src/flutter_device_manager.dart';
 import 'package:flutter_tools/src/fuchsia/fuchsia_workflow.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/macos/macos_workflow.dart';
@@ -50,6 +52,11 @@ class TizenDeviceManager extends FlutterDeviceManager {
           macOSWorkflow: context.get<MacOSWorkflow>(),
           operatingSystemUtils: globals.os,
           terminal: globals.terminal,
+          customDevicesConfig: CustomDevicesConfig(
+            fileSystem: globals.fs,
+            logger: globals.logger,
+            platform: globals.platform,
+          ),
         );
 
   @override
