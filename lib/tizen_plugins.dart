@@ -7,6 +7,7 @@ import 'package:file/file.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/base/terminal.dart';
 import 'package:flutter_tools/src/build_system/targets/web.dart';
+import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/dart/language_version.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/dart/package_map.dart';
@@ -174,6 +175,7 @@ Future<String> _createEntrypoint(
   final LanguageVersion languageVersion = determineLanguageVersion(
     globals.fs.file(targetFile),
     packageConfig[flutterProject.manifest.appName],
+    Cache.flutterRoot,
   );
 
   final Uri mainUri = globals.fs.file(targetFile).absolute.uri;

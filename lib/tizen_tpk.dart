@@ -6,6 +6,7 @@ import 'dart:io';
 
 import 'package:file/file.dart';
 import 'package:flutter_tools/src/application_package.dart';
+import 'package:flutter_tools/src/flutter_application_package.dart';
 import 'package:flutter_tools/src/base/common.dart';
 import 'package:flutter_tools/src/base/terminal.dart';
 import 'package:flutter_tools/src/build_info.dart';
@@ -17,7 +18,7 @@ import 'package:xml/xml.dart';
 import 'tizen_project.dart';
 
 /// [ApplicationPackageFactory] extended for Tizen.
-class TpkFactory extends ApplicationPackageFactory {
+class TpkFactory extends FlutterApplicationPackageFactory {
   TpkFactory()
       : super(
           androidSdk: globals.androidSdk,

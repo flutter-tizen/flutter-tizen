@@ -162,7 +162,7 @@ class TizenBuilder {
     final File tpkFile = tpkDir.childFile(tizenProject.outputTpkName);
     final String tpkSize = getSizeAsMB(tpkFile.lengthSync());
     globals.printStatus(
-      '$successMark Built ${relative(tpkFile.path)} ($tpkSize).',
+      '${globals.logger.terminal.successMark} Built ${relative(tpkFile.path)} ($tpkSize).',
       color: TerminalColor.green,
     );
 

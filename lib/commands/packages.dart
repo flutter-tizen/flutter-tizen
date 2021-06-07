@@ -5,6 +5,7 @@
 
 import 'package:flutter_tools/src/base/os.dart';
 import 'package:flutter_tools/src/commands/packages.dart';
+import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/project.dart';
 import 'package:flutter_tools/src/runner/flutter_command.dart';
 
@@ -84,11 +85,12 @@ mixin _PostRunPluginInjection on FlutterCommand {
     if (result == FlutterCommandResult.success()) {
       final String workingDirectory =
           argResults.rest.isNotEmpty ? argResults.rest[0] : null;
-      final String target = findProjectRoot(workingDirectory);
+      final String target = findProjectRoot(globals.fs, workingDirectory);
       if (target == null) {
         return result;
       }
-      final FlutterProject rootProject = FlutterProject.fromPath(target);
+      final FlutterProject rootProject =
+          FlutterProject.fromDirectory(globals.fs.directory(target));
       await ensureReadyForTizenTooling(rootProject);
       if (rootProject.hasExampleApp) {
         await ensureReadyForTizenTooling(rootProject.example);
