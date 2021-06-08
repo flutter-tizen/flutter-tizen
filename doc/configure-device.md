@@ -163,9 +163,24 @@ You need a Linux host PC (for flashing), a Raspberry Pi 3 or 4 board, and a micr
   ```sh
   $ sdb devices
   List of devices attached
-  192.168.0.101:26101     offline         TW3
+  0000d85900006200        offline         device-1
   ```
   
   If the device is connected to a Windows host via USB, make sure to install the [Android USB Driver for Windows](https://developer.samsung.com/mobile/android-usb-driver.html).
+
+- #### Device not listed when using WSL
+
+  ```powershell
+  PS> sdb devices
+  List of devices attached
+  PS> sdb kill-server
+  PS> sdb devices
+  * Server is not running. Start it now on port 26099 *
+  * Server has started successfully *
+  List of devices attached
+  00000314f59bd733        device          SM-R800
+  ```
+
+  If you are using WSL and Tizen Studio has been installed onto both Windows and Linux, you have to start the sdb server from the Windows side.
 
 - If you still have any problem, open an [issue](../../../issues) in this repo or ask for help in [Samsung Developers](https://forum.developer.samsung.com/) / [Tizen Forums](https://developer.tizen.org/forums/sdk-ide/active) / [stackoverflow](https://stackoverflow.com/questions/tagged/tizen).
