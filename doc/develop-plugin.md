@@ -11,7 +11,9 @@ Here are a few things you might consider when developing Flutter plugins for Tiz
 - C/C++ (based on platform channels)
 - Dart (based on Dart FFI)
 
-Typical Flutter plugins are written in their platform native languages, such as Java on Android and C/C++ on Tizen. However, some Windows plugins such as [`path_provider_windows`](https://github.com/flutter/plugins/tree/master/packages/path_provider/path_provider_windows) and Tizen plugins such as [`url_launcher_tizen`](https://github.com/flutter-tizen/plugins/tree/master/packages/url_launcher) are written in pure Dart using [Dart FFI](https://dart.dev/guides/libraries/c-interop) without any native code. To learn more about FFI-based plugins, you might read [Flutter Docs: Binding to native code using dart:ffi](https://flutter.dev/docs/development/platform-integration/c-interop). This document only covers native Tizen plugins written in C/C++.
+Typical Flutter plugins are written in their platform native languages, such as Java on Android and C/C++ on Tizen. However, some Windows plugins such as [`path_provider_windows`](https://github.com/flutter/plugins/tree/master/packages/path_provider/path_provider_windows) and Tizen plugins such as [`url_launcher_tizen`](https://github.com/flutter-tizen/plugins/tree/master/packages/url_launcher) are written in pure Dart using [Dart FFI](https://dart.dev/guides/libraries/c-interop) without any native code. To learn more about FFI-based plugins, you might read [Flutter Docs: Binding to native code using dart:ffi](https://flutter.dev/docs/development/platform-integration/c-interop).
+
+This document only covers native Tizen plugins written in C/C++.
 
 ### Targeting multiple platforms vs. Tizen only
 
@@ -52,7 +54,7 @@ tizen:
   fileName: plugin_name_plugin.h
 ```
 
-The created package contains an example app in the `example` directory. You can run the example app by using the `flutter-tizen run` command:
+The created package contains an example app in the `example/` directory. You can run it using the `flutter-tizen run` command:
 
 ```sh
 $ cd plugin_name/example
@@ -80,7 +82,7 @@ The result of the method call can be either:
 - `Error()`: Indicates that the call was understood but handling failed in some way. The error can be caught as a `PlatformException` by the caller.
 - `NotImplemented()`
 
-Any arguments to the method call can be retrieved from the `method_call` variable. For example, if a `map<String, dynamic>` is passed from Dart code:
+Any arguments to the method call can be retrieved from the `method_call` variable. For example, if a `map<String, dynamic>` is passed from Dart code like:
 
 ```dart
 await _channel.invokeMethod<void>(
@@ -89,7 +91,7 @@ await _channel.invokeMethod<void>(
 );
 ```
 
-it can be parsed in the native side as follows:
+then it can be parsed in C/C++ code like:
 
 ```cpp
 template <typename T>
@@ -136,14 +138,16 @@ Types such as `flutter::MethodCall` and `flutter::EncodableValue` in the templat
 - Tizen native APIs ([Wearable API references](https://docs.tizen.org/application/native/api/wearable/latest/index.html))
 - External native libraries, if any (static/shared)
 
-Note: The API references for Tizen TV are not publicly available. However, most of the Tizen core APIs are common to both wearable and TV profiles, so you can refer to the wearable API references when developing plugins for TV devices.
+Note: The API references for Tizen TV are not publicly available. However, most of the Tizen core APIs are common to both wearable and TV profiles, so you may refer to the wearable API references when developing plugins for TV devices.
 
 #### Channel types
 
-You can use not only [MethodChannel](https://api.flutter.dev/flutter/services/MethodChannel-class.html) but also other types of platform channels for data transfer between Dart and native code:
+Besides the above mentioned [MethodChannel](https://api.flutter.dev/flutter/services/MethodChannel-class.html), you can also use other types of platform channels to transfer data between Dart and native code:
 
-- [BasicMessageChannel](https://api.flutter.dev/flutter/services/BasicMessageChannel-class.html): For asynchronous message passing.
+- [BasicMessageChannel](https://api.flutter.dev/flutter/services/BasicMessageChannel-class.html): For basic asynchronous message passing.
 - [EventChannel](https://api.flutter.dev/flutter/services/EventChannel-class.html): For asynchronous event streaming.
+
+You might check out an example usage of `EventChannel` in the [`wearable_rotary`](https://github.com/flutter-tizen/plugins/tree/master/packages/wearable_rotary) plugin.
 
 ## Publish the plugin
 
