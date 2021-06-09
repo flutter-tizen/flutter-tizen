@@ -52,7 +52,7 @@ class FlutterApp : public flutter::PluginRegistry {
   // The Flutter engine instance handle.
   FlutterDesktopEngineRef handle;
 
- protected:
+ private:
   void ParseEngineArgs();
 };
 
