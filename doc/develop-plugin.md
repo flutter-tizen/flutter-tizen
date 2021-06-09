@@ -65,7 +65,9 @@ $ flutter-tizen run
 
 ### 1. Define the package API (`.dart`)
 
-The API of the plugin package is defined in Dart code. Locate the file `lib/plugin_name.dart` in VS Code, and then you will see the `platformVersion` method defined in the plugin main class. Invoking this method will invoke the `getPlatformVersion` method through a method channel named `plugin_name`. This file is not required if you're extending an existing plugin for Tizen, so you can safely remove it.
+The API of the plugin package is defined in Dart code. Locate the file `lib/plugin_name.dart` in VS Code, and then you will see the `platformVersion` property defined in the plugin main class. Invoking this property will invoke the `getPlatformVersion` method through a method channel named `plugin_name`. You have to replace this template code with the actual implementation for your plugin.
+
+Note: This file is not necessary if you're extending an existing plugin for Tizen, so you can safely remove it.
 
 ### 2. Add Tizen platform code (`.cc`)
 
@@ -74,7 +76,7 @@ Note: Before getting started, it is recommended to install the [C/C++ extension]
 The implementation of the plugin can be found in the `tizen/src/plugin_name_plugin.cc` file. In this file, you will see:
 
 - `PluginNamePluginRegisterWithRegistrar()`: This function is called by an app that depends on this plugin on startup to set up the `plugin_name` channel.
-- `HandleMethodCall()`: This method handles the `getPlatformVersion` method and returns the result to the caller.
+- `HandleMethodCall()`: This method handles the `getPlatformVersion` method (or whatever methods you defined in Dart code) and returns the result to the caller.
 
 The result of the method call can be either:
 
