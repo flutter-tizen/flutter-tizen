@@ -18,9 +18,6 @@ class FlutterServiceApp : public FlutterApp {
   bool OnCreate() override;
 
   int Run(int argc, char **argv) override;
-
- private:
-  void ParseEngineArgs();
 };
 
 #endif /* FLUTTER_TIZEN_EMBEDDING_CPP_INCLUDE_FLUTTER_SERVICE_APP_H_ */

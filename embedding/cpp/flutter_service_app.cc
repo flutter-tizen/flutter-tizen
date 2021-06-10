@@ -98,34 +98,3 @@ bool FlutterServiceApp::OnCreate() {
 
   return true;
 }
-
-void FlutterServiceApp::ParseEngineArgs() {
-  char *app_id;
-  if (app_get_id(&app_id) != 0) {
-    TizenLog::Warn("App id is not found.");
-    return;
-  }
-  std::string temp_path("/home/owner/share/tmp/sdk_tools/" +
-                        std::string(app_id) + ".rpm");
-  free(app_id);
-  TizenLog::Error("temp_path: %s", temp_path.c_str());
-
-  auto file = fopen(temp_path.c_str(), "r");
-  if (!file) {
-    TizenLog::Error("file is closed");
-    return;
-  }
-  char *line = nullptr;
-  size_t len = 0;
-
-  while (getline(&line, &len, file) > 0) {
-    TizenLog::Info("Enabled: %s", line);
-    engine_args.push_back(line);
-  }
-  free(line);
-  fclose(file);
-
-  if (remove(temp_path.c_str()) != 0) {
-    TizenLog::Warn("Error removing file: %s", strerror(errno));
-  }
-}
