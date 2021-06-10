@@ -179,7 +179,6 @@ void FlutterApp::ParseEngineArgs() {
 
   auto file = fopen(temp_path.c_str(), "r");
   if (!file) {
-    TizenLog::Error("file is closed");
     return;
   }
   char *line = nullptr;
