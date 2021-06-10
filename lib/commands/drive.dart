@@ -13,5 +13,6 @@ class TizenDriveCommand extends DriveCommand with TizenExtension {
           verboseHelp: verboseHelp,
           fileSystem: globals.fs,
           logger: globals.logger,
+          platform: globals.platform,
         );
 }
