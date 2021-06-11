@@ -151,6 +151,14 @@ Besides the above mentioned [MethodChannel](https://api.flutter.dev/flutter/serv
 
 You might check out an example usage of `EventChannel` in the [`wearable_rotary`](https://github.com/flutter-tizen/plugins/tree/master/packages/wearable_rotary) plugin.
 
+#### Tizen privileges
+
+If some privileges are required to run your plugin code, you have to list them in the plugin's README so that the user can properly add them to their `tizen-manifest.xml`.
+
+If one or more privileges are [privacy-related privileges](https://docs.tizen.org/application/dotnet/tutorials/sec-privileges), permissions must be granted by user at runtime. To request permissions at runtime, use the [Privacy Privilege Manager API](https://docs.tizen.org/application/native/guides/security/privacy-related-permissions) ([example](https://github.com/flutter-tizen/plugins/blob/master/packages/camera/tizen/src/permission_manager.cc)).
+
+On TV devices, permissions are already granted to apps by default. Invoking permission-related APIs will result in a library loading error on TV devices. If you want to run your plugin on different types of devices using a single codebase, consider using the `TV_PROFILE` macro to separate the TV-specific code ([example](https://github.com/flutter-tizen/plugins/blob/master/packages/image_picker/tizen/src/image_picker_tizen_plugin.cc)).
+
 ## Publish the plugin
 
 To share your plugin with other developers, you can publish it on [pub.dev](https://pub.dev). You may refer to the following pages for detailed instructions.
