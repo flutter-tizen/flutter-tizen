@@ -6,23 +6,17 @@
 
 1. Enable the developer options.
 
-   - **[Watch]:** Open **Settings - About watch - Software**, and tap **Software version** multiple times.
+   - **[Watch]:** Open **Settings - About watch - Software**, tap **Software version** multiple times, and make sure **Debugging** is turned on.
 
-     ![About watch](images/watch-developer-option-1.png) ![Software version](images/watch-developer-option-2.png)
-     
-          
-     Then, make sure **Debugging mode is turned ON** (Under **About Watch**)
-     
-     ![Debugging Mode](images/debugging_mode_on.png)
-     
-     After this, **Disable Bluetooth** and **Turn Wi-Fi to Always ON**
-     
-     ![Wifi Always On](images/Wi-Fi_always_on.png)
-     
-     To discover your watch's IP (in order to connect) you have to open **Settings - Connections - Wi-Fi - Wi-Fi Networks - Click the network you are connected to - IP Address**
-     
-     ![Wi-Fi Networks](images/Wi-Fi_networks.png) ![Wi-Fi Network](images/connected_Wi-Fi_network.png) ![IP Address](images/IP_Address.png)
-     
+     ![About watch](images/watch-developer-option-1.png) ![Software version](images/watch-developer-option-2.png) ![Debugging mode](images/watch-developer-option-3.png)
+
+     Also make sure to disable **Bluetooth** and turn **Wi-Fi** to **Always on**.
+
+     ![Wi-Fi Always On](images/watch-developer-option-4.png)
+
+     To discover your watch's IP address (in order to connect), you have to open **Settings - Connections - Wi-Fi - Wi-Fi Networks - (click the network you are connected to)**.
+
+     ![Wi-Fi networks](images/watch-developer-option-5.png) ![Wi-Fi connected](images/watch-developer-option-6.png) ![IP address](images/watch-developer-option-7.png)
 
    - **[TV]:** Open **Apps**, enter **12345** using the remote control or the on-screen number keypad, switch **Developer mode** to **On**, enter your host's IP address, and press **OK**. You will see **Develop mode** is enabled in **Apps** after rebooting the TV.
 
@@ -163,5 +157,30 @@ You need a Linux host PC (for flashing), a Raspberry Pi 3 or 4 board, and a micr
   ```
 
   Check the confirmation dialog on the device and approve the connection.
+
+- #### Device offline
+
+  ```sh
+  $ sdb devices
+  List of devices attached
+  0000d85900006200        offline         device-1
+  ```
+  
+  If the device is connected to a Windows host via USB, make sure to install the [Android USB Driver for Windows](https://developer.samsung.com/mobile/android-usb-driver.html).
+
+- #### Device not listed when using WSL
+
+  ```powershell
+  PS> sdb devices
+  List of devices attached
+  PS> sdb kill-server
+  PS> sdb devices
+  * Server is not running. Start it now on port 26099 *
+  * Server has started successfully *
+  List of devices attached
+  00000314f59bd733        device          SM-R800
+  ```
+
+  If you are using WSL and Tizen Studio has been installed onto both Windows and Linux, you have to start the sdb server from the Windows side.
 
 - If you still have any problem, open an [issue](../../../issues) in this repo or ask for help in [Samsung Developers](https://forum.developer.samsung.com/) / [Tizen Forums](https://developer.tizen.org/forums/sdk-ide/active) / [stackoverflow](https://stackoverflow.com/questions/tagged/tizen).
