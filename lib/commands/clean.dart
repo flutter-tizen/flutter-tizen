@@ -23,7 +23,7 @@ class TizenCleanCommand extends CleanCommand {
     final FlutterProject flutterProject = FlutterProject.current();
     _cleanTizenProject(TizenProject.fromFlutter(flutterProject));
 
-    return await super.runCommand();
+    return super.runCommand();
   }
 
   void _cleanTizenProject(TizenProject project) {

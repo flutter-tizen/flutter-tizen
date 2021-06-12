@@ -100,7 +100,7 @@ class TizenTpk extends ApplicationPackage {
         .childDirectory('tpk')
         .childFile(project.outputTpkName);
     if (tpkFile.existsSync()) {
-      return await TizenTpk.fromTpk(tpkFile);
+      return TizenTpk.fromTpk(tpkFile);
     }
 
     return TizenTpk(

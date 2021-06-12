@@ -143,7 +143,7 @@ mixin TizenExtension on FlutterCommand {
       _entrypoint =
           await _createEntrypoint(FlutterProject.current(), super.targetFile);
     }
-    return await super.verifyThenRunCommand(commandPath);
+    return super.verifyThenRunCommand(commandPath);
   }
 
   @override
