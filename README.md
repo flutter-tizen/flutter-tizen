@@ -63,6 +63,7 @@ flutter-tizen run --release
 
 - [Publishing your app on Samsung Galaxy Store/TV App Store](doc/publish-app.md)
 - [Building the Flutter engine from source](https://github.com/flutter-tizen/flutter-tizen/wiki/Building-the-engine-from-source)
+- [Wiki](https://github.com/flutter-tizen/flutter-tizen/wiki)
 
 ## Issues
 
