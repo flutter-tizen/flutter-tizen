@@ -139,7 +139,12 @@ class TizenEmulatorManager extends EmulatorManager {
     for (final FileSystemEntity entity in emulatorImagesDir.listSync()) {
       if (entity is Directory && entity.basename != 'add-ons') {
         final File infoFile = entity.childFile('info.ini');
-        final Map<String, String> info = parseIniFile(infoFile);
+        if (!infoFile.existsSync()) {
+          continue;
+        }
+        final Map<String, String> info =
+            // ignore: invalid_use_of_visible_for_testing_member
+            parseIniLines(infoFile.readAsLinesSync());
         if (info.containsKey('name') &&
             info.containsKey('profile') &&
             info.containsKey('version')) {

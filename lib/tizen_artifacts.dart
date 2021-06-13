@@ -38,9 +38,9 @@ TargetPlatform getTargetPlatformForArch(String arch) {
   }
 }
 
-/// It's unable to extend [Artifacts] directly because it has no visible
-/// constructor.
-class TizenArtifacts extends CachedArtifacts {
+class TizenArtifacts implements Artifacts {
+  TizenArtifacts();
+
   /// See: [Cache.getArtifactDirectory] in `cache.dart`
   Directory getArtifactDirectory(String name) {
     return globals.fs

@@ -7,6 +7,7 @@
 import 'dart:io';
 
 import 'package:file/file.dart';
+import 'package:flutter_tools/src/android/application_package.dart';
 import 'package:flutter_tools/src/application_package.dart';
 import 'package:flutter_tools/src/flutter_application_package.dart';
 import 'package:flutter_tools/src/base/common.dart';
@@ -19,9 +20,9 @@ import 'package:xml/xml.dart';
 
 import 'tizen_project.dart';
 
-/// [ApplicationPackageFactory] extended for Tizen.
-class TpkFactory extends FlutterApplicationPackageFactory {
-  TpkFactory()
+/// [FlutterApplicationPackageFactory] extended for Tizen.
+class TizenApplicationPackageFactory extends FlutterApplicationPackageFactory {
+  TizenApplicationPackageFactory()
       : super(
           androidSdk: globals.androidSdk,
           processManager: globals.processManager,
@@ -38,7 +39,7 @@ class TpkFactory extends FlutterApplicationPackageFactory {
   }) async {
     if (platform == TargetPlatform.tester) {
       return applicationBinary == null
-          ? await TizenTpk.fromProject(FlutterProject.current())
+          ? await TizenTpk.fromTizenProject(FlutterProject.current())
           : await TizenTpk.fromTpk(applicationBinary);
     }
     return super.getPackageForPlatform(platform,
@@ -88,7 +89,8 @@ class TizenTpk extends ApplicationPackage {
     );
   }
 
-  static Future<TizenTpk> fromProject(FlutterProject flutterProject) async {
+  static Future<TizenTpk> fromTizenProject(
+      FlutterProject flutterProject) async {
     final TizenProject project = TizenProject.fromFlutter(flutterProject);
     if (!project.manifestFile.existsSync()) {
       throwToolExit('tizen-manifest.xml could not be found.');

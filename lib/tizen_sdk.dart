@@ -58,7 +58,11 @@ class TizenSdk {
 
   Directory get sdkDataDirectory {
     final File sdkInfo = directory.childFile('sdk.info');
-    final Map<String, String> info = parseIniFile(sdkInfo);
+    if (!sdkInfo.existsSync()) {
+      return null;
+    }
+    // ignore: invalid_use_of_visible_for_testing_member
+    final Map<String, String> info = parseIniLines(sdkInfo.readAsLinesSync());
     if (info.containsKey('TIZEN_SDK_DATA_PATH')) {
       return globals.fs.directory(info['TIZEN_SDK_DATA_PATH']);
     }
@@ -67,7 +71,12 @@ class TizenSdk {
 
   String get sdkVersion {
     final File versionFile = directory.childFile('sdk.version');
-    final Map<String, String> info = parseIniFile(versionFile);
+    if (!versionFile.existsSync()) {
+      return null;
+    }
+    final Map<String, String> info =
+        // ignore: invalid_use_of_visible_for_testing_member
+        parseIniLines(versionFile.readAsLinesSync());
     if (info.containsKey('TIZEN_SDK_VERSION')) {
       String version = info['TIZEN_SDK_VERSION'];
       final List<String> segments = version.split('.');
@@ -177,33 +186,4 @@ class Rootstrap {
 
   final String id;
   final File manifestFile;
-}
-
-/// Source: [parseIniLines] in `android_emulator.dart`
-Map<String, String> parseIniFile(File file) {
-  if (!file.existsSync()) {
-    return <String, String>{};
-  }
-  final List<String> contents = file.readAsLinesSync();
-  final Map<String, String> results = <String, String>{};
-
-  final Iterable<List<String>> properties = contents
-      .map<String>((String l) => l.trim())
-      // Strip blank lines/comments
-      .where((String l) => l != '' && !l.startsWith('#'))
-      // Discard anything that isn't simple name=value
-      .where((String l) => l.contains('='))
-      // Split into name/value
-      // The parser method assumes no equal signs(=) in 'name',
-      // so the method splits the string at the first equal sign.
-      .map<List<String>>((String l) {
-    final int splitPos = l.indexOf('=');
-    return <String>[l.substring(0, splitPos), l.substring(splitPos + 1)];
-  });
-
-  for (final List<String> property in properties) {
-    results[property[0].trim()] = property[1].trim();
-  }
-
-  return results;
 }

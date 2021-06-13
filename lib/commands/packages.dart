@@ -94,7 +94,8 @@ mixin _PostRunPluginInjection on FlutterCommand {
       final FlutterProject rootProject =
           FlutterProject.fromDirectory(globals.fs.directory(target));
       await ensureReadyForTizenTooling(rootProject);
-      if (rootProject.hasExampleApp) {
+      if (rootProject.hasExampleApp &&
+          rootProject.example.pubspecFile.existsSync()) {
         await ensureReadyForTizenTooling(rootProject.example);
       }
     }

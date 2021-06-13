@@ -20,7 +20,8 @@ import 'package:flutter_tools/src/template.dart';
 import '../tizen_plugins.dart';
 
 class TizenCreateCommand extends CreateCommand {
-  TizenCreateCommand() : super() {
+  TizenCreateCommand({bool verboseHelp = false})
+      : super(verboseHelp: verboseHelp) {
     argParser.addOption(
       'tizen-language',
       defaultsTo: 'csharp',
@@ -56,7 +57,8 @@ class TizenCreateCommand extends CreateCommand {
     }
 
     final bool generatePlugin = argResults['template'] != null
-        ? stringArg('template') == 'plugin'
+        ? stringArg('template') ==
+            flutterProjectTypeToString(FlutterProjectType.plugin)
         : determineTemplateType() == FlutterProjectType.plugin;
     if (generatePlugin) {
       // Assume that pubspec.yaml uses the multi-platforms plugin format if the

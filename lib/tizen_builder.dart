@@ -9,6 +9,7 @@ import 'dart:convert';
 
 import 'package:file/file.dart';
 import 'package:flutter_tools/src/android/android_builder.dart';
+import 'package:flutter_tools/src/android/gradle.dart';
 import 'package:flutter_tools/src/base/analyze_size.dart';
 import 'package:flutter_tools/src/base/common.dart';
 import 'package:flutter_tools/src/base/logger.dart';
@@ -55,7 +56,7 @@ class TizenBuildInfo {
 
 /// See:
 /// - [AndroidBuilder] in `android_builder.dart`
-/// - [buildGradleApp] in `gradle.dart`
+/// - [AndroidGradleBuilder.buildGradleApp] in `gradle.dart`
 /// - [BuildIOSFrameworkCommand._produceAppFramework] in `build_ios_framework.dart` (build target)
 /// - [AssembleCommand.runCommand] in `assemble.dart` (performance measurement)
 /// - [buildLinux] in `build_linux.dart` (code size)
@@ -154,7 +155,8 @@ class TizenBuilder {
       if (buildInfo.performanceMeasurementFile != null) {
         final File outFile =
             globals.fs.file(buildInfo.performanceMeasurementFile);
-        writePerformanceMeasurementData(result.performance.values, outFile);
+        // ignore: invalid_use_of_visible_for_testing_member
+        writePerformanceData(result.performance.values, outFile);
       }
     } finally {
       status.stop();
@@ -201,26 +203,6 @@ class TizenBuilder {
         '\$ flutter-tizen pub global run devtools --appSizeBase=$relativeAppSizePath\n',
       );
     }
-  }
-
-  /// Source: [writePerformanceData] in `assemble.dart` (exact copy)
-  static void writePerformanceMeasurementData(
-      Iterable<PerformanceMeasurement> measurements, File outFile) {
-    final Map<String, Object> jsonData = <String, Object>{
-      'targets': <Object>[
-        for (final PerformanceMeasurement measurement in measurements)
-          <String, Object>{
-            'name': measurement.analyticsName,
-            'skipped': measurement.skipped,
-            'succeeded': measurement.succeeded,
-            'elapsedMilliseconds': measurement.elapsedMilliseconds,
-          }
-      ]
-    };
-    if (!outFile.parent.existsSync()) {
-      outFile.parent.createSync(recursive: true);
-    }
-    outFile.writeAsStringSync(json.encode(jsonData));
   }
 
   /// Update tizen-manifest.xml with the new build info if needed.

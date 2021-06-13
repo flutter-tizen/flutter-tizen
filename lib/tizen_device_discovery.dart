@@ -61,14 +61,16 @@ class TizenDeviceManager extends FlutterDeviceManager {
           ),
         );
 
+  final TizenDeviceDiscovery _tizenDeviceDiscovery = TizenDeviceDiscovery(
+    tizenWorkflow: tizenWorkflow,
+    logger: globals.logger,
+    processManager: globals.processManager,
+  );
+
   @override
   List<DeviceDiscovery> get deviceDiscoverers => <DeviceDiscovery>[
         ...super.deviceDiscoverers,
-        TizenDeviceDiscovery(
-          tizenWorkflow: tizenWorkflow,
-          logger: globals.logger,
-          processManager: globals.processManager,
-        ),
+        _tizenDeviceDiscovery,
       ];
 }
 
