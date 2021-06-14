@@ -308,13 +308,11 @@ class TizenEmulator extends Emulator {
   @override
   String get manufacturer => 'Samsung';
 
-  // TODO(HakkyuKim): Consider subcategorizing into Tizen profiles.
   @override
   Category get category => Category.mobile;
 
-  // TODO(HakkyuKim): Consider replacing it to Tizen.
   @override
-  PlatformType get platformType => PlatformType.linux;
+  PlatformType get platformType => PlatformType.custom;
 
   @override
   Future<void> launch() async {

@@ -48,7 +48,7 @@ class TizenDevice extends Device {
             ProcessUtils(logger: logger, processManager: processManager),
         super(id,
             category: Category.mobile,
-            platformType: PlatformType.linux,
+            platformType: PlatformType.custom,
             ephemeral: true);
 
   final String _modelId;
