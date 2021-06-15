@@ -177,16 +177,19 @@ void FlutterApp::ParseEngineArgs() {
                         std::string(app_id) + ".rpm");
   free(app_id);
 
-  std::ifstream file(temp_path);
-  if (!file.is_open()) {
+  auto file = fopen(temp_path.c_str(), "r");
+  if (!file) {
     return;
   }
-  std::string line;
-  while (file && !file.eof() && std::getline(file, line)) {
-    TizenLog::Info("Enabled: %s", line.c_str());
-    engine_args.push_back(line.c_str());
+  char *line = nullptr;
+  size_t len = 0;
+
+  while (getline(&line, &len, file) > 0) {
+    TizenLog::Info("Enabled: %s", line);
+    engine_args.push_back(line);
   }
-  file.close();
+  free(line);
+  fclose(file);
 
   if (remove(temp_path.c_str()) != 0) {
     TizenLog::Warn("Error removing file: %s", strerror(errno));
