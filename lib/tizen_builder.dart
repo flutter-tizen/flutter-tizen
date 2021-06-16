@@ -234,6 +234,6 @@ class TizenBuilder {
       return;
     }
     manifest.version = buildName;
-    project.manifestFile.writeAsStringSync(manifest.toString());
+    project.manifestFile.writeAsStringSync('$manifest\n');
   }
 }
