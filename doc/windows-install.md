@@ -4,8 +4,6 @@
 
 - Operating system: Windows 7 SP1 or later (64-bit)
 - Tools:
-  - Python 3 (3.6 or later)
-    - If you're on Windows 10, you can run `python3` in a console window to get Python from Microsoft Store.
   - [Tizen Studio](install-tizen-sdk.md) (4.0 or later)
   - [.NET SDK](https://docs.microsoft.com/en-us/dotnet/core/install/windows) (3.0 or later)
   - [Git for Windows](https://git-scm.com/download/win) 2.x (enable the **Use Git from the Windows Command Prompt** option)
