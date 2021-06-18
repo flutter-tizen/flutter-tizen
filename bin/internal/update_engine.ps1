@@ -34,6 +34,10 @@ if ((Test-Path $engineStamp) -and ($engineVersion -eq (Get-Content $engineStamp)
     return
 }
 
+# Clear bin/cache/artifacts/engine directory before updating.
+Remove-Item -Recurse -Force "$enginePath" -ErrorAction SilentlyContinue
+New-Item $enginePath -force -type directory | Out-Null
+
 $engineBaseUrl = $ENV:BASE_URL
 if (-not $engineBaseUrl) {
     $engineBaseUrl = "https://github.com/flutter-tizen/engine/releases"
@@ -41,8 +45,6 @@ if (-not $engineBaseUrl) {
 $engineZipName = "windows-x64.zip"
 $engineUrl = "$engineBaseUrl/download/$engineShortVersion/$engineZipName"
 $engineZipPath = "$enginePath\artifacts.zip"
-
-New-Item $enginePath -force -type directory | Out-Null
 
 Try {
     Import-Module BitsTransfer

@@ -19,8 +19,6 @@ ENGINE_BASE_URL="https://github.com/flutter-tizen/engine/releases"
 ENGINE_STAMP="$ENGINE_DIR/engine.stamp"
 ENGINE_VERSION="$(cat "$ROOT_DIR/bin/internal/engine.version")"
 
-mkdir -p "$ENGINE_DIR"
-
 if [[ ! -f "$ENGINE_STAMP" || "$ENGINE_VERSION" != "$(cat "$ENGINE_STAMP")" ]]; then
   command -v curl > /dev/null 2>&1 || {
     >&2 echo
@@ -71,6 +69,10 @@ if [[ ! -f "$ENGINE_STAMP" || "$ENGINE_VERSION" != "$(cat "$ENGINE_STAMP")" ]]; 
       exit 1
       ;;
   esac
+
+  # Clear bin/cache/artifacts/engine directory before updating.
+  rm -fr "$ENGINE_DIR"
+  mkdir -p "$ENGINE_DIR"
 
   # Overwrite ENGINE_BASE_URL if BASE_URL environment variable is set.
   if [[ -n "$BASE_URL" ]]; then
