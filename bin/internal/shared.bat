@@ -30,7 +30,7 @@ GOTO :EOF
     EXIT /B 1
   )
 
-  REM # Clone flutter repo if not installed.
+  REM Clone flutter repo if not installed.
   IF NOT EXIST "%flutter_dir%" (
     git clone --depth=1 "%flutter_repo%" "%flutter_dir%" || (
       ECHO Error: Failed to download the flutter repo from %flutter_repo%.
