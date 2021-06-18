@@ -31,7 +31,7 @@ DART_EXE="$FLUTTER_DIR/bin/cache/dart-sdk/bin/dart"
 
 function update_flutter() {
   if [[ -e "$FLUTTER_DIR" && ! -d "$FLUTTER_DIR/.git" ]]; then
-    echo "$(basename "$FLUTTER_DIR") is not a git directory. Remove it and try again."
+    echo "$FLUTTER_DIR is not a git directory. Remove it and try again."
     exit 1
   fi
 
@@ -58,7 +58,7 @@ function update_flutter() {
 
   if [[ "$version" != "$(git rev-parse HEAD)" ]]; then
     echo "Something went wrong when upgrading the Flutter SDK." \
-         "Remove directory '$(basename "$FLUTTER_DIR")' and try again." 
+         "Remove directory $FLUTTER_DIR and try again."
     exit 1
   fi
 

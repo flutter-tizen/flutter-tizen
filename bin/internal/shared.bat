@@ -26,7 +26,7 @@ GOTO :EOF
 
 :update_flutter
   IF EXIST "%flutter_dir%" IF NOT EXIST "%flutter_dir%\.git\" (
-    ECHO Error: flutter is not a git directory. Remove it and try again.
+    ECHO Error: %flutter_dir% is not a git directory. Remove it and try again.
     EXIT /B 1
   )
 
@@ -57,7 +57,7 @@ GOTO :EOF
       FOR /f %%r IN ('git rev-parse HEAD') DO SET revision=%%r
       IF !version! NEQ !revision! (
         ECHO Error: Something went wrong when upgrading the Flutter SDK.
-        ECHO Remove the directory 'flutter' and try again.
+        ECHO Remove the directory %flutter_dir% and try again.
         EXIT /B 1
       )
     POPD
