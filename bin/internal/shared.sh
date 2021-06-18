@@ -51,6 +51,9 @@ function update_flutter() {
     git clean -xdf
     git fetch --depth=1 "$FLUTTER_REPO" "$version"
     git checkout FETCH_HEAD
+
+    # Invalidate the cache.
+    rm -fr "$ROOT_DIR/bin/cache"
   fi
 
   if [[ "$version" != "$(git rev-parse HEAD)" ]]; then

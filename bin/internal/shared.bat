@@ -49,6 +49,9 @@ GOTO :EOF
         git clean -xdf
         git fetch --depth=1 "%flutter_repo%" "!version!"
         git checkout FETCH_HEAD
+
+        REM Invalidate the cache.
+        IF EXIST "%cache_dir%" RMDIR /S /Q "%cache_dir%"
       )
 
       FOR /f %%r IN ('git rev-parse HEAD') DO SET revision=%%r
@@ -57,7 +60,7 @@ GOTO :EOF
         ECHO Remove the directory 'flutter' and try again.
         EXIT /B 1
       )
-    POPD   
+    POPD
 
     REM Invalidate the flutter cache.  
     SET stamp_path=%flutter_dir%\bin\cache\flutter_tools.stamp
