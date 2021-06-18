@@ -90,7 +90,7 @@ if [[ ! -f "$ENGINE_STAMP" || "$ENGINE_VERSION" != "$(cat "$ENGINE_STAMP")" ]]; 
 
   unzip -o -q "$ENGINE_ZIP_PATH" -d "$ENGINE_DIR" || {
       >&2 echo
-      >&2 echo "Unable to extact the engine artifacts. check the URL is valid:"
+      >&2 echo "Unable to extact the engine artifacts; check if the URL is valid:"
       >&2 echo "  $ENGINE_URL"
       >&2 echo
       rm -f -- "$ENGINE_ZIP_PATH"
