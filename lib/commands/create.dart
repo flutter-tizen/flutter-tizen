@@ -3,8 +3,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// @dart = 2.8
+
 import 'package:file/file.dart';
 import 'package:flutter_tools/src/base/common.dart';
+import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/base/terminal.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/commands/create.dart';
@@ -17,7 +20,8 @@ import 'package:flutter_tools/src/template.dart';
 import '../tizen_plugins.dart';
 
 class TizenCreateCommand extends CreateCommand {
-  TizenCreateCommand() : super() {
+  TizenCreateCommand({bool verboseHelp = false})
+      : super(verboseHelp: verboseHelp) {
     argParser.addOption(
       'tizen-language',
       defaultsTo: 'csharp',
@@ -53,7 +57,8 @@ class TizenCreateCommand extends CreateCommand {
     }
 
     final bool generatePlugin = argResults['template'] != null
-        ? stringArg('template') == FlutterProjectType.plugin.name
+        ? stringArg('template') ==
+            flutterProjectTypeToString(FlutterProjectType.plugin)
         : determineTemplateType() == FlutterProjectType.plugin;
     if (generatePlugin) {
       // Assume that pubspec.yaml uses the multi-platforms plugin format if the
@@ -148,9 +153,9 @@ class TizenCreateCommand extends CreateCommand {
           if (!application.existsSync()) {
             throwToolExit('Could not locate app template.');
           }
-          globals.fsUtils.copyDirectorySync(application, dest);
+          copyDirectory(application, dest);
         } else {
-          globals.fsUtils.copyDirectorySync(source, dest);
+          copyDirectory(source, dest);
         }
         created.add(dest);
       }

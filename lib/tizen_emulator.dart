@@ -3,8 +3,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// @dart = 2.8
+
 import 'dart:async';
-import 'dart:io';
 
 import 'package:file/file.dart';
 import 'package:flutter_tools/src/android/android_emulator.dart';
@@ -138,7 +139,12 @@ class TizenEmulatorManager extends EmulatorManager {
     for (final FileSystemEntity entity in emulatorImagesDir.listSync()) {
       if (entity is Directory && entity.basename != 'add-ons') {
         final File infoFile = entity.childFile('info.ini');
-        final Map<String, String> info = parseIniFile(infoFile);
+        if (!infoFile.existsSync()) {
+          continue;
+        }
+        final Map<String, String> info =
+            // ignore: invalid_use_of_visible_for_testing_member
+            parseIniLines(infoFile.readAsLinesSync());
         if (info.containsKey('name') &&
             info.containsKey('profile') &&
             info.containsKey('version')) {
@@ -302,13 +308,11 @@ class TizenEmulator extends Emulator {
   @override
   String get manufacturer => 'Samsung';
 
-  // TODO(HakkyuKim): Consider subcategorizing into Tizen profiles.
   @override
   Category get category => Category.mobile;
 
-  // TODO(HakkyuKim): Consider replacing it to Tizen.
   @override
-  PlatformType get platformType => PlatformType.linux;
+  PlatformType get platformType => PlatformType.custom;
 
   @override
   Future<void> launch() async {

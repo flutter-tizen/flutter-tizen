@@ -2,11 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// @dart = 2.8
+
 import 'package:flutter_tools/src/android/android_studio_validator.dart';
 import 'package:flutter_tools/src/android/android_workflow.dart';
 import 'package:flutter_tools/src/base/context.dart';
+import 'package:flutter_tools/src/base/os.dart';
 import 'package:flutter_tools/src/doctor.dart';
-import 'package:flutter_tools/src/globals.dart' as globals;
+import 'package:flutter_tools/src/doctor_validator.dart';
+import 'package:meta/meta.dart';
 
 import 'tizen_sdk.dart';
 
@@ -119,18 +123,26 @@ class TizenValidator extends DoctorValidator {
 ///
 /// See: [AndroidWorkflow] in `android_workflow.dart`
 class TizenWorkflow extends Workflow {
+  TizenWorkflow({
+    @required TizenSdk tizenSdk,
+    @required OperatingSystemUtils operatingSystemUtils,
+  })  : _tizenSdk = tizenSdk,
+        _operatingSystemUtils = operatingSystemUtils;
+
+  final TizenSdk _tizenSdk;
+  final OperatingSystemUtils _operatingSystemUtils;
+
   @override
   bool get appliesToHostPlatform =>
-      globals.platform.isLinux ||
-      globals.platform.isWindows ||
-      globals.platform.isMacOS;
+      _operatingSystemUtils.hostPlatform != HostPlatform.linux_arm64;
 
   @override
-  bool get canLaunchDevices => tizenSdk != null;
+  bool get canLaunchDevices => _tizenSdk != null;
 
   @override
-  bool get canListDevices => tizenSdk != null;
+  bool get canListDevices => _tizenSdk != null;
 
   @override
-  bool get canListEmulators => tizenSdk != null && tizenSdk.emCli.existsSync();
+  bool get canListEmulators =>
+      _tizenSdk != null && _tizenSdk.emCli.existsSync();
 }

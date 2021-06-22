@@ -3,6 +3,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// @dart = 2.8
+
 import 'dart:io';
 
 import 'package:flutter_tools/executable.dart' as flutter;
@@ -81,7 +83,7 @@ Future<void> main(List<String> args) async {
     () => <FlutterCommand>[
       // Commands directly from flutter_tools.
       ConfigCommand(verboseHelp: verboseHelp),
-      DevicesCommand(),
+      DevicesCommand(verboseHelp: verboseHelp),
       DoctorCommand(verbose: verbose),
       EmulatorsCommand(),
       FormatCommand(),
@@ -98,7 +100,7 @@ Future<void> main(List<String> args) async {
       TizenAttachCommand(verboseHelp: verboseHelp),
       TizenBuildCommand(verboseHelp: verboseHelp),
       TizenCleanCommand(verbose: verbose),
-      TizenCreateCommand(),
+      TizenCreateCommand(verboseHelp: verboseHelp),
       TizenDriveCommand(verboseHelp: verboseHelp),
       TizenPackagesCommand(),
       TizenRunCommand(verboseHelp: verboseHelp),
@@ -109,13 +111,16 @@ Future<void> main(List<String> args) async {
     muteCommandLogging: muteCommandLogging,
     reportCrashes: false,
     overrides: <Type, Generator>{
-      ApplicationPackageFactory: () => TpkFactory(),
-      DeviceManager: () => TizenDeviceManager(),
       TemplateRenderer: () => const MustacheTemplateRenderer(),
+      ApplicationPackageFactory: () => TizenApplicationPackageFactory(),
+      DeviceManager: () => TizenDeviceManager(),
       DoctorValidatorsProvider: () => TizenDoctorValidatorsProvider(),
       TizenSdk: () => TizenSdk.locateSdk(),
       TizenArtifacts: () => TizenArtifacts(),
-      TizenWorkflow: () => TizenWorkflow(),
+      TizenWorkflow: () => TizenWorkflow(
+            tizenSdk: tizenSdk,
+            operatingSystemUtils: globals.os,
+          ),
       TizenValidator: () => TizenValidator(),
       EmulatorManager: () => TizenEmulatorManager(
             tizenSdk: tizenSdk,

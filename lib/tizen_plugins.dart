@@ -3,10 +3,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// @dart = 2.8
+
 import 'package:file/file.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/base/terminal.dart';
 import 'package:flutter_tools/src/build_system/targets/web.dart';
+import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/dart/language_version.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/dart/package_map.dart';
@@ -140,7 +143,7 @@ mixin TizenExtension on FlutterCommand {
       _entrypoint =
           await _createEntrypoint(FlutterProject.current(), super.targetFile);
     }
-    return await super.verifyThenRunCommand(commandPath);
+    return super.verifyThenRunCommand(commandPath);
   }
 
   @override
@@ -174,6 +177,7 @@ Future<String> _createEntrypoint(
   final LanguageVersion languageVersion = determineLanguageVersion(
     globals.fs.file(targetFile),
     packageConfig[flutterProject.manifest.appName],
+    Cache.flutterRoot,
   );
 
   final Uri mainUri = globals.fs.file(targetFile).absolute.uri;
@@ -197,18 +201,23 @@ Future<void> main() async {
   return entrypoint.path;
 }
 
+/// https://github.com/flutter-tizen/plugins
 const List<String> _knownPlugins = <String>[
   'audioplayers',
   'battery',
+  'battery_plus',
+  'camera',
   'connectivity',
   'device_info',
   'flutter_tts',
   'image_picker',
   'integration_test',
   'package_info',
+  'package_info_plus',
   'path_provider',
   'permission_handler',
   'sensors',
+  'sensors_plus',
   'share',
   'shared_preferences',
   'url_launcher',
@@ -222,7 +231,9 @@ const List<String> _knownPlugins = <String>[
 ///
 /// See: [FlutterProject.ensureReadyForPlatformSpecificTooling] in `project.dart`
 Future<void> ensureReadyForTizenTooling(FlutterProject project) async {
-  if (!project.directory.existsSync() || project.hasExampleApp) {
+  if (!project.directory.existsSync() ||
+      project.hasExampleApp ||
+      project.isPlugin) {
     return;
   }
   final TizenProject tizenProject = TizenProject.fromFlutter(project);
@@ -262,12 +273,14 @@ Future<List<TizenPlugin>> findTizenPlugins(
   FlutterProject project, {
   bool dartOnly = false,
   bool nativeOnly = false,
+  bool throwOnError = true,
 }) async {
   final List<TizenPlugin> plugins = <TizenPlugin>[];
   final File packagesFile = project.directory.childFile('.packages');
   final PackageConfig packageConfig = await loadPackageConfigWithLogging(
     packagesFile,
     logger: globals.logger,
+    throwOnError: throwOnError,
   );
   for (final Package package in packageConfig.packages) {
     final Uri packageRoot = package.packageUriRoot.resolve('..');
@@ -339,6 +352,7 @@ void _writeDartPluginRegistrant(
 //
 // Generated file. Do not edit.
 //
+
 // ignore_for_file: lines_longer_than_80_chars
 
 {{#plugins}}
@@ -372,6 +386,9 @@ void _writeCppPluginRegistrant(
 //
 // Generated file. Do not edit.
 //
+
+// clang-format off
+
 #ifndef GENERATED_PLUGIN_REGISTRANT_
 #define GENERATED_PLUGIN_REGISTRANT_
 
@@ -410,6 +427,7 @@ void _writeCsharpPluginRegistrant(
 //
 // Generated file. Do not edit.
 //
+
 using System;
 using System.Runtime.InteropServices;
 using Tizen.Flutter.Embedding;
@@ -439,7 +457,7 @@ namespace Runner
   );
 }
 
-/// Source: [_renderTemplateToFile] in `plugins.dart` (direct copy)
+/// Source: [_renderTemplateToFile] in `plugins.dart` (exact copy)
 void _renderTemplateToFile(String template, dynamic context, String filePath) {
   final String renderedTemplate = globals.templateRenderer
       .renderString(template, context, htmlEscapeValues: false);

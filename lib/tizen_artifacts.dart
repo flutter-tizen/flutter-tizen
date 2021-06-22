@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// @dart = 2.8
+
 import 'package:file/file.dart';
 import 'package:flutter_tools/src/artifacts.dart';
 import 'package:flutter_tools/src/base/context.dart';
+import 'package:flutter_tools/src/base/os.dart';
 import 'package:flutter_tools/src/build_info.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
@@ -35,9 +38,9 @@ TargetPlatform getTargetPlatformForArch(String arch) {
   }
 }
 
-/// It's unable to extend [Artifacts] directly because it has no visible
-/// constructor.
-class TizenArtifacts extends CachedArtifacts {
+class TizenArtifacts implements Artifacts {
+  TizenArtifacts();
+
   /// See: [Cache.getArtifactDirectory] in `cache.dart`
   Directory getArtifactDirectory(String name) {
     return globals.fs

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// @dart = 2.8
+
 import 'package:file/file.dart';
 import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/commands/clean.dart';
@@ -21,7 +23,7 @@ class TizenCleanCommand extends CleanCommand {
     final FlutterProject flutterProject = FlutterProject.current();
     _cleanTizenProject(TizenProject.fromFlutter(flutterProject));
 
-    return await super.runCommand();
+    return super.runCommand();
   }
 
   void _cleanTizenProject(TizenProject project) {

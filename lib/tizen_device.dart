@@ -3,6 +3,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// @dart = 2.8
+
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -16,6 +18,7 @@ import 'package:flutter_tools/src/base/terminal.dart';
 import 'package:flutter_tools/src/build_info.dart';
 import 'package:flutter_tools/src/convert.dart';
 import 'package:flutter_tools/src/device.dart';
+import 'package:flutter_tools/src/device_port_forwarder.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/project.dart';
 import 'package:flutter_tools/src/protocol_discovery.dart';
@@ -45,7 +48,7 @@ class TizenDevice extends Device {
             ProcessUtils(logger: logger, processManager: processManager),
         super(id,
             category: Category.mobile,
-            platformType: PlatformType.linux,
+            platformType: PlatformType.custom,
             ephemeral: true);
 
   final String _modelId;
@@ -326,7 +329,7 @@ class TizenDevice extends Device {
       );
       // Package has been built, so we can get the updated application id and
       // activity name from the tpk.
-      package = await TizenTpk.fromProject(project);
+      package = await TizenTpk.fromTizenProject(project);
     }
     if (package == null) {
       throwToolExit('Problem building an application: see above error(s).');
@@ -353,6 +356,7 @@ class TizenDevice extends Device {
         hostPort: debuggingOptions.hostVmServicePort,
         devicePort: debuggingOptions.deviceVmServicePort,
         ipv6: ipv6,
+        logger: _logger,
       );
     }
 
