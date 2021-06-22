@@ -89,17 +89,26 @@ class TizenValidator extends DoctorValidator {
       return ValidationResult(ValidationType.missing, messages);
     }
 
-    final double sdkVersion = double.tryParse(tizenSdk.sdkVersion) ?? 0;
-    if (sdkVersion < 4.0) {
+    if (tizenSdk.sdkVersion == null) {
+      messages.add(const ValidationMessage.error(
+        'Unknown Tizen Studio version.\n'
+        'The version file is corrupted. Consider updating or reinstalling Tizen Studio.',
+      ));
+      return ValidationResult(ValidationType.missing, messages);
+    }
+
+    final double sdkVersion = double.tryParse(tizenSdk.sdkVersion);
+    if (sdkVersion == null || sdkVersion < 4.0) {
       messages.add(ValidationMessage.error(
         'A newer version of Tizen Studio is required. To update, run:\n'
         '${tizenSdk.packageManagerCli.path} update',
       ));
       return ValidationResult(ValidationType.missing, messages);
+    } else {
+      messages.add(ValidationMessage(
+        'Tizen Studio $sdkVersion at ${tizenSdk.directory.path}',
+      ));
     }
-
-    messages.add(ValidationMessage(
-        'Tizen Studio ${tizenSdk.sdkVersion} at ${tizenSdk.directory.path}'));
 
     if (!_validatePackages(messages)) {
       return ValidationResult(ValidationType.partial, messages);
@@ -111,9 +120,11 @@ class TizenValidator extends DoctorValidator {
         'Install the latest .NET SDK from: https://dotnet.microsoft.com/download',
       ));
       return ValidationResult(ValidationType.missing, messages);
+    } else {
+      messages.add(ValidationMessage(
+        '.NET CLI executable at ${dotnetCli.path}',
+      ));
     }
-
-    messages.add(ValidationMessage('.NET CLI executable at ${dotnetCli.path}'));
 
     return ValidationResult(ValidationType.installed, messages);
   }
