@@ -4,8 +4,6 @@
 
 - Operating system: Linux (64-bit)
 - Tools:
-  - Python 3 (3.6 or later)
-    - This is pre-installed with Ubuntu 18.04 or later.
   - [Tizen Studio](install-tizen-sdk.md) (4.0 or later)
   - [.NET SDK](https://docs.microsoft.com/en-us/dotnet/core/install/linux) (3.0 or later)
   - `curl` `file` `git` `make` `xz-utils` `zip`

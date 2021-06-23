@@ -13,7 +13,7 @@ jobs:
         run: |
           git clone --depth=1 https://github.com/flutter/flutter.git
           cd flutter
-          git fetch --depth=1 https://github.com/flutter/flutter.git `cat ../bin/flutter.version`
+          git fetch --depth=1 https://github.com/flutter/flutter.git `cat ../bin/internal/flutter.version`
           git checkout FETCH_HEAD
       - name: Install pub dependencies
         run: flutter/bin/flutter pub get
