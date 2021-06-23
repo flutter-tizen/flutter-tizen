@@ -48,12 +48,10 @@ $engineZipPath = "$enginePath\artifacts.zip"
 
 Try {
     Import-Module BitsTransfer
-    $ProgressPreference = 'SilentlyContinue'
     Start-BitsTransfer -Source $engineUrl -Destination $engineZipPath -ErrorAction Stop
 }
 Catch {
     Write-Host "Downloading the flutter-tizen engine using the BITS service failed, retrying with WebRequest..."
-    $ProgressPreference = 'SilentlyContinue'
     Invoke-WebRequest -Uri $engineUrl -OutFile $engineZipPath
 }
 
@@ -66,7 +64,6 @@ If (Get-Command 7z -errorAction SilentlyContinue) {
     & 7za x $engineZipPath "-o$enginePath" -bd | Out-Null
 } ElseIf (Get-Command Microsoft.PowerShell.Archive\Expand-Archive -errorAction SilentlyContinue) {
     # Use PowerShell's built-in unzipper, if available (requires PowerShell 5+).
-    $global:ProgressPreference='SilentlyContinue'
     Microsoft.PowerShell.Archive\Expand-Archive $engineZipPath -DestinationPath $enginePath
 } Else {
     # As last resort: fall back to the Windows GUI.
