@@ -69,6 +69,7 @@ class TizenSdk {
     return null;
   }
 
+  /// The SDK version number in the "x.y" format, or null if unavailable.
   String get sdkVersion {
     final File versionFile = directory.childFile('sdk.version');
     if (!versionFile.existsSync()) {

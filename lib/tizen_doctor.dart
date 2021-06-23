@@ -89,16 +89,14 @@ class TizenValidator extends DoctorValidator {
       return ValidationResult(ValidationType.missing, messages);
     }
 
-    if (tizenSdk.sdkVersion == null) {
+    final double sdkVersion = double.tryParse(tizenSdk.sdkVersion ?? '');
+    if (sdkVersion == null) {
       messages.add(const ValidationMessage.error(
         'Unknown Tizen Studio version.\n'
-        'The version file is corrupted. Consider updating or reinstalling Tizen Studio.',
+        'The version file is missing or corrupted. Consider updating or reinstalling Tizen Studio.',
       ));
       return ValidationResult(ValidationType.missing, messages);
-    }
-
-    final double sdkVersion = double.tryParse(tizenSdk.sdkVersion);
-    if (sdkVersion == null || sdkVersion < 4.0) {
+    } else if (sdkVersion < 4.0) {
       messages.add(ValidationMessage.error(
         'A newer version of Tizen Studio is required. To update, run:\n'
         '${tizenSdk.packageManagerCli.path} update',
