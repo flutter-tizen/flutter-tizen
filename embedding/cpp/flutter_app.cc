@@ -92,6 +92,11 @@ void FlutterApp::OnRegionFormatChanged(app_event_info_h event_info) {
   FlutterDesktopNotifyLocaleChange(handle_);
 }
 
+void FlutterApp::OnAppControlReceived(app_control_h app_control) {
+  TizenLog::Debug("OnAppControlReceived");
+  FlutterDesktopNotifyAppControl(handle_, app_control);
+}
+
 int FlutterApp::Run(int argc, char **argv) {
   ui_app_lifecycle_callback_s lifecycle_cb = {};
   lifecycle_cb.create = [](void *data) -> bool {

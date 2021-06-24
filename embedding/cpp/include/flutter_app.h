@@ -26,7 +26,7 @@ class FlutterApp : public flutter::PluginRegistry {
 
   virtual void OnTerminate();
 
-  virtual void OnAppControlReceived(app_control_h app_control) {}
+  virtual void OnAppControlReceived(app_control_h app_control);
 
   virtual void OnLowMemory(app_event_info_h event_info);
 
