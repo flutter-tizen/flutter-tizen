@@ -170,7 +170,10 @@ class TizenBuilder {
       color: TerminalColor.green,
     );
 
-    if (buildInfo.codeSizeDirectory != null && sizeAnalyzer != null) {
+    final Directory tpkrootDir = tpkDir.childDirectory('tpkroot');
+    if (buildInfo.codeSizeDirectory != null &&
+        sizeAnalyzer != null &&
+        tpkrootDir.existsSync()) {
       final File codeSizeFile = globals.fs
           .directory(buildInfo.codeSizeDirectory)
           .childFile('snapshot.$targetPlatform.json');
@@ -179,7 +182,7 @@ class TizenBuilder {
           .childFile('trace.$targetPlatform.json');
       final Map<String, Object> output = await sizeAnalyzer.analyzeAotSnapshot(
         aotSnapshot: codeSizeFile,
-        outputDirectory: tpkDir.childDirectory('tpkroot'),
+        outputDirectory: tpkrootDir,
         precompilerTrace: precompilerTrace,
         type: 'linux',
       );
