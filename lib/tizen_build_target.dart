@@ -521,7 +521,7 @@ class DotnetTpk {
       }
     } else {
       environment.logger.printStatus(
-        'The tpk has been signed with a default certificate. You can create one using Certificate Manager.\n'
+        'The TPK was signed with a default certificate. You can create one using Certificate Manager.\n'
         'https://github.com/flutter-tizen/flutter-tizen/blob/master/doc/install-tizen-sdk.md#create-a-tizen-certificate',
         color: TerminalColor.yellow,
       );
@@ -702,7 +702,7 @@ class NativeTpk {
       throwToolExit('Failed to build native application:\n$result');
     }
 
-    // The output tpk is signed with an active profile unless otherwise
+    // The output TPK is signed with an active profile unless otherwise
     // specified.
     String securityProfile = buildInfo.securityProfile;
     if (securityProfile != null) {
@@ -729,6 +729,13 @@ class NativeTpk {
     if (result.exitCode != 0) {
       throwToolExit('Failed to generate TPK:\n$result');
     }
+    if (securityProfile == null) {
+      environment.logger.printStatus(
+        'The TPK was signed with a default certificate. You can create one using Certificate Manager.\n'
+        'https://github.com/flutter-tizen/flutter-tizen/blob/master/doc/install-tizen-sdk.md#create-a-tizen-certificate',
+        color: TerminalColor.yellow,
+      );
+    }
 
     final String tpkArch = buildInfo.targetArch
         .replaceFirst('arm64', 'aarch64')
@@ -740,10 +747,10 @@ class NativeTpk {
           'Build succeeded but the expected TPK not found:\n${result.stdout}');
     }
 
-    // Copy and rename the output tpk.
+    // Copy and rename the output TPK.
     outputTpk.copySync(outputDir.childFile(tizenProject.outputTpkName).path);
 
-    // Extract the contents of the tpk to support code size analysis.
+    // Extract the contents of the TPK to support code size analysis.
     globals.os.unzip(outputTpk, outputDir.childDirectory('tpkroot'));
   }
 }
