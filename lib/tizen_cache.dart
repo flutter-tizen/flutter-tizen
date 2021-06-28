@@ -66,6 +66,8 @@ class TizenEngineArtifacts extends EngineCachedArtifact {
         : null;
   }
 
+  String get shortVersion => version.substring(0, 7);
+
   @override
   List<List<String>> getBinaryDirs() => <List<String>>[
         <String>['tizen-common', 'tizen-common.zip'],
@@ -87,8 +89,7 @@ class TizenEngineArtifacts extends EngineCachedArtifact {
   @override
   Future<void> updateInner(ArtifactUpdater artifactUpdater,
       FileSystem fileSystem, OperatingSystemUtils operatingSystemUtils) async {
-    // TODO(WonyoungChoi): baseUrl should be replaced with the github releases' url
-    const String baseUrl = 'http://10.113.164.119/flutter/artifacts/';
+    const String baseUrl = 'https://github.com/flutter-tizen/engine/releases';
 
     for (final List<String> toolsDir in getBinaryDirs()) {
       final String cacheDir = toolsDir[0];
@@ -96,8 +97,8 @@ class TizenEngineArtifacts extends EngineCachedArtifact {
       final Directory dir =
           fileSystem.directory(fileSystem.path.join(location.path, cacheDir));
 
-      await artifactUpdater.downloadZipArchive(
-          'Downloading $cacheDir tools...', Uri.parse(baseUrl + urlPath), dir);
+      await artifactUpdater.downloadZipArchive('Downloading $cacheDir tools...',
+          Uri.parse('$baseUrl/download/$shortVersion/$urlPath'), dir);
     }
   }
 }
