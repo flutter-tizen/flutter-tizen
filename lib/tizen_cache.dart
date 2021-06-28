@@ -14,6 +14,7 @@ import 'package:flutter_tools/src/features.dart';
 import 'package:flutter_tools/src/flutter_cache.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 
+/// See: [DevelopmentArtifact] in `cache.dart`
 class TizenDevelopmentArtifact implements DevelopmentArtifact {
   const TizenDevelopmentArtifact._(this.name, this.feature);
 
@@ -27,6 +28,8 @@ class TizenDevelopmentArtifact implements DevelopmentArtifact {
       TizenDevelopmentArtifact._('tizen', null);
 }
 
+/// Extends FlutterCache to register TizenEngineArtifacts.
+/// See: [FlutterCache] in `flutter_cache.dart`
 class TizenFlutterCache extends FlutterCache {
   TizenFlutterCache({
     @required Logger logger,
@@ -84,6 +87,7 @@ class TizenEngineArtifacts extends EngineCachedArtifact {
   @override
   Future<void> updateInner(ArtifactUpdater artifactUpdater,
       FileSystem fileSystem, OperatingSystemUtils operatingSystemUtils) async {
+    // TODO(WonyoungChoi): baseUrl should be replaced with the github releases' url
     const String baseUrl = 'http://10.113.164.119/flutter/artifacts/';
 
     for (final List<String> toolsDir in getBinaryDirs()) {
