@@ -29,7 +29,6 @@ import 'package:flutter_tools/src/project.dart';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart';
 
-import 'tizen_artifacts.dart';
 import 'tizen_build_target.dart';
 import 'tizen_project.dart';
 import 'tizen_sdk.dart';
@@ -89,7 +88,7 @@ class TizenBuilder {
     final String buildModeName = getNameForBuildMode(buildInfo.mode);
     // Used by AotElfBase to generate an AOT snapshot.
     final String targetPlatform = getNameForTargetPlatform(
-        getTargetPlatformForArch(tizenBuildInfo.targetArch));
+        _getTargetPlatformForArch(tizenBuildInfo.targetArch));
 
     final Environment environment = Environment(
       projectDir: project.directory,
@@ -97,9 +96,7 @@ class TizenBuilder {
       buildDir: project.dartTool.childDirectory('flutter_build'),
       cacheDir: globals.cache.getRoot(),
       flutterRootDir: globals.fs.directory(Cache.flutterRoot),
-      engineVersion: tizenArtifacts.isLocalEngine
-          ? null
-          : globals.flutterVersion.engineRevision,
+      engineVersion: globals.flutterVersion.engineRevision,
       defines: <String, String>{
         kTargetFile: targetFile,
         kBuildMode: buildModeName,
@@ -120,7 +117,7 @@ class TizenBuilder {
       inputs: <String, String>{
         kBundleSkSLPath: buildInfo.bundleSkSLPath,
       },
-      artifacts: tizenArtifacts,
+      artifacts: globals.artifacts,
       fileSystem: globals.fs,
       logger: globals.logger,
       processManager: globals.processManager,
@@ -219,5 +216,17 @@ class TizenBuilder {
     }
     manifest.version = buildName;
     project.manifestFile.writeAsStringSync('$manifest\n');
+  }
+}
+
+/// See: [getTargetPlatformForName] in `build_info.dart`
+TargetPlatform _getTargetPlatformForArch(String arch) {
+  switch (arch) {
+    case 'arm64':
+      return TargetPlatform.android_arm64;
+    case 'x86':
+      return TargetPlatform.android_x86;
+    default:
+      return TargetPlatform.android_arm;
   }
 }

@@ -70,7 +70,7 @@ update_flutter_tizen
 # Download and extract engine artifacts.
 # The following logic might be re-implemented in Dart in the future.
 # Issue: https://github.com/flutter-tizen/flutter-tizen/issues/77
-"$ROOT_DIR/bin/internal/update_engine.sh"
+# "$ROOT_DIR/bin/internal/update_engine.sh"
 
 # Run the snapshot.
 exec_snapshot "$@"
