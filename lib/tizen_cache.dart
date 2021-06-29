@@ -28,7 +28,8 @@ class TizenDevelopmentArtifact implements DevelopmentArtifact {
       TizenDevelopmentArtifact._('tizen', null);
 }
 
-/// Extends FlutterCache to register TizenEngineArtifacts.
+/// Extends [FlutterCache] to register [TizenEngineArtifacts].
+///
 /// See: [FlutterCache] in `flutter_cache.dart`
 class TizenFlutterCache extends FlutterCache {
   TizenFlutterCache({
