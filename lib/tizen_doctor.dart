@@ -4,12 +4,12 @@
 
 // @dart = 2.8
 
-import 'package:flutter_tools/src/android/android_studio_validator.dart';
 import 'package:flutter_tools/src/android/android_workflow.dart';
 import 'package:flutter_tools/src/base/context.dart';
 import 'package:flutter_tools/src/base/os.dart';
 import 'package:flutter_tools/src/doctor.dart';
 import 'package:flutter_tools/src/doctor_validator.dart';
+import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:meta/meta.dart';
 
 import 'tizen_sdk.dart';
@@ -23,15 +23,11 @@ class TizenDoctorValidatorsProvider extends DoctorValidatorsProvider {
   List<DoctorValidator> get validators {
     final List<DoctorValidator> validators =
         DoctorValidatorsProvider.defaultInstance.validators;
-    for (final DoctorValidator validator in validators) {
-      // Append before any IDE validators.
-      if (validator is AndroidStudioValidator ||
-          validator is NoAndroidStudioValidator) {
-        validators.insert(validators.indexOf(validator), tizenValidator);
-        break;
-      }
-    }
-    return validators;
+    return <DoctorValidator>[
+      validators.first,
+      tizenValidator,
+      ...validators.sublist(1)
+    ];
   }
 
   @override
@@ -112,16 +108,22 @@ class TizenValidator extends DoctorValidator {
       return ValidationResult(ValidationType.partial, messages);
     }
 
-    if (dotnetCli == null) {
+    if (globals.processManager.canRun(dotnetCli.path)) {
+      // TODO(swift-kim): Extract numbers only and compare with the minimum SDK
+      // version using Version.parse().
+      final String dotnetVersion = globals.processUtils
+          .runSync(<String>[dotnetCli.path, '--version'])
+          .stdout
+          .trim();
+      messages.add(ValidationMessage(
+        '.NET SDK $dotnetVersion at ${dotnetCli.path}',
+      ));
+    } else {
       messages.add(const ValidationMessage.error(
-        '.NET CLI is required for building Tizen applications.\n'
+        'Unable to find the .NET CLI executable in your PATH.\n'
         'Install the latest .NET SDK from: https://dotnet.microsoft.com/download',
       ));
       return ValidationResult(ValidationType.missing, messages);
-    } else {
-      messages.add(ValidationMessage(
-        '.NET CLI executable at ${dotnetCli.path}',
-      ));
     }
 
     return ValidationResult(ValidationType.installed, messages);

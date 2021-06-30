@@ -76,7 +76,7 @@ Future<void> main(List<String> args) async {
     ...args,
   ];
 
-  Cache.flutterRoot = flutterRoot;
+  Cache.flutterRoot = join(_rootPath, 'flutter');
 
   await runner.run(
     args,
@@ -142,41 +142,43 @@ Future<void> main(List<String> args) async {
 }
 
 /// See: [Cache.defaultFlutterRoot] in `cache.dart`
-String get flutterRoot {
+String get _rootPath {
   final String scriptPath = Platform.script.toFilePath();
-  final String rootPath = normalize(join(
+  return normalize(join(
     scriptPath,
     scriptPath.endsWith('.snapshot') ? '../../..' : '../..',
   ));
-  return join(rootPath, 'flutter');
 }
 
 class _FlutterVersion extends FlutterVersion {
-  _FlutterVersion();
+  _FlutterVersion() : super(workingDirectory: _rootPath);
 
-  String get flutterTizenRevisionShort =>
-      _runGitLog(<String>['-n', '1', '--pretty=format:%H']).substring(0, 10);
-
-  String get flutterTizenAge =>
-      _runGitLog(<String>['-n', '1', '--pretty=format:%ar']);
-
-  String _runGitLog(List<String> args) => globals.processUtils.runSync(
-        <String>['git', '-c', 'log.showSignature=false', 'log', ...args],
-        workingDirectory: dirname(Cache.flutterRoot),
-      ).stdout;
-
-  /// Source: [FlutterVersion.toString] in `version.dart`
   @override
-  String toString() {
-    final String versionText =
-        frameworkVersion == 'unknown' ? '' : ' $frameworkVersion';
-    final String flutterText =
-        'Flutter for Tizen$versionText • revision $flutterTizenRevisionShort ($flutterTizenAge)';
-    final String frameworkText =
-        'Framework • revision $frameworkRevisionShort ($frameworkAge) • $frameworkCommitDate';
-    final String engineText = 'Engine • revision $engineRevisionShort';
-    final String toolsText = 'Tools • Dart $dartSdkVersion';
+  String get frameworkVersion => 'for Tizen';
 
-    return '$flutterText\n$frameworkText\n$engineText\n$toolsText';
+  /// See: [Cache.getVersionFor] in `cache.dart`
+  String _getVersionFor(String artifactName) {
+    final File versionFile = globals.fs
+        .directory(_rootPath)
+        .childDirectory('bin')
+        .childDirectory('internal')
+        .childFile('$artifactName.version');
+    return versionFile.existsSync()
+        ? versionFile.readAsStringSync().trim()
+        : null;
   }
+
+  @override
+  String get engineRevision => _getVersionFor('engine');
+
+  /// See: [_runGit] in `version.dart`
+  String _runGit(String command) => globals.processUtils
+      .runSync(command.split(' '), workingDirectory: _rootPath)
+      .stdout
+      .trim();
+
+  /// See: [FlutterVersion.frameworkCommitDate] in `version.dart`
+  @override
+  String get frameworkCommitDate => _runGit(
+      'git -c log.showSignature=false log -n 1 --pretty=format:%ad --date=iso');
 }
