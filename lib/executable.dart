@@ -30,7 +30,6 @@ import 'package:flutter_tools/src/doctor.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/isolated/mustache_template.dart';
 import 'package:flutter_tools/src/runner/flutter_command.dart';
-import 'package:flutter_tools/src/version.dart';
 import 'package:path/path.dart';
 
 import 'commands/analyze.dart';
@@ -76,7 +75,7 @@ Future<void> main(List<String> args) async {
     ...args,
   ];
 
-  Cache.flutterRoot = join(_rootPath, 'flutter');
+  Cache.flutterRoot = join(rootPath, 'flutter');
 
   await runner.run(
     args,
@@ -129,7 +128,6 @@ Future<void> main(List<String> args) async {
             logger: globals.logger,
             fileSystem: globals.fs,
           ),
-      FlutterVersion: () => _FlutterVersion(),
       if (verbose && !muteCommandLogging)
         Logger: () => VerboseLogger(StdoutLogger(
               stdio: globals.stdio,
@@ -142,43 +140,10 @@ Future<void> main(List<String> args) async {
 }
 
 /// See: [Cache.defaultFlutterRoot] in `cache.dart`
-String get _rootPath {
+String get rootPath {
   final String scriptPath = Platform.script.toFilePath();
   return normalize(join(
     scriptPath,
     scriptPath.endsWith('.snapshot') ? '../../..' : '../..',
   ));
-}
-
-class _FlutterVersion extends FlutterVersion {
-  _FlutterVersion() : super(workingDirectory: _rootPath);
-
-  @override
-  String get frameworkVersion => 'for Tizen';
-
-  /// See: [Cache.getVersionFor] in `cache.dart`
-  String _getVersionFor(String artifactName) {
-    final File versionFile = globals.fs
-        .directory(_rootPath)
-        .childDirectory('bin')
-        .childDirectory('internal')
-        .childFile('$artifactName.version');
-    return versionFile.existsSync()
-        ? versionFile.readAsStringSync().trim()
-        : null;
-  }
-
-  @override
-  String get engineRevision => _getVersionFor('engine');
-
-  /// See: [_runGit] in `version.dart`
-  String _runGit(String command) => globals.processUtils
-      .runSync(command.split(' '), workingDirectory: _rootPath)
-      .stdout
-      .trim();
-
-  /// See: [FlutterVersion.frameworkCommitDate] in `version.dart`
-  @override
-  String get frameworkCommitDate => _runGit(
-      'git -c log.showSignature=false log -n 1 --pretty=format:%ad --date=iso');
 }

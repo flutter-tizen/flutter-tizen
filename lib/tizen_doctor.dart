@@ -4,14 +4,18 @@
 
 // @dart = 2.8
 
+import 'dart:io';
+
 import 'package:flutter_tools/src/android/android_workflow.dart';
 import 'package:flutter_tools/src/base/context.dart';
 import 'package:flutter_tools/src/base/os.dart';
 import 'package:flutter_tools/src/doctor.dart';
 import 'package:flutter_tools/src/doctor_validator.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
+import 'package:flutter_tools/src/version.dart';
 import 'package:meta/meta.dart';
 
+import 'executable.dart';
 import 'tizen_sdk.dart';
 
 TizenWorkflow get tizenWorkflow => context.get<TizenWorkflow>();
@@ -75,6 +79,15 @@ class TizenValidator extends DoctorValidator {
   @override
   Future<ValidationResult> validate() async {
     final List<ValidationMessage> messages = <ValidationMessage>[];
+
+    final FlutterVersion version = _FlutterTizenVersion();
+    messages.add(ValidationMessage(globals.userMessages.flutterRevision(
+      version.frameworkRevisionShort,
+      version.frameworkAge,
+      version.frameworkCommitDate,
+    )));
+    messages.add(ValidationMessage(
+        globals.userMessages.engineRevision(version.engineRevisionShort)));
 
     if (tizenSdk == null) {
       messages.add(const ValidationMessage.error(
@@ -156,4 +169,35 @@ class TizenWorkflow extends Workflow {
   @override
   bool get canListEmulators =>
       _tizenSdk != null && _tizenSdk.emCli.existsSync();
+}
+
+class _FlutterTizenVersion extends FlutterVersion {
+  _FlutterTizenVersion() : super(workingDirectory: rootPath);
+
+  /// See: [Cache.getVersionFor] in `cache.dart`
+  String _getVersionFor(String artifactName) {
+    final File versionFile = globals.fs
+        .directory(rootPath)
+        .childDirectory('bin')
+        .childDirectory('internal')
+        .childFile('$artifactName.version');
+    return versionFile.existsSync()
+        ? versionFile.readAsStringSync().trim()
+        : null;
+  }
+
+  @override
+  String get engineRevision => _getVersionFor('engine');
+
+  /// See: [_runGit] in `version.dart`
+  String _runGit(String command) => globals.processUtils
+      .runSync(command.split(' '), workingDirectory: rootPath)
+      .stdout
+      .trim();
+
+  /// This should be overriden because [FlutterVersion._latestGitCommitDate]
+  /// runs the git log command in the `Cache.flutterRoot` directory.
+  @override
+  String get frameworkCommitDate => _runGit(
+      'git -c log.showSignature=false log -n 1 --pretty=format:%ad --date=iso');
 }
