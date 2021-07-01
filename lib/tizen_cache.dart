@@ -103,11 +103,12 @@ class TizenEngineArtifacts extends EngineCachedArtifact {
     for (final List<String> toolsDir in getBinaryDirs()) {
       final String cacheDir = toolsDir[0];
       final String urlPath = toolsDir[1];
-      final Directory dir =
-          fileSystem.directory(fileSystem.path.join(location.path, cacheDir));
 
-      await artifactUpdater.downloadZipArchive('Downloading $cacheDir tools...',
-          Uri.parse('$baseUrl/download/$shortVersion/$urlPath'), dir);
+      await artifactUpdater.downloadZipArchive(
+        'Downloading $cacheDir tools...',
+        Uri.parse('$baseUrl/download/$shortVersion/$urlPath'),
+        location.childDirectory(cacheDir),
+      );
     }
   }
 }
