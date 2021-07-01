@@ -93,8 +93,11 @@ class TizenEngineArtifacts extends EngineCachedArtifact {
   List<String> getPackageDirs() => const <String>[];
 
   @override
-  Future<void> updateInner(ArtifactUpdater artifactUpdater,
-      FileSystem fileSystem, OperatingSystemUtils operatingSystemUtils) async {
+  Future<void> updateInner(
+    ArtifactUpdater artifactUpdater,
+    FileSystem fileSystem,
+    OperatingSystemUtils operatingSystemUtils,
+  ) async {
     const String baseUrl = 'https://github.com/flutter-tizen/engine/releases';
 
     for (final List<String> toolsDir in getBinaryDirs()) {
