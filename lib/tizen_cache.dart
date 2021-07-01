@@ -67,7 +67,12 @@ class TizenEngineArtifacts extends EngineCachedArtifact {
         : null;
   }
 
-  String get shortVersion => version.substring(0, 7);
+  String get shortVersion {
+    if (version != null && version.length >= 7) {
+      return version.substring(0, 7);
+    }
+    return version;
+  }
 
   @override
   List<List<String>> getBinaryDirs() => <List<String>>[
