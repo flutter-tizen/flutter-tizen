@@ -283,7 +283,7 @@ USER_LIB_DIRS = lib
 
     final BuildMode buildMode = buildInfo.buildInfo.mode;
     final Directory engineDir =
-        _getEngineArtifactsPath(buildInfo.targetArch, buildMode);
+        _getEngineArtifactsDirectory(buildInfo.targetArch, buildMode);
     final File embedder =
         engineDir.childFile('libflutter_tizen_${buildInfo.deviceProfile}.so');
     inputs.add(embedder);
@@ -411,7 +411,7 @@ class DotnetTpk {
 
     final BuildMode buildMode = buildInfo.buildInfo.mode;
     final Directory engineDir =
-        _getEngineArtifactsPath(buildInfo.targetArch, buildMode);
+        _getEngineArtifactsDirectory(buildInfo.targetArch, buildMode);
     final Directory commonDir = engineDir.parent.childDirectory('tizen-common');
 
     final File engineBinary = engineDir.childFile('libflutter_engine.so');
@@ -600,7 +600,7 @@ class NativeTpk {
 
     final BuildMode buildMode = buildInfo.buildInfo.mode;
     final Directory engineDir =
-        _getEngineArtifactsPath(buildInfo.targetArch, buildMode);
+        _getEngineArtifactsDirectory(buildInfo.targetArch, buildMode);
     final Directory commonDir = engineDir.parent.childDirectory('tizen-common');
 
     final File engineBinary = engineDir.childFile('libflutter_engine.so');
@@ -804,7 +804,7 @@ String getDefaultPathVariable() {
 }
 
 /// See: [CachedArtifacts._getEngineArtifactsPath]
-Directory _getEngineArtifactsPath(String arch, BuildMode mode) {
+Directory _getEngineArtifactsDirectory(String arch, BuildMode mode) {
   assert(mode != null, 'Need to specify a build mode.');
   return globals.cache
       .getArtifactDirectory('engine')
