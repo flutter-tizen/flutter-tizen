@@ -108,7 +108,7 @@ class TizenValidator extends DoctorValidator {
       return ValidationResult(ValidationType.partial, messages);
     }
 
-    if (globals.processManager.canRun(dotnetCli.path)) {
+    if (dotnetCli != null && globals.processManager.canRun(dotnetCli.path)) {
       // TODO(swift-kim): Extract numbers only and compare with the minimum SDK
       // version using Version.parse().
       final String dotnetVersion = globals.processUtils
