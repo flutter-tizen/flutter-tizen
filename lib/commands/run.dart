@@ -4,10 +4,19 @@
 
 // @dart = 2.8
 
+import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/commands/run.dart';
 
+import '../tizen_cache.dart';
 import '../tizen_plugins.dart';
 
 class TizenRunCommand extends RunCommand with TizenExtension {
   TizenRunCommand({bool verboseHelp = false}) : super(verboseHelp: verboseHelp);
+
+  @override
+  Future<Set<DevelopmentArtifact>> get requiredArtifacts async =>
+      <DevelopmentArtifact>{
+        DevelopmentArtifact.androidGenSnapshot,
+        TizenDevelopmentArtifact.tizen,
+      };
 }
