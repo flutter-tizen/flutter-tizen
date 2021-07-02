@@ -4,7 +4,10 @@
 
 // @dart = 2.8
 
+import 'dart:convert';
+
 import 'package:meta/meta.dart';
+import 'package:flutter_tools/src/base/common.dart';
 import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/base/platform.dart';
@@ -13,6 +16,7 @@ import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/features.dart';
 import 'package:flutter_tools/src/flutter_cache.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
+import 'package:http/http.dart' as http;
 
 /// See: [DevelopmentArtifact] in `cache.dart`
 class TizenDevelopmentArtifact implements DevelopmentArtifact {
@@ -42,17 +46,22 @@ class TizenFlutterCache extends FlutterCache {
             fileSystem: fileSystem,
             platform: platform,
             osUtils: osUtils) {
-    registerArtifact(TizenEngineArtifacts(this));
+    registerArtifact(TizenEngineArtifacts(this, platform: platform));
   }
 }
 
 class TizenEngineArtifacts extends EngineCachedArtifact {
-  TizenEngineArtifacts(Cache cache)
-      : super(
+  TizenEngineArtifacts(
+    Cache cache, {
+    @required Platform platform,
+  })  : _platform = platform,
+        super(
           'tizen-sdk',
           cache,
           TizenDevelopmentArtifact.tizen,
         );
+
+  final Platform _platform;
 
   @override
   String get version {
@@ -72,6 +81,20 @@ class TizenEngineArtifacts extends EngineCachedArtifact {
       return version.substring(0, 7);
     }
     return version;
+  }
+
+  /// See: [Cache.storageBaseUrl] in `cache.dart`
+  String get engineBaseUrl {
+    final String overrideUrl = _platform.environment['TIZEN_ENGINE_BASE_URL'];
+    if (overrideUrl == null) {
+      return 'https://github.com/flutter-tizen/engine/releases';
+    }
+    try {
+      Uri.parse(overrideUrl);
+    } on FormatException catch (err) {
+      throwToolExit('"TIZEN_ENGINE_BASE_URL" contains an invalid URI:\n$err');
+    }
+    return overrideUrl;
   }
 
   @override
@@ -98,17 +121,38 @@ class TizenEngineArtifacts extends EngineCachedArtifact {
     FileSystem fileSystem,
     OperatingSystemUtils operatingSystemUtils,
   ) async {
-    const String baseUrl = 'https://github.com/flutter-tizen/engine/releases';
+    final String buildId = _platform.environment['AZURE_BUILD_ID'];
+    final String downloadUrl = buildId == null
+        ? '$engineBaseUrl/download/$shortVersion'
+        : await _getDownloadUrlFromAzure(buildId);
 
     for (final List<String> toolsDir in getBinaryDirs()) {
       final String cacheDir = toolsDir[0];
       final String urlPath = toolsDir[1];
-
       await artifactUpdater.downloadZipArchive(
         'Downloading $cacheDir tools...',
-        Uri.parse('$baseUrl/download/$shortVersion/$urlPath'),
+        Uri.parse('$downloadUrl/$urlPath'),
         location.childDirectory(cacheDir),
       );
+    }
+  }
+
+  Future<String> _getDownloadUrlFromAzure(String buildId) async {
+    final String azureRestUrl =
+        'https://dev.azure.com/flutter-tizen/flutter-tizen'
+        '/_apis/build/builds/$buildId/artifacts?artifactName=release';
+
+    final http.Response response = await http.get(Uri.parse(azureRestUrl));
+    if (response.statusCode == 200) {
+      return json
+          .decode(response.body)['resource']['downloadUrl']
+          .toString()
+          .replaceAll(
+            'content?format=zip',
+            'content?format=file&subPath=',
+          );
+    } else {
+      throwToolExit('Failed to get the download url from $azureRestUrl');
     }
   }
 }
