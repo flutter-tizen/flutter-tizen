@@ -37,13 +37,6 @@ CALL "%shared_bin%" update_flutter || EXIT /B
 REM Upgrade flutter-tizen if needed.
 CALL "%shared_bin%" update_flutter_tizen || EXIT /B
 
-REM Download and extract engine artifacts.
-REM The following logic might be re-implemented in Dart in the future.
-REM Issue: https://github.com/flutter-tizen/flutter-tizen/issues/77
-SET update_engine_bin=%ROOT_DIR%\bin\internal\update_engine.ps1
-%powershell_exe% -ExecutionPolicy Bypass ^
-  -Command "Unblock-File -Path '%update_engine_bin%'; & '%update_engine_bin%'; exit $LASTEXITCODE;" || EXIT /B
-
 REM Run the snapshot.
 SET flutter_dir=%ROOT_DIR%\flutter
 SET snapshot_path=%ROOT_DIR%\bin\cache\flutter-tizen.snapshot

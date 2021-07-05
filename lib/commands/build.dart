@@ -16,6 +16,7 @@ import 'package:flutter_tools/src/project.dart';
 import 'package:flutter_tools/src/runner/flutter_command.dart';
 
 import '../tizen_builder.dart';
+import '../tizen_cache.dart';
 import '../tizen_plugins.dart';
 
 class TizenBuildCommand extends BuildCommand {
@@ -52,6 +53,13 @@ class BuildTpkCommand extends BuildSubCommand with TizenExtension {
 
   @override
   final String name = 'tpk';
+
+  @override
+  Future<Set<DevelopmentArtifact>> get requiredArtifacts async =>
+      <DevelopmentArtifact>{
+        DevelopmentArtifact.androidGenSnapshot,
+        TizenDevelopmentArtifact.tizen,
+      };
 
   @override
   final String description = 'Build a Tizen TPK file from your app.';

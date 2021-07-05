@@ -16,17 +16,17 @@ import 'package:flutter_tools/src/base/template.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/commands/config.dart';
 import 'package:flutter_tools/src/commands/devices.dart';
-import 'package:flutter_tools/src/commands/emulators.dart';
 import 'package:flutter_tools/src/commands/doctor.dart';
+import 'package:flutter_tools/src/commands/emulators.dart';
 import 'package:flutter_tools/src/commands/format.dart';
 import 'package:flutter_tools/src/commands/generate_localizations.dart';
 import 'package:flutter_tools/src/commands/install.dart';
 import 'package:flutter_tools/src/commands/logs.dart';
 import 'package:flutter_tools/src/commands/screenshot.dart';
 import 'package:flutter_tools/src/commands/symbolize.dart';
-import 'package:flutter_tools/src/emulator.dart';
 import 'package:flutter_tools/src/device.dart';
 import 'package:flutter_tools/src/doctor.dart';
+import 'package:flutter_tools/src/emulator.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/isolated/mustache_template.dart';
 import 'package:flutter_tools/src/runner/flutter_command.dart';
@@ -42,7 +42,7 @@ import 'commands/drive.dart';
 import 'commands/packages.dart';
 import 'commands/run.dart';
 import 'commands/test.dart';
-import 'tizen_artifacts.dart';
+import 'tizen_cache.dart';
 import 'tizen_device_discovery.dart';
 import 'tizen_doctor.dart';
 import 'tizen_emulator.dart';
@@ -111,12 +111,17 @@ Future<void> main(List<String> args) async {
     muteCommandLogging: muteCommandLogging,
     reportCrashes: false,
     overrides: <Type, Generator>{
+      Cache: () => TizenFlutterCache(
+            fileSystem: globals.fs,
+            logger: globals.logger,
+            platform: globals.platform,
+            osUtils: globals.os,
+          ),
       TemplateRenderer: () => const MustacheTemplateRenderer(),
       ApplicationPackageFactory: () => TizenApplicationPackageFactory(),
       DeviceManager: () => TizenDeviceManager(),
       DoctorValidatorsProvider: () => TizenDoctorValidatorsProvider(),
       TizenSdk: () => TizenSdk.locateSdk(),
-      TizenArtifacts: () => TizenArtifacts(),
       TizenWorkflow: () => TizenWorkflow(
             tizenSdk: tizenSdk,
             operatingSystemUtils: globals.os,

@@ -26,7 +26,6 @@ import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/project.dart';
 
-import 'tizen_artifacts.dart';
 import 'tizen_builder.dart';
 import 'tizen_plugins.dart';
 import 'tizen_project.dart';
@@ -284,12 +283,12 @@ USER_LIB_DIRS = lib
 
     final BuildMode buildMode = buildInfo.buildInfo.mode;
     final Directory engineDir =
-        tizenArtifacts.getEngineDirectory(buildInfo.targetArch, buildMode);
+        _getEngineArtifactsDirectory(buildInfo.targetArch, buildMode);
     final File embedder =
         engineDir.childFile('libflutter_tizen_${buildInfo.deviceProfile}.so');
     inputs.add(embedder);
 
-    final Directory commonDir = engineDir.parent.childDirectory('common');
+    final Directory commonDir = engineDir.parent.childDirectory('tizen-common');
     final Directory clientWrapperDir =
         commonDir.childDirectory('cpp_client_wrapper');
     final Directory publicDir = commonDir.childDirectory('public');
@@ -412,14 +411,14 @@ class DotnetTpk {
 
     final BuildMode buildMode = buildInfo.buildInfo.mode;
     final Directory engineDir =
-        tizenArtifacts.getEngineDirectory(buildInfo.targetArch, buildMode);
+        _getEngineArtifactsDirectory(buildInfo.targetArch, buildMode);
+    final Directory commonDir = engineDir.parent.childDirectory('tizen-common');
+
     final File engineBinary = engineDir.childFile('libflutter_engine.so');
     final File embedder =
         engineDir.childFile('libflutter_tizen_${buildInfo.deviceProfile}.so');
-    final File icuData = engineDir.parent
-        .childDirectory('common')
-        .childDirectory('icu')
-        .childFile('icudtl.dat');
+    final File icuData =
+        commonDir.childDirectory('icu').childFile('icudtl.dat');
 
     engineBinary.copySync(libDir.childFile(engineBinary.basename).path);
     // The embedder so name is statically defined in C# code and cannot be
@@ -601,14 +600,14 @@ class NativeTpk {
 
     final BuildMode buildMode = buildInfo.buildInfo.mode;
     final Directory engineDir =
-        tizenArtifacts.getEngineDirectory(buildInfo.targetArch, buildMode);
+        _getEngineArtifactsDirectory(buildInfo.targetArch, buildMode);
+    final Directory commonDir = engineDir.parent.childDirectory('tizen-common');
+
     final File engineBinary = engineDir.childFile('libflutter_engine.so');
     final File embedder =
         engineDir.childFile('libflutter_tizen_${buildInfo.deviceProfile}.so');
-    final File icuData = engineDir.parent
-        .childDirectory('common')
-        .childDirectory('icu')
-        .childFile('icudtl.dat');
+    final File icuData =
+        commonDir.childDirectory('icu').childFile('icudtl.dat');
 
     engineBinary.copySync(libDir.childFile(engineBinary.basename).path);
     embedder.copySync(libDir.childFile(embedder.basename).path);
@@ -646,7 +645,6 @@ class NativeTpk {
       embeddingDir.childFile('*.cc').path,
     ];
 
-    final Directory commonDir = engineDir.parent.childDirectory('common');
     final Directory clientWrapperDir =
         commonDir.childDirectory('cpp_client_wrapper');
     final Directory publicDir = commonDir.childDirectory('public');
@@ -825,4 +823,12 @@ String getDefaultPathVariable() {
     path += ';$msysUsrBin';
   }
   return path;
+}
+
+/// See: [CachedArtifacts._getEngineArtifactsPath]
+Directory _getEngineArtifactsDirectory(String arch, BuildMode mode) {
+  assert(mode != null, 'Need to specify a build mode.');
+  return globals.cache
+      .getArtifactDirectory('engine')
+      .childDirectory('tizen-$arch-${mode.name}');
 }
