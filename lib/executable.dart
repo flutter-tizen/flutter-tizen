@@ -30,7 +30,6 @@ import 'package:flutter_tools/src/emulator.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/isolated/mustache_template.dart';
 import 'package:flutter_tools/src/runner/flutter_command.dart';
-import 'package:flutter_tools/src/version.dart';
 import 'package:path/path.dart';
 
 import 'commands/analyze.dart';
@@ -76,7 +75,7 @@ Future<void> main(List<String> args) async {
     ...args,
   ];
 
-  Cache.flutterRoot = flutterRoot;
+  Cache.flutterRoot = join(rootPath, 'flutter');
 
   await runner.run(
     args,
@@ -134,7 +133,6 @@ Future<void> main(List<String> args) async {
             logger: globals.logger,
             fileSystem: globals.fs,
           ),
-      FlutterVersion: () => _FlutterVersion(),
       if (verbose && !muteCommandLogging)
         Logger: () => VerboseLogger(StdoutLogger(
               stdio: globals.stdio,
@@ -147,41 +145,10 @@ Future<void> main(List<String> args) async {
 }
 
 /// See: [Cache.defaultFlutterRoot] in `cache.dart`
-String get flutterRoot {
+String get rootPath {
   final String scriptPath = Platform.script.toFilePath();
-  final String rootPath = normalize(join(
+  return normalize(join(
     scriptPath,
     scriptPath.endsWith('.snapshot') ? '../../..' : '../..',
   ));
-  return join(rootPath, 'flutter');
-}
-
-class _FlutterVersion extends FlutterVersion {
-  _FlutterVersion();
-
-  String get flutterTizenRevisionShort =>
-      _runGitLog(<String>['-n', '1', '--pretty=format:%H']).substring(0, 10);
-
-  String get flutterTizenAge =>
-      _runGitLog(<String>['-n', '1', '--pretty=format:%ar']);
-
-  String _runGitLog(List<String> args) => globals.processUtils.runSync(
-        <String>['git', '-c', 'log.showSignature=false', 'log', ...args],
-        workingDirectory: dirname(Cache.flutterRoot),
-      ).stdout;
-
-  /// Source: [FlutterVersion.toString] in `version.dart`
-  @override
-  String toString() {
-    final String versionText =
-        frameworkVersion == 'unknown' ? '' : ' $frameworkVersion';
-    final String flutterText =
-        'Flutter for Tizen$versionText • revision $flutterTizenRevisionShort ($flutterTizenAge)';
-    final String frameworkText =
-        'Framework • revision $frameworkRevisionShort ($frameworkAge) • $frameworkCommitDate';
-    final String engineText = 'Engine • revision $engineRevisionShort';
-    final String toolsText = 'Tools • Dart $dartSdkVersion';
-
-    return '$flutterText\n$frameworkText\n$engineText\n$toolsText';
-  }
 }
