@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using Tizen.Applications;
 using static Tizen.Flutter.Embedding.Interop;
@@ -17,6 +18,21 @@ namespace Tizen.Flutter.Embedding
     public class FlutterApplication : CoreUIApplication, IPluginRegistry
     {
         protected const string LogTag = "ConsoleMessage";
+
+        /// <summary>
+        /// Whether the app is headed or headless.
+        /// </summary>
+        protected bool IsHeaded { get; set; } = true;
+
+        /// <summary>
+        /// The x- and y-coordinates of the top left corner of the window.
+        /// </summary>
+        protected Point WindowOffset { get; set; } = Point.Empty;
+
+        /// <summary>
+        /// The size of the window, or the maximum size if the value is empty.
+        /// </summary>
+        protected Size WindowSize { get; set; } = Size.Empty;
 
         /// <summary>
         /// The switches to pass to the Flutter engine.
@@ -45,11 +61,14 @@ namespace Tizen.Flutter.Embedding
         {
             base.OnCreate();
 
-            // Get paths to resources required for launch.
-            string resPath = Current.DirectoryInfo.Resource;
-            string assetsPath = $"{resPath}/flutter_assets";
-            string icuDataPath = $"{resPath}/icudtl.dat";
-            string aotLibPath = $"{resPath}/../lib/libapp.so";
+            var windowProperties = new FlutterDesktopWindowProperties
+            {
+                headed = IsHeaded,
+                x = WindowOffset.X,
+                y = WindowOffset.Y,
+                width = WindowSize.Width,
+                height = WindowSize.Height,
+            };
 
             // Read engine arguments passed from the tool.
             ParseEngineArgs();
@@ -57,14 +76,14 @@ namespace Tizen.Flutter.Embedding
             using var switches = new StringArray(EngineArgs);
             var engineProperties = new FlutterDesktopEngineProperties
             {
-                assets_path = assetsPath,
-                icu_data_path = icuDataPath,
-                aot_library_path = aotLibPath,
+                assets_path = "../res/flutter_assets",
+                icu_data_path = "../res/icudtl.dat",
+                aot_library_path = "../lib/libapp.so",
                 switches = switches.Handle,
                 switches_count = (uint)switches.Length,
             };
 
-            Handle = FlutterDesktopRunEngine(ref engineProperties, true);
+            Handle = FlutterDesktopRunEngine(ref windowProperties, ref engineProperties);
             if (Handle.IsInvalid)
             {
                 throw new Exception("Could not launch a Flutter application.");

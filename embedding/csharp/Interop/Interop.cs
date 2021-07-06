@@ -11,6 +11,16 @@ namespace Tizen.Flutter.Embedding
     {
         #region flutter_tizen.h
         [StructLayout(LayoutKind.Sequential)]
+        public struct FlutterDesktopWindowProperties
+        {
+            public bool headed;
+            public int x;
+            public int y;
+            public int width;
+            public int height;
+        }
+        
+        [StructLayout(LayoutKind.Sequential)]
         public struct FlutterDesktopEngineProperties
         {
             public string assets_path;
@@ -22,8 +32,8 @@ namespace Tizen.Flutter.Embedding
 
         [DllImport("flutter_tizen.so")]
         public static extern FlutterDesktopEngine FlutterDesktopRunEngine(
-            ref FlutterDesktopEngineProperties engine_properties,
-            bool headed);
+            ref FlutterDesktopWindowProperties window_properties,
+            ref FlutterDesktopEngineProperties engine_properties);
 
         [DllImport("flutter_tizen.so")]
         public static extern void FlutterDesktopShutdownEngine(
