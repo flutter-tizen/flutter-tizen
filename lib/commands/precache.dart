@@ -31,10 +31,12 @@ class TizenPrecacheCommand extends PrecacheCommand {
           logger: logger,
           featureFlags: featureFlags,
         ) {
-    argParser.addFlag('tizen',
-        negatable: true,
-        defaultsTo: false,
-        help: 'Precache artifacts for Tizen development.');
+    argParser.addFlag(
+      'tizen',
+      negatable: true,
+      defaultsTo: false,
+      help: 'Precache artifacts for Tizen development.',
+    );
   }
 
   final Cache _cache;
@@ -62,8 +64,9 @@ class TizenPrecacheCommand extends PrecacheCommand {
       if (boolArg('force')) {
         _cache.setStampFor(tizenStampName, '');
       }
-      await _cache
-          .updateAll(<DevelopmentArtifact>{TizenDevelopmentArtifact.tizen});
+      await _cache.updateAll(<DevelopmentArtifact>{
+        TizenDevelopmentArtifact.tizen,
+      });
     }
 
     if (includeAllPlatforms || includeDefaults || _includeOtherPlatforms) {
