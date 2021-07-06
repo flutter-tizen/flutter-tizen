@@ -40,11 +40,10 @@ class TizenPrecacheCommand extends PrecacheCommand {
   final Cache _cache;
   final Platform _platform;
 
-  bool get _includeOtherPlatforms {
-    return boolArg('android') ||
-        DevelopmentArtifact.values.any((DevelopmentArtifact artifact) =>
-            boolArg(artifact.name) && argResults.wasParsed(artifact.name));
-  }
+  bool get _includeOtherPlatforms =>
+      boolArg('android') ||
+      DevelopmentArtifact.values.any((DevelopmentArtifact artifact) =>
+          boolArg(artifact.name) && argResults.wasParsed(artifact.name));
 
   @override
   Future<FlutterCommandResult> runCommand() async {
