@@ -27,6 +27,7 @@ import 'package:flutter_tools/src/commands/symbolize.dart';
 import 'package:flutter_tools/src/device.dart';
 import 'package:flutter_tools/src/doctor.dart';
 import 'package:flutter_tools/src/emulator.dart';
+import 'package:flutter_tools/src/features.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/isolated/mustache_template.dart';
 import 'package:flutter_tools/src/runner/flutter_command.dart';
@@ -39,6 +40,7 @@ import 'commands/clean.dart';
 import 'commands/create.dart';
 import 'commands/drive.dart';
 import 'commands/packages.dart';
+import 'commands/precache.dart';
 import 'commands/run.dart';
 import 'commands/test.dart';
 import 'tizen_cache.dart';
@@ -102,6 +104,13 @@ Future<void> main(List<String> args) async {
       TizenCreateCommand(verboseHelp: verboseHelp),
       TizenDriveCommand(verboseHelp: verboseHelp),
       TizenPackagesCommand(),
+      TizenPrecacheCommand(
+        verboseHelp: verboseHelp,
+        cache: globals.cache,
+        logger: globals.logger,
+        platform: globals.platform,
+        featureFlags: featureFlags,
+      ),
       TizenRunCommand(verboseHelp: verboseHelp),
       TizenTestCommand(verboseHelp: verboseHelp),
     ],
