@@ -58,10 +58,10 @@ class FlutterApp : public flutter::PluginRegistry {
   int32_t window_offset_y_ = 0;
 
   // The width of the window, or the maximum width if the value is zero.
-  int32_t window_width_;
+  int32_t window_width_ = 0;
 
   // The height of the window, or the maximum height if the value is zero.
-  int32_t window_height_;
+  int32_t window_height_ = 0;
 
   // The switches to pass to the Flutter engine.
   // Custom switches may be added before `OnCreate` is called.

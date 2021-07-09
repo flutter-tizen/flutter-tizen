@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
 using Tizen.Applications;
 using static Tizen.Flutter.Embedding.Interop;
@@ -25,14 +24,24 @@ namespace Tizen.Flutter.Embedding
         protected bool IsHeaded { get; set; } = true;
 
         /// <summary>
-        /// The x- and y-coordinates of the top left corner of the window.
+        /// The x-coordinate of the top left corner of the window.
         /// </summary>
-        protected Point WindowOffset { get; set; } = Point.Empty;
+        protected int WindowOffsetX { get; set; } = 0;
 
         /// <summary>
-        /// The size of the window, or the maximum size if the value is empty.
+        /// The y-coordinate of the top left corner of the window.
         /// </summary>
-        protected Size WindowSize { get; set; } = Size.Empty;
+        protected int WindowOffsetY { get; set; } = 0;
+
+        /// <summary>
+        /// The width of the window, or the maximum width if the value is zero.
+        /// </summary>
+        protected int WindowWidth { get; set; } = 0;
+
+        /// <summary>
+        /// The height of the window, or the maximum height if the value is zero.
+        /// </summary>
+        protected int WindowHeight { get; set; } = 0;
 
         /// <summary>
         /// The switches to pass to the Flutter engine.
@@ -64,10 +73,10 @@ namespace Tizen.Flutter.Embedding
             var windowProperties = new FlutterDesktopWindowProperties
             {
                 headed = IsHeaded,
-                x = WindowOffset.X,
-                y = WindowOffset.Y,
-                width = WindowSize.Width,
-                height = WindowSize.Height,
+                x = WindowOffsetX,
+                y = WindowOffsetY,
+                width = WindowWidth,
+                height = WindowHeight,
             };
 
             // Read engine arguments passed from the tool.
