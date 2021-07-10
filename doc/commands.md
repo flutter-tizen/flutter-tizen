@@ -162,6 +162,15 @@ Not all commands in the [`flutter`](https://flutter.dev/docs/reference/flutter-c
   flutter-tizen logs
   ```
 
+- ### `precache`
+
+  Populate the Flutter tool's cache of binary artifacts.
+
+  ```sh
+  # Download artifacts required for Tizen app development.
+  flutter-tizen precache --tizen
+  ```
+
 - ### `pub`
 
   Commands for managing Flutter packages.
