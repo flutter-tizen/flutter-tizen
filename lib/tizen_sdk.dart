@@ -69,7 +69,7 @@ class TizenSdk {
     return null;
   }
 
-  /// The SDK version number in the "x.y" format, or null if unavailable.
+  /// The SDK version number in the "x.y[.z]" format, or null if not found.
   String get sdkVersion {
     final File versionFile = directory.childFile('sdk.version');
     if (!versionFile.existsSync()) {
@@ -79,12 +79,7 @@ class TizenSdk {
         // ignore: invalid_use_of_visible_for_testing_member
         parseIniLines(versionFile.readAsLinesSync());
     if (info.containsKey('TIZEN_SDK_VERSION')) {
-      String version = info['TIZEN_SDK_VERSION'];
-      final List<String> segments = version.split('.');
-      if (segments.length > 2) {
-        version = segments.sublist(0, 2).join('.');
-      }
-      return version;
+      return info['TIZEN_SDK_VERSION'];
     }
     return null;
   }

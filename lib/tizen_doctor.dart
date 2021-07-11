@@ -9,6 +9,7 @@ import 'dart:io';
 import 'package:flutter_tools/src/android/android_workflow.dart';
 import 'package:flutter_tools/src/base/context.dart';
 import 'package:flutter_tools/src/base/os.dart';
+import 'package:flutter_tools/src/base/version.dart';
 import 'package:flutter_tools/src/doctor.dart';
 import 'package:flutter_tools/src/doctor_validator.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
@@ -98,22 +99,17 @@ class TizenValidator extends DoctorValidator {
       return ValidationResult(ValidationType.missing, messages);
     }
 
-    final double sdkVersion = double.tryParse(tizenSdk.sdkVersion ?? '');
-    if (sdkVersion == null) {
-      messages.add(const ValidationMessage.error(
-        'Unknown Tizen Studio version.\n'
-        'The version file is missing or corrupted. Consider updating or reinstalling Tizen Studio.',
-      ));
-      return ValidationResult(ValidationType.missing, messages);
-    } else if (sdkVersion < 4.0) {
+    final Version sdkVersion = Version.parse(tizenSdk.sdkVersion);
+    if (sdkVersion != null && sdkVersion < Version(4, 0, 0)) {
       messages.add(ValidationMessage.error(
         'A newer version of Tizen Studio is required. To update, run:\n'
         '${tizenSdk.packageManagerCli.path} update',
       ));
       return ValidationResult(ValidationType.missing, messages);
     } else {
+      final String versionText = sdkVersion != null ? ' $sdkVersion' : '';
       messages.add(ValidationMessage(
-        'Tizen Studio $sdkVersion at ${tizenSdk.directory.path}',
+        'Tizen Studio$versionText at ${tizenSdk.directory.path}',
       ));
     }
 
@@ -122,15 +118,23 @@ class TizenValidator extends DoctorValidator {
     }
 
     if (dotnetCli != null && globals.processManager.canRun(dotnetCli.path)) {
-      // TODO(swift-kim): Extract numbers only and compare with the minimum SDK
-      // version using Version.parse().
-      final String dotnetVersion = globals.processUtils
-          .runSync(<String>[dotnetCli.path, '--version'])
-          .stdout
-          .trim();
-      messages.add(ValidationMessage(
-        '.NET SDK $dotnetVersion at ${dotnetCli.path}',
-      ));
+      final Version dotnetVersion = Version.parse(
+        globals.processUtils
+            .runSync(<String>[dotnetCli.path, '--version'])
+            .stdout
+            .trim(),
+      );
+      if (dotnetVersion == null || dotnetVersion < Version(3, 0, 0)) {
+        messages.add(const ValidationMessage.error(
+          'A newer version of the .NET SDK is required.\n'
+          'Install the latest release from: https://dotnet.microsoft.com/download',
+        ));
+        return ValidationResult(ValidationType.missing, messages);
+      } else {
+        messages.add(ValidationMessage(
+          '.NET SDK $dotnetVersion at ${dotnetCli.path}',
+        ));
+      }
     } else {
       messages.add(const ValidationMessage.error(
         'Unable to find the .NET CLI executable in your PATH.\n'
