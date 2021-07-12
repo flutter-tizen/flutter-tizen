@@ -13,11 +13,16 @@ namespace Tizen.Flutter.Embedding
         [StructLayout(LayoutKind.Sequential)]
         public struct FlutterDesktopWindowProperties
         {
+            [MarshalAs(UnmanagedType.U1)]
             public bool headed;
             public int x;
             public int y;
             public int width;
             public int height;
+            [MarshalAs(UnmanagedType.U1)]
+            public bool transparent;
+            [MarshalAs(UnmanagedType.U1)]
+            public bool focusable;
         }
         
         [StructLayout(LayoutKind.Sequential)]

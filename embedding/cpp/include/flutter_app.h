@@ -63,6 +63,12 @@ class FlutterApp : public flutter::PluginRegistry {
   // The height of the window, or the maximum height if the value is zero.
   int32_t window_height_ = 0;
 
+  // Whether the window should have a transparent background or not.
+  bool is_window_transparent_ = false;
+
+  // Whether the window should be focusable or not.
+  bool is_window_focusable_ = true;
+
   // The switches to pass to the Flutter engine.
   // Custom switches may be added before `OnCreate` is called.
   std::vector<std::string> engine_args_;

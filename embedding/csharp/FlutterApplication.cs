@@ -44,6 +44,16 @@ namespace Tizen.Flutter.Embedding
         protected int WindowHeight { get; set; } = 0;
 
         /// <summary>
+        /// Whether the window should have a transparent background or not.
+        /// </summary>
+        protected bool IsWindowTransparent { get; set; } = false;
+
+        /// <summary>
+        /// Whether the window should be focusable or not.
+        /// </summary>
+        protected bool IsWindowFocusable { get; set; } = true;
+
+        /// <summary>
         /// The switches to pass to the Flutter engine.
         /// Custom switches may be added before <see cref="OnCreate"/> is called.
         /// </summary>
@@ -77,6 +87,8 @@ namespace Tizen.Flutter.Embedding
                 y = WindowOffsetY,
                 width = WindowWidth,
                 height = WindowHeight,
+                transparent = IsWindowTransparent,
+                focusable = IsWindowFocusable,
             };
 
             // Read engine arguments passed from the tool.
