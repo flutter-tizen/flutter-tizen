@@ -12,12 +12,10 @@
 // The app base class for headless execution.
 class FlutterServiceApp : public FlutterApp {
  public:
-  explicit FlutterServiceApp() {}
-  ~FlutterServiceApp() {}
+  explicit FlutterServiceApp();
+  virtual ~FlutterServiceApp() {}
 
-  bool OnCreate() override;
-
-  int Run(int argc, char **argv) override;
+  virtual int Run(int argc, char **argv) override;
 };
 
 #endif /* FLUTTER_TIZEN_EMBEDDING_CPP_INCLUDE_FLUTTER_SERVICE_APP_H_ */

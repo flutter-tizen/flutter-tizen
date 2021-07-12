@@ -4,8 +4,6 @@
 
 #include "include/flutter_app.h"
 
-#include <system_info.h>
-
 #include <cassert>
 #include <cerrno>
 #include <fstream>
@@ -15,37 +13,32 @@
 bool FlutterApp::OnCreate() {
   TizenLog::Debug("Launching a Flutter application...");
 
-  std::string res_path;
-  {
-    auto path = app_get_resource_path();
-    if (path == nullptr) {
-      TizenLog::Error("Could not obtain the app directory info.");
-      return false;
-    }
-    res_path = path;
-    free(path);
-  }
-  std::string assets_path(res_path + "/flutter_assets");
-  std::string icu_data_path(res_path + "/icudtl.dat");
-  std::string aot_lib_path(res_path + "/../lib/libapp.so");
+  FlutterDesktopWindowProperties window_prop = {};
+  window_prop.headed = is_headed_;
+  window_prop.x = window_offset_x_;
+  window_prop.y = window_offset_y_;
+  window_prop.width = window_width_;
+  window_prop.height = window_height_;
+  window_prop.transparent = is_window_transparent_;
+  window_prop.focusable = is_window_focusable_;
 
   // Read engine arguments passed from the tool.
   ParseEngineArgs();
 
   std::vector<const char *> switches;
-  for (auto &arg : engine_args) {
+  for (auto &arg : engine_args_) {
     switches.push_back(arg.c_str());
   }
 
   FlutterDesktopEngineProperties engine_prop = {};
-  engine_prop.assets_path = assets_path.c_str();
-  engine_prop.icu_data_path = icu_data_path.c_str();
-  engine_prop.aot_library_path = aot_lib_path.c_str();
+  engine_prop.assets_path = "../res/flutter_assets";
+  engine_prop.icu_data_path = "../res/icudtl.dat";
+  engine_prop.aot_library_path = "../lib/libapp.so";
   engine_prop.switches = switches.data();
   engine_prop.switches_count = switches.size();
 
-  handle = FlutterDesktopRunEngine(engine_prop, true);
-  if (!handle) {
+  handle_ = FlutterDesktopRunEngine(window_prop, engine_prop);
+  if (!handle_) {
     TizenLog::Error("Could not launch a Flutter application.");
     return false;
   }
@@ -56,13 +49,13 @@ bool FlutterApp::OnCreate() {
 void FlutterApp::OnResume() {
   assert(IsRunning());
 
-  FlutterDesktopNotifyAppIsResumed(handle);
+  FlutterDesktopNotifyAppIsResumed(handle_);
 }
 
 void FlutterApp::OnPause() {
   assert(IsRunning());
 
-  FlutterDesktopNotifyAppIsPaused(handle);
+  FlutterDesktopNotifyAppIsPaused(handle_);
 }
 
 void FlutterApp::OnTerminate() {
@@ -70,26 +63,26 @@ void FlutterApp::OnTerminate() {
 
   TizenLog::Debug("Shutting down the application...");
 
-  FlutterDesktopShutdownEngine(handle);
-  handle = nullptr;
+  FlutterDesktopShutdownEngine(handle_);
+  handle_ = nullptr;
 }
 
 void FlutterApp::OnLowMemory(app_event_info_h event_info) {
   assert(IsRunning());
 
-  FlutterDesktopNotifyLowMemoryWarning(handle);
+  FlutterDesktopNotifyLowMemoryWarning(handle_);
 }
 
 void FlutterApp::OnLanguageChanged(app_event_info_h event_info) {
   assert(IsRunning());
 
-  FlutterDesktopNotifyLocaleChange(handle);
+  FlutterDesktopNotifyLocaleChange(handle_);
 }
 
 void FlutterApp::OnRegionFormatChanged(app_event_info_h event_info) {
   assert(IsRunning());
 
-  FlutterDesktopNotifyLocaleChange(handle);
+  FlutterDesktopNotifyLocaleChange(handle_);
 }
 
 int FlutterApp::Run(int argc, char **argv) {
@@ -161,8 +154,8 @@ int FlutterApp::Run(int argc, char **argv) {
 
 FlutterDesktopPluginRegistrarRef FlutterApp::GetRegistrarForPlugin(
     const std::string &plugin_name) {
-  if (handle) {
-    return FlutterDesktopGetPluginRegistrar(handle, plugin_name.c_str());
+  if (handle_) {
+    return FlutterDesktopGetPluginRegistrar(handle_, plugin_name.c_str());
   }
   return nullptr;
 }
@@ -186,7 +179,7 @@ void FlutterApp::ParseEngineArgs() {
 
   while (getline(&line, &len, file) > 0) {
     TizenLog::Info("Enabled: %s", line);
-    engine_args.push_back(line);
+    engine_args_.push_back(line);
   }
   free(line);
   fclose(file);
