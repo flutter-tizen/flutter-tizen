@@ -210,6 +210,42 @@ class TizenDevice extends Device {
   /// Source: [AndroidDevice.installApp] in `android_device.dart`
   @override
   Future<bool> installApp(TizenTpk app, {String userIdentifier}) async {
+    final bool wasInstalled = await isAppInstalled(app);
+    if (wasInstalled) {
+      if (await isLatestBuildInstalled(app)) {
+        _logger.printStatus('Latest build already installed.');
+        return true;
+      }
+    }
+    _logger.printTrace('Installing TPK.');
+    if (await _installApp(app)) {
+      // On TV emulator, a tpk must be installed twice if it's being installed
+      // for the first time in order to prevent a library loading error.
+      // Issue: https://github.com/flutter-tizen/flutter-tizen/issues/50
+      if (!wasInstalled && usesSecureProtocol && await isLocalEmulator) {
+        await _installApp(app);
+      }
+    } else {
+      _logger.printTrace('Warning: Failed to install TPK.');
+      if (wasInstalled) {
+        _logger.printStatus('Uninstalling old version...');
+        if (!await uninstallApp(app)) {
+          _logger.printError('Error: Uninstalling old version failed.');
+          return false;
+        }
+        if (!await _installApp(app)) {
+          _logger.printError('Error: Failed to install TPK again.');
+          return false;
+        }
+        return true;
+      }
+      return false;
+    }
+    return true;
+  }
+
+  /// Source: [AndroidDevice._installApp] in `android_device.dart`
+  Future<bool> _installApp(TizenTpk app) async {
     if (!app.file.existsSync()) {
       _logger.printError('"${relative(app.file.path)}" does not exist.');
       return false;
@@ -234,7 +270,7 @@ class TizenDevice extends Device {
     if (result.exitCode != 0 ||
         result.stdout.contains('val[fail]') ||
         result.stdout.contains('install failed')) {
-      _logger.printStatus(
+      _logger.printError(
         'Installing TPK failed with exit code ${result.exitCode}:\n$result',
       );
       return false;
@@ -248,49 +284,12 @@ class TizenDevice extends Device {
     return true;
   }
 
-  /// Source: [AndroidDevice.uninstallApp] in `android_device.dart`
   @override
   Future<bool> uninstallApp(TizenTpk app, {String userIdentifier}) async {
     final RunResult result =
         await runSdbAsync(<String>['uninstall', app.id], checked: false);
     if (result.exitCode != 0 || !result.stdout.contains('val[ok]')) {
       _logger.printError('sdb uninstall failed:\n$result');
-      return false;
-    }
-    return true;
-  }
-
-  /// Source: [AndroidDevice._installLatestApp] in `android_device.dart`
-  Future<bool> _installLatestApp(TizenTpk package) async {
-    final bool wasInstalled = await isAppInstalled(package);
-    if (wasInstalled) {
-      if (await isLatestBuildInstalled(package)) {
-        _logger.printStatus('Latest build already installed.');
-        return true;
-      }
-    }
-    _logger.printTrace('Installing TPK.');
-    if (await installApp(package)) {
-      // On TV emulator, a tpk must be installed twice if it's being installed
-      // for the first time in order to prevent a library loading error.
-      // Issue: https://github.com/flutter-tizen/flutter-tizen/issues/50
-      if (!wasInstalled && usesSecureProtocol && await isLocalEmulator) {
-        await installApp(package);
-      }
-    } else {
-      _logger.printTrace('Warning: Failed to install TPK.');
-      if (wasInstalled) {
-        _logger.printStatus('Uninstalling old version...');
-        if (!await uninstallApp(package)) {
-          _logger.printError('Error: Uninstalling old version failed.');
-          return false;
-        }
-        if (!await installApp(package)) {
-          _logger.printError('Error: Failed to install TPK again.');
-          return false;
-        }
-        return true;
-      }
       return false;
     }
     return true;
@@ -340,7 +339,7 @@ class TizenDevice extends Device {
       await stopApp(package, userIdentifier: userIdentifier);
     }
 
-    if (!await _installLatestApp(package)) {
+    if (!await installApp(package, userIdentifier: userIdentifier)) {
       return LaunchResult.failed();
     }
 
