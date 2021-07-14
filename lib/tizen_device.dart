@@ -251,10 +251,10 @@ class TizenDevice extends Device {
   /// Source: [AndroidDevice.uninstallApp] in `android_device.dart`
   @override
   Future<bool> uninstallApp(TizenTpk app, {String userIdentifier}) async {
-    try {
-      await runSdbAsync(<String>['uninstall', app.id]);
-    } on Exception catch (error) {
-      _logger.printError('sdb uninstall failed: $error');
+    final RunResult result =
+        await runSdbAsync(<String>['uninstall', app.id], checked: false);
+    if (result.exitCode != 0 || !result.stdout.contains('val[ok]')) {
+      _logger.printError('sdb uninstall failed:\n$result');
       return false;
     }
     return true;
