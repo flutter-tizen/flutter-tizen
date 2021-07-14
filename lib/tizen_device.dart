@@ -15,6 +15,7 @@ import 'package:flutter_tools/src/base/common.dart';
 import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/base/process.dart';
 import 'package:flutter_tools/src/base/terminal.dart';
+import 'package:flutter_tools/src/base/version.dart';
 import 'package:flutter_tools/src/build_info.dart';
 import 'package:flutter_tools/src/convert.dart';
 import 'package:flutter_tools/src/device.dart';
@@ -251,11 +252,13 @@ class TizenDevice extends Device {
       return false;
     }
 
-    final double deviceVersion = double.tryParse(platformVersion) ?? 0;
-    final double apiVersion = double.tryParse(app.manifest?.apiVersion) ?? 0;
-    if (apiVersion > deviceVersion) {
+    final Version deviceVersion = Version.parse(platformVersion);
+    final Version apiVersion = Version.parse(app.manifest?.apiVersion);
+    if (deviceVersion != null &&
+        apiVersion != null &&
+        apiVersion > deviceVersion) {
       _logger.printStatus(
-        'Warning: The package API version (${app.manifest?.apiVersion}) is greater than the device API version ($platformVersion).\n'
+        'Warning: The package API version ($apiVersion) is greater than the device API version ($deviceVersion).\n'
         'Check "tizen-manifest.xml" of your Tizen project to fix this problem.',
         color: TerminalColor.yellow,
       );
