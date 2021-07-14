@@ -218,35 +218,34 @@ class TizenDevice extends Device {
         return true;
       }
     }
+    final bool isTvEmulator = usesSecureProtocol && await isLocalEmulator;
     _logger.printTrace('Installing TPK.');
-    if (await _installApp(app)) {
-      // On TV emulator, a tpk must be installed twice if it's being installed
-      // for the first time in order to prevent a library loading error.
-      // Issue: https://github.com/flutter-tizen/flutter-tizen/issues/50
-      if (!wasInstalled && usesSecureProtocol && await isLocalEmulator) {
-        await _installApp(app);
-      }
-    } else {
-      _logger.printTrace('Warning: Failed to install TPK.');
-      if (wasInstalled) {
-        _logger.printStatus('Uninstalling old version...');
-        if (!await uninstallApp(app)) {
-          _logger.printError('Error: Uninstalling old version failed.');
-          return false;
-        }
-        if (!await _installApp(app)) {
-          _logger.printError('Error: Failed to install TPK again.');
-          return false;
-        }
-        return true;
-      }
+    if (await _installApp(app, installTwice: !wasInstalled && isTvEmulator)) {
+      return true;
+    }
+    _logger.printTrace('Warning: Failed to install TPK.');
+    if (!wasInstalled) {
+      return false;
+    }
+    _logger.printStatus('Uninstalling old version...');
+    if (!await uninstallApp(app)) {
+      _logger.printError('Error: Uninstalling old version failed.');
+      return false;
+    }
+    if (!await _installApp(app, installTwice: isTvEmulator)) {
+      _logger.printError('Error: Failed to install TPK again.');
       return false;
     }
     return true;
   }
 
-  /// Source: [AndroidDevice._installApp] in `android_device.dart`
-  Future<bool> _installApp(TizenTpk app) async {
+  /// Set [installTwice] to `true` when installing TPK onto a TV emulator.
+  /// On TV emulator, an app must be installed twice if it's being installed
+  /// for the first time in order to prevent library loading error.
+  /// Issue: https://github.com/flutter-tizen/flutter-tizen/issues/50
+  ///
+  /// See: [AndroidDevice._installApp] in `android_device.dart`
+  Future<bool> _installApp(TizenTpk app, {bool installTwice = false}) async {
     if (!app.file.existsSync()) {
       _logger.printError('"${relative(app.file.path)}" does not exist.');
       return false;
@@ -268,16 +267,17 @@ class TizenDevice extends Device {
         _logger.startProgress('Installing ${relative(app.file.path)}...');
     final RunResult result =
         await runSdbAsync(<String>['install', app.file.path], checked: false);
-    status.stop();
-
     if (result.exitCode != 0 ||
         result.stdout.contains('val[fail]') ||
         result.stdout.contains('install failed')) {
-      _logger.printError(
-        'Installing TPK failed with exit code ${result.exitCode}:\n$result',
-      );
+      status.stop();
+      _logger.printError('Installing TPK failed:\n$result');
       return false;
     }
+    if (installTwice) {
+      await runSdbAsync(<String>['install', app.file.path], checked: false);
+    }
+    status.stop();
 
     if (usesSecureProtocol) {
       // It seems some post processing is done asynchronously after installing
