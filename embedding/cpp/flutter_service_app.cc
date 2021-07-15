@@ -6,6 +6,10 @@
 
 #include "tizen_log.h"
 
+FlutterServiceApp::FlutterServiceApp() {
+  is_headed_ = false;
+}
+
 int FlutterServiceApp::Run(int argc, char **argv) {
   service_app_lifecycle_callback_s lifecycle_cb = {};
   lifecycle_cb.create = [](void *data) -> bool {
@@ -53,48 +57,7 @@ int FlutterServiceApp::Run(int argc, char **argv) {
 
   int ret = service_app_main(argc, argv, &lifecycle_cb, this);
   if (ret != APP_ERROR_NONE) {
-    TizenLog::Error("Could not launch a Service application. (%d)", ret);
+    TizenLog::Error("Could not launch a service application. (%d)", ret);
   }
   return ret;
-}
-
-bool FlutterServiceApp::OnCreate() {
-  TizenLog::Debug("Launching a Flutter Service application...");
-
-  std::string res_path;
-  {
-    auto path = app_get_resource_path();
-    if (path == nullptr) {
-      TizenLog::Error("Could not obtain the app directory info.");
-      return false;
-    }
-    res_path = path;
-    free(path);
-  }
-  std::string assets_path(res_path + "/flutter_assets");
-  std::string icu_data_path(res_path + "/icudtl.dat");
-  std::string aot_lib_path(res_path + "/../lib/libapp.so");
-
-  // Read engine arguments passed from the tool.
-  ParseEngineArgs();
-
-  std::vector<const char *> switches;
-  for (auto &arg : engine_args) {
-    switches.push_back(arg.c_str());
-  }
-
-  FlutterDesktopEngineProperties engine_prop = {};
-  engine_prop.assets_path = assets_path.c_str();
-  engine_prop.icu_data_path = icu_data_path.c_str();
-  engine_prop.aot_library_path = aot_lib_path.c_str();
-  engine_prop.switches = switches.data();
-  engine_prop.switches_count = switches.size();
-
-  handle = FlutterDesktopRunEngine(engine_prop, false);
-  if (!handle) {
-    TizenLog::Error("Could not launch a Flutter Service application.");
-    return false;
-  }
-
-  return true;
 }

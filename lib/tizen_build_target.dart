@@ -446,7 +446,7 @@ class DotnetTpk {
     // TODO(swift-kim): This property is used by projects created before May
     // 2021. Keep the value up to date until majority of projects are migrated
     // to use ProjectReference.
-    const String embeddingVersion = '1.8.0';
+    const String embeddingVersion = '1.9.0';
     final bool migrated = !tizenProject.projectFile
         .readAsStringSync()
         .contains(r'$(FlutterEmbeddingVersion)');

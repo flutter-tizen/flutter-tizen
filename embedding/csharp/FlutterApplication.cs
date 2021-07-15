@@ -19,6 +19,41 @@ namespace Tizen.Flutter.Embedding
         protected const string LogTag = "ConsoleMessage";
 
         /// <summary>
+        /// Whether the app is headed or headless.
+        /// </summary>
+        protected bool IsHeaded { get; set; } = true;
+
+        /// <summary>
+        /// The x-coordinate of the top left corner of the window.
+        /// </summary>
+        protected int WindowOffsetX { get; set; } = 0;
+
+        /// <summary>
+        /// The y-coordinate of the top left corner of the window.
+        /// </summary>
+        protected int WindowOffsetY { get; set; } = 0;
+
+        /// <summary>
+        /// The width of the window, or the maximum width if the value is zero.
+        /// </summary>
+        protected int WindowWidth { get; set; } = 0;
+
+        /// <summary>
+        /// The height of the window, or the maximum height if the value is zero.
+        /// </summary>
+        protected int WindowHeight { get; set; } = 0;
+
+        /// <summary>
+        /// Whether the window should have a transparent background or not.
+        /// </summary>
+        protected bool IsWindowTransparent { get; set; } = false;
+
+        /// <summary>
+        /// Whether the window should be focusable or not.
+        /// </summary>
+        protected bool IsWindowFocusable { get; set; } = true;
+
+        /// <summary>
         /// The switches to pass to the Flutter engine.
         /// Custom switches may be added before <see cref="OnCreate"/> is called.
         /// </summary>
@@ -45,11 +80,16 @@ namespace Tizen.Flutter.Embedding
         {
             base.OnCreate();
 
-            // Get paths to resources required for launch.
-            string resPath = Current.DirectoryInfo.Resource;
-            string assetsPath = $"{resPath}/flutter_assets";
-            string icuDataPath = $"{resPath}/icudtl.dat";
-            string aotLibPath = $"{resPath}/../lib/libapp.so";
+            var windowProperties = new FlutterDesktopWindowProperties
+            {
+                headed = IsHeaded,
+                x = WindowOffsetX,
+                y = WindowOffsetY,
+                width = WindowWidth,
+                height = WindowHeight,
+                transparent = IsWindowTransparent,
+                focusable = IsWindowFocusable,
+            };
 
             // Read engine arguments passed from the tool.
             ParseEngineArgs();
@@ -57,14 +97,14 @@ namespace Tizen.Flutter.Embedding
             using var switches = new StringArray(EngineArgs);
             var engineProperties = new FlutterDesktopEngineProperties
             {
-                assets_path = assetsPath,
-                icu_data_path = icuDataPath,
-                aot_library_path = aotLibPath,
+                assets_path = "../res/flutter_assets",
+                icu_data_path = "../res/icudtl.dat",
+                aot_library_path = "../lib/libapp.so",
                 switches = switches.Handle,
                 switches_count = (uint)switches.Length,
             };
 
-            Handle = FlutterDesktopRunEngine(ref engineProperties, true);
+            Handle = FlutterDesktopRunEngine(ref windowProperties, ref engineProperties);
             if (Handle.IsInvalid)
             {
                 throw new Exception("Could not launch a Flutter application.");
