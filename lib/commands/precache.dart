@@ -69,6 +69,9 @@ class TizenPrecacheCommand extends PrecacheCommand {
       });
     }
 
+    // Release lock of the cache
+    _cache.releaseLock();
+
     if (includeAllPlatforms || includeDefaults || _includeOtherPlatforms) {
       // If the '--force' option is used, the super.runCommand() will delete
       // the tizen's stamp file. It should be restored.
