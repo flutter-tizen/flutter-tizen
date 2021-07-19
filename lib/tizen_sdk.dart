@@ -9,7 +9,6 @@ import 'package:flutter_tools/src/android/android_emulator.dart';
 import 'package:flutter_tools/src/android/android_sdk.dart';
 import 'package:flutter_tools/src/base/common.dart';
 import 'package:flutter_tools/src/base/context.dart';
-import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:meta/meta.dart';
 
@@ -114,61 +113,87 @@ class TizenSdk {
   String get defaultGccVersion => '9.2';
 
   Rootstrap getFlutterRootstrap({
-    String profile = 'common-4.0',
+    @required String profile,
+    @required String apiVersion,
     @required String arch,
   }) {
-    // Defaults to wearable if the profile name is common.
-    profile = profile.replaceFirst('common', 'wearable');
+    assert(profile != null);
+    assert(apiVersion != null);
 
-    String id;
+    if (profile == 'common') {
+      // The headless profile is not supported.
+      profile = 'iot-headed';
+    }
+    if (profile == 'tv') {
+      // Use the wearable rootstrap because the TV native rootstrap is not
+      // publicly available.
+      profile = 'wearable';
+    }
+
+    String type = arch == 'x86' ? 'emulator' : 'device';
     if (arch == 'arm64') {
-      // The arm64 build is only supported by the iot-headed-6.0 profile.
-      profile = 'iot-headed-6.0';
-      id = '$profile-device64.core';
-    } else {
-      id = '$profile-${arch == 'x86' ? 'emulator' : 'device'}.core';
+      // The arm64 build is only supported by iot-headed-6.0+ rootstraps.
+      profile = 'iot-headed';
+      if ((double.tryParse(apiVersion) ?? 0) < 6.0) {
+        apiVersion = '6.0';
+      }
+      type = 'device64';
+    }
+
+    final String name = '$profile-$apiVersion-$type';
+    final Directory rootstrapsDir = platformsDirectory
+        .childDirectory('tizen-$apiVersion')
+        .childDirectory(profile)
+        .childDirectory('rootstraps');
+    final Directory rootstrapDir = rootstrapsDir.childDirectory('$name.core');
+    final File rootstrapInfo =
+        rootstrapsDir.childDirectory('info').childFile('$name.core.dev.xml');
+    if (!rootstrapDir.existsSync() || !rootstrapInfo.existsSync()) {
+      final String profileUpperCase =
+          profile.toUpperCase().replaceAll('HEADED', 'Headed');
+      throwToolExit(
+        'The rootstrap definition for $name could not be found.\n'
+        'To install missing package(s), run:\n'
+        '${packageManagerCli.path} install $profileUpperCase-$apiVersion-NativeAppDevelopment-CLI',
+      );
     }
 
     // Tizen SBI reads rootstrap definitions from this directory.
     final Directory pluginsDir = toolsDirectory
         .childDirectory('smart-build-interface')
         .childDirectory('plugins');
+    final File manifestFile = pluginsDir.childFile('flutter-rootstrap.xml');
+    final String rootstrapId = '$name.flutter';
+    final String buildArch = getTizenBuildArch(arch);
 
-    File manifestFile = pluginsDir.childFile('$id.xml');
-    if (!manifestFile.existsSync()) {
-      final String profileUpperCase =
-          profile.toUpperCase().replaceAll('HEADED', 'Headed');
-      throwToolExit(
-        'The rootstrap definition for the $profile profile could not be found.\n'
-        'Try with another profile or run this command to install missing packages:\n'
-        '${packageManagerCli.path} install $profileUpperCase-NativeAppDevelopment-CLI',
-      );
+    // libstdc++ shipped with Tizen 4.0 and 5.5 doesn't support C++17.
+    // Original PR: https://github.com/flutter-tizen/flutter-tizen/pull/106
+    final List<String> linkerFlags = <String>[];
+    if ((double.tryParse(apiVersion) ?? 0) < 6.0) {
+      linkerFlags.add('-static-libstdc++');
     }
 
-    // Create a custom rootstrap to force the use of GCC 9.2 for Tizen 4.0/5.5.
-    if (arch != 'arm64' && !profile.endsWith('6.0')) {
-      id = '$profile-$arch.flutter';
+    manifestFile.writeAsStringSync('''
+<?xml version="1.0"?>
+<extension point="rootstrapDefinition">
+  <rootstrap id="$rootstrapId" name="$name" version="flutter" architecture="$buildArch" path="${rootstrapDir.path}" supportToolchainType="tizen.core">
+    <property key="DEV_PACKAGE_CONFIG_PATH" value="${rootstrapInfo.path}"/>
+    <property key="LINKER_MISCELLANEOUS_OPTION" value="${linkerFlags.join(' ')}"/>
+    <property key="COMPILER_MISCELLANEOUS_OPTION" value=""/>
+    <toolchain name="gcc" version="$defaultGccVersion"/>
+  </rootstrap>
+</extension>
+''');
 
-      manifestFile = globals.fs
-          .directory(Cache.flutterRoot)
-          .parent
-          .childDirectory('rootstraps')
-          .childFile('$id.xml');
-      if (!manifestFile.existsSync()) {
-        throwToolExit(
-          'The $profile profile is not currently supported by flutter-tizen.\n'
-          'Try with another profile or file an issue in https://github.com/flutter-tizen/flutter-tizen/issues.',
-        );
+    // Remove files created by the previous versions of the flutter-tizen tool.
+    final Iterable<File> manifests = pluginsDir.listSync().whereType<File>();
+    for (final File file in manifests) {
+      if (file.basename.endsWith('.flutter.xml')) {
+        file.deleteSync();
       }
-
-      final File manifestCopy = pluginsDir.childFile('$id.xml');
-      if (manifestCopy.existsSync()) {
-        manifestCopy.deleteSync(recursive: true);
-      }
-      manifestFile.copySync(manifestCopy.path);
     }
 
-    return Rootstrap(id, manifestFile);
+    return Rootstrap(rootstrapId, manifestFile);
   }
 }
 
@@ -182,4 +207,19 @@ class Rootstrap {
 
   final String id;
   final File manifestFile;
+}
+
+/// Converts [targetArch] to an arch name that corresponds to the `BUILD_ARCH`
+/// value used by the Tizen native builder.
+String getTizenBuildArch(String targetArch) {
+  switch (targetArch) {
+    case 'arm':
+      return 'armel';
+    case 'arm64':
+      return 'aarch64';
+    case 'x86':
+      return 'i586';
+    default:
+      return targetArch;
+  }
 }

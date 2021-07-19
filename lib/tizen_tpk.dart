@@ -77,9 +77,6 @@ class TizenTpk extends ApplicationPackage {
     });
 
     final File manifestFile = tempDir.childFile('tizen-manifest.xml');
-    if (!manifestFile.existsSync()) {
-      throwToolExit('tizen-manifest.xml could not be found.');
-    }
     final File signatureFile = tempDir.childFile('author-signature.xml');
 
     return TizenTpk(
@@ -92,9 +89,6 @@ class TizenTpk extends ApplicationPackage {
   static Future<TizenTpk> fromTizenProject(
       FlutterProject flutterProject) async {
     final TizenProject project = TizenProject.fromFlutter(flutterProject);
-    if (!project.manifestFile.existsSync()) {
-      throwToolExit('tizen-manifest.xml could not be found.');
-    }
 
     final File tpkFile = flutterProject.directory
         .childDirectory('build')
@@ -142,20 +136,16 @@ class TizenManifest {
 
   factory TizenManifest.parseFromXml(File xmlFile) {
     if (xmlFile == null || !xmlFile.existsSync()) {
-      return null;
-    }
-
-    final String data = xmlFile.readAsStringSync().trim();
-    if (data.isEmpty) {
-      return null;
+      throwToolExit('tizen-manifest.xml could not be found.');
     }
 
     XmlDocument document;
     try {
-      document = XmlDocument.parse(data);
+      document = XmlDocument.parse(xmlFile.readAsStringSync().trim());
     } on XmlException catch (ex) {
       throwToolExit('Failed to parse ${xmlFile.basename}: $ex');
     }
+
     return TizenManifest(document);
   }
 
@@ -171,17 +161,26 @@ class TizenManifest {
 
   /// The package version number in the "x.y.z" format.
   String get version => _manifest.getAttribute('version');
-  set version(String version) => _manifest.setAttribute('version', version);
+  set version(String value) => _manifest.setAttribute('version', value);
 
   /// The target API version number.
   String get apiVersion => _manifest.getAttribute('api-version');
 
-  /// The profile name representing a device type.
-  String get profileName =>
-      _manifest.findElements('profile').first.getAttribute('name');
+  XmlElement get _profile {
+    if (_manifest.findElements('profile').isEmpty) {
+      final XmlBuilder builder = XmlBuilder();
+      builder.element(
+        'profile',
+        attributes: <String, String>{'name': 'common'},
+      );
+      _manifest.children.insert(0, builder.buildFragment());
+    }
+    return _manifest.findElements('profile').first;
+  }
 
-  /// The fully qualified profile string. (e.g. `wearable-5.5`)
-  String get profile => '$profileName-$apiVersion';
+  /// The profile name representing the device type.
+  String get profile => _profile.getAttribute('name');
+  set profile(String value) => _profile.setAttribute('name', value);
 
   static String _findApplicationId(XmlDocument _document) {
     int count = 0;
