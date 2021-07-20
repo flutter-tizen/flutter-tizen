@@ -69,7 +69,7 @@ class TizenPrecacheCommand extends PrecacheCommand {
       });
     }
 
-    // Release lock of the cache
+    // Release lock of the cache.
     _cache.releaseLock();
 
     if (includeAllPlatforms || includeDefaults || _includeOtherPlatforms) {
