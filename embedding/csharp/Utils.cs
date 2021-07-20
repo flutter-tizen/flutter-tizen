@@ -11,6 +11,9 @@ namespace Tizen.Flutter.Embedding
 {
     internal static class Utils
     {
+        /// <summary>
+        /// Reads engine arguments passed from the flutter-tizen tool and adds to <paramref name="list"/>.
+        /// </summary>
         public static void ParseEngineArgs(IList<string> list)
         {
             string appId = Application.Current.ApplicationInfo.ApplicationId;

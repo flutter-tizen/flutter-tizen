@@ -10,10 +10,11 @@ using static Tizen.Flutter.Embedding.Interop;
 
 namespace Tizen.Flutter.Embedding
 {
+    /// <summary>
+    /// The <see cref="ServiceApplication"/> variant of <see cref="FlutterApplication"/>.
+    /// </summary>
     public class FlutterServiceApplication : ServiceApplication, IPluginRegistry
     {
-        protected const string LogTag = "ConsoleMessage";
-
         /// <summary>
         /// The switches to pass to the Flutter engine.
         /// Custom switches may be added before <see cref="OnCreate"/> is called.
@@ -31,7 +32,7 @@ namespace Tizen.Flutter.Embedding
             AppDomain.CurrentDomain.UnhandledException += (s, e) =>
             {
                 var exception = e.ExceptionObject as Exception;
-                InternalLog.Error(LogTag, $"Unhandled exception: {exception}");
+                TizenLog.Error($"Unhandled exception: {exception}");
             };
 
             base.Run(args);
@@ -46,7 +47,6 @@ namespace Tizen.Flutter.Embedding
                 headed = false,
             };
 
-            // Read engine arguments passed from the tool.
             Utils.ParseEngineArgs(EngineArgs);
 
             using var switches = new StringArray(EngineArgs);

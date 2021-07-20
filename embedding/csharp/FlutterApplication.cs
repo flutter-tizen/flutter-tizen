@@ -15,7 +15,6 @@ namespace Tizen.Flutter.Embedding
     /// </summary>
     public class FlutterApplication : CoreUIApplication, IPluginRegistry
     {
-
         /// <summary>
         /// Whether the app is headed or headless.
         /// </summary>
@@ -99,7 +98,6 @@ namespace Tizen.Flutter.Embedding
                 focusable = IsWindowFocusable,
             };
 
-            // Read engine arguments passed from the tool.
             Utils.ParseEngineArgs(EngineArgs);
 
             using var switches = new StringArray(EngineArgs);

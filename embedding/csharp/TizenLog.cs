@@ -10,22 +10,38 @@ namespace Tizen.Flutter.Embedding
     {
         public const string LogTag = "ConsoleMessage";
 
-        public static void Debug(string message, [CallerFilePath] string file = "", [CallerMemberName] string func = "", [CallerLineNumber] int line = 0)
+        public static void Debug(
+            string message,
+            [CallerFilePath] string file = "",
+            [CallerMemberName] string func = "",
+            [CallerLineNumber] int line = 0)
         {
             InternalLog.Debug(LogTag, message, file, func, line);
         }
 
-        public static void Info(string message, [CallerFilePath] string file = "", [CallerMemberName] string func = "", [CallerLineNumber] int line = 0)
+        public static void Info(
+            string message,
+            [CallerFilePath] string file = "",
+            [CallerMemberName] string func = "",
+            [CallerLineNumber] int line = 0)
         {
             InternalLog.Info(LogTag, message, file, func, line);
         }
 
-        public static void Warn(string message, [CallerFilePath] string file = "", [CallerMemberName] string func = "", [CallerLineNumber] int line = 0)
+        public static void Warn(
+            string message,
+            [CallerFilePath] string file = "",
+            [CallerMemberName] string func = "",
+            [CallerLineNumber] int line = 0)
         {
             InternalLog.Warn(LogTag, message, file, func, line);
         }
 
-        public static void Error(string message, [CallerFilePath] string file = "", [CallerMemberName] string func = "", [CallerLineNumber] int line = 0)
+        public static void Error(
+            string message,
+            [CallerFilePath] string file = "",
+            [CallerMemberName] string func = "",
+            [CallerLineNumber] int line = 0)
         {
             InternalLog.Error(LogTag, message, file, func, line);
         }

@@ -31,8 +31,7 @@ class TizenCreateCommand extends CreateCommand {
       'tizen-service',
       defaultsTo: false,
       negatable: false,
-      help: 'Create service application on Tizen. '
-          'Available only with tizen-language option set to cpp.',
+      help: 'Create a Tizen service application.',
     );
   }
 
@@ -123,42 +122,31 @@ class TizenCreateCommand extends CreateCommand {
     // renderTemplate() but it may result in additional complexity.
     tizenTemplateManifest.copySync(templateManifest.path);
 
-    final String language = stringArg('tizen-language');
-    final bool isTizenService = boolArg('tizen-service');
-    if (isTizenService && 'cpp' != language) {
-      throwToolExit(
-          'Service application can be used only when tizen-language is set to cpp.');
-    }
-
-    // The dart plugin template is not supported at the moment.
+    final String appType = stringArg('tizen-language');
+    // The Dart plugin template is not currently supported.
     const String pluginType = 'cpp';
+    final bool isTizenService = boolArg('tizen-service');
+
     final List<Directory> created = <Directory>[];
     try {
-      for (final Directory projectType
-          in tizenTemplates.listSync().whereType<Directory>()) {
-        final Directory source = projectType.childDirectory(
-            projectType.basename == 'plugin' ? pluginType : language);
-        if (!source.existsSync()) {
-          continue;
+      void copyTemplate(String source, String language, String destination) {
+        final Directory sourceDir =
+            tizenTemplates.childDirectory(source).childDirectory(language);
+        if (!sourceDir.existsSync()) {
+          throwToolExit('Could not locate a template: $source/$language');
         }
-        final Directory dest = templates
-            .childDirectory(projectType.basename)
-            .childDirectory('tizen.tmpl');
-        if (dest.existsSync()) {
-          dest.deleteSync(recursive: true);
+        final Directory destinationDir =
+            templates.childDirectory(destination).childDirectory('tizen.tmpl');
+        if (destinationDir.existsSync()) {
+          destinationDir.deleteSync(recursive: true);
         }
-        if (projectType.basename == 'app' && language == 'cpp') {
-          final Directory application =
-              source.childDirectory(isTizenService ? 'service-app' : 'ui-app');
-          if (!application.existsSync()) {
-            throwToolExit('Could not locate app template.');
-          }
-          copyDirectory(application, dest);
-        } else {
-          copyDirectory(source, dest);
-        }
-        created.add(dest);
+        copyDirectory(sourceDir, destinationDir);
+        created.add(destinationDir);
       }
+
+      copyTemplate(isTizenService ? 'service-app' : 'ui-app', appType, 'app');
+      copyTemplate('plugin', pluginType, 'plugin');
+
       return await runInternal();
     } finally {
       for (final Directory template in created) {
