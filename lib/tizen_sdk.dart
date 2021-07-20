@@ -120,6 +120,15 @@ class TizenSdk {
     assert(profile != null);
     assert(apiVersion != null);
 
+    if (profile == 'common') {
+      // Note: The headless profile is not supported.
+      profile = 'iot-headed';
+    }
+    if (profile == 'tv') {
+      // Note: The tv-samsung rootstrap is not publicly available.
+      profile = 'tv-samsung';
+    }
+
     double versionToDouble(String versionString) {
       final double version = double.tryParse(versionString);
       if (version == null) {
@@ -128,64 +137,72 @@ class TizenSdk {
       return version;
     }
 
-    if (profile == 'common') {
-      // The headless profile is not supported.
-      profile = 'iot-headed';
-    }
-    if (profile == 'tv') {
-      // Use the wearable rootstrap because the TV native rootstrap is not
-      // publicly available.
-      profile = 'wearable';
-    }
-
     String type = arch == 'x86' ? 'emulator' : 'device';
     if (arch == 'arm64') {
       // The arm64 build is only supported by iot-headed-6.0+ rootstraps.
-      profile = 'iot-headed';
+      if (profile != 'iot-headed') {
+        globals.printError(
+            'The arm64 build is not supported by the $profile profile.');
+        profile = 'iot-headed';
+      }
       if (versionToDouble(apiVersion) < 6.0) {
         apiVersion = '6.0';
       }
       type = 'device64';
     }
 
-    final String name = '$profile-$apiVersion-$type';
-    final Directory rootstrapsDir = platformsDirectory
-        .childDirectory('tizen-$apiVersion')
-        .childDirectory(profile)
-        .childDirectory('rootstraps');
-    final Directory rootstrapDir = rootstrapsDir.childDirectory('$name.core');
-    final File rootstrapInfo =
-        rootstrapsDir.childDirectory('info').childFile('$name.core.dev.xml');
-    if (!rootstrapDir.existsSync() || !rootstrapInfo.existsSync()) {
+    Rootstrap getRootstrap(String profile, String apiVersion, String type) {
+      final String id = '$profile-$apiVersion-$type.core';
+      final Directory rootDir = platformsDirectory
+          .childDirectory('tizen-$apiVersion')
+          .childDirectory(profile)
+          .childDirectory('rootstraps')
+          .childDirectory(id);
+      return Rootstrap(id, rootDir);
+    }
+
+    Rootstrap rootstrap = getRootstrap(profile, apiVersion, type);
+    if (!rootstrap.isValid && profile == 'tv-samsung') {
+      globals.printStatus(
+          'The TV SDK could not be found. Trying with the Wearable SDK...');
+      profile = 'wearable';
+      rootstrap = getRootstrap(profile, apiVersion, type);
+    }
+    if (!rootstrap.isValid) {
       final String profileUpperCase =
           profile.toUpperCase().replaceAll('HEADED', 'Headed');
       throwToolExit(
-        'The rootstrap definition for $name could not be found.\n'
+        'The rootstrap ${rootstrap.id} could not be found.\n'
         'To install missing package(s), run:\n'
         '${packageManagerCli.path} install $profileUpperCase-$apiVersion-NativeAppDevelopment-CLI',
       );
     }
+    globals.printTrace('Found a rootstrap: ${rootstrap.id}');
 
-    // Tizen SBI reads rootstrap definitions from this directory.
-    final Directory pluginsDir = toolsDirectory
-        .childDirectory('smart-build-interface')
-        .childDirectory('plugins');
-    final File manifestFile = pluginsDir.childFile('flutter-rootstrap.xml');
-    final String rootstrapId = '$name.flutter';
+    // Create a custom rootstrap definition to override the GCC version.
+    final String flutterRootstrapId =
+        rootstrap.id.replaceFirst('.core', '.flutter');
     final String buildArch = getTizenBuildArch(arch);
+    final File configFile = rootstrap.rootDirectory.parent
+        .childDirectory('info')
+        .childFile('${rootstrap.id}.dev.xml');
 
-    // libstdc++ shipped with Tizen 4.0 and 5.5 doesn't support C++17.
+    // libstdc++ shipped with Tizen 4.0 and 5.5 is not compatible with C++17.
     // Original PR: https://github.com/flutter-tizen/flutter-tizen/pull/106
     final List<String> linkerFlags = <String>[];
     if (versionToDouble(apiVersion) < 6.0) {
       linkerFlags.add('-static-libstdc++');
     }
 
-    manifestFile.writeAsStringSync('''
+    // Tizen SBI reads rootstrap definitions from this directory.
+    final Directory pluginsDir = toolsDirectory
+        .childDirectory('smart-build-interface')
+        .childDirectory('plugins');
+    pluginsDir.childFile('flutter-rootstrap.xml').writeAsStringSync('''
 <?xml version="1.0"?>
 <extension point="rootstrapDefinition">
-  <rootstrap id="$rootstrapId" name="$name" version="flutter" architecture="$buildArch" path="${rootstrapDir.path}" supportToolchainType="tizen.core">
-    <property key="DEV_PACKAGE_CONFIG_PATH" value="${rootstrapInfo.path}"/>
+  <rootstrap id="$flutterRootstrapId" name="flutter" version="flutter" architecture="$buildArch" path="${rootstrap.rootDirectory.path}" supportToolchainType="tizen.core">
+    <property key="DEV_PACKAGE_CONFIG_PATH" value="${configFile.path}"/>
     <property key="LINKER_MISCELLANEOUS_OPTION" value="${linkerFlags.join(' ')}"/>
     <property key="COMPILER_MISCELLANEOUS_OPTION" value=""/>
     <toolchain name="gcc" version="$defaultGccVersion"/>
@@ -193,7 +210,7 @@ class TizenSdk {
 </extension>
 ''');
 
-    // Remove files created by the previous versions of the flutter-tizen tool.
+    // Remove files created by previous versions of the flutter-tizen tool.
     final Iterable<File> manifests = pluginsDir.listSync().whereType<File>();
     for (final File file in manifests) {
       if (file.basename.endsWith('.flutter.xml')) {
@@ -201,7 +218,7 @@ class TizenSdk {
       }
     }
 
-    return Rootstrap(rootstrapId, manifestFile);
+    return Rootstrap(flutterRootstrapId, rootstrap.rootDirectory);
   }
 }
 
@@ -211,10 +228,12 @@ class TizenSdk {
 /// contains a set of headers and libraries required for cross building Tizen
 /// native apps and libraries.
 class Rootstrap {
-  const Rootstrap(this.id, this.manifestFile);
+  const Rootstrap(this.id, this.rootDirectory);
 
   final String id;
-  final File manifestFile;
+  final Directory rootDirectory;
+
+  bool get isValid => rootDirectory.existsSync();
 }
 
 /// Converts [targetArch] to an arch name that corresponds to the `BUILD_ARCH`
