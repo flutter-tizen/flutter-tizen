@@ -120,6 +120,14 @@ class TizenSdk {
     assert(profile != null);
     assert(apiVersion != null);
 
+    double versionToDouble(String versionString) {
+      final double version = double.tryParse(versionString);
+      if (version == null) {
+        throwToolExit('The API version $versionString is invalid.');
+      }
+      return version;
+    }
+
     if (profile == 'common') {
       // The headless profile is not supported.
       profile = 'iot-headed';
@@ -134,7 +142,7 @@ class TizenSdk {
     if (arch == 'arm64') {
       // The arm64 build is only supported by iot-headed-6.0+ rootstraps.
       profile = 'iot-headed';
-      if ((double.tryParse(apiVersion) ?? 0) < 6.0) {
+      if (versionToDouble(apiVersion) < 6.0) {
         apiVersion = '6.0';
       }
       type = 'device64';
@@ -169,7 +177,7 @@ class TizenSdk {
     // libstdc++ shipped with Tizen 4.0 and 5.5 doesn't support C++17.
     // Original PR: https://github.com/flutter-tizen/flutter-tizen/pull/106
     final List<String> linkerFlags = <String>[];
-    if ((double.tryParse(apiVersion) ?? 0) < 6.0) {
+    if (versionToDouble(apiVersion) < 6.0) {
       linkerFlags.add('-static-libstdc++');
     }
 
