@@ -326,7 +326,6 @@ USER_LIB_DIRS = lib
       apiVersion: apiVersion,
       arch: buildInfo.targetArch,
     );
-    inputs.add(rootstrap.manifestFile);
 
     // Create a temp directory to use as a build directory.
     // This is a workaround for the long path issue on Windows:
