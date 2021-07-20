@@ -1,4 +1,4 @@
-﻿// Copyright 2020 Samsung Electronics Co., Ltd. All rights reserved.
+﻿// Copyright 2021 Samsung Electronics Co., Ltd. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,62 +10,15 @@ using static Tizen.Flutter.Embedding.Interop;
 
 namespace Tizen.Flutter.Embedding
 {
-    /// <summary>
-    /// The application base class which creates and manages the Flutter engine instance.
-    /// </summary>
-    public class FlutterApplication : CoreUIApplication, IPluginRegistry
+    public class FlutterServiceApplication : ServiceApplication, IPluginRegistry
     {
-
-        /// <summary>
-        /// Whether the app is headed or headless.
-        /// </summary>
-        protected bool IsHeaded { get; set; } = true;
-
-        /// <summary>
-        /// The x-coordinate of the top left corner of the window.
-        /// </summary>
-        protected int WindowOffsetX { get; set; } = 0;
-
-        /// <summary>
-        /// The y-coordinate of the top left corner of the window.
-        /// </summary>
-        protected int WindowOffsetY { get; set; } = 0;
-
-        /// <summary>
-        /// The width of the window, or the maximum width if the value is zero.
-        /// </summary>
-        protected int WindowWidth { get; set; } = 0;
-
-        /// <summary>
-        /// The height of the window, or the maximum height if the value is zero.
-        /// </summary>
-        protected int WindowHeight { get; set; } = 0;
-
-        /// <summary>
-        /// Whether the window should have a transparent background or not.
-        /// </summary>
-        protected bool IsWindowTransparent { get; set; } = false;
-
-        /// <summary>
-        /// Whether the window should be focusable or not.
-        /// </summary>
-        protected bool IsWindowFocusable { get; set; } = true;
+        protected const string LogTag = "ConsoleMessage";
 
         /// <summary>
         /// The switches to pass to the Flutter engine.
         /// Custom switches may be added before <see cref="OnCreate"/> is called.
         /// </summary>
         protected List<string> EngineArgs { get; } = new List<string>();
-
-        /// <summary>
-        /// The optional entrypoint in the Dart project. If the value is empty, defaults to main().
-        /// </summary>
-        protected string DartEntrypoint { get; set; } = string.Empty;
-
-        /// <summary>
-        /// The list of Dart entrypoint arguments.
-        /// </summary>
-        protected List<string> DartEntrypointArgs { get; } = new List<string>();
 
         /// <summary>
         /// The Flutter engine instance handle.
@@ -78,7 +31,7 @@ namespace Tizen.Flutter.Embedding
             AppDomain.CurrentDomain.UnhandledException += (s, e) =>
             {
                 var exception = e.ExceptionObject as Exception;
-                TizenLog.Error($"Unhandled exception: {exception}");
+                InternalLog.Error(LogTag, $"Unhandled exception: {exception}");
             };
 
             base.Run(args);
@@ -90,20 +43,13 @@ namespace Tizen.Flutter.Embedding
 
             var windowProperties = new FlutterDesktopWindowProperties
             {
-                headed = IsHeaded,
-                x = WindowOffsetX,
-                y = WindowOffsetY,
-                width = WindowWidth,
-                height = WindowHeight,
-                transparent = IsWindowTransparent,
-                focusable = IsWindowFocusable,
+                headed = false,
             };
 
             // Read engine arguments passed from the tool.
             Utils.ParseEngineArgs(EngineArgs);
 
             using var switches = new StringArray(EngineArgs);
-            using var entrypointArgs = new StringArray(DartEntrypointArgs);
             var engineProperties = new FlutterDesktopEngineProperties
             {
                 assets_path = "../res/flutter_assets",
@@ -111,34 +57,13 @@ namespace Tizen.Flutter.Embedding
                 aot_library_path = "../lib/libapp.so",
                 switches = switches.Handle,
                 switches_count = (uint)switches.Length,
-                entrypoint = DartEntrypoint,
-                dart_entrypoint_argc = entrypointArgs.Length,
-                dart_entrypoint_argv = entrypointArgs.Handle,
             };
 
             Handle = FlutterDesktopRunEngine(ref windowProperties, ref engineProperties);
             if (Handle.IsInvalid)
             {
-                throw new Exception("Could not launch a Flutter application.");
+                throw new Exception("Could not launch a service application.");
             }
-        }
-
-        protected override void OnResume()
-        {
-            base.OnResume();
-
-            Debug.Assert(Handle);
-
-            FlutterDesktopNotifyAppIsResumed(Handle);
-        }
-
-        protected override void OnPause()
-        {
-            base.OnPause();
-
-            Debug.Assert(Handle);
-
-            FlutterDesktopNotifyAppIsPaused(Handle);
         }
 
         protected override void OnTerminate()
