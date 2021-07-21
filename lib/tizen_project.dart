@@ -47,8 +47,6 @@ class TizenProject extends FlutterProjectPlatform {
   @override
   bool existsSync() => projectFile.existsSync() && manifestFile.existsSync();
 
-  String get apiVersion => TizenManifest.parseFromXml(manifestFile).apiVersion;
-
   String get outputTpkName {
     final TizenManifest manifest = TizenManifest.parseFromXml(manifestFile);
     return '${manifest.packageId}-${manifest.version}.tpk';

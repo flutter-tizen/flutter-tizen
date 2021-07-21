@@ -199,15 +199,18 @@ class TizenPlugins extends Target {
     final Directory rootDir = environment.buildDir
         .childDirectory('tizen_plugins')
           ..createSync(recursive: true);
-    final String profile =
-        TizenManifest.parseFromXml(tizenProject.manifestFile)?.profile;
+    final File projectDef = rootDir.childFile('project_def.prop');
+
+    final TizenManifest tizenManifest =
+        TizenManifest.parseFromXml(tizenProject.manifestFile);
+    final String profile = tizenManifest.profile;
+    final String apiVersion = tizenManifest.apiVersion;
     inputs.add(tizenProject.manifestFile);
 
-    final File projectDef = rootDir.childFile('project_def.prop');
     projectDef.writeAsStringSync('''
 APPNAME = flutter_plugins
 type = sharedLib
-profile = $profile
+profile = $profile-$apiVersion
 
 USER_CPP_DEFS = TIZEN_DEPRECATION DEPRECATION_WARNING FLUTTER_PLUGIN_IMPL
 USER_CPPFLAGS_MISC = -c -fmessage-length=0
@@ -319,8 +322,10 @@ USER_LIB_DIRS = lib
 
     assert(tizenSdk != null);
     final Rootstrap rootstrap = tizenSdk.getFlutterRootstrap(
-        profile: profile, arch: buildInfo.targetArch);
-    inputs.add(rootstrap.manifestFile);
+      profile: profile,
+      apiVersion: apiVersion,
+      arch: buildInfo.targetArch,
+    );
 
     // Create a temp directory to use as a build directory.
     // This is a workaround for the long path issue on Windows:
@@ -473,7 +478,7 @@ class DotnetTpk {
       dotnetCli.path,
       'build',
       '-c',
-      'Release',
+      if (buildMode.isPrecompiled) 'Release' else 'Debug',
       '-o',
       '${outputDir.path}/', // The trailing '/' is needed.
       '/p:FlutterEmbeddingVersion=$embeddingVersion',
@@ -668,10 +673,13 @@ class NativeTpk {
     ];
 
     assert(tizenSdk != null);
-    final String profile =
-        TizenManifest.parseFromXml(tizenProject.manifestFile)?.profile;
+    final TizenManifest tizenManifest =
+        TizenManifest.parseFromXml(tizenProject.manifestFile);
     final Rootstrap rootstrap = tizenSdk.getFlutterRootstrap(
-        profile: profile, arch: buildInfo.targetArch);
+      profile: tizenManifest.profile,
+      apiVersion: tizenManifest.apiVersion,
+      arch: buildInfo.targetArch,
+    );
 
     final String buildConfig = buildMode.isPrecompiled ? 'Release' : 'Debug';
     final Directory buildDir = tizenDir.childDirectory(buildConfig);
@@ -773,21 +781,6 @@ String getTizenCliArch(String targetArch) {
   switch (targetArch) {
     case 'arm64':
       return 'aarch64';
-    default:
-      return targetArch;
-  }
-}
-
-/// Converts [targetArch] to an arch name that corresponds to the `BUILD_ARCH`
-/// value used by the Tizen native builder.
-String getTizenBuildArch(String targetArch) {
-  switch (targetArch) {
-    case 'arm':
-      return 'armel';
-    case 'arm64':
-      return 'aarch64';
-    case 'x86':
-      return 'i586';
     default:
       return targetArch;
   }
