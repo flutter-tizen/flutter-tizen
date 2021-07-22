@@ -33,6 +33,9 @@ namespace Tizen.Flutter.Embedding
             public string aot_library_path;
             public IntPtr switches;
             public uint switches_count;
+            public string? entrypoint;
+            public int dart_entrypoint_argc;
+            public IntPtr dart_entrypoint_argv;
         }
 
         [DllImport("flutter_tizen.so")]
