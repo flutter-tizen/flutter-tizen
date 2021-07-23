@@ -26,7 +26,8 @@ class TizenBuildCommand extends BuildCommand {
   }
 }
 
-class BuildTpkCommand extends BuildSubCommand with TizenExtension {
+class BuildTpkCommand extends BuildSubCommand
+    with TizenExtension, TizenRequiredArtifacts {
   /// See: [BuildApkCommand] in `build_apk.dart`
   BuildTpkCommand({bool verboseHelp = false}) {
     addCommonDesktopBuildOptions(verboseHelp: verboseHelp);
@@ -53,13 +54,6 @@ class BuildTpkCommand extends BuildSubCommand with TizenExtension {
 
   @override
   final String name = 'tpk';
-
-  @override
-  Future<Set<DevelopmentArtifact>> get requiredArtifacts async =>
-      <DevelopmentArtifact>{
-        DevelopmentArtifact.androidGenSnapshot,
-        TizenDevelopmentArtifact.tizen,
-      };
 
   @override
   final String description = 'Build a Tizen TPK file from your app.';

@@ -7,9 +7,11 @@
 import 'package:flutter_tools/src/commands/drive.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 
+import '../tizen_cache.dart';
 import '../tizen_plugins.dart';
 
-class TizenDriveCommand extends DriveCommand with TizenExtension {
+class TizenDriveCommand extends DriveCommand
+    with TizenExtension, TizenRequiredArtifacts {
   TizenDriveCommand({bool verboseHelp = false})
       : super(
           verboseHelp: verboseHelp,

@@ -6,9 +6,11 @@
 
 import 'package:flutter_tools/src/commands/test.dart';
 
+import '../tizen_cache.dart';
 import '../tizen_plugins.dart';
 
-class TizenTestCommand extends TestCommand with TizenExtension {
+class TizenTestCommand extends TestCommand
+    with TizenExtension, TizenRequiredArtifacts {
   TizenTestCommand({bool verboseHelp = false})
       : super(verboseHelp: verboseHelp);
 }
