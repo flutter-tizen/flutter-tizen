@@ -16,7 +16,17 @@ import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/features.dart';
 import 'package:flutter_tools/src/flutter_cache.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
+import 'package:flutter_tools/src/runner/flutter_command.dart';
 import 'package:http/http.dart' as http;
+
+mixin TizenRequiredArtifacts on FlutterCommand {
+  @override
+  Future<Set<DevelopmentArtifact>> get requiredArtifacts async =>
+      <DevelopmentArtifact>{
+        DevelopmentArtifact.androidGenSnapshot,
+        TizenDevelopmentArtifact.tizen,
+      };
+}
 
 /// See: [DevelopmentArtifact] in `cache.dart`
 class TizenDevelopmentArtifact implements DevelopmentArtifact {
