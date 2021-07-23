@@ -40,7 +40,7 @@ bool FlutterApp::OnCreate() {
   engine_prop.aot_library_path = "../lib/libapp.so";
   engine_prop.switches = switches.data();
   engine_prop.switches_count = switches.size();
-  engine_prop.entrypoint = dart_entrypoint_;
+  engine_prop.entrypoint = dart_entrypoint_.c_str();
   engine_prop.dart_entrypoint_argc = entrypoint_args.size();
   engine_prop.dart_entrypoint_argv = entrypoint_args.data();
 

@@ -60,9 +60,9 @@ namespace Tizen.Flutter.Embedding
         protected List<string> EngineArgs { get; } = new List<string>();
 
         /// <summary>
-        /// The optional entrypoint in the Dart project. If the value is null, defaults to main().
+        /// The optional entrypoint in the Dart project. If the value is empty, defaults to main().
         /// </summary>
-        protected string? DartEntrypoint { get; set; } = null;
+        protected string DartEntrypoint { get; set; } = string.Empty;
 
         /// <summary>
         /// The list of Dart entrypoint arguments.
