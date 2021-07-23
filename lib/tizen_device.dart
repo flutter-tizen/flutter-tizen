@@ -353,7 +353,14 @@ class TizenDevice extends Device {
 
     if (debuggingOptions.debuggingEnabled) {
       observatoryDiscovery = ProtocolDiscovery.observatory(
-        await getLogReader(),
+        // Avoid using getLogReader, which returns a singleton instance, because the
+        // observatory discovery will dipose at the end. creating a new logger here allows
+        // logs to be surfaced normally during `flutter drive`.
+        await TizenDlogReader.createLogReader(
+          this,
+          _processManager,
+          after: currentDeviceTime,
+        ),
         portForwarder: portForwarder,
         hostPort: debuggingOptions.hostVmServicePort,
         devicePort: debuggingOptions.deviceVmServicePort,
@@ -544,7 +551,12 @@ class TizenDevice extends Device {
 ///
 /// Source: [AdbLogReader] in `android_device.dart`
 class TizenDlogReader extends DeviceLogReader {
-  TizenDlogReader._(this.name, this._device, this._sdbProcess, this._after) {
+  TizenDlogReader._(
+    this.name,
+    this._device,
+    this._sdbProcess,
+    this._after,
+  ) {
     _linesController = StreamController<String>.broadcast(
       onListen: _start,
       onCancel: _stop,
@@ -554,7 +566,7 @@ class TizenDlogReader extends DeviceLogReader {
   static Future<TizenDlogReader> createLogReader(
     TizenDevice device,
     ProcessManager processManager, {
-    DateTime after,
+    @required DateTime after,
   }) async {
     // `sdb dlog -m` is not allowed for non-root users.
     final List<String> args = device.usesSecureProtocol
