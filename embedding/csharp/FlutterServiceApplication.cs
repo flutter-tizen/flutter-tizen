@@ -22,6 +22,16 @@ namespace Tizen.Flutter.Embedding
         protected List<string> EngineArgs { get; } = new List<string>();
 
         /// <summary>
+        /// The optional entrypoint in the Dart project. If the value is empty, defaults to main().
+        /// </summary>
+        protected string DartEntrypoint { get; set; } = string.Empty;
+
+        /// <summary>
+        /// The list of Dart entrypoint arguments.
+        /// </summary>
+        protected List<string> DartEntrypointArgs { get; } = new List<string>();
+
+        /// <summary>
         /// The Flutter engine instance handle.
         /// </summary>
         protected FlutterDesktopEngine Handle { get; private set; } = new FlutterDesktopEngine();
@@ -50,6 +60,7 @@ namespace Tizen.Flutter.Embedding
             Utils.ParseEngineArgs(EngineArgs);
 
             using var switches = new StringArray(EngineArgs);
+            using var entrypointArgs = new StringArray(DartEntrypointArgs);
             var engineProperties = new FlutterDesktopEngineProperties
             {
                 assets_path = "../res/flutter_assets",
@@ -57,6 +68,9 @@ namespace Tizen.Flutter.Embedding
                 aot_library_path = "../lib/libapp.so",
                 switches = switches.Handle,
                 switches_count = (uint)switches.Length,
+                entrypoint = DartEntrypoint,
+                dart_entrypoint_argc = entrypointArgs.Length,
+                dart_entrypoint_argv = entrypointArgs.Handle,
             };
 
             Handle = FlutterDesktopRunEngine(ref windowProperties, ref engineProperties);
