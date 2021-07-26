@@ -73,6 +73,13 @@ class FlutterApp : public flutter::PluginRegistry {
   // Custom switches may be added before `OnCreate` is called.
   std::vector<std::string> engine_args_;
 
+  // The optional entrypoint in the Dart project. If the value is empty,
+  // defaults to main().
+  std::string dart_entrypoint_;
+
+  // The list of Dart entrypoint arguments.
+  std::vector<std::string> dart_entrypoint_args_;
+
   // The Flutter engine instance handle.
   FlutterDesktopEngineRef handle_;
 };
