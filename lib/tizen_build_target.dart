@@ -264,7 +264,7 @@ USER_LIB_DIRS = lib
             .forEach(inputs.add);
       }
 
-      for (final String libName in plugin.getProperty('USER_LIBS').split(' ')) {
+      for (final String libName in plugin.getProperty('USER_LIBS')) {
         final File libFile = plugin.directory
             .childDirectory('lib')
             .childDirectory(getTizenBuildArch(buildInfo.targetArch))

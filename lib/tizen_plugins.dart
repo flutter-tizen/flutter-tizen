@@ -40,7 +40,7 @@ class TizenPlugin extends PluginPlatform implements NativeOrDartPlugin {
     this.fileName,
   }) : assert(pluginClass != null || dartPluginClass != null);
 
-  factory TizenPlugin.fromYaml(String name, Directory directory, YamlMap yaml) {
+  static TizenPlugin fromYaml(String name, Directory directory, YamlMap yaml) {
     assert(validate(yaml));
     return TizenPlugin(
       name: name,
@@ -83,14 +83,14 @@ class TizenPlugin extends PluginPlatform implements NativeOrDartPlugin {
 
   final RegExp _propertyFormat = RegExp(r'(\S+)\s*\+?=(.*)');
 
-  Map<String, String> _properties;
+  Map<String, List<String>> _properties;
 
-  String getProperty(String key) {
+  List<String> getProperty(String key) {
     if (_properties == null) {
       if (!projectFile.existsSync()) {
-        return null;
+        return <String>[];
       }
-      _properties = <String, String>{};
+      _properties = <String, List<String>>{};
 
       for (final String line in projectFile.readAsLinesSync()) {
         final Match match = _propertyFormat.firstMatch(line);
@@ -99,20 +99,15 @@ class TizenPlugin extends PluginPlatform implements NativeOrDartPlugin {
         }
         final String key = match.group(1);
         final String value = match.group(2).trim();
-        _properties[key] = value;
+        _properties[key] = value.split(' ');
       }
     }
-    return _properties.containsKey(key) ? _properties[key] : null;
+    return _properties.containsKey(key) ? _properties[key] : <String>[];
   }
 
   List<String> getPropertyAsAbsolutePaths(String key) {
-    final String property = getProperty(key);
-    if (property == null) {
-      return <String>[];
-    }
-
     final List<String> paths = <String>[];
-    for (final String element in property.split(' ')) {
+    for (final String element in getProperty(key)) {
       if (globals.fs.path.isAbsolute(element)) {
         paths.add(element);
       } else {
