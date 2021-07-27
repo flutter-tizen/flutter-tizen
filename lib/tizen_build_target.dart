@@ -304,19 +304,19 @@ USER_LIB_DIRS = lib
     userSources.add(clientWrapperDir.childFile('*.cc').path);
 
     final Map<String, String> variables = <String, String>{
-      'PATH': getDefaultPathVariable(),
-      'USER_SRCS': userSources.map(getUnixPath).join(' '),
+      'PATH': _getDefaultPathVariable(),
+      'USER_SRCS': userSources.map((String f) => f.toPosixPath()).join(' '),
     };
     final List<String> extraOptions = <String>[
       '-lflutter_tizen_${buildInfo.deviceProfile}',
-      '-L"${getUnixPath(engineDir.path)}"',
+      '-L"${engineDir.path.toPosixPath()}"',
       '-fvisibility=hidden',
       '-std=c++17',
-      '-I"${getUnixPath(clientWrapperDir.childDirectory('include').path)}"',
-      '-I"${getUnixPath(publicDir.path)}"',
-      ...userIncludes.map(getUnixPath).map((String path) => '-I"$path"'),
+      '-I"${clientWrapperDir.childDirectory('include').path.toPosixPath()}"',
+      '-I"${publicDir.path.toPosixPath()}"',
+      ...userIncludes.map((String f) => '-I"${f.toPosixPath()}"'),
       ...userLibs.map((String lib) => '-l$lib'),
-      '-L"${getUnixPath(libDir.path)}"',
+      '-L"${libDir.path.toPosixPath()}"',
       '-D${buildInfo.deviceProfile.toUpperCase()}_PROFILE',
     ];
 
@@ -657,16 +657,16 @@ class NativeTpk {
     userSources.add(clientWrapperDir.childFile('*.cc').path);
 
     final Map<String, String> variables = <String, String>{
-      'PATH': getDefaultPathVariable(),
-      'USER_SRCS': userSources.map(getUnixPath).join(' '),
+      'PATH': _getDefaultPathVariable(),
+      'USER_SRCS': userSources.map((String f) => f.toPosixPath()).join(' '),
     };
     final List<String> extraOptions = <String>[
       '-lflutter_tizen_${buildInfo.deviceProfile}',
-      '-L"${getUnixPath(libDir.path)}"',
+      '-L"${libDir.path.toPosixPath()}"',
       '-std=c++17',
-      '-I"${getUnixPath(clientWrapperDir.childDirectory('include').path)}"',
-      '-I"${getUnixPath(publicDir.path)}"',
-      ...userIncludes.map(getUnixPath).map((String path) => '-I"$path"'),
+      '-I"${clientWrapperDir.childDirectory('include').path.toPosixPath()}"',
+      '-I"${publicDir.path.toPosixPath()}"',
+      ...userIncludes.map((String f) => '-I"${f.toPosixPath()}"'),
       if (pluginsLib.existsSync()) '-lflutter_plugins',
       '-D${buildInfo.deviceProfile.toUpperCase()}_PROFILE',
       '-Wl,-unresolved-symbols=ignore-in-shared-libs',
@@ -776,34 +776,27 @@ class NativeTpk {
   }
 }
 
-/// Converts [targetArch] to an arch name that the Tizen CLI expects.
-String getTizenCliArch(String targetArch) {
-  switch (targetArch) {
-    case 'arm64':
-      return 'aarch64';
-    default:
-      return targetArch;
-  }
-}
-
-/// On non-Windows, returns [path] unchanged.
-///
-/// On Windows, converts Windows-style [path] (e.g. 'C:\x\y') into Unix path
-/// ('/c/x/y') and returns.
-String getUnixPath(String path) {
-  if (Platform.isWindows) {
-    path = path.replaceAll(r'\', '/');
-    if (path.startsWith(':', 1)) {
-      path = '/${path[0].toLowerCase()}${path.substring(2)}';
+extension _PathUtils on String {
+  /// On non-Windows, returns [path] unchanged.
+  ///
+  /// On Windows, converts Windows-style [path] (e.g. 'C:\x\y') into POSIX path
+  /// ('/c/x/y') and returns.
+  String toPosixPath() {
+    String path = this;
+    if (Platform.isWindows) {
+      path = path.replaceAll(r'\', '/');
+      if (path.startsWith(':', 1)) {
+        path = '/${path[0].toLowerCase()}${path.substring(2)}';
+      }
     }
+    return path;
   }
-  return path;
 }
 
 /// On non-Windows, returns the PATH environment variable.
 ///
 /// On Windows, appends the msys2 executables directory to PATH and returns.
-String getDefaultPathVariable() {
+String _getDefaultPathVariable() {
   final Map<String, String> variables = globals.platform.environment;
   String path = variables.containsKey('PATH') ? variables['PATH'] : '';
   if (Platform.isWindows) {
