@@ -1,4 +1,4 @@
-﻿// Copyright 2020 Samsung Electronics Co., Ltd. All rights reserved.
+﻿// Copyright 2021 Samsung Electronics Co., Ltd. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,45 +11,10 @@ using static Tizen.Flutter.Embedding.Interop;
 namespace Tizen.Flutter.Embedding
 {
     /// <summary>
-    /// The application base class which creates and manages the Flutter engine instance.
+    /// The <see cref="ServiceApplication"/> variant of <see cref="FlutterApplication"/>.
     /// </summary>
-    public class FlutterApplication : CoreUIApplication, IPluginRegistry
+    public class FlutterServiceApplication : ServiceApplication, IPluginRegistry
     {
-        /// <summary>
-        /// Whether the app is headed or headless.
-        /// </summary>
-        protected bool IsHeaded { get; set; } = true;
-
-        /// <summary>
-        /// The x-coordinate of the top left corner of the window.
-        /// </summary>
-        protected int WindowOffsetX { get; set; } = 0;
-
-        /// <summary>
-        /// The y-coordinate of the top left corner of the window.
-        /// </summary>
-        protected int WindowOffsetY { get; set; } = 0;
-
-        /// <summary>
-        /// The width of the window, or the maximum width if the value is zero.
-        /// </summary>
-        protected int WindowWidth { get; set; } = 0;
-
-        /// <summary>
-        /// The height of the window, or the maximum height if the value is zero.
-        /// </summary>
-        protected int WindowHeight { get; set; } = 0;
-
-        /// <summary>
-        /// Whether the window should have a transparent background or not.
-        /// </summary>
-        protected bool IsWindowTransparent { get; set; } = false;
-
-        /// <summary>
-        /// Whether the window should be focusable or not.
-        /// </summary>
-        protected bool IsWindowFocusable { get; set; } = true;
-
         /// <summary>
         /// The switches to pass to the Flutter engine.
         /// Custom switches may be added before <see cref="OnCreate"/> is called.
@@ -89,13 +54,7 @@ namespace Tizen.Flutter.Embedding
 
             var windowProperties = new FlutterDesktopWindowProperties
             {
-                headed = IsHeaded,
-                x = WindowOffsetX,
-                y = WindowOffsetY,
-                width = WindowWidth,
-                height = WindowHeight,
-                transparent = IsWindowTransparent,
-                focusable = IsWindowFocusable,
+                headed = false,
             };
 
             Utils.ParseEngineArgs(EngineArgs);
@@ -117,26 +76,8 @@ namespace Tizen.Flutter.Embedding
             Handle = FlutterDesktopRunEngine(ref windowProperties, ref engineProperties);
             if (Handle.IsInvalid)
             {
-                throw new Exception("Could not launch a Flutter application.");
+                throw new Exception("Could not launch a service application.");
             }
-        }
-
-        protected override void OnResume()
-        {
-            base.OnResume();
-
-            Debug.Assert(Handle);
-
-            FlutterDesktopNotifyAppIsResumed(Handle);
-        }
-
-        protected override void OnPause()
-        {
-            base.OnPause();
-
-            Debug.Assert(Handle);
-
-            FlutterDesktopNotifyAppIsPaused(Handle);
         }
 
         protected override void OnTerminate()
@@ -173,15 +114,6 @@ namespace Tizen.Flutter.Embedding
             Debug.Assert(Handle);
 
             FlutterDesktopNotifyLocaleChange(Handle);
-        }
-
-        protected override void OnAppControlReceived(AppControlReceivedEventArgs e)
-        {
-            IntPtr control = e.ReceivedAppControl.SafeAppControlHandle.DangerousGetHandle();
-
-            Debug.Assert(Handle);
-
-            FlutterDesktopNotifyAppControl(Handle, control);
         }
 
         /// <summary>
