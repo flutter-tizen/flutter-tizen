@@ -152,7 +152,10 @@ Future<void> main(List<String> args) async {
             tizenSdk: tizenSdk,
             operatingSystemUtils: globals.os,
           ),
-      TizenValidator: () => TizenValidator(),
+      TizenValidator: () => TizenValidator(
+            logger: globals.logger,
+            processManager: globals.processManager,
+          ),
       EmulatorManager: () => TizenEmulatorManager(
             tizenSdk: tizenSdk,
             tizenWorkflow: tizenWorkflow,

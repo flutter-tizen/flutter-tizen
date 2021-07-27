@@ -7,14 +7,19 @@
 import 'dart:io';
 
 import 'package:flutter_tools/src/android/android_workflow.dart';
+import 'package:flutter_tools/src/base/common.dart';
 import 'package:flutter_tools/src/base/context.dart';
+import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/base/os.dart';
+import 'package:flutter_tools/src/base/process.dart';
 import 'package:flutter_tools/src/base/version.dart';
+import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/doctor.dart';
 import 'package:flutter_tools/src/doctor_validator.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/version.dart';
 import 'package:meta/meta.dart';
+import 'package:process/process.dart';
 
 import 'executable.dart';
 import 'tizen_sdk.dart';
@@ -44,10 +49,19 @@ class TizenDoctorValidatorsProvider extends DoctorValidatorsProvider {
 
 /// A validator that checks for Tizen SDK and .NET CLI installation.
 class TizenValidator extends DoctorValidator {
-  TizenValidator() : super('Tizen toolchain - develop for Tizen devices');
+  TizenValidator({
+    @required Logger logger,
+    @required ProcessManager processManager,
+  })  : _processManager = processManager,
+        _processUtils =
+            ProcessUtils(logger: logger, processManager: processManager),
+        super('Tizen toolchain - develop for Tizen devices');
+
+  final ProcessManager _processManager;
+  final ProcessUtils _processUtils;
 
   bool _validatePackages(List<ValidationMessage> messages) {
-    // tizenSdk is not null here.
+    assert(tizenSdk != null);
     final String gccVersion = tizenSdk.defaultGccVersion;
     final String packageManager = tizenSdk.packageManagerCli.path;
     final List<String> missingPackages = <String>[];
@@ -117,9 +131,9 @@ class TizenValidator extends DoctorValidator {
       return ValidationResult(ValidationType.partial, messages);
     }
 
-    if (dotnetCli != null && globals.processManager.canRun(dotnetCli.path)) {
+    if (dotnetCli != null && _processManager.canRun(dotnetCli.path)) {
       final Version dotnetVersion = Version.parse(
-        globals.processUtils
+        _processUtils
             .runSync(<String>[dotnetCli.path, '--version'])
             .stdout
             .trim(),
@@ -190,8 +204,15 @@ class _FlutterTizenVersion extends FlutterVersion {
         : null;
   }
 
+  /// Source: [Cache.engineRevision] in `cache.dart`
   @override
-  String get engineRevision => _getVersionFor('engine');
+  String get engineRevision {
+    final String engineRevision = _getVersionFor('engine');
+    if (engineRevision == null) {
+      throwToolExit('Could not determine engine revision.');
+    }
+    return engineRevision;
+  }
 
   /// See: [_runGit] in `version.dart`
   String _runGit(String command) => globals.processUtils
