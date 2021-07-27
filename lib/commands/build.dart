@@ -4,7 +4,7 @@
 
 // @dart = 2.8
 
-import 'package:flutter_tools/src/android/build_validation.dart' as android;
+import 'package:flutter_tools/src/android/build_validation.dart';
 import 'package:flutter_tools/src/base/analyze_size.dart';
 import 'package:flutter_tools/src/base/common.dart';
 import 'package:flutter_tools/src/base/terminal.dart';
@@ -40,6 +40,7 @@ class BuildTpkCommand extends BuildSubCommand
     );
     argParser.addOption(
       'device-profile',
+      abbr: 'p',
       allowed: <String>['mobile', 'wearable', 'tv', 'common'],
       help: 'Target device type that the app will run on. Choose \'wearable\' '
           'for watches and \'common\' for IoT (Raspberry Pi) devices.',
@@ -58,8 +59,8 @@ class BuildTpkCommand extends BuildSubCommand
   @override
   final String description = 'Build a Tizen TPK file from your app.';
 
-  /// See: [android.validateBuild] in `build_validation.dart`
-  void validateBuild(TizenBuildInfo tizenBuildInfo) {
+  /// See: [validateBuild] in `build_validation.dart`
+  void _validateBuild(TizenBuildInfo tizenBuildInfo) {
     if (tizenBuildInfo.buildInfo.mode.isPrecompiled &&
         tizenBuildInfo.targetArch == 'x86') {
       throwToolExit('x86 ABI does not support AOT compilation.');
@@ -85,7 +86,7 @@ class BuildTpkCommand extends BuildSubCommand
       deviceProfile: deviceProfile,
       securityProfile: stringArg('security-profile'),
     );
-    validateBuild(tizenBuildInfo);
+    _validateBuild(tizenBuildInfo);
     displayNullSafetyMode(buildInfo);
 
     await TizenBuilder.buildTpk(
