@@ -177,11 +177,9 @@ namespace Tizen.Flutter.Embedding
 
         protected override void OnAppControlReceived(AppControlReceivedEventArgs e)
         {
-            IntPtr control = e.ReceivedAppControl.SafeAppControlHandle.DangerousGetHandle();
-
             Debug.Assert(Handle);
 
-            FlutterDesktopNotifyAppControl(Handle, control);
+            FlutterDesktopNotifyAppControl(Handle, e.ReceivedAppControl.SafeAppControlHandle);
         }
 
         /// <summary>

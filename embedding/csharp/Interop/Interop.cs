@@ -4,6 +4,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using Tizen.Applications;
 
 namespace Tizen.Flutter.Embedding
 {
@@ -75,7 +76,7 @@ namespace Tizen.Flutter.Embedding
         [DllImport("flutter_tizen.so")]
         public static extern void FlutterDesktopNotifyAppControl(
             FlutterDesktopEngine engine,
-            IntPtr handle);
+            SafeAppControlHandle handle);
         #endregion
 
         #region flutter_messenger.h

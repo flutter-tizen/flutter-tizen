@@ -116,6 +116,13 @@ namespace Tizen.Flutter.Embedding
             FlutterDesktopNotifyLocaleChange(Handle);
         }
 
+        protected override void OnAppControlReceived(AppControlReceivedEventArgs e)
+        {
+            Debug.Assert(Handle);
+
+            FlutterDesktopNotifyAppControl(Handle, e.ReceivedAppControl.SafeAppControlHandle);
+        }
+
         /// <summary>
         /// Returns the plugin registrar handle for the plugin with the given name.
         /// The name must be unique across the application.
