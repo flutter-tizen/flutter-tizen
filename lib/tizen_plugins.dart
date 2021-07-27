@@ -128,7 +128,7 @@ class TizenPlugin extends PluginPlatform implements NativeOrDartPlugin {
 /// depend on this mixin to ensure plugins are correctly configured for Tizen.
 ///
 /// See: [FlutterCommand.verifyThenRunCommand] in `flutter_command.dart`
-mixin TizenExtension on FlutterCommand {
+mixin DartPluginRegistry on FlutterCommand {
   String _entrypoint;
 
   bool get _usesTargetOption => argParser.options.containsKey('target');

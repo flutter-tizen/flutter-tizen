@@ -14,7 +14,7 @@ import '../tizen_cache.dart';
 import '../tizen_plugins.dart';
 
 class TizenDriveCommand extends DriveCommand
-    with TizenExtension, TizenRequiredArtifacts {
+    with DartPluginRegistry, TizenRequiredArtifacts {
   TizenDriveCommand({
     bool verboseHelp = false,
     @required FileSystem fileSystem,

@@ -15,7 +15,7 @@ import 'package:process/src/interface/process_manager.dart';
 
 import '../tizen_plugins.dart';
 
-class TizenAnalyzeCommand extends AnalyzeCommand with TizenExtension {
+class TizenAnalyzeCommand extends AnalyzeCommand with DartPluginRegistry {
   TizenAnalyzeCommand({
     bool verboseHelp = false,
     Directory workingDirectory,
