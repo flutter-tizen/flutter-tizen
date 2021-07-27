@@ -140,7 +140,12 @@ Future<void> main(List<String> args) async {
           ),
       TemplateRenderer: () => const MustacheTemplateRenderer(),
       ApplicationPackageFactory: () => TizenApplicationPackageFactory(),
-      DeviceManager: () => TizenDeviceManager(),
+      DeviceManager: () => TizenDeviceManager(
+            fileSystem: globals.fs,
+            logger: globals.logger,
+            platform: globals.platform,
+            processManager: globals.processManager,
+          ),
       DoctorValidatorsProvider: () => TizenDoctorValidatorsProvider(),
       TizenSdk: () => TizenSdk.locateSdk(),
       TizenWorkflow: () => TizenWorkflow(

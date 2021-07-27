@@ -39,12 +39,14 @@ class TizenDevice extends Device {
     String id, {
     String modelId,
     @required Logger logger,
-    @required TizenSdk tizenSdk,
     @required ProcessManager processManager,
+    @required TizenSdk tizenSdk,
+    @required FileSystem fileSystem,
   })  : _modelId = modelId,
         _logger = logger,
-        _tizenSdk = tizenSdk,
         _processManager = processManager,
+        _tizenSdk = tizenSdk,
+        _fileSystem = fileSystem,
         _processUtils =
             ProcessUtils(logger: logger, processManager: processManager),
         super(id,
@@ -54,8 +56,9 @@ class TizenDevice extends Device {
 
   final String _modelId;
   final Logger _logger;
-  final TizenSdk _tizenSdk;
   final ProcessManager _processManager;
+  final TizenSdk _tizenSdk;
+  final FileSystem _fileSystem;
   final ProcessUtils _processUtils;
 
   Map<String, String> _capabilities;
@@ -182,7 +185,7 @@ class TizenDevice extends Device {
       '/opt/usr/globalapps',
     ];
     for (final String root in rootCandidates) {
-      final File signatureFile = globals.fs.systemTempDirectory
+      final File signatureFile = _fileSystem.systemTempDirectory
           .createTempSync()
           .childFile('author-signature.xml');
       final RunResult result = await runSdbAsync(
@@ -446,7 +449,7 @@ class TizenDevice extends Device {
     String filename,
   ) async {
     final File localFile =
-        globals.fs.systemTempDirectory.createTempSync().childFile(filename);
+        _fileSystem.systemTempDirectory.createTempSync().childFile(filename);
     localFile.writeAsStringSync(arguments.join('\n'));
     final String remotePath = '/home/owner/share/tmp/sdk_tools/$filename';
     final RunResult result =
