@@ -4,19 +4,26 @@
 
 // @dart = 2.8
 
+import 'package:file/file.dart';
+import 'package:flutter_tools/src/base/logger.dart';
+import 'package:flutter_tools/src/base/platform.dart';
 import 'package:flutter_tools/src/commands/drive.dart';
-import 'package:flutter_tools/src/globals.dart' as globals;
+import 'package:meta/meta.dart';
 
 import '../tizen_cache.dart';
 import '../tizen_plugins.dart';
 
 class TizenDriveCommand extends DriveCommand
     with TizenExtension, TizenRequiredArtifacts {
-  TizenDriveCommand({bool verboseHelp = false})
-      : super(
+  TizenDriveCommand({
+    bool verboseHelp = false,
+    @required FileSystem fileSystem,
+    @required Logger logger,
+    @required Platform platform,
+  }) : super(
           verboseHelp: verboseHelp,
-          fileSystem: globals.fs,
-          logger: globals.logger,
-          platform: globals.platform,
+          fileSystem: fileSystem,
+          logger: logger,
+          platform: platform,
         );
 }
