@@ -777,9 +777,9 @@ class NativeTpk {
 }
 
 extension _PathUtils on String {
-  /// On non-Windows, returns [path] unchanged.
+  /// On non-Windows, returns the path string unchanged.
   ///
-  /// On Windows, converts Windows-style [path] (e.g. 'C:\x\y') into POSIX path
+  /// On Windows, converts Windows-style path (e.g. 'C:\x\y') into POSIX path
   /// ('/c/x/y') and returns.
   String toPosixPath() {
     String path = this;
