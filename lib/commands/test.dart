@@ -100,7 +100,7 @@ Future<void> main() async {
   entrypoint.main();
 }
 ''');
-      newArgs.add(runnerFile.absolute.path.toString());
+      newArgs.add(runnerFile.absolute.path);
     }
     await test.main(newArgs);
   }
