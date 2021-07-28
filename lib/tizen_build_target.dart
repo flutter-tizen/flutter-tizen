@@ -501,11 +501,11 @@ class DotnetTpk {
 
     if (securityProfile != null) {
       if (tizenSdk.securityProfiles == null ||
-          !tizenSdk.securityProfiles.names.contains(securityProfile)) {
+          !tizenSdk.securityProfiles.contains(securityProfile)) {
         throwToolExit('The profile $securityProfile does not exist.');
       }
     }
-    securityProfile ??= tizenSdk.securityProfiles?.active?.name;
+    securityProfile ??= tizenSdk.securityProfiles?.active;
 
     if (securityProfile != null) {
       environment.logger
@@ -713,11 +713,11 @@ class NativeTpk {
     String securityProfile = buildInfo.securityProfile;
     if (securityProfile != null) {
       if (tizenSdk.securityProfiles == null ||
-          !tizenSdk.securityProfiles.names.contains(securityProfile)) {
+          !tizenSdk.securityProfiles.contains(securityProfile)) {
         throwToolExit('The profile $securityProfile does not exist.');
       }
     }
-    securityProfile ??= tizenSdk.securityProfiles?.active?.name;
+    securityProfile ??= tizenSdk.securityProfiles?.active;
 
     if (securityProfile != null) {
       environment.logger

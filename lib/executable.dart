@@ -139,7 +139,13 @@ Future<void> main(List<String> args) async {
             osUtils: globals.os,
           ),
       TemplateRenderer: () => const MustacheTemplateRenderer(),
-      ApplicationPackageFactory: () => TizenApplicationPackageFactory(),
+      ApplicationPackageFactory: () => TizenApplicationPackageFactory(
+            androidSdk: globals.androidSdk,
+            processManager: globals.processManager,
+            logger: globals.logger,
+            userMessages: globals.userMessages,
+            fileSystem: globals.fs,
+          ),
       DeviceManager: () => TizenDeviceManager(
             fileSystem: globals.fs,
             logger: globals.logger,
