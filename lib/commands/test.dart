@@ -9,13 +9,13 @@ import 'dart:async';
 import 'package:file/file.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/commands/test.dart';
-import 'package:flutter_tools/src/test/runner.dart';
-import 'package:flutter_tools/src/test/test_wrapper.dart';
 import 'package:flutter_tools/src/dart/language_version.dart';
 import 'package:flutter_tools/src/dart/package_map.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/project.dart';
 import 'package:flutter_tools/src/runner/flutter_command.dart';
+import 'package:flutter_tools/src/test/runner.dart';
+import 'package:flutter_tools/src/test/test_wrapper.dart';
 import 'package:package_config/package_config.dart';
 import 'package:test_core/src/executable.dart' as test;
 import 'package:test_core/src/platform.dart' as hack
@@ -59,57 +59,50 @@ class TizenTestWrapper implements TestWrapper {
       await test.main(args);
       return;
     }
-    Directory runnerDir;
-    try {
-      final int filesOptionIndex = args.lastIndexOf('--');
-      final List<String> newArgs = args.sublist(0, filesOptionIndex + 1);
-      final List<File> testFiles = args
-          .sublist(filesOptionIndex + 1)
-          .map((String path) => globals.fs.file(path))
-          .toList();
+    
+    final int filesOptionIndex = args.lastIndexOf('--');
+    final List<String> newArgs = args.sublist(0, filesOptionIndex + 1);
+    final List<File> testFiles = args
+        .sublist(filesOptionIndex + 1)
+        .map((String path) => globals.fs.file(path))
+        .toList();
+    final FlutterProject flutterProject = FlutterProject.current();
+    final PackageConfig packageConfig = await loadPackageConfigWithLogging(
+      flutterProject.directory.childFile('.packages'),
+      logger: globals.logger,
+    );
+    final File pluginRegistrant = TizenProject.fromFlutter(flutterProject)
+        .managedDirectory
+        .childFile('generated_plugin_registrant.dart');
 
-      final FlutterProject flutterProject = FlutterProject.current();
-      final PackageConfig packageConfig = await loadPackageConfigWithLogging(
-        flutterProject.directory.childFile('.packages'),
-        logger: globals.logger,
+    final Directory runnerDir = globals.fs.systemTempDirectory.createTempSync();
+    for (final File testFile in testFiles) {
+      final File runnerFile = runnerDir.childFile(
+          testFile.basename.replaceFirst('_test.dart', '_test_runner.dart'))
+        ..createSync(recursive: true);
+
+      final LanguageVersion languageVersion = determineLanguageVersion(
+        testFile,
+        packageConfig[flutterProject.manifest.appName],
+        Cache.flutterRoot,
       );
-      final File pluginRegistrant = TizenProject.fromFlutter(flutterProject)
-          .managedDirectory
-          .childFile('generated_plugin_registrant.dart');
-
-      runnerDir = globals.fs.systemTempDirectory..createTempSync();
-      for (final File testFile in testFiles) {
-        final File runnerFile = runnerDir.childFile(
-            testFile.basename.replaceFirst('_test.dart', '_test_runner.dart'))
-          ..createSync(recursive: true);
-
-        final LanguageVersion languageVersion = determineLanguageVersion(
-          testFile,
-          packageConfig[flutterProject.manifest.appName],
-          Cache.flutterRoot,
-        );
-        runnerFile.writeAsStringSync('''
+      runnerFile.writeAsStringSync('''
 //
 // Generated file. Do not edit.
 //
 // @dart=${languageVersion.major}.${languageVersion.minor}
 
-import '${testFile.absolute.path.toString()}' as entrypoint;
-import '${pluginRegistrant.absolute.path.toString()}';
+import '${testFile.absolute.path}' as entrypoint;
+import '${pluginRegistrant.absolute.path}';
 
 Future<void> main() async {
   registerPlugins();
   entrypoint.main();
 }
 ''');
-        newArgs.add(runnerFile.absolute.path.toString());
-      }
-      await test.main(newArgs);
-    } finally {
-      if (runnerDir.existsSync()) {
-        runnerDir.deleteSync(recursive: true);
-      }
+      newArgs.add(runnerFile.absolute.path.toString());
     }
+    await test.main(newArgs);
   }
 
   /// Source: [TestWrapper.registerPlatformPlugin] in `test_wrapper.dart`.
