@@ -26,7 +26,7 @@ import '../tizen_plugins.dart';
 import '../tizen_project.dart';
 
 class TizenTestCommand extends TestCommand
-    with TizenExtension, TizenRequiredArtifacts {
+    with DartPluginRegistry, TizenRequiredArtifacts {
   TizenTestCommand({
     bool verboseHelp = false,
     TestWrapper testWrapper = const TestWrapper(),

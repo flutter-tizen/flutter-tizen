@@ -8,7 +8,7 @@ import 'package:flutter_tools/src/commands/attach.dart';
 
 import '../tizen_plugins.dart';
 
-class TizenAttachCommand extends AttachCommand with TizenExtension {
+class TizenAttachCommand extends AttachCommand with DartPluginRegistry {
   TizenAttachCommand({bool verboseHelp = false})
       : super(verboseHelp: verboseHelp);
 }
