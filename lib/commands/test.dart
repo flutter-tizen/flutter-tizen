@@ -59,7 +59,7 @@ class TizenTestWrapper implements TestWrapper {
       await test.main(args);
       return;
     }
-    
+
     final int filesOptionIndex = args.lastIndexOf('--');
     final List<String> newArgs = args.sublist(0, filesOptionIndex + 1);
     final List<File> testFiles = args
