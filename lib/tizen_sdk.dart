@@ -236,10 +236,10 @@ class Rootstrap {
   bool get isValid => rootDirectory.existsSync();
 }
 
-/// Converts [targetArch] to an arch name that corresponds to the `BUILD_ARCH`
+/// Converts [arch] to an arch name that corresponds to the `BUILD_ARCH`
 /// value used by the Tizen native builder.
-String getTizenBuildArch(String targetArch) {
-  switch (targetArch) {
+String getTizenBuildArch(String arch) {
+  switch (arch) {
     case 'arm':
       return 'armel';
     case 'arm64':
@@ -247,6 +247,20 @@ String getTizenBuildArch(String targetArch) {
     case 'x86':
       return 'i586';
     default:
-      return targetArch;
+      return arch;
+  }
+}
+
+/// Converts [arch] to an arch name that the Tizen CLI tool expects.
+String getTizenCliArch(String arch) {
+  switch (arch) {
+    case 'arm':
+      return 'arm';
+    case 'arm64':
+      return 'aarch64';
+    case 'x86':
+      return 'x86';
+    default:
+      return arch;
   }
 }
