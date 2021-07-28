@@ -10,7 +10,7 @@ import '../tizen_cache.dart';
 import '../tizen_plugins.dart';
 
 class TizenTestCommand extends TestCommand
-    with TizenExtension, TizenRequiredArtifacts {
+    with DartPluginRegistry, TizenRequiredArtifacts {
   TizenTestCommand({bool verboseHelp = false})
       : super(verboseHelp: verboseHelp);
 }

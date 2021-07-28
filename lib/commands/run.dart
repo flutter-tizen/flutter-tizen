@@ -10,6 +10,6 @@ import '../tizen_cache.dart';
 import '../tizen_plugins.dart';
 
 class TizenRunCommand extends RunCommand
-    with TizenExtension, TizenRequiredArtifacts {
+    with DartPluginRegistry, TizenRequiredArtifacts {
   TizenRunCommand({bool verboseHelp = false}) : super(verboseHelp: verboseHelp);
 }

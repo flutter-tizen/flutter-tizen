@@ -128,7 +128,7 @@ class TizenPlugin extends PluginPlatform implements NativeOrDartPlugin {
 /// depend on this mixin to ensure plugins are correctly configured for Tizen.
 ///
 /// See: [FlutterCommand.verifyThenRunCommand] in `flutter_command.dart`
-mixin TizenExtension on FlutterCommand {
+mixin DartPluginRegistry on FlutterCommand {
   String _entrypoint;
 
   bool get _usesTargetOption => argParser.options.containsKey('target');
@@ -208,10 +208,13 @@ const List<String> _knownPlugins = <String>[
   'battery_plus',
   'camera',
   'connectivity',
+  'connectivity_plus',
   'device_info',
+  'device_info_plus',
   'flutter_tts',
   'image_picker',
   'integration_test',
+  'network_info_plus',
   'package_info',
   'package_info_plus',
   'path_provider',
@@ -219,9 +222,11 @@ const List<String> _knownPlugins = <String>[
   'sensors',
   'sensors_plus',
   'share',
+  'share_plus',
   'shared_preferences',
   'url_launcher',
   'video_player',
+  'wakelock',
   'webview_flutter',
   'wifi_info_flutter',
 ];

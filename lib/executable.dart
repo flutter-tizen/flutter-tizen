@@ -97,12 +97,25 @@ Future<void> main(List<String> args) async {
       ScreenshotCommand(),
       SymbolizeCommand(stdio: globals.stdio, fileSystem: globals.fs),
       // Commands extended for Tizen.
-      TizenAnalyzeCommand(verboseHelp: verboseHelp),
+      TizenAnalyzeCommand(
+        verboseHelp: verboseHelp,
+        fileSystem: globals.fs,
+        platform: globals.platform,
+        processManager: globals.processManager,
+        logger: globals.logger,
+        terminal: globals.terminal,
+        artifacts: globals.artifacts,
+      ),
       TizenAttachCommand(verboseHelp: verboseHelp),
       TizenBuildCommand(verboseHelp: verboseHelp),
       TizenCleanCommand(verbose: verbose),
       TizenCreateCommand(verboseHelp: verboseHelp),
-      TizenDriveCommand(verboseHelp: verboseHelp),
+      TizenDriveCommand(
+        verboseHelp: verboseHelp,
+        fileSystem: globals.fs,
+        logger: globals.logger,
+        platform: globals.platform,
+      ),
       TizenPackagesCommand(),
       TizenPrecacheCommand(
         verboseHelp: verboseHelp,
