@@ -39,13 +39,34 @@ class TizenProject extends FlutterProjectPlatform {
   bool get isDotnet =>
       editableDirectory.childFile('Runner.csproj').existsSync();
 
+  bool get isMultiApp =>
+      editableDirectory.childDirectory('ui').existsSync() &&
+      editableDirectory.childDirectory('service').existsSync();
+  // directory
+  Directory get uiAppDirectory => editableDirectory.childDirectory('ui');
+  Directory get serviceAppDirectory =>
+      editableDirectory.childDirectory('service');
+  // project file
+  File get uiProjectFile =>
+      uiAppDirectory.childFile(isDotnet ? 'Runner.csproj' : 'project_def.prop');
+  File get serviceProjectFile => serviceAppDirectory
+      .childFile(isDotnet ? 'Runner.csproj' : 'project_def.prop');
+
+  //manifestFile
+  File get uiManifestFile => uiAppDirectory.childFile('tizen-manifest.xml');
+  File get serviceManifestFile =>
+      serviceAppDirectory.childFile('tizen-manifest.xml');
+
+
   File get projectFile => editableDirectory
       .childFile(isDotnet ? 'Runner.csproj' : 'project_def.prop');
 
-  File get manifestFile => editableDirectory.childFile('tizen-manifest.xml');
+  File get manifestFile => (isMultiApp ? uiAppDirectory : editableDirectory)
+      .childFile('tizen-manifest.xml');
 
   @override
-  bool existsSync() => projectFile.existsSync() && manifestFile.existsSync();
+  bool existsSync() =>
+      isMultiApp || (projectFile.existsSync() && manifestFile.existsSync());
 
   String get outputTpkName {
     final TizenManifest manifest = TizenManifest.parseFromXml(manifestFile);

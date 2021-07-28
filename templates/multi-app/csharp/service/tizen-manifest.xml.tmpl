@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<manifest package="{{androidIdentifier}}" version="1.0.0" api-version="4.0" xmlns="http://tizen.org/ns/packages">
+    <profile name="common"/>
+    <service-application appid="{{androidIdentifier}}" exec="RunnerService.dll" type="dotnet" multiple="false" nodisplay="true" taskmanage="false" api-version="4" auto-restart="false">
+        <label>{{projectName}}</label>
+        <icon>ic_launcher.png</icon>
+        <background-category value="media"/>
+        <metadata key="http://tizen.org/metadata/prefer_dotnet_aot" value="true"/>
+    </service-application>
+    <tv-info api-version="8.8.0">
+        <infolink>T-INFOLINK2021-1000</infolink>
+    </tv-info>
+    <feature name="http://tizen.org/feature/screen.size.all"/>
+</manifest>

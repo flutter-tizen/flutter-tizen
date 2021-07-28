@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest package="{{androidIdentifier}}" version="1.0.0" api-version="4.0" xmlns="http://tizen.org/ns/packages">
+    <profile name="common"/>
+    <service-application appid="{{androidIdentifier}}_service" exec="runner_service" type="capp" multiple="false" nodisplay="true" taskmanage="false" auto-restart="false">
+        <label>{{projectName}}</label>
+        <icon>ic_launcher.png</icon>
+        <background-category value="media"/>
+    </service-application>
+    <feature name="http://tizen.org/feature/screen.size.all"/>
+</manifest>
