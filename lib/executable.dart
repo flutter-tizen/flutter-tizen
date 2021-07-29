@@ -125,7 +125,10 @@ Future<void> main(List<String> args) async {
         featureFlags: featureFlags,
       ),
       TizenRunCommand(verboseHelp: verboseHelp),
-      TizenTestCommand(verboseHelp: verboseHelp),
+      TizenTestCommand(
+        verboseHelp: verboseHelp,
+        testWrapper: TizenTestWrapper(),
+      ),
     ],
     verbose: verbose,
     verboseHelp: verboseHelp,
