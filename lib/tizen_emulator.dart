@@ -83,6 +83,7 @@ class TizenEmulatorManager extends EmulatorManager {
       );
     }
 
+    assert(_tizenSdk != null);
     final RunResult runResult = await _processUtils.run(
       <String>[
         _tizenSdk.emCli.path,
@@ -102,6 +103,7 @@ class TizenEmulatorManager extends EmulatorManager {
   }
 
   List<PlatformImage> _loadAllPlatformImages() {
+    assert(_tizenSdk != null);
     final Directory platformsDir = _tizenSdk.platformsDirectory;
     if (!platformsDir.existsSync()) {
       return <PlatformImage>[];
@@ -231,7 +233,7 @@ class TizenEmulators extends EmulatorDiscovery {
       return <Emulator>[];
     }
 
-    // _tizenSdk is not null here.
+    assert(_tizenSdk != null);
     final Directory emulatorDir = _tizenSdk.sdkDataDirectory
         .childDirectory('emulator')
         .childDirectory('vms');
@@ -239,25 +241,31 @@ class TizenEmulators extends EmulatorDiscovery {
       return <Emulator>[];
     }
 
-    TizenEmulator loadEmulatorInfo(String id) {
+    TizenEmulator loadEmulatorInfo(Directory directory) {
+      final String id = directory.basename;
       final File configFile =
           emulatorDir.childDirectory(id).childFile('vm_config.xml');
+      if (!configFile.existsSync()) {
+        return null;
+      }
 
-      final XmlDocument xmlDocument =
-          XmlDocument.parse(configFile.readAsStringSync());
-      final XmlElement deviceTemplate =
-          xmlDocument.findAllElements('deviceTemplate').first;
-      final String name = deviceTemplate.getAttribute('name');
-      final XmlElement diskImage =
-          xmlDocument.findAllElements('diskImage').first;
-      final String profile = diskImage.getAttribute('profile');
-      final String version = diskImage.getAttribute('version');
+      XmlDocument document;
+      try {
+        document = XmlDocument.parse(configFile.readAsStringSync().trim());
+      } on XmlException {
+        return null;
+      }
 
-      final Map<String, String> properties = <String, String>{
-        'name': name,
-        'profile': profile,
-        'version': version,
-      };
+      final Map<String, String> properties = <String, String>{};
+      final Iterable<XmlElement> deviceTemplates =
+          document.findAllElements('deviceTemplate');
+      final Iterable<XmlElement> diskImages =
+          document.findAllElements('diskImage');
+      if (deviceTemplates.isNotEmpty && diskImages.isNotEmpty) {
+        properties['name'] = deviceTemplates.first.getAttribute('name');
+        properties['profile'] = diskImages.first.getAttribute('profile');
+        properties['version'] = diskImages.first.getAttribute('version');
+      }
 
       return TizenEmulator(
         id,
@@ -269,11 +277,10 @@ class TizenEmulators extends EmulatorDiscovery {
     }
 
     final List<Emulator> emulators = <Emulator>[];
-    for (final FileSystemEntity entity in emulatorDir.listSync()) {
-      if (entity is Directory &&
-          entity.childFile('vm_config.xml').existsSync()) {
-        final String id = entity.basename;
-        emulators.add(loadEmulatorInfo(id));
+    for (final Directory dir in emulatorDir.listSync().whereType<Directory>()) {
+      final TizenEmulator emulator = loadEmulatorInfo(dir);
+      if (emulator != null) {
+        emulators.add(emulator);
       }
     }
     return emulators;
@@ -288,7 +295,8 @@ class TizenEmulator extends Emulator {
     @required Logger logger,
     @required ProcessManager processManager,
     @required TizenSdk tizenSdk,
-  })  : _properties = properties,
+  })  : assert(tizenSdk != null),
+        _properties = properties,
         _logger = logger,
         _processUtils =
             ProcessUtils(logger: logger, processManager: processManager),
@@ -316,7 +324,7 @@ class TizenEmulator extends Emulator {
 
   @override
   Future<void> launch() async {
-    final File emCli = _tizenSdk?.emCli;
+    final File emCli = _tizenSdk.emCli;
     if (emCli == null || !emCli.existsSync()) {
       throwToolExit('Unable to locate Tizen Emulator Manager.');
     }

@@ -39,12 +39,14 @@ class TizenDevice extends Device {
     String id, {
     String modelId,
     @required Logger logger,
-    @required TizenSdk tizenSdk,
     @required ProcessManager processManager,
+    @required TizenSdk tizenSdk,
+    @required FileSystem fileSystem,
   })  : _modelId = modelId,
         _logger = logger,
-        _tizenSdk = tizenSdk,
         _processManager = processManager,
+        _tizenSdk = tizenSdk,
+        _fileSystem = fileSystem,
         _processUtils =
             ProcessUtils(logger: logger, processManager: processManager),
         super(id,
@@ -54,8 +56,9 @@ class TizenDevice extends Device {
 
   final String _modelId;
   final Logger _logger;
-  final TizenSdk _tizenSdk;
   final ProcessManager _processManager;
+  final TizenSdk _tizenSdk;
+  final FileSystem _fileSystem;
   final ProcessUtils _processUtils;
 
   Map<String, String> _capabilities;
@@ -96,18 +99,20 @@ class TizenDevice extends Device {
       }
       _capabilities = capabilities;
     }
+    if (!_capabilities.containsKey(name)) {
+      throwToolExit(
+          'Failed to read the $name capability value from device $id.');
+    }
     return _capabilities[name];
   }
 
-  static const List<String> _emulatorArchs = <String>['x86'];
+  bool get _isLocalEmulator => getCapability('cpu_arch') == 'x86';
 
   @override
-  Future<bool> get isLocalEmulator async =>
-      _emulatorArchs.contains(getCapability('cpu_arch'));
+  Future<bool> get isLocalEmulator async => _isLocalEmulator;
 
   @override
-  Future<String> get emulatorId async =>
-      (await isLocalEmulator) ? _modelId : null;
+  Future<String> get emulatorId async => _isLocalEmulator ? _modelId : null;
 
   @override
   Future<TargetPlatform> get targetPlatform async {
@@ -119,26 +124,26 @@ class TizenDevice extends Device {
 
   @override
   Future<bool> supportsRuntimeMode(BuildMode buildMode) async {
-    if (await isLocalEmulator) {
+    if (_isLocalEmulator) {
       return buildMode == BuildMode.debug;
     } else {
       return buildMode != BuildMode.jitRelease;
     }
   }
 
-  String get platformVersion {
+  String get _platformVersion {
     final String version = getCapability('platform_version');
 
     // Truncate if the version string is like "x.y.z.v".
     final List<String> segments = version.split('.');
-    if (segments.length > 2) {
-      return segments.sublist(0, 2).join('.');
+    if (segments.length > 3) {
+      return segments.sublist(0, 3).join('.');
     }
     return version;
   }
 
   @override
-  Future<String> get sdkNameAndVersion async => 'Tizen $platformVersion';
+  Future<String> get sdkNameAndVersion async => 'Tizen $_platformVersion';
 
   @override
   String get name => 'Tizen ' + _modelId;
@@ -147,7 +152,7 @@ class TizenDevice extends Device {
 
   String get architecture {
     final String cpuArch = getCapability('cpu_arch');
-    if (_emulatorArchs.contains(cpuArch)) {
+    if (_isLocalEmulator) {
       return cpuArch;
     } else if (usesSecureProtocol) {
       return cpuArch == 'armv7' ? 'arm' : 'arm64';
@@ -182,7 +187,7 @@ class TizenDevice extends Device {
       '/opt/usr/globalapps',
     ];
     for (final String root in rootCandidates) {
-      final File signatureFile = globals.fs.systemTempDirectory
+      final File signatureFile = _fileSystem.systemTempDirectory
           .createTempSync()
           .childFile('author-signature.xml');
       final RunResult result = await runSdbAsync(
@@ -218,7 +223,7 @@ class TizenDevice extends Device {
         return true;
       }
     }
-    final bool isTvEmulator = usesSecureProtocol && await isLocalEmulator;
+    final bool isTvEmulator = usesSecureProtocol && _isLocalEmulator;
     _logger.printTrace('Installing TPK.');
     if (await _installApp(app, installTwice: !wasInstalled && isTvEmulator)) {
       return true;
@@ -251,8 +256,8 @@ class TizenDevice extends Device {
       return false;
     }
 
-    final Version deviceVersion = Version.parse(platformVersion);
-    final Version apiVersion = Version.parse(app.manifest?.apiVersion);
+    final Version deviceVersion = Version.parse(_platformVersion);
+    final Version apiVersion = Version.parse(app.manifest.apiVersion);
     if (deviceVersion != null &&
         apiVersion != null &&
         apiVersion > deviceVersion) {
@@ -331,7 +336,7 @@ class TizenDevice extends Device {
       );
       // Package has been built, so we can get the updated application id and
       // activity name from the tpk.
-      package = await TizenTpk.fromTizenProject(project);
+      package = await TizenTpk.fromProject(project);
     }
     if (package == null) {
       throwToolExit('Problem building an application: see above error(s).');
@@ -359,7 +364,7 @@ class TizenDevice extends Device {
         await TizenDlogReader.createLogReader(
           this,
           _processManager,
-          after: currentDeviceTime,
+          after: _currentDeviceTime,
         ),
         portForwarder: portForwarder,
         hostPort: debuggingOptions.hostVmServicePort,
@@ -446,7 +451,7 @@ class TizenDevice extends Device {
     String filename,
   ) async {
     final File localFile =
-        globals.fs.systemTempDirectory.createTempSync().childFile(filename);
+        _fileSystem.systemTempDirectory.createTempSync().childFile(filename);
     localFile.writeAsStringSync(arguments.join('\n'));
     final String remotePath = '/home/owner/share/tmp/sdk_tools/$filename';
     final RunResult result =
@@ -473,7 +478,7 @@ class TizenDevice extends Device {
     }
   }
 
-  DateTime get currentDeviceTime {
+  DateTime get _currentDeviceTime {
     try {
       final RunResult result = runSdbSync(usesSecureProtocol
           ? <String>['shell', '0', 'getdate']
@@ -485,11 +490,10 @@ class TizenDevice extends Device {
       return DateTime.parse('${result.stdout.trim()}Z');
     } on FormatException catch (error) {
       _logger.printError(error.toString());
-      return null;
     } on Exception catch (error) {
       _logger.printError('Failed to get device time: $error');
-      return null;
     }
+    return DateTime.fromMillisecondsSinceEpoch(0);
   }
 
   DateTime _lastClearLogTime;
@@ -497,7 +501,7 @@ class TizenDevice extends Device {
   @override
   void clearLogs() {
     // `sdb dlog -c` is not allowed for non-root users.
-    _lastClearLogTime = currentDeviceTime;
+    _lastClearLogTime = _currentDeviceTime;
   }
 
   /// Source: [AndroidDevice.getLogReader] in `android_device.dart`
@@ -509,7 +513,7 @@ class TizenDevice extends Device {
       _logReader ??= await TizenDlogReader.createLogReader(
         this,
         _processManager,
-        after: includePastLogs ? _lastClearLogTime : currentDeviceTime,
+        after: includePastLogs ? _lastClearLogTime : _currentDeviceTime,
       );
 
   @override
@@ -521,13 +525,13 @@ class TizenDevice extends Device {
 
   @override
   bool isSupported() {
-    final double deviceVersion = double.tryParse(platformVersion) ?? 0;
-    if (!_emulatorArchs.contains(getCapability('cpu_arch')) &&
+    final Version deviceVersion = Version.parse(_platformVersion);
+    if (_isLocalEmulator &&
         usesSecureProtocol &&
-        deviceVersion < 6.0) {
+        deviceVersion < Version(6, 0, 0)) {
       return false;
     }
-    return deviceVersion >= 4.0;
+    return deviceVersion >= Version(4, 0, 0);
   }
 
   @override
@@ -556,7 +560,7 @@ class TizenDlogReader extends DeviceLogReader {
     this._device,
     this._sdbProcess,
     this._after,
-  ) {
+  ) : assert(_after != null) {
     _linesController = StreamController<String>.broadcast(
       onListen: _start,
       onCancel: _stop,
@@ -639,11 +643,11 @@ class TizenDlogReader extends DeviceLogReader {
         if (appPid != null && int.parse(logMatch.group(1)) != appPid) {
           _acceptedLastLine = false;
           return;
-        } else if (_after != null && !_device.usesSecureProtocol) {
+        } else if (!_device.usesSecureProtocol) {
           // TODO(swift-kim): Deal with invalid timestamps on TV devices.
           final DateTime logTime =
               DateTime.tryParse('${_after.year}-${timeMatch.group(1)}Z');
-          if (logTime?.isBefore(_after) ?? false) {
+          if (logTime != null && logTime.isBefore(_after)) {
             _acceptedLastLine = false;
             return;
           }

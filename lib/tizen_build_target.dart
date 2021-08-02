@@ -264,7 +264,7 @@ USER_LIB_DIRS = lib
             .forEach(inputs.add);
       }
 
-      for (final String libName in plugin.getProperty('USER_LIBS').split(' ')) {
+      for (final String libName in plugin.getProperty('USER_LIBS')) {
         final File libFile = plugin.directory
             .childDirectory('lib')
             .childDirectory(getTizenBuildArch(buildInfo.targetArch))
@@ -501,11 +501,11 @@ class DotnetTpk {
 
     if (securityProfile != null) {
       if (tizenSdk.securityProfiles == null ||
-          !tizenSdk.securityProfiles.names.contains(securityProfile)) {
+          !tizenSdk.securityProfiles.contains(securityProfile)) {
         throwToolExit('The profile $securityProfile does not exist.');
       }
     }
-    securityProfile ??= tizenSdk.securityProfiles?.active?.name;
+    securityProfile ??= tizenSdk.securityProfiles?.active;
 
     if (securityProfile != null) {
       environment.logger
@@ -713,11 +713,11 @@ class NativeTpk {
     String securityProfile = buildInfo.securityProfile;
     if (securityProfile != null) {
       if (tizenSdk.securityProfiles == null ||
-          !tizenSdk.securityProfiles.names.contains(securityProfile)) {
+          !tizenSdk.securityProfiles.contains(securityProfile)) {
         throwToolExit('The profile $securityProfile does not exist.');
       }
     }
-    securityProfile ??= tizenSdk.securityProfiles?.active?.name;
+    securityProfile ??= tizenSdk.securityProfiles?.active;
 
     if (securityProfile != null) {
       environment.logger

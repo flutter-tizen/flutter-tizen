@@ -22,7 +22,7 @@ class TizenSdk {
   TizenSdk._(this.directory);
 
   /// See: [AndroidSdk.locateAndroidSdk] in `android_sdk.dart`
-  factory TizenSdk.locateSdk() {
+  static TizenSdk locateSdk() {
     Directory tizenHomeDir;
     final Map<String, String> environment = globals.platform.environment;
     final File sdb = globals.os.which('sdb');
@@ -58,14 +58,18 @@ class TizenSdk {
   Directory get sdkDataDirectory {
     final File sdkInfo = directory.childFile('sdk.info');
     if (!sdkInfo.existsSync()) {
-      return null;
+      throwToolExit(
+        'The sdk.info file could not be found. Tizen Studio is out of date or corrupted.',
+      );
     }
     // ignore: invalid_use_of_visible_for_testing_member
     final Map<String, String> info = parseIniLines(sdkInfo.readAsLinesSync());
     if (info.containsKey('TIZEN_SDK_DATA_PATH')) {
       return globals.fs.directory(info['TIZEN_SDK_DATA_PATH']);
     }
-    return null;
+    throwToolExit(
+      'The SDK data directory could not be found. Tizen Studio is out of date or corrupted.',
+    );
   }
 
   /// The SDK version number in the "x.y[.z]" format, or null if not found.
@@ -102,11 +106,11 @@ class TizenSdk {
           ? 'package-manager-cli.exe'
           : 'package-manager-cli.bin');
 
-  File get securityProfilesFile =>
-      sdkDataDirectory.childDirectory('profile').childFile('profiles.xml');
-
-  SecurityProfiles get securityProfiles =>
-      SecurityProfiles.parseFromXml(securityProfilesFile);
+  SecurityProfiles get securityProfiles {
+    final File manifest =
+        sdkDataDirectory.childDirectory('profile').childFile('profiles.xml');
+    return SecurityProfiles.parseFromXml(manifest);
+  }
 
   String get defaultNativeCompiler => 'llvm-10.0';
 

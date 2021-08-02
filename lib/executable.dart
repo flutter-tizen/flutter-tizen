@@ -142,15 +142,29 @@ Future<void> main(List<String> args) async {
             osUtils: globals.os,
           ),
       TemplateRenderer: () => const MustacheTemplateRenderer(),
-      ApplicationPackageFactory: () => TizenApplicationPackageFactory(),
-      DeviceManager: () => TizenDeviceManager(),
+      ApplicationPackageFactory: () => TizenApplicationPackageFactory(
+            androidSdk: globals.androidSdk,
+            processManager: globals.processManager,
+            logger: globals.logger,
+            userMessages: globals.userMessages,
+            fileSystem: globals.fs,
+          ),
+      DeviceManager: () => TizenDeviceManager(
+            fileSystem: globals.fs,
+            logger: globals.logger,
+            platform: globals.platform,
+            processManager: globals.processManager,
+          ),
       DoctorValidatorsProvider: () => TizenDoctorValidatorsProvider(),
       TizenSdk: () => TizenSdk.locateSdk(),
       TizenWorkflow: () => TizenWorkflow(
             tizenSdk: tizenSdk,
             operatingSystemUtils: globals.os,
           ),
-      TizenValidator: () => TizenValidator(),
+      TizenValidator: () => TizenValidator(
+            logger: globals.logger,
+            processManager: globals.processManager,
+          ),
       EmulatorManager: () => TizenEmulatorManager(
             tizenSdk: tizenSdk,
             tizenWorkflow: tizenWorkflow,

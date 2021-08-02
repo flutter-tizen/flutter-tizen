@@ -7,28 +7,37 @@
 import 'dart:io';
 
 import 'package:file/file.dart';
+import 'package:flutter_tools/src/android/android_sdk.dart';
 import 'package:flutter_tools/src/android/application_package.dart';
 import 'package:flutter_tools/src/application_package.dart';
-import 'package:flutter_tools/src/flutter_application_package.dart';
 import 'package:flutter_tools/src/base/common.dart';
+import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/base/terminal.dart';
+import 'package:flutter_tools/src/base/user_messages.dart';
 import 'package:flutter_tools/src/build_info.dart';
+import 'package:flutter_tools/src/flutter_application_package.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/project.dart';
 import 'package:meta/meta.dart';
+import 'package:process/process.dart';
 import 'package:xml/xml.dart';
 
 import 'tizen_project.dart';
 
 /// [FlutterApplicationPackageFactory] extended for Tizen.
 class TizenApplicationPackageFactory extends FlutterApplicationPackageFactory {
-  TizenApplicationPackageFactory()
-      : super(
-          androidSdk: globals.androidSdk,
-          processManager: globals.processManager,
-          logger: globals.logger,
-          userMessages: globals.userMessages,
-          fileSystem: globals.fs,
+  TizenApplicationPackageFactory({
+    @required AndroidSdk androidSdk,
+    @required ProcessManager processManager,
+    @required Logger logger,
+    @required UserMessages userMessages,
+    @required FileSystem fileSystem,
+  }) : super(
+          androidSdk: androidSdk,
+          processManager: processManager,
+          logger: logger,
+          userMessages: userMessages,
+          fileSystem: fileSystem,
         );
 
   @override
@@ -39,7 +48,7 @@ class TizenApplicationPackageFactory extends FlutterApplicationPackageFactory {
   }) async {
     if (platform == TargetPlatform.tester) {
       return applicationBinary == null
-          ? await TizenTpk.fromTizenProject(FlutterProject.current())
+          ? await TizenTpk.fromProject(FlutterProject.current())
           : await TizenTpk.fromTpk(applicationBinary);
     }
     return super.getPackageForPlatform(platform,
@@ -54,7 +63,8 @@ class TizenTpk extends ApplicationPackage {
     @required this.manifest,
     this.signature,
   })  : assert(file != null),
-        super(id: manifest?.packageId);
+        assert(manifest != null),
+        super(id: manifest.packageId);
 
   static Future<TizenTpk> fromTpk(File tpkFile) async {
     final Directory tempDir = globals.fs.systemTempDirectory.createTempSync();
@@ -86,8 +96,7 @@ class TizenTpk extends ApplicationPackage {
     );
   }
 
-  static Future<TizenTpk> fromTizenProject(
-      FlutterProject flutterProject) async {
+  static Future<TizenTpk> fromProject(FlutterProject flutterProject) async {
     final TizenProject project = TizenProject.fromFlutter(flutterProject);
 
     final File tpkFile = flutterProject.directory
@@ -115,7 +124,7 @@ class TizenTpk extends ApplicationPackage {
   final Signature signature;
 
   /// The application id if applicable.
-  String get applicationId => manifest?.applicationId;
+  String get applicationId => manifest.applicationId;
 
   @override
   String get name => file.basename;
@@ -134,7 +143,7 @@ class TizenTpk extends ApplicationPackage {
 class TizenManifest {
   TizenManifest(this._document) : applicationId = _findApplicationId(_document);
 
-  factory TizenManifest.parseFromXml(File xmlFile) {
+  static TizenManifest parseFromXml(File xmlFile) {
     if (xmlFile == null || !xmlFile.existsSync()) {
       throwToolExit('tizen-manifest.xml could not be found.');
     }
@@ -164,7 +173,7 @@ class TizenManifest {
   set version(String value) => _manifest.setAttribute('version', value);
 
   /// The target API version number.
-  String get apiVersion => _manifest.getAttribute('api-version');
+  String get apiVersion => _manifest.getAttribute('api-version') ?? '4.0';
 
   XmlElement get _profile {
     if (_manifest.findElements('profile').isEmpty) {
@@ -198,7 +207,7 @@ class TizenManifest {
     }
     if (applicationId == null) {
       throwToolExit('Found no *-application element with appid attribute'
-          ' in tizen-manifest.xml');
+          ' in tizen-manifest.xml.');
     }
     if (!_warningShown) {
       if (count > 1) {
@@ -220,7 +229,7 @@ class TizenManifest {
     return applicationId;
   }
 
-  /// To prevent spamming log with warnings, remember they have been shown
+  /// To prevent spamming log with warnings, remember they have been shown.
   static bool _warningShown = false;
 
   @override
@@ -231,7 +240,7 @@ class TizenManifest {
 class Signature {
   const Signature(this._document);
 
-  factory Signature.parseFromXml(File xmlFile) {
+  static Signature parseFromXml(File xmlFile) {
     if (xmlFile == null || !xmlFile.existsSync()) {
       return null;
     }
@@ -245,10 +254,7 @@ class Signature {
     try {
       document = XmlDocument.parse(data);
     } on XmlException catch (ex) {
-      globals.printStatus(
-        'Warning: Failed to parse ${xmlFile.basename}: $ex',
-        color: TerminalColor.yellow,
-      );
+      globals.printError('Failed to parse ${xmlFile.basename}: $ex');
       return null;
     }
     return Signature(document);
@@ -265,81 +271,10 @@ class Signature {
   }
 }
 
-class Certificate {
-  Certificate._({
-    @required this.key,
-    @required this.password,
-    @required this.distributorNumber,
-    @required this.ca,
-  });
-
-  factory Certificate.parseFromXmlElement(XmlElement profileItem) {
-    final String ca = profileItem.getAttribute('ca');
-    final String key = profileItem.getAttribute('key');
-    final String password = profileItem.getAttribute('password');
-    final String distributorNumber = profileItem.getAttribute('distributor');
-
-    // The data doesn't exist and the xml element exists only as a placeholder.
-    if (key.isEmpty || password.isEmpty) {
-      return null;
-    }
-
-    return Certificate._(
-      key: key,
-      password: password,
-      distributorNumber: distributorNumber,
-      ca: ca,
-    );
-  }
-
-  final String key;
-  final String password;
-  final String distributorNumber;
-  final String ca;
-}
-
-class SecurityProfile {
-  SecurityProfile(
-    this.name, {
-    @required this.authorCertificate,
-    @required this.distributorCertificates,
-  });
-
-  factory SecurityProfile.parseFromXmlElement(XmlElement profile) {
-    Certificate authorCertificate;
-    final List<Certificate> distributorCertificates = <Certificate>[];
-
-    // The element that holds a single certifcate key, password pair
-    for (final XmlElement profileItem
-        in profile.findAllElements('profileitem')) {
-      final Certificate certificate =
-          Certificate.parseFromXmlElement(profileItem);
-      if (certificate != null) {
-        // distributor number 0 specifies an author certificate
-        if (certificate.distributorNumber == '0') {
-          authorCertificate = certificate;
-        } else {
-          distributorCertificates.add(certificate);
-        }
-      }
-    }
-
-    return SecurityProfile(
-      profile.getAttribute('name'),
-      authorCertificate: authorCertificate,
-      distributorCertificates: distributorCertificates,
-    );
-  }
-
-  final String name;
-  final Certificate authorCertificate;
-  final List<Certificate> distributorCertificates;
-}
-
 class SecurityProfiles {
-  SecurityProfiles._(this.active, this._profiles);
+  SecurityProfiles._(this.profiles, {@required this.active});
 
-  factory SecurityProfiles.parseFromXml(File xmlFile) {
+  static SecurityProfiles parseFromXml(File xmlFile) {
     if (xmlFile == null || !xmlFile.existsSync()) {
       return null;
     }
@@ -353,37 +288,29 @@ class SecurityProfiles {
     try {
       document = XmlDocument.parse(data);
     } on XmlException catch (ex) {
-      throwToolExit('Failed to parse ${xmlFile.basename}: $ex');
+      globals.printError('Failed to parse ${xmlFile.basename}: $ex');
+      return null;
     }
 
-    final String activeName = document.rootElement.getAttribute('active');
+    String active = document.rootElement.getAttribute('active');
+    if (active != null && active.isEmpty) {
+      active = null;
+    }
 
-    SecurityProfile activeProfile;
-    final List<SecurityProfile> profiles = <SecurityProfile>[];
-
-    for (final XmlElement profileXml
+    final List<String> profiles = <String>[];
+    for (final XmlElement profile
         in document.rootElement.findAllElements('profile')) {
-      final SecurityProfile profile =
-          SecurityProfile.parseFromXmlElement(profileXml);
-      profiles.add(profile);
-      if (profile.name == activeName) {
-        activeProfile = profile;
+      final String name = profile.getAttribute('name');
+      if (name != null) {
+        profiles.add(name);
       }
     }
 
-    return SecurityProfiles._(activeProfile, profiles);
+    return SecurityProfiles._(profiles, active: active);
   }
 
-  final SecurityProfile active;
-  final List<SecurityProfile> _profiles;
+  final List<String> profiles;
+  final String active;
 
-  List<String> get names =>
-      _profiles.map((SecurityProfile profile) => profile.name).toList();
-
-  SecurityProfile getProfile(String name) {
-    return _profiles.firstWhere(
-      (SecurityProfile profile) => profile.name == name,
-      orElse: () => null,
-    );
-  }
+  bool contains(String name) => profiles.contains(name);
 }
