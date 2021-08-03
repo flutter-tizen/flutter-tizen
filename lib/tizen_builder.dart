@@ -29,7 +29,8 @@ import 'package:flutter_tools/src/project.dart';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart';
 
-import 'tizen_build_target.dart';
+import 'build_targets/application.dart';
+import 'build_targets/package.dart';
 import 'tizen_project.dart';
 import 'tizen_sdk.dart';
 import 'tizen_tpk.dart';
