@@ -101,7 +101,7 @@ class TizenProject extends FlutterProjectPlatform {
       }
     }
     userFile.writeAsStringSync(
-      document.toXmlString(pretty: true, indent: '  '),
+      document.toXmlString(pretty: true, indent: '  ') + '\n',
     );
   }
 }
