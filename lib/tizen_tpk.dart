@@ -80,10 +80,8 @@ class TizenTpk extends ApplicationPackage {
     // We have to manually restore permissions for files zipped by
     // build-task-tizen on Unix.
     // Issue: https://github.com/dotnet/runtime/issues/1548
-    await tempDir.list(recursive: true).forEach((FileSystemEntity entity) {
-      if (entity is File) {
-        globals.os.chmod(entity, '644');
-      }
+    tempDir.listSync().whereType<File>().forEach((File file) {
+      globals.os.chmod(file, '644');
     });
 
     final File manifestFile = tempDir.childFile('tizen-manifest.xml');
