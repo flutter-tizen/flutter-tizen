@@ -119,8 +119,8 @@ class TizenPlugin extends PluginPlatform implements NativeOrDartPlugin {
   }
 }
 
-/// Any [FlutterCommand] that invokes [usesPubOption] or [targetFile] should
-/// depend on this mixin to ensure plugins are correctly configured for Tizen.
+/// Any [FlutterCommand] that references [targetFile] should extend this mixin
+/// to ensure that `generated_main.dart` is created and updated properly.
 ///
 /// See: [FlutterCommand.verifyThenRunCommand] in `flutter_command.dart`
 mixin DartPluginRegistry on FlutterCommand {
@@ -130,10 +130,6 @@ mixin DartPluginRegistry on FlutterCommand {
 
   @override
   Future<FlutterCommandResult> verifyThenRunCommand(String commandPath) async {
-    if (super.shouldRunPub) {
-      // TODO(swift-kim): Should run pub get first before injecting plugins.
-      await ensureReadyForTizenTooling(FlutterProject.current());
-    }
     if (_usesTargetOption) {
       _entrypoint =
           await _createEntrypoint(FlutterProject.current(), super.targetFile);
@@ -226,8 +222,8 @@ const List<String> _knownPlugins = <String>[
   'wifi_info_flutter',
 ];
 
-/// This function must be called whenever [FlutterProject.regeneratePlatformSpecificTooling]
-/// or [FlutterProject.ensureReadyForPlatformSpecificTooling] is called.
+/// This function is expected to be called whenever
+/// [FlutterProject.ensureReadyForPlatformSpecificTooling] is called.
 ///
 /// See: [FlutterProject.ensureReadyForPlatformSpecificTooling] in `project.dart`
 Future<void> ensureReadyForTizenTooling(FlutterProject project) async {
@@ -237,6 +233,9 @@ Future<void> ensureReadyForTizenTooling(FlutterProject project) async {
     return;
   }
   final TizenProject tizenProject = TizenProject.fromFlutter(project);
+  if (!tizenProject.existsSync()) {
+    return;
+  }
   await tizenProject.ensureReadyForPlatformSpecificTooling();
 
   await injectTizenPlugins(project);

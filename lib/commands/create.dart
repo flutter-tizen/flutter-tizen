@@ -13,11 +13,8 @@ import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/commands/create.dart';
 import 'package:flutter_tools/src/flutter_project_metadata.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
-import 'package:flutter_tools/src/project.dart';
 import 'package:flutter_tools/src/runner/flutter_command.dart';
 import 'package:flutter_tools/src/template.dart';
-
-import '../tizen_plugins.dart';
 
 class TizenCreateCommand extends CreateCommand {
   TizenCreateCommand({bool verboseHelp = false})
@@ -82,14 +79,6 @@ class TizenCreateCommand extends CreateCommand {
         color: TerminalColor.blue,
       );
       globals.printStatus('');
-    }
-
-    if (boolArg('pub')) {
-      final FlutterProject project = FlutterProject.fromDirectory(projectDir);
-      await ensureReadyForTizenTooling(project);
-      if (project.hasExampleApp) {
-        await ensureReadyForTizenTooling(project.example);
-      }
     }
     return result;
   }

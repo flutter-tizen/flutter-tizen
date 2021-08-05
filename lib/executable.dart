@@ -22,8 +22,10 @@ import 'package:flutter_tools/src/commands/format.dart';
 import 'package:flutter_tools/src/commands/generate_localizations.dart';
 import 'package:flutter_tools/src/commands/install.dart';
 import 'package:flutter_tools/src/commands/logs.dart';
+import 'package:flutter_tools/src/commands/packages.dart';
 import 'package:flutter_tools/src/commands/screenshot.dart';
 import 'package:flutter_tools/src/commands/symbolize.dart';
+import 'package:flutter_tools/src/dart/pub.dart';
 import 'package:flutter_tools/src/device.dart';
 import 'package:flutter_tools/src/doctor.dart';
 import 'package:flutter_tools/src/emulator.dart';
@@ -39,7 +41,6 @@ import 'commands/build.dart';
 import 'commands/clean.dart';
 import 'commands/create.dart';
 import 'commands/drive.dart';
-import 'commands/packages.dart';
 import 'commands/precache.dart';
 import 'commands/run.dart';
 import 'commands/test.dart';
@@ -47,6 +48,7 @@ import 'tizen_cache.dart';
 import 'tizen_device_discovery.dart';
 import 'tizen_doctor.dart';
 import 'tizen_emulator.dart';
+import 'tizen_pub.dart';
 import 'tizen_sdk.dart';
 import 'tizen_tpk.dart';
 
@@ -94,6 +96,7 @@ Future<void> main(List<String> args) async {
       ),
       InstallCommand(),
       LogsCommand(),
+      PackagesCommand(),
       ScreenshotCommand(),
       SymbolizeCommand(stdio: globals.stdio, fileSystem: globals.fs),
       // Commands extended for Tizen.
@@ -116,7 +119,6 @@ Future<void> main(List<String> args) async {
         logger: globals.logger,
         platform: globals.platform,
       ),
-      TizenPackagesCommand(),
       TizenPrecacheCommand(
         verboseHelp: verboseHelp,
         cache: globals.cache,
@@ -135,19 +137,18 @@ Future<void> main(List<String> args) async {
     muteCommandLogging: muteCommandLogging,
     reportCrashes: false,
     overrides: <Type, Generator>{
-      Cache: () => TizenFlutterCache(
-            fileSystem: globals.fs,
-            logger: globals.logger,
-            platform: globals.platform,
-            osUtils: globals.os,
-          ),
-      TemplateRenderer: () => const MustacheTemplateRenderer(),
       ApplicationPackageFactory: () => TizenApplicationPackageFactory(
             androidSdk: globals.androidSdk,
             processManager: globals.processManager,
             logger: globals.logger,
             userMessages: globals.userMessages,
             fileSystem: globals.fs,
+          ),
+      Cache: () => TizenFlutterCache(
+            fileSystem: globals.fs,
+            logger: globals.logger,
+            platform: globals.platform,
+            osUtils: globals.os,
           ),
       DeviceManager: () => TizenDeviceManager(
             fileSystem: globals.fs,
@@ -156,21 +157,30 @@ Future<void> main(List<String> args) async {
             processManager: globals.processManager,
           ),
       DoctorValidatorsProvider: () => TizenDoctorValidatorsProvider(),
-      TizenSdk: () => TizenSdk.locateSdk(),
-      TizenWorkflow: () => TizenWorkflow(
-            tizenSdk: tizenSdk,
-            operatingSystemUtils: globals.os,
-          ),
-      TizenValidator: () => TizenValidator(
-            logger: globals.logger,
-            processManager: globals.processManager,
-          ),
       EmulatorManager: () => TizenEmulatorManager(
             tizenSdk: tizenSdk,
             tizenWorkflow: tizenWorkflow,
             processManager: globals.processManager,
             logger: globals.logger,
             fileSystem: globals.fs,
+          ),
+      TemplateRenderer: () => const MustacheTemplateRenderer(),
+      TizenSdk: () => TizenSdk.locateSdk(),
+      TizenValidator: () => TizenValidator(
+            logger: globals.logger,
+            processManager: globals.processManager,
+          ),
+      TizenWorkflow: () => TizenWorkflow(
+            tizenSdk: tizenSdk,
+            operatingSystemUtils: globals.os,
+          ),
+      Pub: () => TizenPub(
+            fileSystem: globals.fs,
+            logger: globals.logger,
+            processManager: globals.processManager,
+            platform: globals.platform,
+            botDetector: globals.botDetector,
+            usage: globals.flutterUsage,
           ),
       if (verbose && !muteCommandLogging)
         Logger: () => VerboseLogger(StdoutLogger(
