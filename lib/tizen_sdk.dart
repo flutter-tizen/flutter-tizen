@@ -208,7 +208,7 @@ class TizenSdk {
   <rootstrap id="$flutterRootstrapId" name="flutter" version="flutter" architecture="$buildArch" path="${rootstrap.rootDirectory.path}" supportToolchainType="tizen.core">
     <property key="DEV_PACKAGE_CONFIG_PATH" value="${configFile.path}"/>
     <property key="LINKER_MISCELLANEOUS_OPTION" value="${linkerFlags.join(' ')}"/>
-    <property key="COMPILER_MISCELLANEOUS_OPTION" value=""/>
+    <property key="COMPILER_MISCELLANEOUS_OPTION" value="-std=c++17"/>
     <toolchain name="gcc" version="$defaultGccVersion"/>
   </rootstrap>
 </extension>

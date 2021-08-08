@@ -275,7 +275,6 @@ class NativeTpk {
     final List<String> extraOptions = <String>[
       '-lflutter_tizen_${buildInfo.deviceProfile}',
       '-L"${libDir.path.toPosixPath()}"',
-      '-std=c++17',
       '-I"${clientWrapperDir.childDirectory('include').path.toPosixPath()}"',
       '-I"${publicDir.path.toPosixPath()}"',
       ...userIncludes.map((String f) => '-I"${f.toPosixPath()}"'),
