@@ -58,6 +58,11 @@ namespace Tizen.Flutter.Embedding
             FlutterDesktopEngine engine);
 
         [DllImport("flutter_tizen.so")]
+        public static extern void FlutterDesktopNotifyAppControl(
+            FlutterDesktopEngine engine,
+            SafeAppControlHandle handle);
+
+        [DllImport("flutter_tizen.so")]
         public static extern void FlutterDesktopNotifyLocaleChange(
             FlutterDesktopEngine engine);
 
@@ -72,11 +77,6 @@ namespace Tizen.Flutter.Embedding
         [DllImport("flutter_tizen.so")]
         public static extern void FlutterDesktopNotifyAppIsPaused(
             FlutterDesktopEngine engine);
-
-        [DllImport("flutter_tizen.so")]
-        public static extern void FlutterDesktopNotifyAppControl(
-            FlutterDesktopEngine engine,
-            SafeAppControlHandle handle);
         #endregion
 
         #region flutter_messenger.h
