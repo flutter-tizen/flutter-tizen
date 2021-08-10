@@ -53,7 +53,7 @@ class TizenProject extends FlutterProjectPlatform {
   }
 
   Future<void> ensureReadyForPlatformSpecificTooling() async {
-    if (!editableDirectory.existsSync() || !isDotnet) {
+    if (!existsSync() || !isDotnet) {
       return;
     }
 
