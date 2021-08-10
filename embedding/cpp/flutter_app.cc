@@ -74,6 +74,12 @@ void FlutterApp::OnTerminate() {
   handle_ = nullptr;
 }
 
+void FlutterApp::OnAppControlReceived(app_control_h app_control) {
+  assert(IsRunning());
+
+  FlutterDesktopNotifyAppControl(handle_, app_control);
+}
+
 void FlutterApp::OnLowMemory(app_event_info_h event_info) {
   assert(IsRunning());
 

@@ -89,6 +89,13 @@ namespace Tizen.Flutter.Embedding
             FlutterDesktopShutdownEngine(Handle);
         }
 
+        protected override void OnAppControlReceived(AppControlReceivedEventArgs e)
+        {
+            Debug.Assert(Handle);
+
+            FlutterDesktopNotifyAppControl(Handle, e.ReceivedAppControl.SafeAppControlHandle);
+        }
+
         protected override void OnLowMemory(LowMemoryEventArgs e)
         {
             base.OnLowMemory(e);

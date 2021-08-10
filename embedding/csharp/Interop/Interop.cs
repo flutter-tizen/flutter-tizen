@@ -4,6 +4,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using Tizen.Applications;
 
 namespace Tizen.Flutter.Embedding
 {
@@ -55,6 +56,11 @@ namespace Tizen.Flutter.Embedding
         [DllImport("flutter_tizen.so")]
         public static extern FlutterDesktopMessenger FlutterDesktopEngineGetMessenger(
             FlutterDesktopEngine engine);
+
+        [DllImport("flutter_tizen.so")]
+        public static extern void FlutterDesktopNotifyAppControl(
+            FlutterDesktopEngine engine,
+            SafeAppControlHandle handle);
 
         [DllImport("flutter_tizen.so")]
         public static extern void FlutterDesktopNotifyLocaleChange(
