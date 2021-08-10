@@ -73,7 +73,7 @@ class TizenProject extends FlutterProjectPlatform {
       document = XmlDocument.parse(userFile.readAsStringSync().trim());
     } on XmlException {
       globals.printStatus('Overwriting ${userFile.basename}...');
-      userFile.writeAsStringSync(initialXmlContent);
+      document = XmlDocument.parse(initialXmlContent);
     }
 
     final File embeddingProjectFile = globals.fs
