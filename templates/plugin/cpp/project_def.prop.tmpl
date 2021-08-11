@@ -2,7 +2,7 @@
 # for details.
 
 APPNAME = {{projectName}}_plugin
-type = sharedLib
+type = staticLib
 profile = common-4.0
 
 # Source files
@@ -11,22 +11,12 @@ USER_SRCS += src/*.cc
 # User defines
 USER_DEFS =
 USER_UNDEFS =
-USER_CPP_DEFS = TIZEN_DEPRECATION DEPRECATION_WARNING FLUTTER_PLUGIN_IMPL
+USER_CPP_DEFS = FLUTTER_PLUGIN_IMPL
 USER_CPP_UNDEFS =
 
-# Compiler/linker flags
+# Compiler flags
 USER_CFLAGS_MISC =
-USER_CPPFLAGS_MISC = -c -fmessage-length=0
-USER_LFLAGS =
-
-# Libraries and objects
-# To provide libraries for your plugin, you must put them in specific
-# directories that match their supporting cpu architecture type.
-# Due to compatibility issue with Tizen CLI, directory names must be armel for arm 
-# and i586 for x86.
-USER_LIB_DIRS = lib/${BUILD_ARCH}
-USER_LIBS =
-USER_OBJS =
+USER_CPPFLAGS_MISC =
 
 # User includes
 USER_INC_DIRS = inc src
