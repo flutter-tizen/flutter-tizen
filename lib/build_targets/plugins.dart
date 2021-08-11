@@ -84,7 +84,6 @@ profile = $profile-$apiVersion
 USER_CPP_DEFS = TIZEN_DEPRECATION DEPRECATION_WARNING FLUTTER_PLUGIN_IMPL
 USER_CPPFLAGS_MISC = -c -fmessage-length=0
 USER_LFLAGS = -Wl,-rpath='\$\$ORIGIN'
-USER_LIB_DIRS = lib
 ''');
 
     // Check if there's anything to build.
@@ -134,17 +133,21 @@ USER_LIB_DIRS = lib
       }
 
       for (final String libName in plugin.getProperty('USER_LIBS')) {
-        final File libFile = plugin.directory
+        File libFile = plugin.directory
             .childDirectory('lib')
             .childDirectory(getTizenBuildArch(buildInfo.targetArch))
-            .childFile('lib$libName.so');
-        if (libFile.existsSync()) {
-          userLibs.add(libName);
-          libFile.copySync(libDir.childFile(libFile.basename).path);
-
-          inputs.add(libFile);
-          outputs.add(libDir.childFile(libFile.basename));
+            .childFile('lib$libName.a');
+        if (!libFile.existsSync()) {
+          libFile = libFile.parent.childFile('lib$libName.so');
+          if (!libFile.existsSync()) {
+            continue;
+          }
         }
+        userLibs.add(libName);
+        libFile.copySync(libDir.childFile(libFile.basename).path);
+
+        inputs.add(libFile);
+        outputs.add(libDir.childFile(libFile.basename));
       }
 
       // The plugin header is used when building native apps.
@@ -175,16 +178,15 @@ USER_LIB_DIRS = lib
     final Map<String, String> variables = <String, String>{
       'PATH': getDefaultPathVariable(),
       'USER_SRCS': userSources.map((String f) => f.toPosixPath()).join(' '),
+      'USER_LIBS': userLibs.join(' '),
     };
     final List<String> extraOptions = <String>[
       '-lflutter_tizen_${buildInfo.deviceProfile}',
       '-L"${engineDir.path.toPosixPath()}"',
       '-fvisibility=hidden',
-      '-std=c++17',
       '-I"${clientWrapperDir.childDirectory('include').path.toPosixPath()}"',
       '-I"${publicDir.path.toPosixPath()}"',
       ...userIncludes.map((String f) => '-I"${f.toPosixPath()}"'),
-      ...userLibs.map((String lib) => '-l$lib'),
       '-L"${libDir.path.toPosixPath()}"',
       '-D${buildInfo.deviceProfile.toUpperCase()}_PROFILE',
     ];
