@@ -36,7 +36,7 @@ class NativePlugins extends Target {
 
   @override
   List<Source> get inputs => const <Source>[
-        Source.pattern('{FLUTTER_ROOT}/../lib/tizen_build_target.dart'),
+        Source.pattern('{FLUTTER_ROOT}/../lib/build_targets/plugins.dart'),
         Source.pattern('{PROJECT_DIR}/.packages'),
       ];
 
@@ -201,16 +201,20 @@ class NativePlugins extends Target {
       for (final Directory directory
           in pluginLibDirs.where((Directory d) => d.existsSync())) {
         for (final File lib in directory.listSync().whereType<File>()) {
-          if (lib.basename.endsWith('.so') || lib.basename.endsWith('.a')) {
+          final bool isSharedLib = lib.basename.endsWith('.so');
+          final bool isStaticLib = lib.basename.endsWith('.a');
+          if (isSharedLib || isStaticLib) {
             final String libName = getLibNameForFileName(lib.basename);
             if (userLibs.contains(libName)) {
               continue;
             }
             lib.copySync(libDir.childFile(lib.basename).path);
-            userLibs.add(getLibNameForFileName(lib.basename));
+            userLibs.add(libName);
 
             inputs.add(lib);
-            outputs.add(libDir.childFile(lib.basename));
+            if (isSharedLib) {
+              outputs.add(libDir.childFile(lib.basename));
+            }
           }
         }
       }
