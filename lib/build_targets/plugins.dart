@@ -34,6 +34,7 @@ class NativePlugins extends Target {
   @override
   List<Source> get inputs => const <Source>[
         Source.pattern('{FLUTTER_ROOT}/../lib/build_targets/plugins.dart'),
+        Source.pattern('{FLUTTER_ROOT}/../lib/tizen_sdk.dart'),
         Source.pattern('{PROJECT_DIR}/.packages'),
       ];
 
@@ -58,8 +59,8 @@ class NativePlugins extends Target {
         if (key == 'type') {
           if (value != 'staticLib') {
             logger.printStatus(
-              'The project type of ${plugin.name} plugin is $value,'
-              ' which is deprecated in favor of staticLib.',
+              'The project type of ${plugin.name} plugin is "$value",'
+              ' which is deprecated in favor of "staticLib".',
             );
           }
           line = 'type = staticLib';
@@ -147,13 +148,15 @@ class NativePlugins extends Target {
         pluginCopy.directory.path,
         configuration: buildConfig,
         arch: getTizenCliArch(buildInfo.targetArch),
-        predefine: '${buildInfo.deviceProfile.toUpperCase()}_PROFILE',
+        predefines: <String>[
+          '${buildInfo.deviceProfile.toUpperCase()}_PROFILE',
+        ],
         extraOptions: <String>[
           '-fPIC',
           '-I"${clientWrapperDir.childDirectory('include').path.toPosixPath()}"',
           '-I"${publicDir.path.toPosixPath()}"',
         ],
-        rootstrap: rootstrap,
+        rootstrap: rootstrap.id,
         environment: <String, String>{
           'PATH': getDefaultPathVariable(),
         },
@@ -266,7 +269,7 @@ USER_LIBS = ${userLibs.join(' ')}
         for (String className in pluginClasses)
           '-Wl,--undefined=${className}RegisterWithRegistrar',
       ],
-      rootstrap: rootstrap,
+      rootstrap: rootstrap.id,
       environment: <String, String>{
         'PATH': getDefaultPathVariable(),
       },

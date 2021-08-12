@@ -127,29 +127,32 @@ class TizenSdk {
     @required String configuration,
     @required String arch,
     String compiler,
-    String predefine,
+    List<String> predefines = const <String>[],
     List<String> extraOptions = const <String>[],
-    Rootstrap rootstrap,
+    String rootstrap,
     Map<String, String> environment,
   }) async {
     assert(configuration != null);
     assert(arch != null);
 
-    return _processUtils.run(<String>[
-      tizenSdk.tizenCli.path,
-      'build-native',
-      '-C',
-      configuration,
-      '-a',
-      arch,
-      '-c',
-      compiler ?? defaultNativeCompiler,
-      if (predefine != null) ...<String>['-d', predefine],
-      if (extraOptions.isNotEmpty) ...<String>['-e', extraOptions.join(' ')],
-      if (rootstrap != null) ...<String>['-r', rootstrap.id],
-      '--',
-      workingDirectory,
-    ], environment: environment);
+    return _processUtils.run(
+      <String>[
+        tizenCli.path,
+        'build-native',
+        '-C',
+        configuration,
+        '-a',
+        arch,
+        '-c',
+        compiler ?? defaultNativeCompiler,
+        for (String macro in predefines) ...<String>['-d', macro],
+        if (extraOptions.isNotEmpty) ...<String>['-e', extraOptions.join(' ')],
+        if (rootstrap != null) ...<String>['-r', rootstrap],
+        '--',
+        workingDirectory,
+      ],
+      environment: environment,
+    );
   }
 
   Rootstrap getFlutterRootstrap({
