@@ -7,12 +7,12 @@
 import 'package:file/file.dart';
 import 'package:flutter_tools/src/base/common.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
+import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/base/process.dart';
 import 'package:flutter_tools/src/build_info.dart';
 import 'package:flutter_tools/src/build_system/build_system.dart';
 import 'package:flutter_tools/src/build_system/depfile.dart';
 import 'package:flutter_tools/src/build_system/source.dart';
-import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/project.dart';
 
 import '../tizen_builder.dart';
@@ -27,9 +27,6 @@ class NativePlugins extends Target {
   NativePlugins(this.buildInfo);
 
   final TizenBuildInfo buildInfo;
-
-  final ProcessUtils _processUtils = ProcessUtils(
-      logger: globals.logger, processManager: globals.processManager);
 
   @override
   String get name => 'tizen_native_plugins';
@@ -50,6 +47,28 @@ class NativePlugins extends Target {
 
   @override
   List<Target> get dependencies => const <Target>[];
+
+  void _ensureStaticLibType(TizenPlugin plugin, Logger logger) {
+    final List<String> properties = <String>[];
+    for (String line in plugin.projectFile.readAsLinesSync()) {
+      final List<String> splitLine = line.split('=');
+      if (splitLine.length >= 2) {
+        final String key = splitLine[0].trim();
+        final String value = splitLine[1].trim();
+        if (key == 'type') {
+          if (value != 'staticLib') {
+            logger.printStatus(
+              'The project type of ${plugin.name} plugin is $value,'
+              ' which is deprecated in favor of staticLib.',
+            );
+          }
+          line = 'type = staticLib';
+        }
+      }
+      properties.add(line);
+    }
+    plugin.projectFile.writeAsStringSync(properties.join('\n'));
+  }
 
   @override
   Future<void> build(Environment environment) async {
@@ -121,42 +140,24 @@ class NativePlugins extends Target {
       );
       copyDirectory(plugin.directory, pluginCopy.directory);
 
-      final List<String> properties = <String>[];
-      for (String line in plugin.projectFile.readAsLinesSync()) {
-        if (line.startsWith('type =')) {
-          line = 'type = staticLib';
-        }
-        properties.add(line);
-      }
-      pluginCopy.projectFile.writeAsStringSync(properties.join('\n'));
+      _ensureStaticLibType(pluginCopy, environment.logger);
       inputs.add(plugin.projectFile);
 
-      final Map<String, String> variables = <String, String>{
-        'PATH': getDefaultPathVariable(),
-      };
-      final List<String> extraOptions = <String>[
-        '-fPIC',
-        '-I"${clientWrapperDir.childDirectory('include').path.toPosixPath()}"',
-        '-I"${publicDir.path.toPosixPath()}"',
-        '-D${buildInfo.deviceProfile.toUpperCase()}_PROFILE',
-      ];
-
-      final RunResult result = await _processUtils.run(<String>[
-        tizenSdk.tizenCli.path,
-        'build-native',
-        '-a',
-        getTizenCliArch(buildInfo.targetArch),
-        '-C',
-        buildConfig,
-        '-c',
-        tizenSdk.defaultNativeCompiler,
-        '-r',
-        rootstrap.id,
-        '-e',
-        extraOptions.join(' '),
-        '--',
+      final RunResult result = await tizenSdk.buildNative(
         pluginCopy.directory.path,
-      ], environment: variables);
+        configuration: buildConfig,
+        arch: getTizenCliArch(buildInfo.targetArch),
+        predefine: '${buildInfo.deviceProfile.toUpperCase()}_PROFILE',
+        extraOptions: <String>[
+          '-fPIC',
+          '-I"${clientWrapperDir.childDirectory('include').path.toPosixPath()}"',
+          '-I"${publicDir.path.toPosixPath()}"',
+        ],
+        rootstrap: rootstrap,
+        environment: <String, String>{
+          'PATH': getDefaultPathVariable(),
+        },
+      );
       if (result.exitCode != 0) {
         throwToolExit('Failed to build ${plugin.name} plugin:\n$result');
       }
@@ -240,23 +241,6 @@ USER_LIBS = ${userLibs.join(' ')}
         engineDir.childFile('libflutter_tizen_${buildInfo.deviceProfile}.so');
     inputs.add(embedder);
 
-    final Map<String, String> variables = <String, String>{
-      'PATH': getDefaultPathVariable(),
-    };
-    final List<String> extraOptions = <String>[
-      '-l${getLibNameForFileName(embedder.basename)}',
-      '-L"${engineDir.path.toPosixPath()}"',
-      '-I"${clientWrapperDir.childDirectory('include').path.toPosixPath()}"',
-      '-I"${publicDir.path.toPosixPath()}"',
-      '-L"${libDir.path.toPosixPath()}"',
-      // Forces plugin entrypoints to be exported, because unreferenced
-      // objects are not included in the output shared object by default.
-      // Another option is to use the -Wl,--[no-]whole-archive flag with
-      // -Wl,-unresolved-symbols=ignore-in-object-files.
-      for (String className in pluginClasses)
-        '-Wl,--undefined=${className}RegisterWithRegistrar',
-    ];
-
     // Create a temp directory to use as a build directory.
     // This is a workaround for the long path issue on Windows:
     // https://github.com/flutter-tizen/flutter-tizen/issues/122
@@ -265,22 +249,28 @@ USER_LIBS = ${userLibs.join(' ')}
     projectDef.copySync(tempDir.childFile(projectDef.basename).path);
 
     // Run the native build.
-    final RunResult result = await _processUtils.run(<String>[
-      tizenSdk.tizenCli.path,
-      'build-native',
-      '-a',
-      getTizenCliArch(buildInfo.targetArch),
-      '-C',
-      buildConfig,
-      '-c',
-      tizenSdk.defaultNativeCompiler,
-      '-r',
-      rootstrap.id,
-      '-e',
-      extraOptions.join(' '),
-      '--',
+    final RunResult result = await tizenSdk.buildNative(
       tempDir.path,
-    ], environment: variables);
+      configuration: buildConfig,
+      arch: getTizenCliArch(buildInfo.targetArch),
+      extraOptions: <String>[
+        '-l${getLibNameForFileName(embedder.basename)}',
+        '-L"${engineDir.path.toPosixPath()}"',
+        '-I"${clientWrapperDir.childDirectory('include').path.toPosixPath()}"',
+        '-I"${publicDir.path.toPosixPath()}"',
+        '-L"${libDir.path.toPosixPath()}"',
+        // Forces plugin entrypoints to be exported, because unreferenced
+        // objects are not included in the output shared object by default.
+        // Another option is to use the -Wl,--[no-]whole-archive flag with
+        // -Wl,-unresolved-symbols=ignore-in-object-files.
+        for (String className in pluginClasses)
+          '-Wl,--undefined=${className}RegisterWithRegistrar',
+      ],
+      rootstrap: rootstrap,
+      environment: <String, String>{
+        'PATH': getDefaultPathVariable(),
+      },
+    );
     if (result.exitCode != 0) {
       throwToolExit('Failed to build native plugins:\n$result');
     }
