@@ -228,6 +228,9 @@ class NativeTpk {
     }
 
     // Prepare for build.
+    final Directory clientWrapperDir =
+        commonDir.childDirectory('cpp_client_wrapper');
+    final Directory publicDir = commonDir.childDirectory('public');
     final Directory embeddingDir = environment.fileSystem
         .directory(Cache.flutterRoot)
         .parent
@@ -239,28 +242,8 @@ class NativeTpk {
       pluginsDir.childDirectory('include').path,
     ];
     final List<String> userSources = <String>[
+      clientWrapperDir.childFile('*.cc').path,
       embeddingDir.childFile('*.cc').path,
-    ];
-
-    final Directory clientWrapperDir =
-        commonDir.childDirectory('cpp_client_wrapper');
-    final Directory publicDir = commonDir.childDirectory('public');
-
-    userSources.add(clientWrapperDir.childFile('*.cc').path);
-
-    final Map<String, String> variables = <String, String>{
-      'PATH': getDefaultPathVariable(),
-      'USER_SRCS': userSources.map((String f) => f.toPosixPath()).join(' '),
-    };
-    final List<String> extraOptions = <String>[
-      '-lflutter_tizen_${buildInfo.deviceProfile}',
-      '-L"${libDir.path.toPosixPath()}"',
-      '-I"${clientWrapperDir.childDirectory('include').path.toPosixPath()}"',
-      '-I"${publicDir.path.toPosixPath()}"',
-      ...userIncludes.map((String f) => '-I"${f.toPosixPath()}"'),
-      if (pluginsLib.existsSync()) '-lflutter_plugins',
-      '-D${buildInfo.deviceProfile.toUpperCase()}_PROFILE',
-      '-Wl,-unresolved-symbols=ignore-in-shared-libs',
     ];
 
     assert(tizenSdk != null);
@@ -279,22 +262,28 @@ class NativeTpk {
     }
 
     // Run the native build.
-    RunResult result = await _processUtils.run(<String>[
-      tizenSdk.tizenCli.path,
-      'build-native',
-      '-a',
-      getTizenCliArch(buildInfo.targetArch),
-      '-C',
-      buildConfig,
-      '-c',
-      tizenSdk.defaultNativeCompiler,
-      '-r',
-      rootstrap.id,
-      '-e',
-      extraOptions.join(' '),
-      '--',
+    RunResult result = await tizenSdk.buildNative(
       tizenDir.path,
-    ], environment: variables);
+      configuration: buildConfig,
+      arch: getTizenCliArch(buildInfo.targetArch),
+      predefines: <String>[
+        '${buildInfo.deviceProfile.toUpperCase()}_PROFILE',
+      ],
+      extraOptions: <String>[
+        '-lflutter_tizen_${buildInfo.deviceProfile}',
+        '-L"${libDir.path.toPosixPath()}"',
+        '-I"${clientWrapperDir.childDirectory('include').path.toPosixPath()}"',
+        '-I"${publicDir.path.toPosixPath()}"',
+        ...userIncludes.map((String f) => '-I"${f.toPosixPath()}"'),
+        if (pluginsLib.existsSync()) '-lflutter_plugins',
+        '-Wl,-unresolved-symbols=ignore-in-shared-libs',
+      ],
+      rootstrap: rootstrap.id,
+      environment: <String, String>{
+        'PATH': getDefaultPathVariable(),
+        'USER_SRCS': userSources.map((String f) => f.toPosixPath()).join(' '),
+      },
+    );
     if (result.exitCode != 0) {
       throwToolExit('Failed to build native application:\n$result');
     }

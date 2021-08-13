@@ -56,3 +56,14 @@ Directory getEngineArtifactsDirectory(String arch, BuildMode mode) {
       .getArtifactDirectory('engine')
       .childDirectory('tizen-$arch-${mode.name}');
 }
+
+/// Removes the "lib" prefix and file extension from [name] and returns.
+String getLibNameForFileName(String name) {
+  if (name.startsWith('lib')) {
+    name = name.substring(3);
+  }
+  if (name.lastIndexOf('.') > 0) {
+    name = name.substring(0, name.lastIndexOf('.'));
+  }
+  return name;
+}

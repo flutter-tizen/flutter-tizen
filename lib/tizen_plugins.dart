@@ -66,6 +66,16 @@ class TizenPlugin extends PluginPlatform implements NativeOrDartPlugin {
   final String dartPluginClass;
   final String fileName;
 
+  TizenPlugin copyWith({Directory directory}) {
+    return TizenPlugin(
+      name: name,
+      directory: directory ?? this.directory,
+      pluginClass: pluginClass,
+      dartPluginClass: dartPluginClass,
+      fileName: fileName,
+    );
+  }
+
   @override
   bool isNative() => pluginClass != null;
 
@@ -80,43 +90,6 @@ class TizenPlugin extends PluginPlatform implements NativeOrDartPlugin {
   }
 
   File get projectFile => directory.childFile('project_def.prop');
-
-  final RegExp _propertyFormat = RegExp(r'(\S+)\s*\+?=(.*)');
-
-  Map<String, List<String>> _properties;
-
-  List<String> getProperty(String key) {
-    if (_properties == null) {
-      if (!projectFile.existsSync()) {
-        return <String>[];
-      }
-      _properties = <String, List<String>>{};
-
-      for (final String line in projectFile.readAsLinesSync()) {
-        final Match match = _propertyFormat.firstMatch(line);
-        if (match == null) {
-          continue;
-        }
-        final String key = match.group(1);
-        final String value = match.group(2).trim();
-        _properties[key] = value.split(' ');
-      }
-    }
-    return _properties.containsKey(key) ? _properties[key] : <String>[];
-  }
-
-  List<String> getPropertyAsAbsolutePaths(String key) {
-    final List<String> paths = <String>[];
-    for (final String element in getProperty(key)) {
-      if (globals.fs.path.isAbsolute(element)) {
-        paths.add(element);
-      } else {
-        paths.add(globals.fs.path
-            .normalize(globals.fs.path.join(directory.path, element)));
-      }
-    }
-    return paths;
-  }
 }
 
 /// Any [FlutterCommand] that references [targetFile] should extend this mixin

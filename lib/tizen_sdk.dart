@@ -9,6 +9,7 @@ import 'package:flutter_tools/src/android/android_emulator.dart';
 import 'package:flutter_tools/src/android/android_sdk.dart';
 import 'package:flutter_tools/src/base/common.dart';
 import 'package:flutter_tools/src/base/context.dart';
+import 'package:flutter_tools/src/base/process.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:meta/meta.dart';
 
@@ -48,6 +49,11 @@ class TizenSdk {
     }
     return TizenSdk._(tizenHomeDir);
   }
+
+  final ProcessUtils _processUtils = ProcessUtils(
+    logger: globals.logger,
+    processManager: globals.processManager,
+  );
 
   final Directory directory;
 
@@ -115,6 +121,39 @@ class TizenSdk {
   String get defaultNativeCompiler => 'llvm-10.0';
 
   String get defaultGccVersion => '9.2';
+
+  Future<RunResult> buildNative(
+    String workingDirectory, {
+    @required String configuration,
+    @required String arch,
+    String compiler,
+    List<String> predefines = const <String>[],
+    List<String> extraOptions = const <String>[],
+    String rootstrap,
+    Map<String, String> environment,
+  }) async {
+    assert(configuration != null);
+    assert(arch != null);
+
+    return _processUtils.run(
+      <String>[
+        tizenCli.path,
+        'build-native',
+        '-C',
+        configuration,
+        '-a',
+        arch,
+        '-c',
+        compiler ?? defaultNativeCompiler,
+        for (String macro in predefines) ...<String>['-d', macro],
+        if (extraOptions.isNotEmpty) ...<String>['-e', extraOptions.join(' ')],
+        if (rootstrap != null) ...<String>['-r', rootstrap],
+        '--',
+        workingDirectory,
+      ],
+      environment: environment,
+    );
+  }
 
   Rootstrap getFlutterRootstrap({
     @required String profile,
