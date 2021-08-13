@@ -11,7 +11,7 @@ import 'package:flutter_tools/src/convert.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/project.dart';
 
-const String kConfigNameAttach = 'Attach (flutter-tizen)';
+const String kConfigNameAttach = 'flutter-tizen: Attach';
 
 final RegExp _commentFormat =
     RegExp(r'(:?)(/\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*+/|//.*\n?)');
@@ -28,14 +28,14 @@ String _removeComments(String jsonString) {
 
 void updateLaunchJsonFile(FlutterProject project, Uri observatoryUri) {
   Directory vscodeDir;
-  String cwd = r'${workspaceFolder}';
+  String workingDirectory = r'${workspaceFolder}';
   if (project.directory.basename == 'example') {
     final FlutterProject parentProject =
         FlutterProject.fromDirectory(project.directory.parent);
     if (parentProject.isPlugin || parentProject.isModule) {
       vscodeDir = parentProject.directory.childDirectory('.vscode')
         ..createSync(recursive: true);
-      cwd += '/example';
+      workingDirectory += '/example';
     }
   }
   vscodeDir ??= project.directory.childDirectory('.vscode')
@@ -74,7 +74,7 @@ void updateLaunchJsonFile(FlutterProject project, Uri observatoryUri) {
     if (config['name'] != kConfigNameAttach) {
       continue;
     }
-    config['cwd'] = cwd;
+    config['cwd'] = workingDirectory;
     config['observatoryUri'] = observatoryUri.toString();
   }
 
