@@ -27,20 +27,16 @@ String _removeComments(String jsonString) {
 }
 
 void updateLaunchJsonFile(FlutterProject project, Uri observatoryUri) {
-  Directory vscodeDir;
-  String workingDirectory = r'${workspaceFolder}';
   if (project.directory.basename == 'example') {
     final FlutterProject parentProject =
         FlutterProject.fromDirectory(project.directory.parent);
     if (parentProject.isPlugin || parentProject.isModule) {
-      vscodeDir = parentProject.directory.childDirectory('.vscode')
-        ..createSync(recursive: true);
-      workingDirectory += '/example';
+      updateLaunchJsonFile(parentProject, observatoryUri);
     }
   }
-  vscodeDir ??= project.directory.childDirectory('.vscode')
-    ..createSync(recursive: true);
 
+  final Directory vscodeDir = project.directory.childDirectory('.vscode')
+    ..createSync(recursive: true);
   final File launchJsonFile = vscodeDir.childFile('launch.json');
   String jsonString = '';
   if (launchJsonFile.existsSync()) {
@@ -74,7 +70,10 @@ void updateLaunchJsonFile(FlutterProject project, Uri observatoryUri) {
     if (config['name'] != kConfigNameAttach) {
       continue;
     }
-    config['cwd'] = workingDirectory;
+    config['cwd'] = r'${workspaceFolder}';
+    if (project.hasExampleApp) {
+      config['cwd'] += '/example';
+    }
     config['observatoryUri'] = observatoryUri.toString();
   }
 
