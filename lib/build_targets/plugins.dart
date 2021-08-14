@@ -235,7 +235,7 @@ APPNAME = flutter_plugins
 type = sharedLib
 profile = $profile-$apiVersion
 
-USER_SRCS = ${clientWrapperDir.childFile('*.cc').path}
+USER_SRCS = ${clientWrapperDir.childFile('*.cc').path.toPosixPath()}
 USER_LFLAGS = -Wl,-rpath='\$\$ORIGIN'
 USER_LIBS = ${userLibs.join(' ')}
 ''');
