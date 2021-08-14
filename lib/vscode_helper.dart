@@ -13,17 +13,16 @@ import 'package:flutter_tools/src/project.dart';
 
 const String kConfigNameAttach = 'flutter-tizen: Attach';
 
-final RegExp _commentFormat =
-    RegExp(r'(:?)(/\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*+/|//.*\n?)');
-
-String _removeComments(String jsonString) {
-  return jsonString.replaceAllMapped(
-    _commentFormat,
-    (Match match) {
-      // "aaa://bbb" contains "//" but is not a comment.
-      return match.group(1) == ':' ? match.group(0) : '';
-    },
-  ).trim();
+String _processJson(String jsonString) {
+  // The extended JSON format used by launch.json files allows comments and
+  // trailing commas. Remove them to prevent decoding errors.
+  final RegExp comments =
+      RegExp(r'(?<![:"/])(/\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*+/|//.*\n?)');
+  final RegExp trailingCommas = RegExp(r',(?=\s*?[\}\]])');
+  return jsonString
+      .replaceAll(comments, '')
+      .replaceAll(trailingCommas, '')
+      .trim();
 }
 
 void updateLaunchJsonFile(FlutterProject project, Uri observatoryUri) {
@@ -40,9 +39,7 @@ void updateLaunchJsonFile(FlutterProject project, Uri observatoryUri) {
   final File launchJsonFile = vscodeDir.childFile('launch.json');
   String jsonString = '';
   if (launchJsonFile.existsSync()) {
-    // Comments are allowed in launch.json file. Remove them to prevent
-    // decoding errors.
-    jsonString = _removeComments(launchJsonFile.readAsStringSync());
+    jsonString = _processJson(launchJsonFile.readAsStringSync());
   }
 
   Map<dynamic, dynamic> decoded = <dynamic, dynamic>{};
