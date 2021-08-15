@@ -339,19 +339,5 @@ class NativeTpk {
     // Extract the contents of the TPK to support code size analysis.
     final Directory tpkrootDir = outputDir.childDirectory('tpkroot');
     globals.os.unzip(outputTpk, tpkrootDir);
-
-    // Manually copy files if unzipping failed.
-    // Issue: https://github.com/flutter-tizen/flutter-tizen/issues/121
-    if (!tpkrootDir.existsSync()) {
-      final File runner = buildDir.childFile('runner');
-      final Directory sharedDir = tizenDir.childDirectory('shared');
-      final File tizenManifest = tizenProject.manifestFile;
-      runner.copySync(
-          tpkrootDir.childDirectory('bin').childFile(runner.basename).path);
-      copyDirectory(libDir, tpkrootDir.childDirectory('lib'));
-      copyDirectory(resDir, tpkrootDir.childDirectory('res'));
-      copyDirectory(sharedDir, tpkrootDir.childDirectory('shared'));
-      tizenManifest.copySync(tpkrootDir.childFile(tizenManifest.basename).path);
-    }
   }
 }
