@@ -229,13 +229,21 @@ class NativePlugins extends Target {
       outputs.add(includeDir.childFile(header.basename));
     }
 
+    // The absolute path to clientWrapperDir may contain spaces.
+    // We need to copy the entire directory into the build directory because
+    // USER_SRCS in project_def.prop doesn't allow spaces.
+    copyDirectory(
+        clientWrapperDir, rootDir.childDirectory(clientWrapperDir.basename));
+
     final File projectDef = rootDir.childFile('project_def.prop');
     projectDef.writeAsStringSync('''
 APPNAME = flutter_plugins
 type = sharedLib
 profile = $profile-$apiVersion
 
-USER_SRCS = ${clientWrapperDir.childFile('*.cc').path.toPosixPath()}
+USER_INC_DIRS = ${clientWrapperDir.basename}/include
+USER_SRCS = ${clientWrapperDir.basename}/*.cc
+
 USER_LFLAGS = -Wl,-rpath='\$\$ORIGIN'
 USER_LIBS = ${userLibs.join(' ')}
 ''');
@@ -249,7 +257,7 @@ USER_LIBS = ${userLibs.join(' ')}
     // https://github.com/flutter-tizen/flutter-tizen/issues/122
     final Directory tempDir =
         environment.fileSystem.systemTempDirectory.createTempSync();
-    projectDef.copySync(tempDir.childFile(projectDef.basename).path);
+    copyDirectory(rootDir, tempDir);
 
     // Run the native build.
     final RunResult result = await tizenSdk.buildNative(
@@ -259,13 +267,11 @@ USER_LIBS = ${userLibs.join(' ')}
       extraOptions: <String>[
         '-l${getLibNameForFileName(embedder.basename)}',
         '-L"${engineDir.path.toPosixPath()}"',
-        '-I"${clientWrapperDir.childDirectory('include').path.toPosixPath()}"',
         '-I"${publicDir.path.toPosixPath()}"',
         '-L"${libDir.path.toPosixPath()}"',
         // Forces plugin entrypoints to be exported, because unreferenced
         // objects are not included in the output shared object by default.
-        // Another option is to use the -Wl,--[no-]whole-archive flag with
-        // -Wl,-unresolved-symbols=ignore-in-object-files.
+        // Another option is to use the -Wl,--[no-]whole-archive flag.
         for (String className in pluginClasses)
           '-Wl,--undefined=${className}RegisterWithRegistrar',
       ],
