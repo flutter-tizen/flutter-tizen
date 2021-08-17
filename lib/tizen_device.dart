@@ -30,6 +30,7 @@ import 'package:process/process.dart';
 import 'tizen_builder.dart';
 import 'tizen_sdk.dart';
 import 'tizen_tpk.dart';
+import 'vscode_helper.dart';
 
 /// Tizen device implementation.
 ///
@@ -436,6 +437,9 @@ class TizenDevice extends Device {
           );
           return LaunchResult.failed();
         }
+      }
+      if (!prebuiltApplication) {
+        updateLaunchJsonFile(FlutterProject.current(), observatoryUri);
       }
       return LaunchResult.succeeded(observatoryUri: observatoryUri);
     } on Exception catch (error) {
