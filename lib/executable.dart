@@ -12,6 +12,7 @@ import 'package:flutter_tools/runner.dart' as runner;
 import 'package:flutter_tools/src/application_package.dart';
 import 'package:flutter_tools/src/base/context.dart';
 import 'package:flutter_tools/src/base/logger.dart';
+import 'package:flutter_tools/src/base/os.dart';
 import 'package:flutter_tools/src/base/template.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/commands/config.dart';
@@ -48,6 +49,7 @@ import 'tizen_cache.dart';
 import 'tizen_device_discovery.dart';
 import 'tizen_doctor.dart';
 import 'tizen_emulator.dart';
+import 'tizen_osutils.dart';
 import 'tizen_pub.dart';
 import 'tizen_sdk.dart';
 import 'tizen_tpk.dart';
@@ -160,9 +162,15 @@ Future<void> main(List<String> args) async {
       EmulatorManager: () => TizenEmulatorManager(
             tizenSdk: tizenSdk,
             tizenWorkflow: tizenWorkflow,
-            processManager: globals.processManager,
-            logger: globals.logger,
             fileSystem: globals.fs,
+            logger: globals.logger,
+            processManager: globals.processManager,
+          ),
+      OperatingSystemUtils: () => TizenOperatingSystemUtils(
+            fileSystem: globals.fs,
+            logger: globals.logger,
+            platform: globals.platform,
+            processManager: globals.processManager,
           ),
       TemplateRenderer: () => const MustacheTemplateRenderer(),
       TizenSdk: () => TizenSdk.locateSdk(),
