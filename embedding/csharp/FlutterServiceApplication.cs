@@ -24,7 +24,7 @@ namespace Tizen.Flutter.Embedding
         /// <summary>
         /// The optional entrypoint in the Dart project. If the value is empty, defaults to main().
         /// </summary>
-        protected string DartEntrypoint { get; set; } = string.Empty;
+        public string DartEntrypoint { get; set; } = string.Empty;
 
         /// <summary>
         /// The list of Dart entrypoint arguments.
