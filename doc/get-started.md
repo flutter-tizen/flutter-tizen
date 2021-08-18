@@ -18,11 +18,10 @@
 
    ```
    $ flutter-tizen doctor
-   [✓] Flutter (Channel unknown, 1.22.0-12.1.pre, on Linux, locale C.UTF-8)
-   [✗] Android toolchain - develop for Android devices
-       ✗ Unable to locate Android SDK.
+   Doctor summary (to see all details, run flutter doctor -v):
+   [✓] Flutter (Channel unknown, 2.2.1, on Linux, locale C.UTF-8)
    [✓] Tizen toolchain - develop for Tizen devices
-   [!] Android Studio (not installed)
+   ...
    [✓] Connected device (2 available)
    ```
 
@@ -32,7 +31,7 @@
 
    ![Dart extension](images/vs-code-dart.png)
 
-   Note: flutter-tizen only supports the command line interface. You can't use the [Flutter extension](https://marketplace.visualstudio.com/items?itemName=Dart-Code.flutter) in VS Code to deploy Flutter apps to a Tizen device.
+   Note: flutter-tizen only supports the command line interface. The [**Flutter**](https://marketplace.visualstudio.com/items?itemName=Dart-Code.flutter) extension is not fully compatible with Tizen devices.
 
 1. Launch an emulator or connect your Tizen device.
 
@@ -51,7 +50,7 @@
 
 ## Test drive
 
-The following steps are from [Flutter Docs: Test drive](https://flutter.dev/docs/get-started/test-drive?tab=terminal) (you can just replace the `flutter` keyword with `flutter-tizen`).
+Reference: [Flutter Docs: Test drive](https://flutter.dev/docs/get-started/test-drive?tab=terminal)
 
 ### Create the app
 

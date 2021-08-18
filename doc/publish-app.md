@@ -1,8 +1,8 @@
-# Publishing your app on Samsung Galaxy Store/TV App Store
+# Publishing apps on Samsung Galaxy Store/TV App Store
 
 ## Prepare for release
 
-- Make sure your app's manifest file (`tizen/tizen-manifest.xml`) is configured properly. Update the package id, version, label, icon, and required privileges if necessary. The rest of the file is automatically configured by the tool, so you can leave the values at their default. For more information on the XML elements in the file, see [Tizen Docs: Configuring the Application Manifest](https://docs.tizen.org/application/tizen-studio/native-tools/manifest-text-editor).
+- Make sure your app's manifest file (`tizen/tizen-manifest.xml`) is configured properly. Update the package ID, app ID, label, icon, and required privileges if necessary. For more information on the XML elements in the file, see [Tizen Docs: Configuring the Application Manifest](https://docs.tizen.org/application/tizen-studio/native-tools/manifest-text-editor).
 
 - Make sure your app is signed with a correct certificate for release. If you want to sign your app with a different certificate, open _Certificate Manager_ and set the profile you want to use to active.
 
@@ -43,4 +43,5 @@ A newly registered app usually takes around 2 weeks for review, but the time may
 
 ## Release a TV app
 
-**To be detailed.**
+1. Visit [**Samsung Apps TV Seller Office**](https://seller.samsungapps.com/tv) and sign up for an account.
+1. (To be detailed.)

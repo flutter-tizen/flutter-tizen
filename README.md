@@ -37,7 +37,7 @@ flutter-tizen run
 flutter-tizen run --release
 ```
 
-- See [Supported commands](doc/commands.md) for all available commands and their basic usage. See `[command] -h` for more information about each command.
+- See [Supported commands](doc/commands.md) for all available commands and their basic usage. See `[command] -h` for more information on each command.
 - See [Getting started](doc/get-started.md) to create your first app and try **hot reload**.
 - To **update** the flutter-tizen tool, run `git pull` in this directory.
 
@@ -51,18 +51,18 @@ flutter-tizen run --release
 #### App development
 
 - [Getting started](doc/get-started.md)
+- [Debugging apps](doc/debug-app.md)
 - [Flutter Docs](https://flutter.dev/docs)
-- [Debugging and inspecting Flutter apps with DevTools](doc/devtools-usage.md)
 
-#### Plugins
+#### Accessing Tizen native APIs
 
 - [A list of Flutter plugins available for Tizen](https://github.com/flutter-tizen/plugins)
 - [Writing a new plugin to use platform features](doc/develop-plugin.md)
+- [Dart bindings for Tizen APIs](https://github.com/flutter-tizen/tizen_interop)
 
 #### Others
 
-- [Publishing your app on Samsung Galaxy Store/TV App Store](doc/publish-app.md)
-- [Building the Flutter engine from source](https://github.com/flutter-tizen/flutter-tizen/wiki/Building-the-engine-from-source)
+- [Publishing apps on Samsung Galaxy Store/TV App Store](doc/publish-app.md)
 - [Wiki](https://github.com/flutter-tizen/flutter-tizen/wiki)
 
 ## Issues
