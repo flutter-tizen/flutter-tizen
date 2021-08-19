@@ -171,12 +171,14 @@ class NativeTpk {
 
     // Clean up the intermediate and output directories.
     final Directory tizenDir = tizenProject.editableDirectory;
-    final Directory resDir = tizenDir.childDirectory('res');
+    final Directory projectDir =
+        tizenProject.isMultiApp ? tizenProject.uiAppDirectory : tizenDir;
+    final Directory resDir = projectDir.childDirectory('res');
     if (resDir.existsSync()) {
       resDir.deleteSync(recursive: true);
     }
     resDir.createSync(recursive: true);
-    final Directory libDir = tizenDir.childDirectory('lib');
+    final Directory libDir = projectDir.childDirectory('lib');
     if (libDir.existsSync()) {
       libDir.deleteSync(recursive: true);
     }
@@ -272,7 +274,7 @@ class NativeTpk {
     );
 
     final String buildConfig = buildMode.isPrecompiled ? 'Release' : 'Debug';
-    final Directory buildDir = tizenDir.childDirectory(buildConfig);
+    final Directory buildDir = projectDir.childDirectory(buildConfig);
     if (buildDir.existsSync()) {
       buildDir.deleteSync(recursive: true);
     }
@@ -295,13 +297,13 @@ class NativeTpk {
 
     // Run the native build
     final String method =
-        "name: \"m1\", compiler:\"${tizenSdk.defaultNativeCompiler}\", extraoption: \"${extraOptions.join(' ').replaceAll('"', '\\"')}\", configs:[\"$buildConfig\"], rootstraps:[{name:\"${rootstrap.id}\", arch:\"${getTizenCliArch(buildInfo.targetArch)}\"}]";
+        "name: \"m1\", compiler:\"${tizenSdk.defaultNativeCompiler}\", extraoption: \"${extraOptions.join(' ').replaceAll('"', r'\"')}\", configs:[\"$buildConfig\"], rootstraps:[{name:\"${rootstrap.id}\", arch:\"${getTizenCliArch(buildInfo.targetArch)}\"}]";
     final List<String> targets =
-        tizenProject.isMultiApp ? ['ui', 'service'] : ['.'];
+        tizenProject.isMultiApp ? <String>['ui', 'service'] : <String>['.'];
 
     final String build =
         'name: "b1", methods: ["m1"], targets: ["${targets.join('","')}"]';
-    const String package = 'name: "test", targets:["b1"]';
+    final String package = 'name: "${tizenManifest.packageId}", targets:["b1"]';
 
     final List<String> buildAppCommand = <String>[
       tizenSdk.tizenCli.path,
@@ -333,15 +335,14 @@ class NativeTpk {
     }
 
     // TODO(pkosko): find better way to determine file name
-    List<FileSystemEntity> list = buildDir.listSync(followLinks: false);
-    FileSystemEntity outputTpkFile;
-    for (int i = 0; i < list.length; ++i) {
-      if (list[i].basename.endsWith('.tpk')) {
-        outputTpkFile = list[i];
+    File outputTpk;
+    for (final File file in buildDir.listSync().whereType<File>()) {
+      if (file.basename.endsWith('.tpk')) {
+        outputTpk = file;
+        break;
       }
     }
-    final File outputTpk = buildDir.childFile(outputTpkFile.basename);
-    if (!outputTpk.existsSync()) {
+    if (outputTpk == null || !outputTpk.existsSync()) {
       throwToolExit(
           'Build succeeded but the expected TPK ($outputTpk) not found:\n${result.toString()}');
     }
@@ -353,39 +354,5 @@ class NativeTpk {
     // Extract the contents of the TPK to support code size analysis.
     final Directory tpkrootDir = outputDir.childDirectory('tpkroot');
     globals.os.unzip(outputTpk, tpkrootDir);
-
-    // Manually copy files if unzipping failed.
-    // Issue: https://github.com/flutter-tizen/flutter-tizen/issues/121
-    if (!tpkrootDir.existsSync()) {
-      final Directory outputBinDir = tpkrootDir.childDirectory('bin');
-      if (tizenProject.isMultiApp) {
-        final File runner = tizenDir
-            .childDirectory('ui')
-            .childDirectory(buildConfig)
-            .childFile('runner');
-        runner.copySync(outputBinDir.childFile(runner.basename).path);
-
-        final File runnerService = tizenDir
-            .childDirectory('service')
-            .childDirectory(buildConfig)
-            .childFile('runner_service');
-        runnerService
-            .copySync(outputBinDir.childFile(runnerService.basename).path);
-
-        // TODO(pkosko): tizen-manifest.xml is generated on-fly during build process
-        // thus the file from UI application will be not 100% accurate. Need to check
-        // if getting a 'real' tizen-manifest.xml is available
-      } else {
-        final File runner = buildDir.childFile('runner');
-        runner.copySync(outputBinDir.childFile(runner.basename).path);
-      }
-
-      final Directory sharedDir = tizenDir.childDirectory('shared');
-      final File tizenManifest = tizenProject.manifestFile;
-      copyDirectory(libDir, tpkrootDir.childDirectory('lib'));
-      copyDirectory(resDir, tpkrootDir.childDirectory('res'));
-      copyDirectory(sharedDir, tpkrootDir.childDirectory('shared'));
-      tizenManifest.copySync(tpkrootDir.childFile(tizenManifest.basename).path);
-    }
   }
 }

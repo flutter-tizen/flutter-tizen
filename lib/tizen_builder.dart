@@ -208,31 +208,28 @@ class TizenBuilder {
 
   /// Update tizen-manifest.xml with the new build info if needed.
   static void _updateManifest(TizenProject project, TizenBuildInfo buildInfo) {
+    void _updateManifestFile(File manifestFile) {
+      final TizenManifest manifest = TizenManifest.parseFromXml(manifestFile);
+      final String buildName =
+          buildInfo.buildInfo.buildName ?? project.parent.manifest.buildName;
+      if (buildName != null) {
+        manifest.version = buildName;
+      }
+      final String deviceProfile = buildInfo.deviceProfile;
+      if (deviceProfile != null) {
+        manifest.profile = deviceProfile;
+      }
+      manifestFile.writeAsStringSync('$manifest\n');
+    }
+
     if (project.isMultiApp) {
       //UI
-      _updateManifestFile(
-          project.parent.manifest.buildName, buildInfo, project.uiManifestFile);
+      _updateManifestFile(project.uiManifestFile);
       //service
-      _updateManifestFile(project.parent.manifest.buildName, buildInfo,
-          project.serviceManifestFile);
+      _updateManifestFile(project.serviceManifestFile);
     } else {
-      _updateManifestFile(
-          project.parent.manifest.buildName, buildInfo, project.manifestFile);
+      _updateManifestFile(project.manifestFile);
     }
-  }
-
-  static void _updateManifestFile(
-      String projectBuildName, TizenBuildInfo buildInfo, File manifestFile) {
-    final TizenManifest manifest = TizenManifest.parseFromXml(manifestFile);
-    final String buildName = buildInfo.buildInfo.buildName ?? projectBuildName;
-    if (buildName != null) {
-      manifest.version = buildName;
-    }
-    final String deviceProfile = buildInfo.deviceProfile;
-    if (deviceProfile != null) {
-      manifest.profile = deviceProfile;
-    }
-    manifestFile.writeAsStringSync('$manifest\n');
   }
 }
 

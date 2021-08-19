@@ -1,18 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-{{#withPluginHook}}
-import 'dart:async';
-
-import 'package:flutter/services.dart';
-import 'package:{{pluginProjectName}}/{{pluginProjectName}}.dart';
-{{/withPluginHook}}
-
-const String serviceId = "{{androidIdentifier}}_service";
-const MethodChannel channel =
-    MethodChannel('tizen/internal/app_control_method');
 
 class ServiceControl {
   static int id = 0;
+  static const String serviceId = "{{androidIdentifier}}_service";
+  static const MethodChannel channel =
+      MethodChannel('tizen/internal/app_control_method');
 
   static Future<void> setupAppControl() async {
     id = await channel.invokeMethod<int>('create') as int;
@@ -34,22 +27,19 @@ class ServiceControl {
 }
 
 Future<void> main() async {
-  print("UImain started");
   runApp(MyApp());
 
-  // start service
   return ServiceControl.launchService();
 }
 
-// TODO modify with own logic
-int counter_ = 0;
+// Below code is an example of working service application, modify it with own logic.
 @pragma('vm:entry-point')
 Future<void> serviceMain() async {
-  print("serviceMain started");
+  int counter = 0;
   while (true) {
-    print('Counter: $counter_');
+    print('Counter: $counter');
     await Future.delayed(Duration(seconds: 1));
-    counter_ += 1;
+    counter += 1;
   }
 }
 
@@ -158,58 +148,6 @@ class _MyHomePageState extends State<MyHomePage> {
         tooltip: 'Increment',
         child: Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
-    );
-  }
-}
-{{/withPluginHook}}
-{{#withPluginHook}}
-class MyApp extends StatefulWidget {
-  @override
-  _MyAppState createState() => _MyAppState();
-}
-
-class _MyAppState extends State<MyApp> {
-  String _platformVersion = 'Unknown';
-
-  @override
-  void initState() {
-    super.initState();
-    initPlatformState();
-  }
-
-  // Platform messages are asynchronous, so we initialize in an async method.
-  Future<void> initPlatformState() async {
-    String platformVersion;
-    // Platform messages may fail, so we use a try/catch PlatformException.
-    // We also handle the message potentially returning null.
-    try {
-      platformVersion =
-          await {{pluginDartClass}}.platformVersion ?? 'Unknown platform version';
-    } on PlatformException {
-      platformVersion = 'Failed to get platform version.';
-    }
-
-    // If the widget was removed from the tree while the asynchronous platform
-    // message was in flight, we want to discard the reply rather than calling
-    // setState to update our non-existent appearance.
-    if (!mounted) return;
-
-    setState(() {
-      _platformVersion = platformVersion;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Plugin example app'),
-        ),
-        body: Center(
-          child: Text('Running on: $_platformVersion\n'),
-        ),
-      ),
     );
   }
 }
