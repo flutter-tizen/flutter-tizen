@@ -244,7 +244,7 @@ class TizenSdk {
     pluginsDir.childFile('flutter-rootstrap.xml').writeAsStringSync('''
 <?xml version="1.0"?>
 <extension point="rootstrapDefinition">
-  <rootstrap id="$flutterRootstrapId" name="flutter" version="flutter" architecture="$buildArch" path="${rootstrap.rootDirectory.path}" supportToolchainType="tizen.core">
+  <rootstrap id="$flutterRootstrapId" name="Flutter" version="Tizen $apiVersion" architecture="$buildArch" path="${rootstrap.rootDirectory.path}" supportToolchainType="tizen.core">
     <property key="DEV_PACKAGE_CONFIG_PATH" value="${configFile.path}"/>
     <property key="LINKER_MISCELLANEOUS_OPTION" value="${linkerFlags.join(' ')}"/>
     <property key="COMPILER_MISCELLANEOUS_OPTION" value="-std=c++17"/>
