@@ -40,10 +40,14 @@ class FlutterApp : public flutter::PluginRegistry {
 
   virtual int Run(int argc, char **argv);
 
-  bool IsRunning() { return handle_ != nullptr; }
-
   FlutterDesktopPluginRegistrarRef GetRegistrarForPlugin(
       const std::string &plugin_name) override;
+
+  bool IsRunning() { return handle_ != nullptr; }
+
+  void SetDartEntrypoint(const std::string &entrypoint) {
+    dart_entrypoint_ = entrypoint;
+  }
 
  protected:
   void ParseEngineArgs();
