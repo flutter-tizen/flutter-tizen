@@ -343,13 +343,10 @@ class NativeTpk {
       }
     }
     if (outputTpk == null || !outputTpk.existsSync()) {
-      throwToolExit(
-          'Build succeeded but the expected TPK ($outputTpk) not found:\n${result.toString()}');
+      throwToolExit('Build succeeded but the expected TPK not found:\n$result');
     }
     // Copy and rename the output TPK.
     outputTpk.copySync(outputDir.childFile(tizenProject.outputTpkName).path);
-    environment.logger.printStatus(
-        'Generated tpk file was moved to : ${outputDir.childFile(tizenProject.outputTpkName).path}');
 
     // Extract the contents of the TPK to support code size analysis.
     final Directory tpkrootDir = outputDir.childDirectory('tpkroot');

@@ -5,7 +5,6 @@
 class App : public FlutterServiceApp {
  public:
   bool OnCreate() {
-    dart_entrypoint_ = "serviceMain";
     if (FlutterServiceApp::OnCreate()) {
       RegisterPlugins(this);
     }
@@ -14,6 +13,7 @@ class App : public FlutterServiceApp {
 };
 
 int main(int argc, char *argv[]) {
-  auto app = new App();
-  return app->Run(argc, argv);
+  App app;
+  app.SetDartEntrypoint("serviceMain");
+  return app.Run(argc, argv);
 }

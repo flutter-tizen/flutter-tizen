@@ -208,7 +208,7 @@ class TizenBuilder {
 
   /// Update tizen-manifest.xml with the new build info if needed.
   static void _updateManifest(TizenProject project, TizenBuildInfo buildInfo) {
-    void _updateManifestFile(File manifestFile) {
+    void updateManifestFile(File manifestFile) {
       final TizenManifest manifest = TizenManifest.parseFromXml(manifestFile);
       final String buildName =
           buildInfo.buildInfo.buildName ?? project.parent.manifest.buildName;
@@ -223,12 +223,10 @@ class TizenBuilder {
     }
 
     if (project.isMultiApp) {
-      //UI
-      _updateManifestFile(project.uiManifestFile);
-      //service
-      _updateManifestFile(project.serviceManifestFile);
+      updateManifestFile(project.uiManifestFile);
+      updateManifestFile(project.serviceManifestFile);
     } else {
-      _updateManifestFile(project.manifestFile);
+      updateManifestFile(project.manifestFile);
     }
   }
 }
