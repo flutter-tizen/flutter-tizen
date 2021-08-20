@@ -71,7 +71,7 @@ Note: This file is not necessary if you're extending an existing plugin for Tize
 
 ### 2. Add Tizen platform code (`.cc`)
 
-Note: Before getting started, it is recommended to install the [C/C++ extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools) and add the `flutter-tizen/bin/cache/artifacts/engine/common` directory to your workspace in VS Code.
+Note: Before getting started, you may apply [recommended settings for plugin developers](https://github.com/flutter-tizen/flutter-tizen/wiki/Recommended-settings-for-VS-Code#plugin-developer) in VS Code.
 
 The implementation of the plugin can be found in the `tizen/src/plugin_name_plugin.cc` file. In this file, you will see:
 
@@ -136,8 +136,8 @@ Note: The standard platform channels use a standard message codec that supports 
 Types such as `flutter::MethodCall` and `flutter::EncodableValue` in the template code are defined in `cpp_client_wrapper` headers. APIs that you can use in your plugin code include:
 
 - C++17 standards
-- `cpp_client_wrapper` APIs (in `flutter-tizen/bin/cache/artifacts/engine/common/cpp_client_wrapper/include/flutter`)
-- Tizen native APIs ([Wearable API references](https://docs.tizen.org/application/native/api/wearable/latest/index.html))
+- `cpp_client_wrapper` (in `flutter-tizen/flutter/bin/cache/artifacts/engine/tizen-common/cpp_client_wrapper`)
+- Tizen native APIs (see [Wearable API references](https://docs.tizen.org/application/native/api/wearable/latest/index.html))
 - External native libraries, if any (static/shared)
 
 Note: The API references for Tizen TV are not publicly available. However, most of the Tizen core APIs are common to both wearable and TV profiles, so you may refer to the wearable API references when developing plugins for TV devices.
@@ -148,8 +148,6 @@ Besides the above mentioned [MethodChannel](https://api.flutter.dev/flutter/serv
 
 - [BasicMessageChannel](https://api.flutter.dev/flutter/services/BasicMessageChannel-class.html): For basic asynchronous message passing.
 - [EventChannel](https://api.flutter.dev/flutter/services/EventChannel-class.html): For asynchronous event streaming.
-
-You might check out an example usage of `EventChannel` in the [`wearable_rotary`](https://github.com/flutter-tizen/plugins/tree/master/packages/wearable_rotary) plugin.
 
 #### Tizen privileges
 
