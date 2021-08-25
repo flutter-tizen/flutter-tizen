@@ -13,6 +13,6 @@ class App : public FlutterServiceApp {
 };
 
 int main(int argc, char *argv[]) {
-  auto app = new App();
-  return app->Run(argc, argv);
+  App app;
+  return app.Run(argc, argv);
 }
