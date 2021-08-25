@@ -208,18 +208,26 @@ class TizenBuilder {
 
   /// Update tizen-manifest.xml with the new build info if needed.
   static void _updateManifest(TizenProject project, TizenBuildInfo buildInfo) {
-    final TizenManifest manifest =
-        TizenManifest.parseFromXml(project.manifestFile);
-    final String buildName =
-        buildInfo.buildInfo.buildName ?? project.parent.manifest.buildName;
-    if (buildName != null) {
-      manifest.version = buildName;
+    void updateManifestFile(File manifestFile) {
+      final TizenManifest manifest = TizenManifest.parseFromXml(manifestFile);
+      final String buildName =
+          buildInfo.buildInfo.buildName ?? project.parent.manifest.buildName;
+      if (buildName != null) {
+        manifest.version = buildName;
+      }
+      final String deviceProfile = buildInfo.deviceProfile;
+      if (deviceProfile != null) {
+        manifest.profile = deviceProfile;
+      }
+      manifestFile.writeAsStringSync('$manifest\n');
     }
-    final String deviceProfile = buildInfo.deviceProfile;
-    if (deviceProfile != null) {
-      manifest.profile = deviceProfile;
+
+    if (project.isMultiApp) {
+      updateManifestFile(project.uiManifestFile);
+      updateManifestFile(project.serviceManifestFile);
+    } else {
+      updateManifestFile(project.manifestFile);
     }
-    project.manifestFile.writeAsStringSync('$manifest\n');
   }
 }
 
