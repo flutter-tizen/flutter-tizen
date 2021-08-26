@@ -124,27 +124,42 @@ class TizenSdk {
 
   Future<RunResult> buildApp(
     String workingDirectory, {
-    @required String build,
-    String method,
-    // Map<String, String> method = const <String, String>{},
-    @required String output,
-    @required String package,
+    Map<String, dynamic> build = const <String, dynamic>{},
+    Map<String, dynamic> method = const <String, dynamic>{},
+    String output,
+    Map<String, dynamic> package = const <String, dynamic>{},
     String sign,
     Map<String, String> environment,
   }) {
+    String stringify(dynamic argument) {
+      if (argument is String) {
+        return '"${argument.replaceAll('"', r'\"')}"';
+      } else if (argument is List) {
+        return argument.map(stringify).toList().toString();
+      } else if (argument is Map<String, dynamic>) {
+        for (final MapEntry<String, dynamic> entry in argument.entries) {
+          argument[entry.key] = stringify(entry.value);
+        }
+        return argument.toString();
+      } else {
+        throwToolExit('Unsupported type: ${argument.runtimeType}');
+      }
+    }
+
+    String flatten(Map<String, dynamic> argument) {
+      final String string = stringify(argument);
+      return string.substring(1, string.length - 1);
+    }
+
     return _processUtils.run(
       <String>[
         tizenCli.path,
         'build-app',
-        '-m',
-        method,
-        '-b',
-        build,
-        '-p',
-        package,
+        if (build.isNotEmpty) ...<String>['-b', flatten(build)],
+        if (method.isNotEmpty) ...<String>['-m', flatten(method)],
+        if (output != null) ...<String>['-o', output],
+        if (package.isNotEmpty) ...<String>['-p', flatten(package)],
         if (sign != null) ...<String>['-s', sign],
-        '-o',
-        output,
         '--',
         workingDirectory,
       ],

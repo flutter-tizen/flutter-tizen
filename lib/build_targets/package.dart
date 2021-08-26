@@ -245,7 +245,6 @@ class NativeTpk {
     final List<String> extraOptions = <String>[
       '-lflutter_tizen_${buildInfo.deviceProfile}',
       '-L"${libDir.path.toPosixPath()}"',
-      '-std=c++17',
       '-I"${clientWrapperDir.childDirectory('include').path.toPosixPath()}"',
       '-I"${publicDir.path.toPosixPath()}"',
       ...userIncludes.map((String f) => '-I"${f.toPosixPath()}"'),
@@ -268,6 +267,7 @@ class NativeTpk {
     if (buildDir.existsSync()) {
       buildDir.deleteSync(recursive: true);
     }
+    buildDir.createSync(recursive: true);
 
     // The output TPK is signed with an active profile unless otherwise
     // specified.
@@ -290,22 +290,35 @@ class NativeTpk {
       );
     }
 
-    // Run the native build
-    final String method =
-        "name: \"m1\", compiler:\"${tizenSdk.defaultNativeCompiler}\", extraoption: \"${extraOptions.join(' ').replaceAll('"', r'\"')}\", configs:[\"$buildConfig\"], rootstraps:[{name:\"${rootstrap.id}\", arch:\"${getTizenCliArch(buildInfo.targetArch)}\"}]";
-    final List<String> targets =
-        tizenProject.isMultiApp ? <String>['ui', 'service'] : <String>['.'];
-
-    final String build =
-        'name: "b1", methods: ["m1"], targets: ["${targets.join('","')}"]';
-    final String package = 'name: "${tizenManifest.packageId}", targets:["b1"]';
-
+    // Build the app.
     final RunResult result = await tizenSdk.buildApp(
       tizenDir.path,
-      build: build,
-      method: method,
+      build: <String, dynamic>{
+        'name': 'b1',
+        'methods': <String>['m1'],
+        'targets':
+            tizenProject.isMultiApp ? <String>['ui', 'service'] : <String>['.'],
+      },
+      method: <String, dynamic>{
+        'name': 'm1',
+        'configs': <String>[buildConfig],
+        'compiler': tizenSdk.defaultNativeCompiler,
+        'predefines': <String>[
+          '${buildInfo.deviceProfile.toUpperCase()}_PROFILE',
+        ],
+        'extraoption': extraOptions.join(' '),
+        'rootstraps': <Map<String, String>>[
+          <String, String>{
+            'name': rootstrap.id,
+            'arch': getTizenCliArch(buildInfo.targetArch),
+          },
+        ],
+      },
       output: buildDir.path,
-      package: package,
+      package: <String, dynamic>{
+        'name': tizenManifest.packageId,
+        'targets': <String>['b1'],
+      },
       sign: securityProfile,
       environment: variables,
     );
