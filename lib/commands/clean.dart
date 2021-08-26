@@ -30,15 +30,22 @@ class TizenCleanCommand extends CleanCommand {
     if (!project.existsSync()) {
       return;
     }
-    _deleteFile(project.ephemeralDirectory);
+    _deleteFile(project.managedDirectory);
 
     if (project.isDotnet) {
       _deleteFile(project.editableDirectory.childDirectory('bin'));
       _deleteFile(project.editableDirectory.childDirectory('obj'));
       _deleteFile(project.editableDirectory.childFile('Runner.csproj.user'));
     } else {
-      _deleteFile(project.editableDirectory.childDirectory('Debug'));
-      _deleteFile(project.editableDirectory.childDirectory('Release'));
+      if (project.isMultiApp) {
+        _deleteFile(project.uiAppDirectory.childDirectory('Debug'));
+        _deleteFile(project.uiAppDirectory.childDirectory('Release'));
+        _deleteFile(project.serviceAppDirectory.childDirectory('Debug'));
+        _deleteFile(project.serviceAppDirectory.childDirectory('Release'));
+      } else {
+        _deleteFile(project.editableDirectory.childDirectory('Debug'));
+        _deleteFile(project.editableDirectory.childDirectory('Release'));
+      }
     }
   }
 
