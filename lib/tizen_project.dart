@@ -5,8 +5,11 @@
 
 // @dart = 2.8
 
+import 'package:file/file.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
+import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/cache.dart';
+import 'package:flutter_tools/src/commands/clean.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/project.dart';
 import 'package:xml/xml.dart';
@@ -115,5 +118,46 @@ class TizenProject extends FlutterProjectPlatform {
     userFile.writeAsStringSync(
       document.toXmlString(pretty: true, indent: '  '),
     );
+  }
+
+  void clean() {
+    if (!existsSync()) {
+      return;
+    }
+    _deleteFile(managedDirectory);
+
+    if (isDotnet) {
+      _deleteFile(editableDirectory.childDirectory('bin'));
+      _deleteFile(editableDirectory.childDirectory('obj'));
+      _deleteFile(editableDirectory.childFile('Runner.csproj.user'));
+    } else {
+      if (isMultiApp) {
+        _deleteFile(uiAppDirectory.childDirectory('Debug'));
+        _deleteFile(uiAppDirectory.childDirectory('Release'));
+        _deleteFile(serviceAppDirectory.childDirectory('Debug'));
+        _deleteFile(serviceAppDirectory.childDirectory('Release'));
+      } else {
+        _deleteFile(editableDirectory.childDirectory('Debug'));
+        _deleteFile(editableDirectory.childDirectory('Release'));
+      }
+    }
+  }
+
+  /// Source: [CleanCommand.deleteFile] in `clean.dart` (simplified)
+  void _deleteFile(FileSystemEntity file) {
+    if (!file.existsSync()) {
+      return;
+    }
+    final String path = globals.fs.path.relative(file.path);
+    final Status status = globals.logger.startProgress(
+      'Deleting $path...',
+    );
+    try {
+      file.deleteSync(recursive: true);
+    } on FileSystemException catch (error) {
+      globals.printError('Failed to remove $path: $error');
+    } finally {
+      status?.stop();
+    }
   }
 }
