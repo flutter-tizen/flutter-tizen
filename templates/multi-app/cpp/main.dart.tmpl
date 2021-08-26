@@ -1,11 +1,36 @@
+import 'dart:ffi';
+import 'package:ffi/ffi.dart'; // needs to be added in pubspec.yaml
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
+class _AppContextHandle extends Opaque {}
 
 class ServiceControl {
   static int id = 0;
   static const String serviceId = "{{androidIdentifier}}_service";
   static const MethodChannel channel =
       MethodChannel('tizen/internal/app_control_method');
+  static final libAppMananger =
+      DynamicLibrary.open("libcapi-appfw-app-manager.so.0");
+  static late final int Function(
+          Pointer<Utf8>, Pointer<Pointer<_AppContextHandle>>) getAppContext =
+      libAppMananger
+          .lookup<
+                  NativeFunction<
+                      Int32 Function(
+                          Pointer<Utf8>, Pointer<Pointer<_AppContextHandle>>)>>(
+              'app_manager_get_app_context')
+          .asFunction();
+  static late final int Function(Pointer<_AppContextHandle>)
+      requestTerminateBgApp = libAppMananger
+          .lookup<NativeFunction<Int32 Function(Pointer<_AppContextHandle>)>>(
+              "app_manager_request_terminate_bg_app")
+          .asFunction();
+  static late final int Function(Pointer<_AppContextHandle>) destroyContext =
+      libAppMananger
+          .lookup<NativeFunction<Int32 Function(Pointer<_AppContextHandle>)>>(
+              'app_context_destroy')
+          .asFunction();
 
   static Future<void> setupAppControl() async {
     id = await channel.invokeMethod<int>('create') as int;
@@ -20,9 +45,45 @@ class ServiceControl {
   }
 
   static void stopService() async {
-    await setupAppControl();
-    await channel.invokeMethod<bool>(
-        'sendTerminateRequest', <String, dynamic>{'id': id});
+    // This is a temporary solution to stop the service. In the future it
+    // is going to be replaced by calling a proper channel function.
+    // https://github.com/flutter-tizen/flutter-tizen/issues/216
+
+    final nativeServiceId = serviceId.toNativeUtf8();
+    final Pointer<Pointer<_AppContextHandle>> appContext = malloc();
+
+    try {
+      var ret = getAppContext(nativeServiceId, appContext);
+
+      if (ret != 0) {
+        throw PlatformException(
+          message:
+              'Failed to excute app_manager_get_app_context $nativeServiceId',
+          code: "$ret",
+        );
+      }
+
+      ret = requestTerminateBgApp(appContext.value);
+
+      if (ret != 0) {
+        throw PlatformException(
+          message: 'Failed to excute app_manager_request_terminate_bg_app',
+          code: "$ret",
+        );
+      }
+
+      ret = destroyContext(appContext.value);
+
+      if (ret != 0) {
+        throw PlatformException(
+          message: 'Failed to excute app_context_destroy',
+          code: "$ret",
+        );
+      }
+    } finally {
+      malloc.free(nativeServiceId);
+      malloc.free(appContext);
+    }
   }
 }
 
@@ -139,6 +200,12 @@ class _MyHomePageState extends State<MyHomePage> {
               '$_counter',
               style: Theme.of(context).textTheme.headline4,
             ),
+            TextButton(
+                onPressed: () => ServiceControl.launchService(),
+                child: Text("Launch service")),
+            TextButton(
+                onPressed: () => ServiceControl.stopService(),
+                child: Text("Stop service"))
           ],
         ),
       ),
