@@ -8,7 +8,6 @@ import 'package:file/file.dart';
 import 'package:flutter_tools/src/base/common.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/base/process.dart';
-import 'package:flutter_tools/src/base/terminal.dart';
 import 'package:flutter_tools/src/build_info.dart';
 import 'package:flutter_tools/src/build_system/build_system.dart';
 import 'package:flutter_tools/src/cache.dart';
@@ -98,7 +97,7 @@ class DotnetTpk {
         'Install the latest .NET SDK from: https://dotnet.microsoft.com/download',
       );
     }
-    RunResult result = await _processUtils.run(<String>[
+    final RunResult result = await _processUtils.run(<String>[
       dotnetCli.path,
       'build',
       '-c',
@@ -133,16 +132,8 @@ class DotnetTpk {
     if (securityProfile != null) {
       environment.logger
           .printStatus('The $securityProfile profile is used for signing.');
-      result = await _processUtils.run(<String>[
-        tizenSdk.tizenCli.path,
-        'package',
-        '-t',
-        'tpk',
-        '-s',
-        securityProfile,
-        '--',
-        outputTpk.path,
-      ]);
+      final RunResult result =
+          await tizenSdk.package(outputTpk.path, sign: securityProfile);
       if (result.exitCode != 0) {
         throwToolExit('Failed to sign the TPK:\n$result');
       }
@@ -150,7 +141,6 @@ class DotnetTpk {
       environment.logger.printStatus(
         'The TPK was signed with a default certificate. You can create one using Certificate Manager.\n'
         'https://github.com/flutter-tizen/flutter-tizen/blob/master/doc/install-tizen-sdk.md#create-a-tizen-certificate',
-        color: TerminalColor.yellow,
       );
     }
   }
@@ -293,6 +283,11 @@ class NativeTpk {
     if (securityProfile != null) {
       environment.logger
           .printStatus('The $securityProfile profile is used for signing.');
+    } else {
+      throwToolExit(
+        'Native TPKs cannot be built without valid certificates. You can create one using Certificate Manager.\n'
+        'https://github.com/flutter-tizen/flutter-tizen/blob/master/doc/install-tizen-sdk.md#create-a-tizen-certificate',
+      );
     }
 
     // Run the native build
@@ -324,14 +319,6 @@ class NativeTpk {
         await _processUtils.run(buildAppCommand, environment: variables);
     if (result.exitCode != 0) {
       throwToolExit('Failed to generate TPK:\n$result');
-    }
-
-    if (securityProfile == null) {
-      environment.logger.printStatus(
-        'The TPK was signed with a default certificate. You can create one using Certificate Manager.\n'
-        'https://github.com/flutter-tizen/flutter-tizen/blob/master/doc/install-tizen-sdk.md#create-a-tizen-certificate',
-        color: TerminalColor.yellow,
-      );
     }
 
     // TODO(pkosko): find better way to determine file name
