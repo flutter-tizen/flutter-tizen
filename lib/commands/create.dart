@@ -23,6 +23,8 @@ class TizenCreateCommand extends CreateCommand {
       'tizen-language',
       defaultsTo: 'csharp',
       allowed: <String>['cpp', 'csharp'],
+      help: 'The language to use for Tizen-specific code, either C++ '
+          '(performant, but unsupported by TV devices) or C# (universal).',
     );
     argParser.addOption(
       'app-type',
@@ -53,8 +55,7 @@ class TizenCreateCommand extends CreateCommand {
     }
 
     final bool generatePlugin = argResults['template'] != null
-        ? stringArg('template') ==
-            flutterProjectTypeToString(FlutterProjectType.plugin)
+        ? stringArg('template') == 'plugin'
         : determineTemplateType() == FlutterProjectType.plugin;
     if (generatePlugin) {
       // Assume that pubspec.yaml uses the multi-platforms plugin format if the
@@ -82,7 +83,7 @@ class TizenCreateCommand extends CreateCommand {
     }
 
     // TODO(pkosko): Find better solution for inject a multi-project main.dart file
-    if (stringArg('app-type').compareTo('multi') == 0) {
+    if (stringArg('app-type') == 'multi') {
       final File mainFile =
           projectDir.childDirectory('tizen').childFile('main.dart');
       mainFile.copySync(
@@ -143,13 +144,14 @@ class TizenCreateCommand extends CreateCommand {
       }
 
       final String appType = stringArg('app-type');
-      if (appType.compareTo('multi') == 0) {
-        copyTemplate('multi-app', appLanguage, 'app');
-      } else if (appType.compareTo('service') == 0) {
-        copyTemplate('service-app', appLanguage, 'app');
-      } else {
-        copyTemplate('ui-app', appLanguage, 'app');
+      final String template = stringArg('template');
+      if (appType == 'multi' && template != null && template != 'app') {
+        throwToolExit(
+          'The options --app-type=multi and --template=$template cannot be '
+          'provided at the same time.',
+        );
       }
+      copyTemplate('$appType-app', appLanguage, 'app');
       copyTemplate('plugin', pluginLanguage, 'plugin');
 
       return await runInternal();
