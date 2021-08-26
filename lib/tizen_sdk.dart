@@ -122,6 +122,36 @@ class TizenSdk {
 
   String get defaultGccVersion => '9.2';
 
+  Future<RunResult> buildApp(
+    String workingDirectory, {
+    @required String build,
+    String method,
+    // Map<String, String> method = const <String, String>{},
+    @required String output,
+    @required String package,
+    String sign,
+    Map<String, String> environment,
+  }) {
+    return _processUtils.run(
+      <String>[
+        tizenCli.path,
+        'build-app',
+        '-m',
+        method,
+        '-b',
+        build,
+        '-p',
+        package,
+        if (sign != null) ...<String>['-s', sign],
+        '-o',
+        output,
+        '--',
+        workingDirectory,
+      ],
+      environment: environment,
+    );
+  }
+
   Future<RunResult> buildNative(
     String workingDirectory, {
     @required String configuration,

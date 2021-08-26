@@ -300,25 +300,17 @@ class NativeTpk {
         'name: "b1", methods: ["m1"], targets: ["${targets.join('","')}"]';
     final String package = 'name: "${tizenManifest.packageId}", targets:["b1"]';
 
-    final List<String> buildAppCommand = <String>[
-      tizenSdk.tizenCli.path,
-      'build-app',
-      '-m',
-      method,
-      '-b',
-      build,
-      '-p',
-      package,
-      if (securityProfile != null) ...<String>['-s', securityProfile],
-      '-o',
-      buildDir.path,
-      '--',
+    final RunResult result = await tizenSdk.buildApp(
       tizenDir.path,
-    ];
-    final RunResult result =
-        await _processUtils.run(buildAppCommand, environment: variables);
+      build: build,
+      method: method,
+      output: buildDir.path,
+      package: package,
+      sign: securityProfile,
+      environment: variables,
+    );
     if (result.exitCode != 0) {
-      throwToolExit('Failed to generate TPK:\n$result');
+      throwToolExit('Failed to build native application:\n$result');
     }
 
     // TODO(pkosko): find better way to determine file name
