@@ -151,9 +151,6 @@ class NativeTpk {
 
   final TizenBuildInfo buildInfo;
 
-  final ProcessUtils _processUtils = ProcessUtils(
-      logger: globals.logger, processManager: globals.processManager);
-
   Future<void> build(Environment environment) async {
     final FlutterProject project =
         FlutterProject.fromDirectory(environment.projectDir);
@@ -326,15 +323,10 @@ class NativeTpk {
       throwToolExit('Failed to build native application:\n$result');
     }
 
-    // TODO(pkosko): find better way to determine file name
-    File outputTpk;
-    for (final File file in buildDir.listSync().whereType<File>()) {
-      if (file.basename.endsWith('.tpk')) {
-        outputTpk = file;
-        break;
-      }
-    }
-    if (outputTpk == null || !outputTpk.existsSync()) {
+    final String buildArch = getTizenBuildArch(buildInfo.targetArch);
+    final File outputTpk = buildDir.childFile(
+        '${tizenManifest.packageId}_Tizen-${tizenManifest.apiVersion}_${buildArch}_$buildConfig.tpk');
+    if (!outputTpk.existsSync()) {
       throwToolExit('Build succeeded but the expected TPK not found:\n$result');
     }
     // Copy and rename the output TPK.
