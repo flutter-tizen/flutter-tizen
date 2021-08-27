@@ -23,18 +23,14 @@ class TizenCreateCommand extends CreateCommand {
       'tizen-language',
       defaultsTo: 'csharp',
       allowed: <String>['cpp', 'csharp'],
+      help: 'The language to use for Tizen-specific code, either C++ '
+          '(performant, but unsupported by TV devices) or C# (universal).',
     );
-    argParser.addFlag(
-      'tizen-service',
-      defaultsTo: false,
-      negatable: false,
-      help: 'Create a Tizen service application.',
-    );
-    argParser.addFlag(
-      'tizen-multi',
-      defaultsTo: false,
-      negatable: false,
-      help: 'Create a Tizen application with built-in service.',
+    argParser.addOption(
+      'app-type',
+      defaultsTo: 'ui',
+      allowed: <String>['ui', 'service', 'multi'],
+      help: 'Select a type of application template.',
     );
   }
 
@@ -59,8 +55,7 @@ class TizenCreateCommand extends CreateCommand {
     }
 
     final bool generatePlugin = argResults['template'] != null
-        ? stringArg('template') ==
-            flutterProjectTypeToString(FlutterProjectType.plugin)
+        ? stringArg('template') == 'plugin'
         : determineTemplateType() == FlutterProjectType.plugin;
     if (generatePlugin) {
       // Assume that pubspec.yaml uses the multi-platforms plugin format if the
@@ -88,7 +83,7 @@ class TizenCreateCommand extends CreateCommand {
     }
 
     // TODO(pkosko): Find better solution for inject a multi-project main.dart file
-    if (boolArg('tizen-multi')) {
+    if (stringArg('app-type') == 'multi') {
       final File mainFile =
           projectDir.childDirectory('tizen').childFile('main.dart');
       mainFile.copySync(
@@ -127,9 +122,9 @@ class TizenCreateCommand extends CreateCommand {
     // renderTemplate() but it may result in additional complexity.
     tizenTemplateManifest.copySync(templateManifest.path);
 
-    final String appType = stringArg('tizen-language');
+    final String appLanguage = stringArg('tizen-language');
     // The Dart plugin template is not currently supported.
-    const String pluginType = 'cpp';
+    const String pluginLanguage = 'cpp';
 
     final List<Directory> created = <Directory>[];
     try {
@@ -148,14 +143,16 @@ class TizenCreateCommand extends CreateCommand {
         created.add(destinationDir);
       }
 
-      if (boolArg('tizen-multi')) {
-        copyTemplate('multi-app', appType, 'app');
-      } else if (boolArg('tizen-service')) {
-        copyTemplate('service-app', appType, 'app');
-      } else {
-        copyTemplate('ui-app', appType, 'app');
+      final String appType = stringArg('app-type');
+      final String template = stringArg('template');
+      if (appType == 'multi' && template != null && template != 'app') {
+        throwToolExit(
+          'The options --app-type=multi and --template=$template cannot be '
+          'provided at the same time.',
+        );
       }
-      copyTemplate('plugin', pluginType, 'plugin');
+      copyTemplate('$appType-app', appLanguage, 'app');
+      copyTemplate('plugin', pluginLanguage, 'plugin');
 
       return await runInternal();
     } finally {
