@@ -153,13 +153,10 @@ class NativePlugins extends Target {
         ],
         extraOptions: <String>[
           '-fPIC',
-          '-I"${clientWrapperDir.childDirectory('include').path.toPosixPath()}"',
-          '-I"${publicDir.path.toPosixPath()}"',
+          '-I${clientWrapperDir.childDirectory('include').path.toPosixPath()}',
+          '-I${publicDir.path.toPosixPath()}',
         ],
         rootstrap: rootstrap.id,
-        environment: <String, String>{
-          'PATH': getDefaultPathVariable(),
-        },
       );
       if (result.exitCode != 0) {
         throwToolExit('Failed to build ${plugin.name} plugin:\n$result');
@@ -266,9 +263,9 @@ USER_LIBS = ${userLibs.join(' ')}
       arch: getTizenCliArch(buildInfo.targetArch),
       extraOptions: <String>[
         '-l${getLibNameForFileName(embedder.basename)}',
-        '-L"${engineDir.path.toPosixPath()}"',
-        '-I"${publicDir.path.toPosixPath()}"',
-        '-L"${libDir.path.toPosixPath()}"',
+        '-L${engineDir.path.toPosixPath()}',
+        '-I${publicDir.path.toPosixPath()}',
+        '-L${libDir.path.toPosixPath()}',
         // Forces plugin entrypoints to be exported, because unreferenced
         // objects are not included in the output shared object by default.
         // Another option is to use the -Wl,--[no-]whole-archive flag.
@@ -276,9 +273,6 @@ USER_LIBS = ${userLibs.join(' ')}
           '-Wl,--undefined=${className}RegisterWithRegistrar',
       ],
       rootstrap: rootstrap.id,
-      environment: <String, String>{
-        'PATH': getDefaultPathVariable(),
-      },
     );
     if (result.exitCode != 0) {
       throwToolExit('Failed to build native plugins:\n$result');

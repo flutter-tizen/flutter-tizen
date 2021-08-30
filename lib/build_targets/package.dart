@@ -288,15 +288,15 @@ class NativeTpk {
     final List<String> extraOptions = <String>[
       '-Wl,-unresolved-symbols=ignore-in-shared-libs',
       '-lflutter_tizen_${buildInfo.deviceProfile}',
-      '-L"${libDir.path.toPosixPath()}"',
-      '-I"${clientWrapperDir.childDirectory('include').path.toPosixPath()}"',
-      '-I"${publicDir.path.toPosixPath()}"',
-      '-I"${embeddingDir.childDirectory('include').path.toPosixPath()}"',
+      '-L${libDir.path.toPosixPath()}',
+      '-I${clientWrapperDir.childDirectory('include').path.toPosixPath()}',
+      '-I${publicDir.path.toPosixPath()}',
+      '-I${embeddingDir.childDirectory('include').path.toPosixPath()}',
       '-Wl,--whole-archive',
       embeddingLib.path.toPosixPath(),
       '-Wl,--no-whole-archive',
       for (String lib in embeddingDependencies) '-l$lib',
-      '-I"${pluginsDir.childDirectory('include').path.toPosixPath()}"',
+      '-I${pluginsDir.childDirectory('include').path.toPosixPath()}',
       if (pluginsLib.existsSync()) '-lflutter_plugins',
     ];
 
@@ -330,9 +330,6 @@ class NativeTpk {
         'targets': <String>['b1'],
       },
       sign: securityProfile,
-      environment: <String, String>{
-        'PATH': getDefaultPathVariable(),
-      },
     );
     if (result.exitCode != 0) {
       throwToolExit('Failed to build native application:\n$result');
