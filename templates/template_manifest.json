@@ -17,6 +17,7 @@
         "templates/plugin/tizen.tmpl/src/log.h.tmpl",
         "templates/plugin/tizen.tmpl/src/projectName_plugin.cc.tmpl",
         "templates/app/tizen.tmpl/main.dart.tmpl",
+        "templates/app/tizen.tmpl/pubspec.yaml.tmpl",
         "templates/app/tizen.tmpl/ui/.gitignore",
         "templates/app/tizen.tmpl/ui/App.cs",
         "templates/app/tizen.tmpl/ui/Runner.csproj",

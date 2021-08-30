@@ -94,6 +94,17 @@ class TizenCreateCommand extends CreateCommand {
       mainFile.copySync(
           projectDir.childDirectory('lib').childFile('main.dart').path);
       mainFile.deleteSync();
+
+      final File pubspecFile =
+          projectDir.childDirectory('tizen').childFile('pubspec.yaml');
+      pubspecFile.copySync(projectDir.childFile('pubspec.yaml').path);
+      pubspecFile.deleteSync();
+
+      globals.printStatus(
+        'You need to run `flutter-tizen pub get` in order to get required packages.',
+        emphasis: true,
+        color: TerminalColor.yellow,
+      );
     }
 
     return result;
