@@ -12,8 +12,7 @@ import 'package:flutter_tools/src/base/context.dart';
 import 'package:flutter_tools/src/base/process.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:meta/meta.dart';
-
-import 'tizen_tpk.dart';
+import 'package:xml/xml.dart';
 
 TizenSdk get tizenSdk => context.get<TizenSdk>();
 
@@ -369,4 +368,48 @@ String getTizenCliArch(String arch) {
     default:
       return arch;
   }
+}
+
+class SecurityProfiles {
+  SecurityProfiles._(this.profiles, {@required this.active});
+
+  static SecurityProfiles parseFromXml(File xmlFile) {
+    if (xmlFile == null || !xmlFile.existsSync()) {
+      return null;
+    }
+
+    final String data = xmlFile.readAsStringSync().trim();
+    if (data.isEmpty) {
+      return null;
+    }
+
+    XmlDocument document;
+    try {
+      document = XmlDocument.parse(data);
+    } on XmlException catch (ex) {
+      globals.printError('Failed to parse ${xmlFile.basename}: $ex');
+      return null;
+    }
+
+    String active = document.rootElement.getAttribute('active');
+    if (active != null && active.isEmpty) {
+      active = null;
+    }
+
+    final List<String> profiles = <String>[];
+    for (final XmlElement profile
+        in document.rootElement.findAllElements('profile')) {
+      final String name = profile.getAttribute('name');
+      if (name != null) {
+        profiles.add(name);
+      }
+    }
+
+    return SecurityProfiles._(profiles, active: active);
+  }
+
+  final List<String> profiles;
+  final String active;
+
+  bool contains(String name) => profiles.contains(name);
 }
