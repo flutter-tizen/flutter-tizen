@@ -1,4 +1,5 @@
 import 'dart:ffi';
+import 'dart:io';
 import 'package:ffi/ffi.dart'; 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -201,11 +202,11 @@ class _MyHomePageState extends State<MyHomePage> {
               style: Theme.of(context).textTheme.headline4,
             ),
             TextButton(
-                onPressed: () => ServiceControl.launchService(),
-                child: Text("Launch service")),
-            TextButton(
-                onPressed: () => ServiceControl.stopService(),
-                child: Text("Stop service"))
+                onPressed: () {
+                  ServiceControl.stopService();
+                  exit(0);
+                },
+                child: Text("Stop the service and exit"))
           ],
         ),
       ),
