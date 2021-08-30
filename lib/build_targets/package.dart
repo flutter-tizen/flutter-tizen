@@ -8,7 +8,6 @@ import 'package:file/file.dart';
 import 'package:flutter_tools/src/base/common.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/base/process.dart';
-import 'package:flutter_tools/src/base/terminal.dart';
 import 'package:flutter_tools/src/build_info.dart';
 import 'package:flutter_tools/src/build_system/build_system.dart';
 import 'package:flutter_tools/src/cache.dart';
@@ -98,7 +97,7 @@ class DotnetTpk {
         'Install the latest .NET SDK from: https://dotnet.microsoft.com/download',
       );
     }
-    RunResult result = await _processUtils.run(<String>[
+    final RunResult result = await _processUtils.run(<String>[
       dotnetCli.path,
       'build',
       '-c',
@@ -133,16 +132,8 @@ class DotnetTpk {
     if (securityProfile != null) {
       environment.logger
           .printStatus('The $securityProfile profile is used for signing.');
-      result = await _processUtils.run(<String>[
-        tizenSdk.tizenCli.path,
-        'package',
-        '-t',
-        'tpk',
-        '-s',
-        securityProfile,
-        '--',
-        outputTpk.path,
-      ]);
+      final RunResult result =
+          await tizenSdk.package(outputTpk.path, sign: securityProfile);
       if (result.exitCode != 0) {
         throwToolExit('Failed to sign the TPK:\n$result');
       }
@@ -150,7 +141,6 @@ class DotnetTpk {
       environment.logger.printStatus(
         'The TPK was signed with a default certificate. You can create one using Certificate Manager.\n'
         'https://github.com/flutter-tizen/flutter-tizen/blob/master/doc/install-tizen-sdk.md#create-a-tizen-certificate',
-        color: TerminalColor.yellow,
       );
     }
   }
@@ -160,9 +150,6 @@ class NativeTpk {
   NativeTpk(this.buildInfo);
 
   final TizenBuildInfo buildInfo;
-
-  final ProcessUtils _processUtils = ProcessUtils(
-      logger: globals.logger, processManager: globals.processManager);
 
   Future<void> build(Environment environment) async {
     final FlutterProject project =
@@ -255,7 +242,6 @@ class NativeTpk {
     final List<String> extraOptions = <String>[
       '-lflutter_tizen_${buildInfo.deviceProfile}',
       '-L"${libDir.path.toPosixPath()}"',
-      '-std=c++17',
       '-I"${clientWrapperDir.childDirectory('include').path.toPosixPath()}"',
       '-I"${publicDir.path.toPosixPath()}"',
       ...userIncludes.map((String f) => '-I"${f.toPosixPath()}"'),
@@ -278,6 +264,7 @@ class NativeTpk {
     if (buildDir.existsSync()) {
       buildDir.deleteSync(recursive: true);
     }
+    buildDir.createSync(recursive: true);
 
     // The output TPK is signed with an active profile unless otherwise
     // specified.
@@ -293,56 +280,53 @@ class NativeTpk {
     if (securityProfile != null) {
       environment.logger
           .printStatus('The $securityProfile profile is used for signing.');
-    }
-
-    // Run the native build
-    final String method =
-        "name: \"m1\", compiler:\"${tizenSdk.defaultNativeCompiler}\", extraoption: \"${extraOptions.join(' ').replaceAll('"', r'\"')}\", configs:[\"$buildConfig\"], rootstraps:[{name:\"${rootstrap.id}\", arch:\"${getTizenCliArch(buildInfo.targetArch)}\"}]";
-    final List<String> targets =
-        tizenProject.isMultiApp ? <String>['ui', 'service'] : <String>['.'];
-
-    final String build =
-        'name: "b1", methods: ["m1"], targets: ["${targets.join('","')}"]';
-    final String package = 'name: "${tizenManifest.packageId}", targets:["b1"]';
-
-    final List<String> buildAppCommand = <String>[
-      tizenSdk.tizenCli.path,
-      'build-app',
-      '-m',
-      method,
-      '-b',
-      build,
-      '-p',
-      package,
-      if (securityProfile != null) ...<String>['-s', securityProfile],
-      '-o',
-      buildDir.path,
-      '--',
-      tizenDir.path,
-    ];
-    final RunResult result =
-        await _processUtils.run(buildAppCommand, environment: variables);
-    if (result.exitCode != 0) {
-      throwToolExit('Failed to generate TPK:\n$result');
-    }
-
-    if (securityProfile == null) {
-      environment.logger.printStatus(
-        'The TPK was signed with a default certificate. You can create one using Certificate Manager.\n'
+    } else {
+      throwToolExit(
+        'Native TPKs cannot be built without valid certificates. You can create one using Certificate Manager.\n'
         'https://github.com/flutter-tizen/flutter-tizen/blob/master/doc/install-tizen-sdk.md#create-a-tizen-certificate',
-        color: TerminalColor.yellow,
       );
     }
 
-    // TODO(pkosko): find better way to determine file name
-    File outputTpk;
-    for (final File file in buildDir.listSync().whereType<File>()) {
-      if (file.basename.endsWith('.tpk')) {
-        outputTpk = file;
-        break;
-      }
+    // Build the app.
+    final RunResult result = await tizenSdk.buildApp(
+      tizenDir.path,
+      build: <String, dynamic>{
+        'name': 'b1',
+        'methods': <String>['m1'],
+        'targets':
+            tizenProject.isMultiApp ? <String>['ui', 'service'] : <String>['.'],
+      },
+      method: <String, dynamic>{
+        'name': 'm1',
+        'configs': <String>[buildConfig],
+        'compiler': tizenSdk.defaultNativeCompiler,
+        'predefines': <String>[
+          '${buildInfo.deviceProfile.toUpperCase()}_PROFILE',
+        ],
+        'extraoption': extraOptions.join(' '),
+        'rootstraps': <Map<String, String>>[
+          <String, String>{
+            'name': rootstrap.id,
+            'arch': getTizenCliArch(buildInfo.targetArch),
+          },
+        ],
+      },
+      output: buildDir.path,
+      package: <String, dynamic>{
+        'name': tizenManifest.packageId,
+        'targets': <String>['b1'],
+      },
+      sign: securityProfile,
+      environment: variables,
+    );
+    if (result.exitCode != 0) {
+      throwToolExit('Failed to build native application:\n$result');
     }
-    if (outputTpk == null || !outputTpk.existsSync()) {
+
+    final String buildArch = getTizenBuildArch(buildInfo.targetArch);
+    final File outputTpk = buildDir.childFile(
+        '${tizenManifest.packageId}_Tizen-${tizenManifest.apiVersion}_${buildArch}_$buildConfig.tpk');
+    if (!outputTpk.existsSync()) {
       throwToolExit('Build succeeded but the expected TPK not found:\n$result');
     }
     // Copy and rename the output TPK.
