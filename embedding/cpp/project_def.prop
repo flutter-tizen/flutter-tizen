@@ -1,0 +1,13 @@
+# Copyright 2021 Samsung Electronics Co., Ltd. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+APPNAME = embedding_cpp
+type = staticLib
+profile = common-4.0
+
+USER_INC_DIRS = include \
+    ../../flutter/bin/cache/artifacts/engine/tizen-common/cpp_client_wrapper/include \
+    ../../flutter/bin/cache/artifacts/engine/tizen-common/public
+USER_SRCS = *.cc \
+    ../../flutter/bin/cache/artifacts/engine/tizen-common/cpp_client_wrapper/*.cc

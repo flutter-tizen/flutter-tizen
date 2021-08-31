@@ -4,49 +4,27 @@
 
 // @dart = 2.8
 
-import 'dart:io';
-
 import 'package:file/file.dart';
 import 'package:flutter_tools/src/artifacts.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/build_info.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 
-import '../tizen_sdk.dart';
-
 extension PathUtils on String {
-  /// On non-Windows, returns the path string unchanged.
+  /// On non-Windows, encloses the string with [encloseWith].
   ///
   /// On Windows, converts Windows-style path (e.g. 'C:\x\y') into POSIX path
-  /// ('/c/x/y') and returns.
-  String toPosixPath() {
+  /// ('/c/x/y') and encloses with [encloseWith].
+  String toPosixPath([String encloseWith = '"']) {
     String path = this;
-    if (Platform.isWindows) {
+    if (globals.platform.isWindows) {
       path = path.replaceAll(r'\', '/');
       if (path.startsWith(':', 1)) {
         path = '/${path[0].toLowerCase()}${path.substring(2)}';
       }
     }
-    return path;
+    return encloseWith + path + encloseWith;
   }
-}
-
-/// On non-Windows, returns the PATH environment variable.
-///
-/// On Windows, appends the msys2 executables directory to PATH and returns.
-String getDefaultPathVariable() {
-  final Map<String, String> variables = globals.platform.environment;
-  String path = variables.containsKey('PATH') ? variables['PATH'] : '';
-  if (Platform.isWindows) {
-    assert(tizenSdk != null);
-    final String msysUsrBin = tizenSdk.toolsDirectory
-        .childDirectory('msys2')
-        .childDirectory('usr')
-        .childDirectory('bin')
-        .path;
-    path += ';$msysUsrBin';
-  }
-  return path;
 }
 
 /// See: [CachedArtifacts._getEngineArtifactsPath]

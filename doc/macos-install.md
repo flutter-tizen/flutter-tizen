@@ -2,7 +2,7 @@
 
 ## System requirements
 
-- Operating system: macOS (Intel 64-bit)
+- Operating system: macOS (x64)
 - Tools:
   - [Tizen Studio](install-tizen-sdk.md) (4.0 or later)
   - [.NET SDK](https://docs.microsoft.com/en-us/dotnet/core/install/macos) (3.0 or later)
@@ -14,8 +14,6 @@
    ```sh
    git clone https://github.com/flutter-tizen/flutter-tizen.git
    ```
-
-   Note: The target path must not contain spaces.
 
 1. Add `flutter-tizen/bin` to your PATH.
 

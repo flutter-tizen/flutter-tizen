@@ -185,6 +185,7 @@ class NativeTpk {
     );
 
     final BuildMode buildMode = buildInfo.buildInfo.mode;
+    final String buildConfig = buildMode.isPrecompiled ? 'Release' : 'Debug';
     final Directory engineDir =
         getEngineArtifactsDirectory(buildInfo.targetArch, buildMode);
     final Directory commonDir = engineDir.parent.childDirectory('tizen-common');
@@ -226,30 +227,6 @@ class NativeTpk {
         .childDirectory('embedding')
         .childDirectory('cpp');
 
-    final List<String> userIncludes = <String>[
-      embeddingDir.childDirectory('include').path,
-      pluginsDir.childDirectory('include').path,
-    ];
-    final List<String> userSources = <String>[
-      clientWrapperDir.childFile('*.cc').path,
-      embeddingDir.childFile('*.cc').path,
-    ];
-
-    final Map<String, String> variables = <String, String>{
-      'PATH': getDefaultPathVariable(),
-      'USER_SRCS': userSources.map((String f) => f.toPosixPath()).join(' '),
-    };
-    final List<String> extraOptions = <String>[
-      '-lflutter_tizen_${buildInfo.deviceProfile}',
-      '-L"${libDir.path.toPosixPath()}"',
-      '-I"${clientWrapperDir.childDirectory('include').path.toPosixPath()}"',
-      '-I"${publicDir.path.toPosixPath()}"',
-      ...userIncludes.map((String f) => '-I"${f.toPosixPath()}"'),
-      if (pluginsLib.existsSync()) '-lflutter_plugins',
-      '-D${buildInfo.deviceProfile.toUpperCase()}_PROFILE',
-      '-Wl,-unresolved-symbols=ignore-in-shared-libs',
-    ];
-
     assert(tizenSdk != null);
     final TizenManifest tizenManifest =
         TizenManifest.parseFromXml(tizenProject.manifestFile);
@@ -259,7 +236,28 @@ class NativeTpk {
       arch: buildInfo.targetArch,
     );
 
-    final String buildConfig = buildMode.isPrecompiled ? 'Release' : 'Debug';
+    // We need to build the C++ embedding separately because the absolute path
+    // to the embedding directory may contain spaces.
+    RunResult result = await tizenSdk.buildNative(
+      embeddingDir.path,
+      configuration: buildConfig,
+      arch: getTizenCliArch(buildInfo.targetArch),
+      extraOptions: <String>['-fPIC'],
+      rootstrap: rootstrap.id,
+    );
+    final File embeddingLib = embeddingDir
+        .childDirectory(buildConfig)
+        .childFile('libembedding_cpp.a');
+    if (result.exitCode != 0) {
+      throwToolExit('Failed to build ${embeddingLib.basename}:\n$result');
+    }
+    const List<String> embeddingDependencies = <String>[
+      'appcore-agent',
+      'capi-appfw-app-common',
+      'capi-appfw-application',
+      'dlog',
+    ];
+
     final Directory buildDir = projectDir.childDirectory(buildConfig);
     if (buildDir.existsSync()) {
       buildDir.deleteSync(recursive: true);
@@ -287,8 +285,25 @@ class NativeTpk {
       );
     }
 
+    final List<String> extraOptions = <String>[
+      // The extra quotation marks ("") for linker flags are required due to
+      // https://github.com/flutter-tizen/flutter-tizen/issues/218.
+      '"-Wl,--unresolved-symbols=ignore-in-shared-libs"',
+      '-lflutter_tizen_${buildInfo.deviceProfile}',
+      '-L${libDir.path.toPosixPath()}',
+      '-I${clientWrapperDir.childDirectory('include').path.toPosixPath()}',
+      '-I${publicDir.path.toPosixPath()}',
+      '-I${embeddingDir.childDirectory('include').path.toPosixPath()}',
+      '"-Wl,--whole-archive"',
+      embeddingLib.path.toPosixPath(),
+      '"-Wl,--no-whole-archive"',
+      for (String lib in embeddingDependencies) '-l$lib',
+      '-I${pluginsDir.childDirectory('include').path.toPosixPath()}',
+      if (pluginsLib.existsSync()) '-lflutter_plugins',
+    ];
+
     // Build the app.
-    final RunResult result = await tizenSdk.buildApp(
+    result = await tizenSdk.buildApp(
       tizenDir.path,
       build: <String, dynamic>{
         'name': 'b1',
@@ -317,7 +332,6 @@ class NativeTpk {
         'targets': <String>['b1'],
       },
       sign: securityProfile,
-      environment: variables,
     );
     if (result.exitCode != 0) {
       throwToolExit('Failed to build native application:\n$result');

@@ -122,6 +122,21 @@ class TizenSdk {
 
   String get defaultGccVersion => '9.2';
 
+  /// On non-Windows, returns the PATH environment variable.
+  ///
+  /// On Windows, appends the msys2 executables directory to PATH and returns.
+  String _getPathVariable() {
+    String path = globals.platform.environment['PATH'] ?? '';
+    if (globals.platform.isWindows) {
+      final Directory msysUsrBin = toolsDirectory
+          .childDirectory('msys2')
+          .childDirectory('usr')
+          .childDirectory('bin');
+      path += ';${msysUsrBin.path}';
+    }
+    return path;
+  }
+
   Future<RunResult> buildApp(
     String workingDirectory, {
     Map<String, dynamic> build = const <String, dynamic>{},
@@ -129,7 +144,6 @@ class TizenSdk {
     String output,
     Map<String, dynamic> package = const <String, dynamic>{},
     String sign,
-    Map<String, String> environment,
   }) {
     String stringify(dynamic argument) {
       if (argument is String) {
@@ -163,7 +177,9 @@ class TizenSdk {
         '--',
         workingDirectory,
       ],
-      environment: environment,
+      environment: <String, String>{
+        'PATH': _getPathVariable(),
+      },
     );
   }
 
@@ -175,7 +191,6 @@ class TizenSdk {
     List<String> predefines = const <String>[],
     List<String> extraOptions = const <String>[],
     String rootstrap,
-    Map<String, String> environment,
   }) async {
     assert(configuration != null);
     assert(arch != null);
@@ -196,7 +211,9 @@ class TizenSdk {
         '--',
         workingDirectory,
       ],
-      environment: environment,
+      environment: <String, String>{
+        'PATH': _getPathVariable(),
+      },
     );
   }
 

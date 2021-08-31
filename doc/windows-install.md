@@ -2,7 +2,7 @@
 
 ## System requirements
 
-- Operating system: Windows 7 SP1 or later (64-bit)
+- Operating system: Windows 10 or later (x64)
 - Tools:
   - [Tizen Studio](install-tizen-sdk.md) (4.0 or later)
   - [.NET SDK](https://docs.microsoft.com/en-us/dotnet/core/install/windows) (3.0 or later)
@@ -15,8 +15,6 @@
    ```powershell
    git clone https://github.com/flutter-tizen/flutter-tizen.git
    ```
-
-   Note: The target path must not contain spaces.
 
 1. Add `flutter-tizen\bin` to your PATH.
 

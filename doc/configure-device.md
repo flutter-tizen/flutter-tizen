@@ -29,7 +29,7 @@
 1. Find the path to `sdb` and add to your PATH. For example, if you're using Linux or macOS and Tizen Studio has been installed to the default location, run:
 
    ```sh
-   export PATH=$HOME/tizen-studio/tools:$PATH
+   export PATH="$HOME/tizen-studio/tools:$PATH"
    ```
 
 1. Connect to the device using the device's IP address.
