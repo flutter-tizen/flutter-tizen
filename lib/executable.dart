@@ -7,7 +7,8 @@
 
 import 'dart:io';
 
-import 'package:flutter_tools/executable.dart' as flutter;
+import 'package:flutter_tools/executable.dart' as flutter show main;
+import 'package:flutter_tools/executable.dart';
 import 'package:flutter_tools/runner.dart' as runner;
 import 'package:flutter_tools/src/application_package.dart';
 import 'package:flutter_tools/src/base/context.dart';
@@ -16,6 +17,7 @@ import 'package:flutter_tools/src/base/os.dart';
 import 'package:flutter_tools/src/base/template.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/commands/config.dart';
+import 'package:flutter_tools/src/commands/daemon.dart';
 import 'package:flutter_tools/src/commands/devices.dart';
 import 'package:flutter_tools/src/commands/doctor.dart';
 import 'package:flutter_tools/src/commands/emulators.dart';
@@ -61,6 +63,7 @@ Future<void> main(List<String> args) async {
   final bool veryVerbose = args.contains('-vv');
   final bool verbose =
       args.contains('-v') || args.contains('--verbose') || veryVerbose;
+  final bool prefixedErrors = args.contains('--prefixed-errors');
 
   final bool doctor = (args.isNotEmpty && args.first == 'doctor') ||
       (args.length == 2 && verbose && args.last == 'doctor');
@@ -70,6 +73,10 @@ Future<void> main(List<String> args) async {
       (args.length == 1 && verbose);
   final bool muteCommandLogging = (help || doctor) && !veryVerbose;
   final bool verboseHelp = help && verbose;
+  final bool daemon = args.contains('daemon');
+  final bool runMachine =
+      (args.contains('--machine') && args.contains('run')) ||
+          (args.contains('--machine') && args.contains('attach'));
 
   final bool hasSpecifiedDeviceId =
       args.contains('-d') || args.contains('--device-id');
@@ -88,6 +95,7 @@ Future<void> main(List<String> args) async {
     () => <FlutterCommand>[
       // Commands directly from flutter_tools.
       ConfigCommand(verboseHelp: verboseHelp),
+      DaemonCommand(hidden: !verboseHelp),
       DevicesCommand(verboseHelp: verboseHelp),
       DoctorCommand(verbose: verbose),
       EmulatorsCommand(),
@@ -166,6 +174,20 @@ Future<void> main(List<String> args) async {
             logger: globals.logger,
             processManager: globals.processManager,
           ),
+      Logger: () {
+        final LoggerFactory loggerFactory = LoggerFactory(
+          outputPreferences: globals.outputPreferences,
+          terminal: globals.terminal,
+          stdio: globals.stdio,
+        );
+        return loggerFactory.createLogger(
+          daemon: daemon,
+          machine: runMachine,
+          verbose: verbose && !muteCommandLogging,
+          prefixedErrors: prefixedErrors,
+          windows: globals.platform.isWindows,
+        );
+      },
       OperatingSystemUtils: () => TizenOperatingSystemUtils(
             fileSystem: globals.fs,
             logger: globals.logger,
@@ -190,13 +212,6 @@ Future<void> main(List<String> args) async {
             botDetector: globals.botDetector,
             usage: globals.flutterUsage,
           ),
-      if (verbose && !muteCommandLogging)
-        Logger: () => VerboseLogger(StdoutLogger(
-              stdio: globals.stdio,
-              terminal: globals.terminal,
-              outputPreferences: globals.outputPreferences,
-              stopwatchFactory: const StopwatchFactory(),
-            )),
     },
   );
 }
