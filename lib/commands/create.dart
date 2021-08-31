@@ -49,8 +49,18 @@ class TizenCreateCommand extends CreateCommand {
   /// - [CreateCommand.runCommand] in `create.dart`
   /// - [CreateCommand._getProjectType] in `create.dart` (generatePlugin)
   Future<FlutterCommandResult> runInternal() async {
+    if (argResults.rest.isEmpty) {
+      return super.runCommand();
+    }
+
+    // Check if the main.dart file exists before running super.runCommand().
+    final File mainFile =
+        projectDir.childDirectory('lib').childFile('main.dart');
+    final bool overwriteMainFile =
+        boolArg('overwrite') || !mainFile.existsSync();
+
     final FlutterCommandResult result = await super.runCommand();
-    if (result != FlutterCommandResult.success() || argResults.rest.isEmpty) {
+    if (result != FlutterCommandResult.success()) {
       return result;
     }
 
@@ -84,11 +94,12 @@ class TizenCreateCommand extends CreateCommand {
 
     // TODO(pkosko): Find better solution for inject a multi-project main.dart file
     if (stringArg('app-type') == 'multi') {
-      final File mainFile =
+      final File createdMainFile =
           projectDir.childDirectory('tizen').childFile('main.dart');
-      mainFile.copySync(
-          projectDir.childDirectory('lib').childFile('main.dart').path);
-      mainFile.deleteSync();
+      if (overwriteMainFile) {
+        createdMainFile.copySync(mainFile.path);
+      }
+      createdMainFile.deleteSync();
     }
 
     return result;
