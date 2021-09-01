@@ -337,10 +337,14 @@ class NativeTpk {
       throwToolExit('Failed to build native application:\n$result');
     }
 
-    final String buildArch = getTizenBuildArch(buildInfo.targetArch);
-    final File outputTpk = buildDir.childFile(
-        '${tizenManifest.packageId}_Tizen-${tizenManifest.apiVersion}_${buildArch}_$buildConfig.tpk');
-    if (!outputTpk.existsSync()) {
+    File outputTpk;
+    for (final File file in buildDir.listSync().whereType<File>()) {
+      if (file.basename.endsWith('.tpk')) {
+        outputTpk = file;
+        break;
+      }
+    }
+    if (outputTpk == null) {
       throwToolExit('Build succeeded but the expected TPK not found:\n$result');
     }
     // Copy and rename the output TPK.
