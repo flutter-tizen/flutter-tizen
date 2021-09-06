@@ -29,7 +29,7 @@ void updateLaunchJsonFile(FlutterProject project, Uri observatoryUri) {
   if (project.directory.basename == 'example') {
     final FlutterProject parentProject =
         FlutterProject.fromDirectory(project.directory.parent);
-    if (parentProject.isPlugin || parentProject.isModule) {
+    if (parentProject.pubspecFile.existsSync()) {
       updateLaunchJsonFile(parentProject, observatoryUri);
     }
   }
