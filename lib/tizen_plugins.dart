@@ -5,6 +5,10 @@
 
 // @dart = 2.8
 
+import 'package:analyzer/dart/analysis/analysis_context.dart';
+import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
+import 'package:analyzer/dart/analysis/results.dart';
+import 'package:analyzer/dart/ast/ast.dart';
 import 'package:file/file.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/base/terminal.dart';
@@ -114,6 +118,38 @@ mixin DartPluginRegistry on FlutterCommand {
   String get targetFile => _entrypoint ?? super.targetFile;
 }
 
+/// Finds entry point functions annotated with `@pragma('vm:entry-point')`
+/// from [dartFile] and returns their names.
+List<String> _findDartEntrypoints(File dartFile) {
+  final String path = dartFile.absolute.path;
+  final AnalysisContextCollection collection =
+      AnalysisContextCollection(includedPaths: <String>[path]);
+  final AnalysisContext context = collection.contextFor(path);
+  final SomeParsedUnitResult parsed =
+      context.currentSession.getParsedUnit2(path);
+  final List<String> names = <String>['main'];
+  if (parsed is ParsedUnitResult) {
+    for (final FunctionDeclaration function
+        in parsed.unit.declarations.whereType<FunctionDeclaration>()) {
+      if (function.name.name == 'main') {
+        continue;
+      }
+      for (final Annotation annotation in function.metadata) {
+        if (annotation.name.name != 'pragma') {
+          continue;
+        }
+        final ArgumentList arguments = annotation.arguments;
+        if (arguments != null &&
+            arguments.arguments.isNotEmpty &&
+            arguments.arguments.first.toSource().contains('vm:entry-point')) {
+          names.add(function.name.name);
+        }
+      }
+    }
+  }
+  return names;
+}
+
 /// Creates an entrypoint wrapper of [targetFile] and returns its path.
 /// This effectively adds support for Dart plugins.
 ///
@@ -137,31 +173,44 @@ Future<String> _createEntrypoint(
     project.directory.childFile('.packages'),
     logger: globals.logger,
   );
-  final FlutterProject flutterProject = FlutterProject.current();
+  final File mainFile = globals.fs.file(targetFile);
+  final Uri mainUri = mainFile.absolute.uri;
   final LanguageVersion languageVersion = determineLanguageVersion(
-    globals.fs.file(targetFile),
-    packageConfig[flutterProject.manifest.appName],
+    mainFile,
+    packageConfig.packageOf(mainUri),
     Cache.flutterRoot,
   );
-
-  final Uri mainUri = globals.fs.file(targetFile).absolute.uri;
   final String mainImport =
       packageConfig.toPackageUri(mainUri)?.toString() ?? mainUri.toString();
+  final List<String> dartEntrypoints = _findDartEntrypoints(mainFile);
 
-  entrypoint.writeAsStringSync('''
+  final Map<String, dynamic> context = <String, dynamic>{
+    'mainImport': mainImport,
+    'dartLanguageVersion': languageVersion.toString(),
+    'dartEntrypoints':
+        dartEntrypoints.map((String name) => <String, String>{'name': name}),
+  };
+  _renderTemplateToFile(
+    '''
 //
 // Generated file. Do not edit.
 //
-// @dart=${languageVersion.major}.${languageVersion.minor}
+// @dart = {{dartLanguageVersion}}
 
-import '$mainImport' as entrypoint;
+import '{{mainImport}}' as entrypoint;
 import 'generated_plugin_registrant.dart';
 
-Future<void> main() async {
+{{#dartEntrypoints}}
+@pragma('vm:entry-point')
+void {{name}}() {
   registerPlugins();
-  entrypoint.main();
+  entrypoint.{{name}}();
 }
-''');
+{{/dartEntrypoints}}
+''',
+    context,
+    entrypoint.path,
+  );
   return entrypoint.path;
 }
 
