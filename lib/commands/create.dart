@@ -54,17 +54,37 @@ class TizenCreateCommand extends CreateCommand {
     );
   }
 
+  @override
+  Future<int> renderTemplate(
+    String templateName,
+    Directory directory,
+    Map<String, dynamic> context, {
+    bool overwrite = false,
+  }) async {
+    // Disables https://github.com/flutter/flutter/pull/59706 by setting
+    // templateManifest to null.
+    final Template template = await Template.fromName(
+      templateName,
+      fileSystem: globals.fs,
+      logger: globals.logger,
+      templateRenderer: globals.templateRenderer,
+      templateManifest: null,
+    );
+    return template.render(directory, context, overwriteExisting: overwrite);
+  }
+
   /// See: [CreateCommand._getProjectType] in `create.dart`
-  bool get _shouldGeneratePlugin => argResults['template'] != null
-      ? stringArg('template') == 'plugin'
-      : determineTemplateType() == FlutterProjectType.plugin;
+  bool get _shouldGeneratePlugin {
+    if (argResults['template'] != null) {
+      return stringArg('template') == 'plugin';
+    } else if (projectDir.existsSync() && projectDir.listSync().isNotEmpty) {
+      return determineTemplateType() == FlutterProjectType.plugin;
+    }
+    return false;
+  }
 
   /// See: [CreateCommand.runCommand] in `create.dart`
-  Future<FlutterCommandResult> _runCommandInternal() async {
-    if (argResults.rest.isEmpty) {
-      return super.runCommand();
-    }
-
+  Future<FlutterCommandResult> _runCommand() async {
     // Check if the main.dart file exists before running super.runCommand().
     final File mainFile =
         projectDir.childDirectory('lib').childFile('main.dart');
@@ -75,6 +95,7 @@ class TizenCreateCommand extends CreateCommand {
     if (result != FlutterCommandResult.success()) {
       return result;
     }
+
     if (_shouldGeneratePlugin) {
       final String relativePluginPath =
           globals.fs.path.normalize(globals.fs.path.relative(projectDirPath));
@@ -117,6 +138,9 @@ class TizenCreateCommand extends CreateCommand {
   /// - [Template.render] in `template.dart`
   @override
   Future<FlutterCommandResult> runCommand() async {
+    if (argResults.rest.isEmpty) {
+      return super.runCommand();
+    }
     final List<String> platforms = stringsArg('platforms');
     bool shouldRenderTizenTemplate = platforms.contains('tizen');
     if (_shouldGeneratePlugin && !argResults.wasParsed('platforms')) {
@@ -136,20 +160,11 @@ class TizenCreateCommand extends CreateCommand {
     if (!tizenTemplates.existsSync()) {
       throwToolExit('Could not locate Tizen templates.');
     }
-    final File tizenTemplateManifest =
-        tizenTemplates.childFile('template_manifest.json');
-
     final Directory templates = globals.fs
         .directory(Cache.flutterRoot)
         .childDirectory('packages')
         .childDirectory('flutter_tools')
         .childDirectory('templates');
-    final File templateManifest = templates.childFile('template_manifest.json');
-
-    // This is required due to: https://github.com/flutter/flutter/pull/59706
-    // TODO(swift-kim): Find any better workaround. One option is to override
-    // renderTemplate() but it may result in additional complexity.
-    tizenTemplateManifest.copySync(templateManifest.path);
 
     final String appLanguage = stringArg('tizen-language');
     // The Dart plugin template is not currently supported.
@@ -183,7 +198,7 @@ class TizenCreateCommand extends CreateCommand {
       copyTemplate('$appType-app', appLanguage, 'app');
       copyTemplate('plugin', pluginLanguage, 'plugin');
 
-      return await _runCommandInternal();
+      return await _runCommand();
     } finally {
       for (final Directory template in created) {
         template.deleteSync(recursive: true);
