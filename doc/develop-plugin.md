@@ -34,24 +34,28 @@ You can create a new plugin from scratch, if the functionality you want to imple
 If you're to extend an existing plugin for Tizen, it is common to add the `_tizen` suffix to the package name:
 
 ```sh
-flutter-tizen create --template plugin foobar_tizen
+flutter-tizen create --platforms tizen --template plugin foobar_tizen
 ```
 
 Otherwise, follow the `lowercase_with_underscores` style convention to name your package:
 
 ```sh
-flutter-tizen create --template plugin plugin_name
+flutter-tizen create --platforms tizen --template plugin plugin_name
 ```
 
 Once the package is created, you will be prompted to add some information to its pubspec file. Open the main `plugin_name/` directory in VS Code, locate the `pubspec.yaml` file, and replace the `some_platform:` map with `tizen:` as suggested by the tool. This information is needed by the flutter-tizen tool to find and register the plugin when building an app that depends on the plugin.
 
 ```yaml
-The `pubspec.yaml` under the project directory must be updated to support Tizen.
-Add below lines to under the `platforms:` key.
+You've created a plugin project that doesn't yet support any platforms.
+...
+Make sure your plugin_name/pubspec.yaml contains the following lines.
 
-tizen:
-  pluginClass: PluginNamePlugin
-  fileName: plugin_name_plugin.h
+flutter:
+  plugin:
+    platforms:
+      tizen:
+        pluginClass: PluginNamePlugin
+        fileName: plugin_name_plugin.h
 ```
 
 The created package contains an example app in the `example/` directory. You can run it using the `flutter-tizen run` command:
