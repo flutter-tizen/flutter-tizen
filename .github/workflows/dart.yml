@@ -5,23 +5,32 @@ on:
   pull_request:
 
 jobs:
-  linux:
+  analyze:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Install flutter-tizen
-        run: echo `pwd`/bin >> $GITHUB_PATH
+      - name: Fetch Flutter SDK
+        run: |
+          git clone --depth=1 https://github.com/flutter/flutter.git
+          cd flutter
+          git fetch --depth=1 https://github.com/flutter/flutter.git `cat ../bin/internal/flutter.version`
+          git checkout FETCH_HEAD
       - name: Install pub dependencies
-        run: flutter-tizen pub get
+        run: flutter/bin/flutter pub get
       - name: Verify formatting
         run: flutter/bin/dart format --output=none --set-exit-if-changed lib
       - name: Analyze project source
         run: flutter/bin/dart analyze --fatal-infos lib
-      - name: Run tests
-        run: FLUTTER_ROOT=flutter flutter-tizen test
-  windows:
-    runs-on: windows-latest
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
     steps:
       - uses: actions/checkout@v2
       - name: Run tests
+        if: runner.os == 'Windows'
         run: $env:FLUTTER_ROOT="flutter"; bin\flutter-tizen test
+      - name: Run tests
+        if: runner.os != 'Windows'
+        run: FLUTTER_ROOT=flutter bin/flutter-tizen test
