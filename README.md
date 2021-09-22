@@ -11,7 +11,7 @@ _Flutter and the related logo are trademarks of Google LLC. We are not endorsed 
 ## Supported devices
 
 - **Galaxy Watch**: Tizen 4.0 (2018) or later
-- **Smart TV**: Tizen 6.0 (2021) or later (older models are not supported due to security reasons)
+- **Smart TV**: [Tizen 6.0 (2021) or later](https://developer.samsung.com/smarttv/develop/specifications/tv-model-groups.html) (older models are not supported due to [security reasons](https://github.com/flutter-tizen/flutter-tizen/wiki/Limitations#tv-limitations))
 - **IoT (RPi 3/4)**: Tizen 5.5 (2020) or later
 
 ## Installation
