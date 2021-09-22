@@ -5,7 +5,7 @@ on:
   pull_request:
 
 jobs:
-  analyze:
+  analysis:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -13,12 +13,12 @@ jobs:
         run: |
           git clone --depth=1 https://github.com/flutter/flutter.git
           cd flutter
-          git fetch --depth=1 https://github.com/flutter/flutter.git `cat ../bin/internal/flutter.version`
+          git fetch --depth=1 https://github.com/flutter/flutter.git $(cat ../bin/internal/flutter.version)
           git checkout FETCH_HEAD
       - name: Install pub dependencies
         run: flutter/bin/flutter pub get
       - name: Verify formatting
-        run: flutter/bin/dart format --output=none --set-exit-if-changed lib
+        run: flutter/bin/dart format --output=none --set-exit-if-changed lib test
       - name: Analyze project source
         run: flutter/bin/dart analyze --fatal-infos lib
   test:
@@ -28,9 +28,11 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
     steps:
       - uses: actions/checkout@v2
+      - name: Fetch Flutter SDK
+        run: |
+          git clone --depth=1 https://github.com/flutter/flutter.git
+          cd flutter
+          git fetch --depth=1 https://github.com/flutter/flutter.git $(cat ../bin/internal/flutter.version)
+          git checkout FETCH_HEAD
       - name: Run tests
-        if: runner.os == 'Windows'
-        run: $env:FLUTTER_ROOT="flutter"; bin\flutter-tizen test
-      - name: Run tests
-        if: runner.os != 'Windows'
-        run: FLUTTER_ROOT=flutter bin/flutter-tizen test
+        run: flutter/bin/flutter test
