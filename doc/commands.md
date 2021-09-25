@@ -66,7 +66,7 @@ Not all commands in the [`flutter`](https://flutter.dev/docs/reference/flutter-c
   Configure Flutter settings. Identical to `flutter config`.
 
   ```sh
-  # Enable Flutte for web. This takes effect globally.
+  # Enable Flutter for web. This takes effect globally.
   flutter-tizen config --enable-web
   ```
 
@@ -81,11 +81,11 @@ Not all commands in the [`flutter`](https://flutter.dev/docs/reference/flutter-c
 
   # Choose the native app type when creating a Tizen project.
   # Native apps have better performance and memory footprint than .NET (default) apps,
-  # but do not run on TV devices.
+  # but are not compatible with TV devices.
   flutter-tizen create --tizen-language cpp .
 
   # Create a new plugin project in `foobar_tizen` directory.
-  flutter-tizen create --template plugin --org com.example foobar_tizen
+  flutter-tizen create --platforms tizen --template plugin --org com.example foobar_tizen
   ```
 
 - ### `devices`
