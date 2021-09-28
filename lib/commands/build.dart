@@ -42,8 +42,8 @@ class BuildTpkCommand extends BuildSubCommand
       'device-profile',
       abbr: 'p',
       allowed: <String>['mobile', 'wearable', 'tv', 'common'],
-      help: 'Target device type that the app will run on. Choose \'wearable\' '
-          'for watches and \'common\' for IoT (Raspberry Pi) devices.',
+      help: 'Target device type that the app will run on. Choose "wearable" '
+          'for watch devices and "common" for IoT (Raspberry Pi) devices.',
     );
     argParser.addOption(
       'security-profile',

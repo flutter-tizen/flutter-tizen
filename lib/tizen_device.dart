@@ -147,7 +147,7 @@ class TizenDevice extends Device {
   Future<String> get sdkNameAndVersion async => 'Tizen $_platformVersion';
 
   @override
-  String get name => 'Tizen ' + _modelId;
+  String get name => 'Tizen $_modelId';
 
   bool get usesSecureProtocol => getCapability('secure_protocol') == 'enabled';
 
@@ -628,7 +628,7 @@ class TizenDlogReader extends DeviceLogReader {
   static const List<String> _filteredTexts = <String>[
     // Issue: https://github.com/flutter-tizen/engine/issues/91
     'xkbcommon: ERROR:',
-    'couldn\'t find a Compose file for locale',
+    "couldn't find a Compose file for locale",
   ];
 
   bool _acceptedLastLine = true;

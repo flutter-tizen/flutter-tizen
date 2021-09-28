@@ -139,7 +139,7 @@ class TizenCreateCommand extends CreateCommand {
           '  messageport_tizen: ^0.1.0\n'
           '  tizen_app_control: ^0.1.0\n',
         );
-        pubspecFile.writeAsStringSync(pubspec.join('\n') + '\n');
+        pubspecFile.writeAsStringSync('${pubspec.join('\n')}\n');
 
         await pub.get(
           context: PubContext.create,

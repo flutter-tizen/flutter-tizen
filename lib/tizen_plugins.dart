@@ -5,6 +5,9 @@
 
 // @dart = 2.8
 
+// TODO(swift-kim): Remove after null-safety migration.
+// ignore_for_file: avoid_dynamic_calls
+
 import 'package:analyzer/dart/analysis/analysis_context.dart';
 import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
 import 'package:analyzer/dart/analysis/results.dart';
