@@ -3,11 +3,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @dart = 2.8
-
-// TODO(swift-kim): Remove after null-safety migration.
-// ignore_for_file: avoid_dynamic_calls
-
 import 'package:analyzer/dart/analysis/analysis_context.dart';
 import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
 import 'package:analyzer/dart/analysis/results.dart';
@@ -15,17 +10,18 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:file/file.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/base/terminal.dart';
+// ignore: import_of_legacy_library_into_null_safe
 import 'package:flutter_tools/src/build_system/targets/web.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/dart/language_version.dart';
 import 'package:flutter_tools/src/dart/package_map.dart';
 import 'package:flutter_tools/src/flutter_plugins.dart';
-import 'package:flutter_tools/src/globals.dart' as globals;
+import 'package:flutter_tools/src/globals_null_migrated.dart' as globals;
 import 'package:flutter_tools/src/platform_plugins.dart';
 import 'package:flutter_tools/src/plugins.dart';
 import 'package:flutter_tools/src/project.dart';
+// ignore: import_of_legacy_library_into_null_safe
 import 'package:flutter_tools/src/runner/flutter_command.dart';
-import 'package:meta/meta.dart';
 import 'package:package_config/package_config.dart';
 import 'package:yaml/yaml.dart';
 
@@ -41,8 +37,8 @@ import 'tizen_project.dart';
 /// Source: [LinuxPlugin] in `platform_plugins.dart`
 class TizenPlugin extends PluginPlatform implements NativeOrDartPlugin {
   TizenPlugin({
-    @required this.name,
-    @required this.directory,
+    required this.name,
+    required this.directory,
     this.pluginClass,
     this.dartPluginClass,
     this.fileName,
@@ -53,16 +49,13 @@ class TizenPlugin extends PluginPlatform implements NativeOrDartPlugin {
     return TizenPlugin(
       name: name,
       directory: directory,
-      pluginClass: yaml[kPluginClass] as String,
-      dartPluginClass: yaml[kDartPluginClass] as String,
-      fileName: yaml['fileName'] as String,
+      pluginClass: yaml[kPluginClass] as String?,
+      dartPluginClass: yaml[kDartPluginClass] as String?,
+      fileName: yaml['fileName'] as String?,
     );
   }
 
   static bool validate(YamlMap yaml) {
-    if (yaml == null) {
-      return false;
-    }
     return yaml[kPluginClass] is String || yaml[kDartPluginClass] is String;
   }
 
@@ -70,11 +63,11 @@ class TizenPlugin extends PluginPlatform implements NativeOrDartPlugin {
 
   final String name;
   final Directory directory;
-  final String pluginClass;
-  final String dartPluginClass;
-  final String fileName;
+  final String? pluginClass;
+  final String? dartPluginClass;
+  final String? fileName;
 
-  TizenPlugin copyWith({Directory directory}) {
+  TizenPlugin copyWith({Directory? directory}) {
     return TizenPlugin(
       name: name,
       directory: directory ?? this.directory,
@@ -105,7 +98,7 @@ class TizenPlugin extends PluginPlatform implements NativeOrDartPlugin {
 ///
 /// See: [FlutterCommand.verifyThenRunCommand] in `flutter_command.dart`
 mixin DartPluginRegistry on FlutterCommand {
-  String _entrypoint;
+  String? _entrypoint;
 
   bool get _usesTargetOption => argParser.options.containsKey('target');
 
@@ -142,7 +135,7 @@ List<String> _findDartEntrypoints(File dartFile) {
         if (annotation.name.name != 'pragma') {
           continue;
         }
-        final ArgumentList arguments = annotation.arguments;
+        final ArgumentList? arguments = annotation.arguments;
         if (arguments != null &&
             arguments.arguments.isNotEmpty &&
             arguments.arguments.first.toSource().contains('vm:entry-point')) {
@@ -182,13 +175,13 @@ Future<String> _createEntrypoint(
   final LanguageVersion languageVersion = determineLanguageVersion(
     mainFile,
     packageConfig.packageOf(mainUri),
-    Cache.flutterRoot,
+    Cache.flutterRoot!,
   );
   final String mainImport =
       packageConfig.toPackageUri(mainUri)?.toString() ?? mainUri.toString();
   final List<String> dartEntrypoints = _findDartEntrypoints(mainFile);
 
-  final Map<String, dynamic> context = <String, dynamic>{
+  final Map<String, Object> context = <String, Object>{
     'mainImport': mainImport,
     'dartLanguageVersion': languageVersion.toString(),
     'dartEntrypoints':
@@ -213,7 +206,7 @@ void {{name}}() {
 {{/dartEntrypoints}}
 ''',
     context,
-    entrypoint.path,
+    entrypoint,
   );
   return entrypoint.path;
 }
@@ -267,7 +260,7 @@ Future<void> ensureReadyForTizenTooling(FlutterProject project) async {
   await injectTizenPlugins(project);
 }
 
-/// See: [injectPlugins] in `plugins.dart`
+/// See: [injectPlugins] in `flutter_plugins.dart`
 Future<void> injectTizenPlugins(FlutterProject project) async {
   final TizenProject tizenProject = TizenProject.fromFlutter(project);
   if (tizenProject.existsSync()) {
@@ -301,6 +294,7 @@ Future<List<TizenPlugin>> findTizenPlugins(
   bool throwOnError = true,
 }) async {
   final List<TizenPlugin> plugins = <TizenPlugin>[];
+  final FileSystem fs = project.directory.fileSystem;
   final File packagesFile = project.directory.childFile('.packages');
   final PackageConfig packageConfig = await loadPackageConfigWithLogging(
     packagesFile,
@@ -309,7 +303,11 @@ Future<List<TizenPlugin>> findTizenPlugins(
   );
   for (final Package package in packageConfig.packages) {
     final Uri packageRoot = package.packageUriRoot.resolve('..');
-    final TizenPlugin plugin = _pluginFromPackage(package.name, packageRoot);
+    final TizenPlugin? plugin = _pluginFromPackage(
+      package.name,
+      packageRoot,
+      fileSystem: fs,
+    );
     if (plugin == null) {
       continue;
     } else if (nativeOnly && plugin.pluginClass == null) {
@@ -322,54 +320,60 @@ Future<List<TizenPlugin>> findTizenPlugins(
   return plugins;
 }
 
-/// Source: [_pluginFromPackage] in `plugins.dart`
-TizenPlugin _pluginFromPackage(String name, Uri packageRoot) {
+/// Source: [_pluginFromPackage] in `flutter_plugins.dart`
+TizenPlugin? _pluginFromPackage(
+  String name,
+  Uri packageRoot, {
+  FileSystem? fileSystem,
+}) {
+  final FileSystem fs = fileSystem ?? globals.fs;
   final String pubspecPath =
-      globals.fs.path.fromUri(packageRoot.resolve('pubspec.yaml'));
-  if (!globals.fs.isFileSync(pubspecPath)) {
+      fs.path.fromUri(packageRoot.resolve('pubspec.yaml'));
+  if (!fs.isFileSync(pubspecPath)) {
     return null;
   }
 
-  dynamic pubspec;
+  Object? pubspec;
   try {
-    pubspec = loadYaml(globals.fs.file(pubspecPath).readAsStringSync());
+    pubspec = loadYaml(fs.file(pubspecPath).readAsStringSync());
   } on YamlException catch (err) {
     globals.printTrace('Failed to parse plugin manifest for $name: $err');
   }
-  if (pubspec == null) {
+  if (pubspec == null || pubspec is! YamlMap) {
     return null;
   }
-  final dynamic flutterConfig = pubspec['flutter'];
-  if (flutterConfig == null || !(flutterConfig.containsKey('plugin') as bool)) {
+  final Object? flutterConfig = pubspec['flutter'];
+  if (flutterConfig == null ||
+      flutterConfig is! YamlMap ||
+      !flutterConfig.containsKey('plugin')) {
     return null;
   }
 
-  final Directory packageDir = globals.fs.directory(packageRoot);
+  final Directory packageDir = fs.directory(packageRoot);
   globals.printTrace('Found plugin $name at ${packageDir.path}');
 
-  final YamlMap pluginYaml = flutterConfig['plugin'] as YamlMap;
+  final YamlMap? pluginYaml = flutterConfig['plugin'] as YamlMap?;
   if (pluginYaml == null || pluginYaml['platforms'] == null) {
     return null;
   }
-  final YamlMap platformsYaml = pluginYaml['platforms'] as YamlMap;
+  final YamlMap? platformsYaml = pluginYaml['platforms'] as YamlMap?;
   if (platformsYaml == null || platformsYaml[TizenPlugin.kConfigKey] == null) {
     return null;
   }
   return TizenPlugin.fromYaml(
     name,
     packageDir.childDirectory('tizen'),
-    platformsYaml[TizenPlugin.kConfigKey] as YamlMap,
+    platformsYaml[TizenPlugin.kConfigKey]! as YamlMap,
   );
 }
 
-/// See: [_writeWebPluginRegistrant] in `plugins.dart`
 void _writeDartPluginRegistrant(
   Directory registryDirectory,
   List<TizenPlugin> plugins,
 ) {
-  final List<Map<String, dynamic>> pluginConfigs =
+  final List<Map<String, Object?>> pluginConfigs =
       plugins.map((TizenPlugin plugin) => plugin.toMap()).toList();
-  final Map<String, dynamic> context = <String, dynamic>{
+  final Map<String, Object> context = <String, Object>{
     'plugins': pluginConfigs,
   };
   _renderTemplateToFile(
@@ -378,6 +382,7 @@ void _writeDartPluginRegistrant(
 // Generated file. Do not edit.
 //
 
+// ignore_for_file: directives_ordering
 // ignore_for_file: lines_longer_than_80_chars
 
 {{#plugins}}
@@ -392,18 +397,18 @@ void registerPlugins() {
 }
 ''',
     context,
-    registryDirectory.childFile('generated_plugin_registrant.dart').path,
+    registryDirectory.childFile('generated_plugin_registrant.dart'),
   );
 }
 
-/// See: [_writeWindowsPluginFiles] in `plugins.dart`
+/// See: [writeWindowsPluginFiles] in `flutter_plugins.dart`
 void _writeCppPluginRegistrant(
   Directory registryDirectory,
   List<TizenPlugin> plugins,
 ) {
-  final List<Map<String, dynamic>> pluginConfigs =
+  final List<Map<String, Object?>> pluginConfigs =
       plugins.map((TizenPlugin plugin) => plugin.toMap()).toList();
-  final Map<String, dynamic> context = <String, dynamic>{
+  final Map<String, Object> context = <String, Object>{
     'plugins': pluginConfigs,
   };
   _renderTemplateToFile(
@@ -434,7 +439,7 @@ void RegisterPlugins(flutter::PluginRegistry *registry) {
 #endif  // GENERATED_PLUGIN_REGISTRANT_
 ''',
     context,
-    registryDirectory.childFile('generated_plugin_registrant.h').path,
+    registryDirectory.childFile('generated_plugin_registrant.h'),
   );
 }
 
@@ -442,9 +447,9 @@ void _writeCsharpPluginRegistrant(
   Directory registryDirectory,
   List<TizenPlugin> plugins,
 ) {
-  final List<Map<String, dynamic>> pluginConfigs =
+  final List<Map<String, Object?>> pluginConfigs =
       plugins.map((TizenPlugin plugin) => plugin.toMap()).toList();
-  final Map<String, dynamic> context = <String, dynamic>{
+  final Map<String, Object> context = <String, Object>{
     'plugins': pluginConfigs,
   };
   _renderTemplateToFile(
@@ -478,15 +483,14 @@ namespace Runner
 }
 ''',
     context,
-    registryDirectory.childFile('GeneratedPluginRegistrant.cs').path,
+    registryDirectory.childFile('GeneratedPluginRegistrant.cs'),
   );
 }
 
-/// Source: [_renderTemplateToFile] in `plugins.dart` (exact copy)
-void _renderTemplateToFile(String template, dynamic context, String filePath) {
+/// Source: [_renderTemplateToFile] in `flutter_plugins.dart`
+void _renderTemplateToFile(String template, Object? context, File file) {
   final String renderedTemplate = globals.templateRenderer
       .renderString(template, context, htmlEscapeValues: false);
-  final File file = globals.fs.file(filePath);
   file.createSync(recursive: true);
   file.writeAsStringSync(renderedTemplate);
 }
