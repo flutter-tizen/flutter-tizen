@@ -11,6 +11,7 @@ import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/base/terminal.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/commands/create.dart';
+import 'package:flutter_tools/src/dart/pub.dart';
 import 'package:flutter_tools/src/flutter_project_metadata.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/runner/flutter_command.dart';
@@ -85,11 +86,14 @@ class TizenCreateCommand extends CreateCommand {
 
   /// See: [CreateCommand.runCommand] in `create.dart`
   Future<FlutterCommandResult> _runCommand() async {
-    // Check if the main.dart file exists before running super.runCommand().
+    // Check if main.dart/pubspec.yaml exists before running super.runCommand().
     final File mainFile =
         projectDir.childDirectory('lib').childFile('main.dart');
+    final File pubspecFile = projectDir.childFile('pubspec.yaml');
     final bool overwriteMainFile =
         boolArg('overwrite') || !mainFile.existsSync();
+    final bool overwritePubspecFile =
+        boolArg('overwrite') || !pubspecFile.existsSync();
 
     final FlutterCommandResult result = await super.runCommand();
     if (result != FlutterCommandResult.success()) {
@@ -126,6 +130,24 @@ class TizenCreateCommand extends CreateCommand {
           projectDir.childDirectory('tizen').childFile('main.dart');
       if (overwriteMainFile) {
         createdMainFile.copySync(mainFile.path);
+      }
+      if (overwritePubspecFile) {
+        final List<String> pubspec = pubspecFile.readAsLinesSync();
+        pubspec.insert(
+          pubspec.indexWhere(
+              (String line) => line.startsWith('dev_dependencies:')),
+          '  # Tizen-specific dependencies.\n'
+          '  messageport_tizen: ^0.1.0\n'
+          '  tizen_app_control: ^0.1.0\n',
+        );
+        pubspecFile.writeAsStringSync(pubspec.join('\n') + '\n');
+
+        await pub.get(
+          context: PubContext.create,
+          directory: projectDir.path,
+          offline: boolArg('offline'),
+          generateSyntheticPackage: false,
+        );
       }
       createdMainFile.deleteSync();
     }
