@@ -2,13 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @dart = 2.8
-
 import 'dart:convert';
 
 import 'package:file/file.dart';
 import 'package:flutter_tools/src/convert.dart';
-import 'package:flutter_tools/src/globals.dart' as globals;
+import 'package:flutter_tools/src/globals_null_migrated.dart' as globals;
 import 'package:flutter_tools/src/project.dart';
 
 const String kConfigNameAttach = 'flutter-tizen: Attach';
@@ -42,20 +40,21 @@ void updateLaunchJsonFile(FlutterProject project, Uri observatoryUri) {
     jsonString = _processJson(launchJsonFile.readAsStringSync());
   }
 
-  Map<dynamic, dynamic> decoded = <dynamic, dynamic>{};
+  Map<Object?, Object?> decoded = <Object?, Object?>{};
   if (jsonString.isNotEmpty) {
     try {
-      decoded = jsonDecode(jsonString) as Map<dynamic, dynamic>;
+      decoded = jsonDecode(jsonString) as Map<Object?, Object?>;
     } on FormatException catch (error) {
       globals.printError('Failed to parse ${launchJsonFile.path}:\n$error');
       return;
     }
   }
   decoded['version'] ??= '0.2.0';
-  decoded['configurations'] ??= <dynamic>[];
+  decoded['configurations'] ??= <Object?>[];
 
-  final List<dynamic> configs = decoded['configurations'] as List<dynamic>;
-  if (!configs.any((dynamic conf) => conf['name'] == kConfigNameAttach)) {
+  final List<Object?> configs = decoded['configurations']! as List<Object?>;
+  if (!configs.any((Object? config) =>
+      config is Map && config['name'] == kConfigNameAttach)) {
     configs.add(<String, String>{
       'name': kConfigNameAttach,
       'request': 'attach',
@@ -63,14 +62,13 @@ void updateLaunchJsonFile(FlutterProject project, Uri observatoryUri) {
       'deviceId': 'flutter-tester',
     });
   }
-  for (final dynamic config in configs) {
-    if (config['name'] != kConfigNameAttach) {
+  for (final Object? config in configs) {
+    if (config is! Map || config['name'] != kConfigNameAttach) {
       continue;
     }
-    config['cwd'] = r'${workspaceFolder}';
-    if (project.hasExampleApp) {
-      config['cwd'] += '/example';
-    }
+    config['cwd'] = project.hasExampleApp
+        ? r'${workspaceFolder}/example'
+        : r'${workspaceFolder}';
     config['observatoryUri'] = observatoryUri.toString();
   }
 
