@@ -17,6 +17,7 @@ import 'package:flutter_tools/src/base/os.dart';
 import 'package:flutter_tools/src/base/template.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/commands/config.dart';
+import 'package:flutter_tools/src/commands/custom_devices.dart';
 import 'package:flutter_tools/src/commands/daemon.dart';
 import 'package:flutter_tools/src/commands/devices.dart';
 import 'package:flutter_tools/src/commands/doctor.dart';
@@ -33,7 +34,7 @@ import 'package:flutter_tools/src/device.dart';
 import 'package:flutter_tools/src/doctor.dart';
 import 'package:flutter_tools/src/emulator.dart';
 import 'package:flutter_tools/src/features.dart';
-import 'package:flutter_tools/src/globals.dart' as globals;
+import 'package:flutter_tools/src/globals_null_migrated.dart' as globals;
 import 'package:flutter_tools/src/isolated/mustache_template.dart';
 import 'package:flutter_tools/src/runner/flutter_command.dart';
 import 'package:path/path.dart';
@@ -95,11 +96,21 @@ Future<void> main(List<String> args) async {
     () => <FlutterCommand>[
       // Commands directly from flutter_tools.
       ConfigCommand(verboseHelp: verboseHelp),
+      CustomDevicesCommand(
+        customDevicesConfig: globals.customDevicesConfig,
+        operatingSystemUtils: globals.os,
+        terminal: globals.terminal,
+        platform: globals.platform,
+        featureFlags: featureFlags,
+        processManager: globals.processManager,
+        fileSystem: globals.fs,
+        logger: globals.logger,
+      ),
       DaemonCommand(hidden: !verboseHelp),
       DevicesCommand(verboseHelp: verboseHelp),
       DoctorCommand(verbose: verbose),
       EmulatorsCommand(),
-      FormatCommand(),
+      FormatCommand(verboseHelp: verboseHelp),
       GenerateLocalizationsCommand(
         fileSystem: globals.fs,
         logger: globals.logger,
