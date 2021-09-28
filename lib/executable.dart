@@ -48,6 +48,7 @@ import 'commands/drive.dart';
 import 'commands/precache.dart';
 import 'commands/run.dart';
 import 'commands/test.dart';
+import 'tizen_application_package.dart';
 import 'tizen_cache.dart';
 import 'tizen_device_discovery.dart';
 import 'tizen_doctor.dart';
@@ -55,7 +56,6 @@ import 'tizen_emulator.dart';
 import 'tizen_osutils.dart';
 import 'tizen_pub.dart';
 import 'tizen_sdk.dart';
-import 'tizen_tpk.dart';
 
 /// Main entry point for commands.
 ///

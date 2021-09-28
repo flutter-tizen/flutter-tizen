@@ -7,54 +7,16 @@
 import 'dart:io';
 
 import 'package:file/file.dart';
-import 'package:flutter_tools/src/android/android_sdk.dart';
 import 'package:flutter_tools/src/android/application_package.dart';
 import 'package:flutter_tools/src/application_package.dart';
 import 'package:flutter_tools/src/base/common.dart';
-import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/base/terminal.dart';
-import 'package:flutter_tools/src/base/user_messages.dart';
-import 'package:flutter_tools/src/build_info.dart';
-import 'package:flutter_tools/src/flutter_application_package.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/project.dart';
 import 'package:meta/meta.dart';
-import 'package:process/process.dart';
 import 'package:xml/xml.dart';
 
 import 'tizen_project.dart';
-
-/// [FlutterApplicationPackageFactory] extended for Tizen.
-class TizenApplicationPackageFactory extends FlutterApplicationPackageFactory {
-  TizenApplicationPackageFactory({
-    @required AndroidSdk androidSdk,
-    @required ProcessManager processManager,
-    @required Logger logger,
-    @required UserMessages userMessages,
-    @required FileSystem fileSystem,
-  }) : super(
-          androidSdk: androidSdk,
-          processManager: processManager,
-          logger: logger,
-          userMessages: userMessages,
-          fileSystem: fileSystem,
-        );
-
-  @override
-  Future<ApplicationPackage> getPackageForPlatform(
-    TargetPlatform platform, {
-    BuildInfo buildInfo,
-    File applicationBinary,
-  }) async {
-    if (platform == TargetPlatform.tester) {
-      return applicationBinary == null
-          ? await TizenTpk.fromProject(FlutterProject.current())
-          : await TizenTpk.fromTpk(applicationBinary);
-    }
-    return super.getPackageForPlatform(platform,
-        buildInfo: buildInfo, applicationBinary: applicationBinary);
-  }
-}
 
 /// See: [AndroidApk] in `application_package.dart`
 class TizenTpk extends ApplicationPackage {
