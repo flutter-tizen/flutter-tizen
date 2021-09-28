@@ -15,8 +15,9 @@ import 'package:flutter_tools/src/base/terminal.dart';
 import 'package:flutter_tools/src/build_system/targets/web.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/dart/language_version.dart';
-import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/dart/package_map.dart';
+import 'package:flutter_tools/src/flutter_plugins.dart';
+import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/platform_plugins.dart';
 import 'package:flutter_tools/src/plugins.dart';
 import 'package:flutter_tools/src/project.dart';
@@ -289,7 +290,7 @@ Future<void> injectTizenPlugins(FlutterProject project) async {
   }
 }
 
-/// Source: [findPlugins] in `plugins.dart`
+/// Source: [findPlugins] in `flutter_plugins.dart`
 Future<List<TizenPlugin>> findTizenPlugins(
   FlutterProject project, {
   bool dartOnly = false,

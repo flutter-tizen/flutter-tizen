@@ -11,12 +11,12 @@ import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/build_info.dart';
 import 'package:flutter_tools/src/build_system/build_system.dart';
 import 'package:flutter_tools/src/build_system/depfile.dart';
-import 'package:flutter_tools/src/build_system/targets/assets.dart';
-import 'package:flutter_tools/src/build_system/targets/icon_tree_shaker.dart';
 import 'package:flutter_tools/src/build_system/exceptions.dart';
 import 'package:flutter_tools/src/build_system/source.dart';
 import 'package:flutter_tools/src/build_system/targets/android.dart';
+import 'package:flutter_tools/src/build_system/targets/assets.dart';
 import 'package:flutter_tools/src/build_system/targets/common.dart';
+import 'package:flutter_tools/src/build_system/targets/icon_tree_shaker.dart';
 
 import '../tizen_builder.dart';
 import 'plugins.dart';
@@ -58,7 +58,7 @@ abstract class TizenAssetBundle extends Target {
         getBuildModeForName(environment.defines[kBuildMode]);
     final Directory outputDirectory = environment.outputDir
         .childDirectory('flutter_assets')
-          ..createSync(recursive: true);
+      ..createSync(recursive: true);
 
     // Only copy the prebuilt runtimes and kernel blob in debug mode.
     if (buildMode == BuildMode.debug) {
@@ -104,7 +104,7 @@ class TizenAotElf extends AotElfBase {
   @override
   List<Source> get inputs => <Source>[
         const Source.pattern('{BUILD_DIR}/app.dill'),
-        const Source.artifact(Artifact.engineDartBinary),
+        const Source.hostArtifact(HostArtifact.engineDartBinary),
         const Source.artifact(Artifact.skyEnginePath),
         // Any type of gen_snapshot is applicable here because engine artifacts
         // are assumed to be updated at once, not one by one for each platform

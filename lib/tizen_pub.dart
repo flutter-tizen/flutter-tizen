@@ -69,6 +69,7 @@ class TizenPub implements Pub {
     bool generateSyntheticPackage = false,
     String flutterRootOverride,
     bool checkUpToDate = false,
+    bool shouldSkipThirdPartyGenerator = true,
   }) async {
     await _pub.get(
       context: context,
@@ -79,6 +80,7 @@ class TizenPub implements Pub {
       generateSyntheticPackage: generateSyntheticPackage,
       flutterRootOverride: flutterRootOverride,
       checkUpToDate: checkUpToDate,
+      shouldSkipThirdPartyGenerator: shouldSkipThirdPartyGenerator,
     );
     await _postPub(directory);
   }
