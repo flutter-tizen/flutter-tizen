@@ -41,8 +41,8 @@ class TizenApplicationPackageFactory extends FlutterApplicationPackageFactory {
   }) async {
     if (platform == TargetPlatform.tester) {
       return applicationBinary == null
-          ? await TizenTpk.fromProject(FlutterProject.current())
-          : await TizenTpk.fromTpk(applicationBinary);
+          ? TizenTpk.fromProject(FlutterProject.current())
+          : TizenTpk.fromTpk(applicationBinary);
     }
     return super.getPackageForPlatform(platform,
         buildInfo: buildInfo, applicationBinary: applicationBinary);

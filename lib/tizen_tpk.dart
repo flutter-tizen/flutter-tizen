@@ -22,13 +22,14 @@ class TizenTpk extends ApplicationPackage {
     this.signature,
   }) : super(id: manifest.packageId);
 
-  static Future<TizenTpk> fromTpk(File tpkFile) async {
-    final Directory tempDir = globals.fs.systemTempDirectory.createTempSync();
+  static TizenTpk fromTpk(File tpkFile) {
+    final FileSystem fs = tpkFile.fileSystem;
+    final Directory tempDir = fs.systemTempDirectory.createTempSync();
     try {
       globals.os.unzip(tpkFile, tempDir);
     } on ProcessException {
       throwToolExit(
-        'An error occurred while processing a file: ${globals.fs.path.relative(tpkFile.path)}\n'
+        'An error occurred while processing a file: ${fs.path.relative(tpkFile.path)}\n'
         'You may delete the file and try again.',
       );
     }
@@ -50,7 +51,7 @@ class TizenTpk extends ApplicationPackage {
     );
   }
 
-  static Future<TizenTpk> fromProject(FlutterProject flutterProject) async {
+  static TizenTpk fromProject(FlutterProject flutterProject) {
     final TizenProject project = TizenProject.fromFlutter(flutterProject);
 
     final File tpkFile = flutterProject.directory

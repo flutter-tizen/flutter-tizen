@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 // @dart = 2.8
+//
+// This file cannot opt in to null safety because Pub and _DefaultPub have
+// inconsistent method signatures.
 
 import 'package:file/file.dart';
 import 'package:flutter_tools/src/base/bot_detector.dart';

@@ -16,7 +16,7 @@ import 'package:xml/xml.dart';
 import 'tizen_plugins.dart';
 import 'tizen_tpk.dart';
 
-/// Source: [WindowsProject] in `project.dart`
+/// Source: [WindowsProject] in `cmake_project.dart`
 class TizenProject extends FlutterProjectPlatform {
   TizenProject.fromFlutter(this.parent);
 
@@ -90,7 +90,7 @@ class TizenProject extends FlutterProjectPlatform {
       document = XmlDocument.parse(initialXmlContent);
     }
 
-    final File embeddingProjectFile = globals.fs
+    final File embeddingProjectFile = editableDirectory.fileSystem
         .directory(Cache.flutterRoot)
         .parent
         .childDirectory('embedding')
@@ -147,7 +147,7 @@ class TizenProject extends FlutterProjectPlatform {
     if (!file.existsSync()) {
       return;
     }
-    final String path = globals.fs.path.relative(file.path);
+    final String path = file.fileSystem.path.relative(file.path);
     final Status status = globals.logger.startProgress(
       'Deleting $path...',
     );
