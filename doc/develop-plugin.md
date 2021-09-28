@@ -17,9 +17,9 @@ This document only covers native Tizen plugins written in C/C++.
 
 ### Targeting multiple platforms vs. Tizen only
 
-A Flutter plugin may support more than one platforms. For example, [Flutter 1st-party plugins](https://github.com/flutter/plugins) developed by the Flutter team basically support two (Android, iOS) or more platforms (web, macOS, Windows, Linux), based on the team's priority and the availability of the functionality on the platform.
+A Flutter plugin may support more than one platforms. For example, each of the [Flutter 1st-party plugins](https://github.com/flutter/plugins) developed by the Flutter team supports at least two (Android, iOS) or more platforms (web, macOS, Windows, Linux), based on the team's priority and the availability of the functionality on the platforms. [Federated plugins](https://flutter.dev/docs/development/packages-and-plugins/developing-packages#federated-plugins) are a way of splitting support for different platforms into separate packages. A federated plugin consists of an app-facing package, a **platform interface package**, and platform package(s) for each platform.
 
-[Federated plugins](https://flutter.dev/docs/development/packages-and-plugins/developing-packages#federated-plugins) are a way of splitting support for different platforms into separate packages. A federated plugin consists of an app-facing package, a **platform interface package**, and platform package(s) for each platform. On the other hand, a plugin may also support only a single platform, e.g. [`flutter_plugin_android_lifecycle`](https://github.com/flutter/plugins/tree/master/packages/flutter_plugin_android_lifecycle) for Android and [`wearable_rotary`](https://github.com/flutter-tizen/plugins/tree/master/packages/wearable_rotary) for Tizen. In this case, there's no need to create a platform interface package. Instead, you can put everything into a single package.
+On the other hand, it is also possible for a plugin to support only a single particular platform, e.g. [`flutter_plugin_android_lifecycle`](https://github.com/flutter/plugins/tree/master/packages/flutter_plugin_android_lifecycle) for Android and [`wearable_rotary`](https://github.com/flutter-tizen/plugins/tree/master/packages/wearable_rotary) for Tizen. In this case, there's no need to create a platform interface package. Instead, you can put everything into a single package.
 
 ### Extending existing plugins vs. Creating new plugins
 
@@ -88,7 +88,7 @@ The result of the method call can be either:
 - `Error()`: Indicates that the call was understood but handling failed in some way. The error can be caught as a `PlatformException` by the caller.
 - `NotImplemented()`
 
-Any arguments to the method call can be retrieved from the `method_call` variable. For example, if a `map<String, dynamic>` is passed from Dart code like:
+Arguments to the method call can be retrieved from the `method_call` variable. For example, if a `map<String, dynamic>` is passed from Dart code like:
 
 ```dart
 await _channel.invokeMethod<void>(
@@ -97,16 +97,17 @@ await _channel.invokeMethod<void>(
 );
 ```
 
-then it can be parsed in C/C++ code like:
+then it can be parsed as a `flutter::EncodableMap` in C/C++ code like:
 
 ```cpp
 template <typename T>
-bool GetValueFromEncodableMap(flutter::EncodableMap &map, std::string key,
-                              T &out) {
-  auto iter = map.find(flutter::EncodableValue(key));
-  if (iter != map.end() && !iter->second.IsNull()) {
-    if (auto pval = std::get_if<T>(&iter->second)) {
-      out = *pval;
+bool GetValueFromEncodableMap(const flutter::EncodableMap* map,
+                              const char* key,
+                              T& out) {
+  auto iter = map->find(flutter::EncodableValue(key));
+  if (iter != map->end() && !iter->second.IsNull()) {
+    if (auto value = std::get_if<T>(&iter->second)) {
+      out = *value;
       return true;
     }
   }
@@ -116,24 +117,45 @@ bool GetValueFromEncodableMap(flutter::EncodableMap &map, std::string key,
 void HandleMethodCall(
     const flutter::MethodCall<flutter::EncodableValue> &method_call,
     std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result) {
-  std::string method_name = method_call.method_name();
+  const auto& method_name = method_call.method_name();
 
   if (method_name == "create") {
-    if (method_call.arguments()) {
-      flutter::EncodableMap arguments = 
-          std::get<flutter::EncodableMap>(*method_call.arguments());
-      std::string camera_name;
-      if (!GetValueFromEncodableMap(arguments, "cameraName", camera_name)) {
-        result->Error(...);
-        return;
-      }
-      ...
+    auto arguments =
+        std::get_if<flutter::EncodableMap>(method_call.arguments());
+    if (!arguments) {
+      result->Error("Invalid arguments", "Invalid argument type.");
+      return;
     }
+    std::string camera_name;
+    if (!GetValueFromEncodableMap(arguments, "cameraName", camera_name)) {
+      result->Error("Invalid arguments", "No cameraName provided.");
+      return;
+    }
+    ...
+    result->Success();
   }
 }
 ```
 
-Note: The standard platform channels use a standard message codec that supports efficient binary serialization of simple JSON-like values, such as booleans, numbers, Strings, byte buffers, and Lists and Maps of these. See [StandardMessageCodec class](https://api.flutter.dev/flutter/services/StandardMessageCodec-class.html) for supported data types.
+Make sure either `Success`, `Error`, or `NotImplemented` is called on `result` after the method call is handled (otherwise, the `Future` returned by `MethodChannel.invokeMethod` will remain uncompleted forever). Note that the result can be passed either synchronously or asynchronously (e.g. from a callback) as long as the ownership of `result` is retained properly.
+
+#### Supported data types
+
+The standard platform channels use a standard message codec that supports efficient binary serialization of simple JSON-like values, such as booleans, numbers, Strings, byte buffers, and Lists and Maps of these (see [`StandardMessageCodec`](https://api.flutter.dev/flutter/services/StandardMessageCodec-class.html) for details). The following table shows how Dart types are mapped with `flutter::EncodableValue` variant types on the platform side.
+
+| Dart | C/C++ |
+|-|-|
+| `null` | `std::monostate` |
+| `bool` | `bool` |
+| `int` | `int32_t` or `int64_t` |
+| `double` | `double` |
+| `String` | `std::string` |
+| `Uint8List` | `std::vector<uint8_t>` |
+| `Int32List` | `std::vector<int32_t>` |
+| `Int64List` | `std::vector<int64_t>` |
+| `Float64List` | `std::vector<double>` |
+| `List` | `flutter::EncodableList` |
+| `Map` | `flutter::EncodableMap` |
 
 #### Available APIs
 
@@ -155,7 +177,7 @@ Besides the above mentioned [MethodChannel](https://api.flutter.dev/flutter/serv
 
 #### Tizen privileges
 
-If some privileges are required to run your plugin code, you have to list them in the plugin's README so that the user can properly add them to their `tizen-manifest.xml`.
+If some privileges are required to run your plugin code, you have to list them in the plugin's README so that app developers can properly add them to their `tizen-manifest.xml`.
 
 If one or more privileges are [privacy-related privileges](https://docs.tizen.org/application/dotnet/tutorials/sec-privileges), permissions must be granted by user at runtime. To request permissions at runtime, use the [Privacy Privilege Manager API](https://docs.tizen.org/application/native/guides/security/privacy-related-permissions) ([example](https://github.com/flutter-tizen/plugins/blob/master/packages/camera/tizen/src/permission_manager.cc)).
 
