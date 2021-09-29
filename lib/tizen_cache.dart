@@ -1,8 +1,6 @@
-// Copyright 2020 Samsung Electronics Co., Ltd. All rights reserved.
+// Copyright 2021 Samsung Electronics Co., Ltd. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
-// @dart = 2.8
 
 import 'dart:convert';
 
@@ -14,10 +12,10 @@ import 'package:flutter_tools/src/base/platform.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/features.dart';
 import 'package:flutter_tools/src/flutter_cache.dart';
-import 'package:flutter_tools/src/globals.dart' as globals;
+import 'package:flutter_tools/src/globals_null_migrated.dart' as globals;
+// ignore: import_of_legacy_library_into_null_safe
 import 'package:flutter_tools/src/runner/flutter_command.dart';
 import 'package:http/http.dart' as http;
-import 'package:meta/meta.dart';
 
 mixin TizenRequiredArtifacts on FlutterCommand {
   @override
@@ -30,27 +28,24 @@ mixin TizenRequiredArtifacts on FlutterCommand {
 
 /// See: [DevelopmentArtifact] in `cache.dart`
 class TizenDevelopmentArtifact implements DevelopmentArtifact {
-  const TizenDevelopmentArtifact._(this.name, this.feature);
+  const TizenDevelopmentArtifact._(this.name, {this.feature});
 
   @override
   final String name;
 
   @override
-  final Feature feature;
+  final Feature? feature;
 
-  static const DevelopmentArtifact tizen =
-      TizenDevelopmentArtifact._('tizen', null);
+  static const DevelopmentArtifact tizen = TizenDevelopmentArtifact._('tizen');
 }
 
 /// Extends [FlutterCache] to register [TizenEngineArtifacts].
-///
-/// See: [FlutterCache] in `flutter_cache.dart`
 class TizenFlutterCache extends FlutterCache {
   TizenFlutterCache({
-    @required Logger logger,
-    @required FileSystem fileSystem,
-    @required Platform platform,
-    @required OperatingSystemUtils osUtils,
+    required Logger logger,
+    required FileSystem fileSystem,
+    required Platform platform,
+    required OperatingSystemUtils osUtils,
   }) : super(
             logger: logger,
             fileSystem: fileSystem,
@@ -63,7 +58,7 @@ class TizenFlutterCache extends FlutterCache {
 class TizenEngineArtifacts extends EngineCachedArtifact {
   TizenEngineArtifacts(
     Cache cache, {
-    @required Platform platform,
+    required Platform platform,
   })  : _platform = platform,
         super(
           'tizen-sdk',
@@ -73,8 +68,9 @@ class TizenEngineArtifacts extends EngineCachedArtifact {
 
   final Platform _platform;
 
+  /// See: [Cache.getVersionFor] in `cache.dart`
   @override
-  String get version {
+  String? get version {
     final File versionFile = globals.fs
         .directory(Cache.flutterRoot)
         .parent
@@ -87,15 +83,15 @@ class TizenEngineArtifacts extends EngineCachedArtifact {
   }
 
   String get shortVersion {
-    if (version != null && version.length >= 7) {
-      return version.substring(0, 7);
+    if (version == null) {
+      throwToolExit('Could not determine Tizen engine revision.');
     }
-    return version;
+    return version!.length > 7 ? version!.substring(0, 7) : version!;
   }
 
-  /// See: [Cache.storageBaseUrl] in `cache.dart`
+  /// Source: [Cache.storageBaseUrl] in `cache.dart`
   String get engineBaseUrl {
-    final String overrideUrl = _platform.environment['TIZEN_ENGINE_BASE_URL'];
+    final String? overrideUrl = _platform.environment['TIZEN_ENGINE_BASE_URL'];
     if (overrideUrl == null) {
       return 'https://github.com/flutter-tizen/engine/releases';
     }
@@ -125,13 +121,14 @@ class TizenEngineArtifacts extends EngineCachedArtifact {
   @override
   List<String> getPackageDirs() => const <String>[];
 
+  /// See: [EngineCachedArtifact.updateInner] in `cache.dart`
   @override
   Future<void> updateInner(
     ArtifactUpdater artifactUpdater,
     FileSystem fileSystem,
     OperatingSystemUtils operatingSystemUtils,
   ) async {
-    final String buildId = _platform.environment['AZURE_BUILD_ID'];
+    final String? buildId = _platform.environment['AZURE_BUILD_ID'];
     final String downloadUrl = buildId == null
         ? '$engineBaseUrl/download/$shortVersion'
         : await _getDownloadUrlFromAzure(buildId);
@@ -154,15 +151,13 @@ class TizenEngineArtifacts extends EngineCachedArtifact {
 
     final http.Response response = await http.get(Uri.parse(azureRestUrl));
     if (response.statusCode == 200) {
+      // ignore: avoid_dynamic_calls
       return json
           .decode(response.body)['resource']['downloadUrl']
           .toString()
-          .replaceAll(
-            'content?format=zip',
-            'content?format=file&subPath=',
-          );
+          .replaceAll('content?format=zip', 'content?format=file&subPath=');
     } else {
-      throwToolExit('Failed to get the download url from $azureRestUrl');
+      throwToolExit('Failed to get the download URL from $azureRestUrl.');
     }
   }
 }
