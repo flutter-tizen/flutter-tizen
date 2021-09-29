@@ -58,13 +58,33 @@ class TizenCreateCommand extends CreateCommand {
   Future<int> renderTemplate(
     String templateName,
     Directory directory,
-    Map<String, dynamic> context, {
+    Map<String, Object> context, {
     bool overwrite = false,
   }) async {
     // Disables https://github.com/flutter/flutter/pull/59706 by setting
     // templateManifest to null.
     final Template template = await Template.fromName(
       templateName,
+      fileSystem: globals.fs,
+      logger: globals.logger,
+      templateRenderer: globals.templateRenderer,
+      templateManifest: null,
+    );
+    return template.render(directory, context, overwriteExisting: overwrite);
+  }
+
+  @override
+  Future<int> renderMerged(
+    List<String> names,
+    Directory directory,
+    Map<String, Object> context, {
+    bool overwrite = false,
+  }) async {
+    // Disables https://github.com/flutter/flutter/pull/59706 by setting
+    // templateManifest to null.
+    final Template template = await Template.merged(
+      names,
+      directory,
       fileSystem: globals.fs,
       logger: globals.logger,
       templateRenderer: globals.templateRenderer,
@@ -106,7 +126,7 @@ class TizenCreateCommand extends CreateCommand {
         'Make sure your $relativePluginPath/pubspec.yaml contains the following lines.',
         color: TerminalColor.yellow,
       );
-      final Map<String, dynamic> templateContext = createTemplateContext(
+      final Map<String, Object> templateContext = createTemplateContext(
         organization: '',
         projectName: projectName,
         flutterRoot: '',
@@ -145,7 +165,7 @@ class TizenCreateCommand extends CreateCommand {
           context: PubContext.create,
           directory: projectDir.path,
           offline: boolArg('offline'),
-          generateSyntheticPackage: false,
+          generateSyntheticPackage: true,
         );
       }
       createdMainFile.deleteSync();
@@ -216,7 +236,7 @@ class TizenCreateCommand extends CreateCommand {
           'provided at the same time.',
         );
       }
-      copyTemplate('$appType-app', appLanguage, 'app');
+      copyTemplate('$appType-app', appLanguage, 'app_shared');
       copyTemplate('plugin', pluginLanguage, 'plugin');
 
       return await _runCommand();
