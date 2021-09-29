@@ -50,7 +50,7 @@ class TizenEmulatorManager extends EmulatorManager {
   final TizenSdk _tizenSdk;
   final TizenEmulators _tizenEmulators;
 
-  /// Creates Tizen emulators
+  /// Creates a Tizen emulator.
   ///
   /// Source: [EmulatorManager.createEmulator] in `emulator.dart`
   @override

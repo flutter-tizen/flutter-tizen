@@ -179,14 +179,13 @@ class TizenWorkflow extends Workflow {
       _operatingSystemUtils.hostPlatform != HostPlatform.linux_arm64;
 
   @override
-  bool get canLaunchDevices => _tizenSdk != null;
+  bool get canLaunchDevices => appliesToHostPlatform && _tizenSdk != null;
 
   @override
-  bool get canListDevices => _tizenSdk != null;
+  bool get canListDevices => appliesToHostPlatform && _tizenSdk != null;
 
   @override
-  bool get canListEmulators =>
-      _tizenSdk != null && _tizenSdk.emCli.existsSync();
+  bool get canListEmulators => canListDevices && _tizenSdk.emCli.existsSync();
 }
 
 class _FlutterTizenVersion extends FlutterVersion {
