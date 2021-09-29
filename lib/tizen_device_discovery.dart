@@ -35,7 +35,7 @@ import 'tizen_sdk.dart';
 
 /// An extended [FlutterDeviceManager] for managing Tizen devices.
 class TizenDeviceManager extends FlutterDeviceManager {
-  /// Source: [runInContext] in `context_runner.dart`
+  /// See: [runInContext] in `context_runner.dart`
   TizenDeviceManager({
     @required Logger logger,
     @required FileSystem fileSystem,

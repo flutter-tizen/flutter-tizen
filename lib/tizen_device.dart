@@ -71,7 +71,6 @@ class TizenDevice extends Device {
     return <String>[_tizenSdk.sdb.path, '-s', id, ...args];
   }
 
-  /// See: [AndroidDevice.runAdbCheckedSync] in `android_device.dart`
   RunResult runSdbSync(
     List<String> params, {
     bool checked = true,
@@ -386,6 +385,10 @@ class TizenDevice extends Device {
       if (debuggingOptions.traceAllowlist != null) ...<String>[
         '--trace-allowlist',
         debuggingOptions.traceAllowlist,
+      ],
+      if (debuggingOptions.traceSkiaAllowlist != null) ...<String>[
+        '--trace-skia-allowlist',
+        debuggingOptions.traceSkiaAllowlist,
       ],
       if (debuggingOptions.endlessTraceBuffer) '--endless-trace-buffer',
       if (debuggingOptions.dumpSkpOnShaderCompilation)
@@ -776,13 +779,10 @@ class TizenDevicePortForwarder extends DevicePortForwarder {
       <String>['forward', '--remove', 'tcp:${forwardedPort.hostPort}'],
       checked: false,
     );
-    // The port may have already been unforwarded, for example if there
-    // are multiple attach process already connected.
-    if (result.stderr.isEmpty ||
-        result.stderr.contains('error: cannot remove forward listener')) {
+    if (result.stderr.isEmpty) {
       return;
     }
-    result.throwException('Process exited abnormally:\n$result');
+    _logger.printError('Failed to unforward port: $result');
   }
 
   @override
