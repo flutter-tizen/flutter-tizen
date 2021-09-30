@@ -5,7 +5,6 @@
 // @dart = 2.8
 
 import 'package:flutter_tools/src/android/build_validation.dart';
-import 'package:flutter_tools/src/base/analyze_size.dart';
 import 'package:flutter_tools/src/base/common.dart';
 import 'package:flutter_tools/src/base/terminal.dart';
 import 'package:flutter_tools/src/build_info.dart';
@@ -89,15 +88,10 @@ class BuildTpkCommand extends BuildSubCommand
     _validateBuild(tizenBuildInfo);
     displayNullSafetyMode(buildInfo);
 
-    await TizenBuilder.buildTpk(
+    await tizenBuilder.buildTpk(
       project: FlutterProject.current(),
       targetFile: targetFile,
       tizenBuildInfo: tizenBuildInfo,
-      sizeAnalyzer: SizeAnalyzer(
-        fileSystem: globals.fs,
-        logger: globals.logger,
-        flutterUsage: globals.flutterUsage,
-      ),
     );
     return FlutterCommandResult.success();
   }

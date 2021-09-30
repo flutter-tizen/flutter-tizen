@@ -8,26 +8,27 @@
 import 'dart:convert';
 
 import 'package:file/file.dart';
-import 'package:flutter_tools/src/android/android_builder.dart';
 import 'package:flutter_tools/src/android/gradle.dart';
+import 'package:flutter_tools/src/artifacts.dart';
 import 'package:flutter_tools/src/base/analyze_size.dart';
 import 'package:flutter_tools/src/base/common.dart';
+import 'package:flutter_tools/src/base/context.dart';
+import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/base/logger.dart';
+import 'package:flutter_tools/src/base/platform.dart';
 import 'package:flutter_tools/src/base/terminal.dart';
 import 'package:flutter_tools/src/base/utils.dart';
 import 'package:flutter_tools/src/build_info.dart';
 import 'package:flutter_tools/src/build_system/build_system.dart';
-import 'package:flutter_tools/src/build_system/targets/assets.dart';
-import 'package:flutter_tools/src/build_system/targets/common.dart';
-import 'package:flutter_tools/src/build_system/targets/icon_tree_shaker.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/commands/assemble.dart';
 import 'package:flutter_tools/src/commands/build_ios_framework.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/linux/build_linux.dart';
 import 'package:flutter_tools/src/project.dart';
+import 'package:flutter_tools/src/reporting/reporting.dart';
 import 'package:meta/meta.dart';
-import 'package:path/path.dart';
+import 'package:process/process.dart';
 
 import 'build_targets/application.dart';
 import 'build_targets/package.dart';
@@ -37,6 +38,8 @@ import 'tizen_tpk.dart';
 
 /// The define to control what Tizen device is built for.
 const String kDeviceProfile = 'DeviceProfile';
+
+TizenBuilder get tizenBuilder => context.get<TizenBuilder>();
 
 /// See: [AndroidBuildInfo] in `build_info.dart`
 class TizenBuildInfo {
@@ -55,17 +58,39 @@ class TizenBuildInfo {
 }
 
 /// See:
-/// - [AndroidBuilder] in `android_builder.dart`
-/// - [AndroidGradleBuilder.buildGradleApp] in `gradle.dart`
+/// - [AndroidGradleBuilder.buildApk] in `gradle.dart`
 /// - [BuildIOSFrameworkCommand._produceAppFramework] in `build_ios_framework.dart` (build target)
 /// - [AssembleCommand.runCommand] in `assemble.dart` (performance measurement)
 /// - [buildLinux] in `build_linux.dart` (code size)
 class TizenBuilder {
-  static Future<void> buildTpk({
+  TizenBuilder({
+    @required Logger logger,
+    @required ProcessManager processManager,
+    @required FileSystem fileSystem,
+    @required Artifacts artifacts,
+    @required Usage usage,
+    @required Platform platform,
+  })  : _logger = logger,
+        _processManager = processManager,
+        _fileSystem = fileSystem,
+        _artifacts = artifacts,
+        _usage = usage,
+        _platform = platform,
+        _fileSystemUtils =
+            FileSystemUtils(fileSystem: fileSystem, platform: platform);
+
+  final Logger _logger;
+  final ProcessManager _processManager;
+  final FileSystem _fileSystem;
+  final Artifacts _artifacts;
+  final Usage _usage;
+  final Platform _platform;
+  final FileSystemUtils _fileSystemUtils;
+
+  Future<void> buildTpk({
     @required FlutterProject project,
     @required TizenBuildInfo tizenBuildInfo,
     @required String targetFile,
-    SizeAnalyzer sizeAnalyzer,
   }) async {
     final TizenProject tizenProject = TizenProject.fromFlutter(project);
     if (!tizenProject.existsSync()) {
@@ -86,7 +111,6 @@ class TizenBuilder {
     final Directory outputDir =
         project.directory.childDirectory('build').childDirectory('tizen');
     final BuildInfo buildInfo = tizenBuildInfo.buildInfo;
-    final String buildModeName = getNameForBuildMode(buildInfo.mode);
     // Used by AotElfBase to generate an AOT snapshot.
     final String targetPlatform = getNameForTargetPlatform(
         _getTargetPlatformForArch(tizenBuildInfo.targetArch));
@@ -96,33 +120,19 @@ class TizenBuilder {
       outputDir: outputDir,
       buildDir: project.dartTool.childDirectory('flutter_build'),
       cacheDir: globals.cache.getRoot(),
-      flutterRootDir: globals.fs.directory(Cache.flutterRoot),
+      flutterRootDir: _fileSystem.directory(Cache.flutterRoot),
       engineVersion: globals.flutterVersion.engineRevision,
       defines: <String, String>{
         kTargetFile: targetFile,
-        kBuildMode: buildModeName,
         kTargetPlatform: targetPlatform,
-        kDartObfuscation: buildInfo.dartObfuscation.toString(),
-        kSplitDebugInfo: buildInfo.splitDebugInfoPath,
-        kIconTreeShakerFlag: buildInfo.treeShakeIcons.toString(),
-        kTrackWidgetCreation: buildInfo.trackWidgetCreation.toString(),
-        kCodeSizeDirectory: buildInfo.codeSizeDirectory,
-        if (buildInfo.dartDefines?.isNotEmpty ?? false)
-          kDartDefines: encodeDartDefines(buildInfo.dartDefines),
-        if (buildInfo.extraGenSnapshotOptions?.isNotEmpty ?? false)
-          kExtraGenSnapshotOptions: buildInfo.extraGenSnapshotOptions.join(','),
-        if (buildInfo.extraFrontEndOptions?.isNotEmpty ?? false)
-          kExtraFrontEndOptions: buildInfo.extraFrontEndOptions.join(','),
+        ...buildInfo.toBuildSystemEnvironment(),
         kDeviceProfile: tizenBuildInfo.deviceProfile,
       },
-      inputs: <String, String>{
-        kBundleSkSLPath: buildInfo.bundleSkSLPath,
-      },
-      artifacts: globals.artifacts,
-      fileSystem: globals.fs,
-      logger: globals.logger,
-      processManager: globals.processManager,
-      platform: globals.platform,
+      artifacts: _artifacts,
+      fileSystem: _fileSystem,
+      logger: _logger,
+      processManager: _processManager,
+      platform: _platform,
       generateDartPluginRegistry: true,
     );
 
@@ -130,7 +140,8 @@ class TizenBuilder {
         ? DebugTizenApplication(tizenBuildInfo)
         : ReleaseTizenApplication(tizenBuildInfo);
 
-    final Status status = globals.logger.startProgress(
+    final String buildModeName = getNameForBuildMode(buildInfo.mode);
+    final Status status = _logger.startProgress(
         'Building a Tizen application in $buildModeName mode...');
     try {
       final BuildResult result =
@@ -138,7 +149,7 @@ class TizenBuilder {
       if (!result.success) {
         for (final ExceptionMeasurement measurement
             in result.exceptions.values) {
-          globals.printError(measurement.exception.toString());
+          _logger.printError(measurement.exception.toString());
         }
         throwToolExit('The build failed.');
       }
@@ -153,7 +164,7 @@ class TizenBuilder {
 
       if (buildInfo.performanceMeasurementFile != null) {
         final File outFile =
-            globals.fs.file(buildInfo.performanceMeasurementFile);
+            _fileSystem.file(buildInfo.performanceMeasurementFile);
         // ignore: invalid_use_of_visible_for_testing_member
         writePerformanceData(result.performance.values, outFile);
       }
@@ -163,20 +174,24 @@ class TizenBuilder {
 
     final Directory tpkDir = outputDir.childDirectory('tpk');
     final File tpkFile = tpkDir.childFile(tizenProject.outputTpkName);
+    final String relativeTpkPath = _fileSystem.path.relative(tpkFile.path);
     final String tpkSize = getSizeAsMB(tpkFile.lengthSync());
-    globals.printStatus(
-      '${globals.logger.terminal.successMark} Built ${relative(tpkFile.path)} ($tpkSize).',
+    _logger.printStatus(
+      '${_logger.terminal.successMark} Built $relativeTpkPath ($tpkSize).',
       color: TerminalColor.green,
     );
 
     final Directory tpkrootDir = tpkDir.childDirectory('tpkroot');
-    if (buildInfo.codeSizeDirectory != null &&
-        sizeAnalyzer != null &&
-        tpkrootDir.existsSync()) {
-      final File codeSizeFile = globals.fs
+    if (buildInfo.codeSizeDirectory != null && tpkrootDir.existsSync()) {
+      final SizeAnalyzer sizeAnalyzer = SizeAnalyzer(
+        fileSystem: _fileSystem,
+        logger: _logger,
+        flutterUsage: _usage,
+      );
+      final File codeSizeFile = _fileSystem
           .directory(buildInfo.codeSizeDirectory)
           .childFile('snapshot.$targetPlatform.json');
-      final File precompilerTrace = globals.fs
+      final File precompilerTrace = _fileSystem
           .directory(buildInfo.codeSizeDirectory)
           .childFile('trace.$targetPlatform.json');
       final Map<String, Object> output = await sizeAnalyzer.analyzeAotSnapshot(
@@ -185,21 +200,21 @@ class TizenBuilder {
         precompilerTrace: precompilerTrace,
         type: 'linux',
       );
-      final File outputFile = globals.fsUtils.getUniqueFile(
-        globals.fs
-            .directory(globals.fsUtils.homeDirPath)
+      final File outputFile = _fileSystemUtils.getUniqueFile(
+        _fileSystem
+            .directory(_fileSystemUtils.homeDirPath)
             .childDirectory('.flutter-devtools'),
         'tpk-code-size-analysis',
         'json',
       )..writeAsStringSync(jsonEncode(output));
-      globals.printStatus(
+      _logger.printStatus(
         'A summary of your TPK analysis can be found at: ${outputFile.path}',
       );
 
       // DevTools expects a file path relative to the .flutter-devtools/ dir.
       final String relativeAppSizePath =
           outputFile.path.split('.flutter-devtools/').last.trim();
-      globals.printStatus(
+      _logger.printStatus(
         '\nTo analyze your app size in Dart DevTools, run the following commands:\n\n'
         '\$ flutter-tizen pub global activate devtools\n'
         '\$ flutter-tizen pub global run devtools --appSizeBase=$relativeAppSizePath\n',
@@ -207,8 +222,8 @@ class TizenBuilder {
     }
   }
 
-  /// Update tizen-manifest.xml with the new build info if needed.
-  static void _updateManifest(TizenProject project, TizenBuildInfo buildInfo) {
+  /// Updates tizen-manifest.xml with the given build info.
+  void _updateManifest(TizenProject project, TizenBuildInfo buildInfo) {
     void updateManifestFile(File manifestFile) {
       final TizenManifest manifest = TizenManifest.parseFromXml(manifestFile);
       final String buildName =

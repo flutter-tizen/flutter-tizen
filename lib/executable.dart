@@ -49,6 +49,7 @@ import 'commands/precache.dart';
 import 'commands/run.dart';
 import 'commands/test.dart';
 import 'tizen_application_package.dart';
+import 'tizen_builder.dart';
 import 'tizen_cache.dart';
 import 'tizen_device_discovery.dart';
 import 'tizen_doctor.dart';
@@ -206,6 +207,14 @@ Future<void> main(List<String> args) async {
             processManager: globals.processManager,
           ),
       TemplateRenderer: () => const MustacheTemplateRenderer(),
+      TizenBuilder: () => TizenBuilder(
+            logger: globals.logger,
+            processManager: globals.processManager,
+            fileSystem: globals.fs,
+            artifacts: globals.artifacts,
+            usage: globals.flutterUsage,
+            platform: globals.platform,
+          ),
       TizenSdk: () => TizenSdk.locateSdk(),
       TizenValidator: () => TizenValidator(
             logger: globals.logger,
