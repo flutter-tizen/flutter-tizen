@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @dart = 2.8
-
 import 'package:file/file.dart';
 import 'package:flutter_tools/src/base/common.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
@@ -11,7 +9,7 @@ import 'package:flutter_tools/src/base/process.dart';
 import 'package:flutter_tools/src/build_info.dart';
 import 'package:flutter_tools/src/build_system/build_system.dart';
 import 'package:flutter_tools/src/cache.dart';
-import 'package:flutter_tools/src/globals.dart' as globals;
+import 'package:flutter_tools/src/globals_null_migrated.dart' as globals;
 import 'package:flutter_tools/src/project.dart';
 
 import '../tizen_build_info.dart';
@@ -98,7 +96,7 @@ class DotnetTpk {
       );
     }
     final RunResult result = await _processUtils.run(<String>[
-      dotnetCli.path,
+      dotnetCli!.path,
       'build',
       '-c',
       if (buildMode.isPrecompiled) 'Release' else 'Debug',
@@ -116,24 +114,25 @@ class DotnetTpk {
           'Build succeeded but the expected TPK not found:\n${result.stdout}');
     }
 
+    assert(tizenSdk != null);
     // build-task-tizen signs the output TPK with a dummy profile by default.
     // We need to re-generate the TPK by signing with a correct profile.
-    String securityProfile = buildInfo.securityProfile;
-    assert(tizenSdk != null);
-
+    String? securityProfile = buildInfo.securityProfile;
+    final SecurityProfiles? securityProfiles = tizenSdk!.securityProfiles;
     if (securityProfile != null) {
-      if (tizenSdk.securityProfiles == null ||
-          !tizenSdk.securityProfiles.contains(securityProfile)) {
+      if (securityProfiles == null ||
+          !securityProfiles.contains(securityProfile)) {
         throwToolExit('The profile $securityProfile does not exist.');
       }
     }
-    securityProfile ??= tizenSdk.securityProfiles?.active;
-
+    if (securityProfile == null && securityProfiles != null) {
+      securityProfile = securityProfiles.active;
+    }
     if (securityProfile != null) {
       environment.logger
           .printStatus('The $securityProfile profile is used for signing.');
       final RunResult result =
-          await tizenSdk.package(outputTpk.path, sign: securityProfile);
+          await tizenSdk!.package(outputTpk.path, sign: securityProfile);
       if (result.exitCode != 0) {
         throwToolExit('Failed to sign the TPK:\n$result');
       }
@@ -230,7 +229,7 @@ class NativeTpk {
     assert(tizenSdk != null);
     final TizenManifest tizenManifest =
         TizenManifest.parseFromXml(tizenProject.manifestFile);
-    final Rootstrap rootstrap = tizenSdk.getFlutterRootstrap(
+    final Rootstrap rootstrap = tizenSdk!.getFlutterRootstrap(
       profile: tizenManifest.profile,
       apiVersion: tizenManifest.apiVersion,
       arch: buildInfo.targetArch,
@@ -238,7 +237,7 @@ class NativeTpk {
 
     // We need to build the C++ embedding separately because the absolute path
     // to the embedding directory may contain spaces.
-    RunResult result = await tizenSdk.buildNative(
+    RunResult result = await tizenSdk!.buildNative(
       embeddingDir.path,
       configuration: buildConfig,
       arch: getTizenCliArch(buildInfo.targetArch),
@@ -266,15 +265,17 @@ class NativeTpk {
 
     // The output TPK is signed with an active profile unless otherwise
     // specified.
-    String securityProfile = buildInfo.securityProfile;
+    String? securityProfile = buildInfo.securityProfile;
+    final SecurityProfiles? securityProfiles = tizenSdk!.securityProfiles;
     if (securityProfile != null) {
-      if (tizenSdk.securityProfiles == null ||
-          !tizenSdk.securityProfiles.contains(securityProfile)) {
+      if (securityProfiles == null ||
+          !securityProfiles.contains(securityProfile)) {
         throwToolExit('The profile $securityProfile does not exist.');
       }
     }
-    securityProfile ??= tizenSdk.securityProfiles?.active;
-
+    if (securityProfile == null && securityProfiles != null) {
+      securityProfile = securityProfiles.active;
+    }
     if (securityProfile != null) {
       environment.logger
           .printStatus('The $securityProfile profile is used for signing.');
@@ -303,18 +304,18 @@ class NativeTpk {
     ];
 
     // Build the app.
-    result = await tizenSdk.buildApp(
+    result = await tizenSdk!.buildApp(
       tizenDir.path,
-      build: <String, dynamic>{
+      build: <String, Object>{
         'name': 'b1',
         'methods': <String>['m1'],
         'targets':
             tizenProject.isMultiApp ? <String>['ui', 'service'] : <String>['.'],
       },
-      method: <String, dynamic>{
+      method: <String, Object>{
         'name': 'm1',
         'configs': <String>[buildConfig],
-        'compiler': tizenSdk.defaultNativeCompiler,
+        'compiler': tizenSdk!.defaultNativeCompiler,
         'predefines': <String>[
           '${buildInfo.deviceProfile.toUpperCase()}_PROFILE',
         ],
@@ -327,7 +328,7 @@ class NativeTpk {
         ],
       },
       output: buildDir.path,
-      package: <String, dynamic>{
+      package: <String, Object>{
         'name': tizenManifest.packageId,
         'targets': <String>['b1'],
       },
@@ -337,7 +338,7 @@ class NativeTpk {
       throwToolExit('Failed to build native application:\n$result');
     }
 
-    File outputTpk;
+    File? outputTpk;
     for (final File file in buildDir.listSync().whereType<File>()) {
       if (file.basename.endsWith('.tpk')) {
         outputTpk = file;
