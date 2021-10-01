@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @dart = 2.8
-
 import 'package:file/file.dart';
 import 'package:flutter_tools/src/base/common.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
@@ -124,7 +122,7 @@ class NativePlugins extends Target {
         TizenManifest.parseFromXml(tizenProject.manifestFile);
     final String profile = tizenManifest.profile;
     final String apiVersion = tizenManifest.apiVersion;
-    final Rootstrap rootstrap = tizenSdk.getFlutterRootstrap(
+    final Rootstrap rootstrap = tizenSdk!.getFlutterRootstrap(
       profile: profile,
       apiVersion: apiVersion,
       arch: buildInfo.targetArch,
@@ -144,7 +142,7 @@ class NativePlugins extends Target {
       _ensureStaticLibType(pluginCopy, environment.logger);
       inputs.add(plugin.projectFile);
 
-      final RunResult result = await tizenSdk.buildNative(
+      final RunResult result = await tizenSdk!.buildNative(
         pluginCopy.directory.path,
         configuration: buildConfig,
         arch: getTizenCliArch(buildInfo.targetArch),
@@ -162,8 +160,10 @@ class NativePlugins extends Target {
         throwToolExit('Failed to build ${plugin.name} plugin:\n$result');
       }
 
+      assert(plugin.fileName != null);
+      assert(plugin.pluginClass != null);
       final String libName =
-          getLibNameForFileName(plugin.fileName.toLowerCase());
+          getLibNameForFileName(plugin.fileName!.toLowerCase());
       final File libFile = pluginCopy.directory
           .childDirectory(buildConfig)
           .childFile('lib$libName.a');
@@ -175,7 +175,7 @@ class NativePlugins extends Target {
       }
       libFile.copySync(libDir.childFile(libFile.basename).path);
       userLibs.add(libName);
-      pluginClasses.add(plugin.pluginClass);
+      pluginClasses.add(plugin.pluginClass!);
 
       final Directory pluginIncludeDir = plugin.directory.childDirectory('inc');
       if (pluginIncludeDir.existsSync()) {
@@ -221,7 +221,7 @@ class NativePlugins extends Target {
       }
 
       // The plugin header is used by the native app builder.
-      final File header = pluginIncludeDir.childFile(plugin.fileName);
+      final File header = pluginIncludeDir.childFile(plugin.fileName!);
       header.copySync(includeDir.childFile(header.basename).path);
       outputs.add(includeDir.childFile(header.basename));
     }
@@ -257,7 +257,7 @@ USER_LIBS = ${userLibs.join(' ')}
     copyDirectory(rootDir, tempDir);
 
     // Run the native build.
-    final RunResult result = await tizenSdk.buildNative(
+    final RunResult result = await tizenSdk!.buildNative(
       tempDir.path,
       configuration: buildConfig,
       arch: getTizenCliArch(buildInfo.targetArch),
