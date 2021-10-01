@@ -15,7 +15,7 @@ import 'package:flutter_tools/src/build_system/depfile.dart';
 import 'package:flutter_tools/src/build_system/source.dart';
 import 'package:flutter_tools/src/project.dart';
 
-import '../tizen_builder.dart';
+import '../tizen_build_info.dart';
 import '../tizen_plugins.dart';
 import '../tizen_project.dart';
 import '../tizen_sdk.dart';

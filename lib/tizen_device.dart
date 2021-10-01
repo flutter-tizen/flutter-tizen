@@ -27,6 +27,7 @@ import 'package:meta/meta.dart';
 import 'package:path/path.dart';
 import 'package:process/process.dart';
 
+import 'tizen_build_info.dart';
 import 'tizen_builder.dart';
 import 'tizen_sdk.dart';
 import 'tizen_tpk.dart';

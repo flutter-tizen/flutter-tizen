@@ -32,6 +32,7 @@ import 'package:process/process.dart';
 
 import 'build_targets/application.dart';
 import 'build_targets/package.dart';
+import 'tizen_build_info.dart';
 import 'tizen_project.dart';
 import 'tizen_sdk.dart';
 import 'tizen_tpk.dart';
@@ -40,22 +41,6 @@ import 'tizen_tpk.dart';
 const String kDeviceProfile = 'DeviceProfile';
 
 TizenBuilder get tizenBuilder => context.get<TizenBuilder>();
-
-/// See: [AndroidBuildInfo] in `build_info.dart`
-class TizenBuildInfo {
-  const TizenBuildInfo(
-    this.buildInfo, {
-    @required this.targetArch,
-    @required this.deviceProfile,
-    this.securityProfile,
-  })  : assert(targetArch != null),
-        assert(deviceProfile != null);
-
-  final BuildInfo buildInfo;
-  final String targetArch;
-  final String deviceProfile;
-  final String securityProfile;
-}
 
 /// See:
 /// - [AndroidGradleBuilder.buildApk] in `gradle.dart`

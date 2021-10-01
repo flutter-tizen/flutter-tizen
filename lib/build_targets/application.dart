@@ -18,7 +18,7 @@ import 'package:flutter_tools/src/build_system/targets/assets.dart';
 import 'package:flutter_tools/src/build_system/targets/common.dart';
 import 'package:flutter_tools/src/build_system/targets/icon_tree_shaker.dart';
 
-import '../tizen_builder.dart';
+import '../tizen_build_info.dart';
 import 'plugins.dart';
 
 /// Prepares the pre-built Flutter bundle.

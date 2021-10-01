@@ -14,6 +14,7 @@ import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/project.dart';
 import 'package:flutter_tools/src/runner/flutter_command.dart';
 
+import '../tizen_build_info.dart';
 import '../tizen_builder.dart';
 import '../tizen_cache.dart';
 import '../tizen_plugins.dart';
