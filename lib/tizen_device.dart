@@ -71,7 +71,6 @@ class TizenDevice extends Device {
     return <String>[_tizenSdk.sdb.path, '-s', id, ...args];
   }
 
-  /// See: [AndroidDevice.runAdbCheckedSync] in `android_device.dart`
   RunResult runSdbSync(
     List<String> params, {
     bool checked = true,
@@ -147,7 +146,7 @@ class TizenDevice extends Device {
   Future<String> get sdkNameAndVersion async => 'Tizen $_platformVersion';
 
   @override
-  String get name => 'Tizen ' + _modelId;
+  String get name => 'Tizen $_modelId';
 
   bool get usesSecureProtocol => getCapability('secure_protocol') == 'enabled';
 
@@ -326,7 +325,7 @@ class TizenDevice extends Device {
     if (!prebuiltApplication) {
       _logger.printTrace('Building TPK');
       final FlutterProject project = FlutterProject.current();
-      await TizenBuilder.buildTpk(
+      await tizenBuilder.buildTpk(
         project: project,
         targetFile: mainPath,
         tizenBuildInfo: TizenBuildInfo(
@@ -337,7 +336,7 @@ class TizenDevice extends Device {
       );
       // Package has been built, so we can get the updated application id and
       // activity name from the tpk.
-      package = await TizenTpk.fromProject(project);
+      package = TizenTpk.fromProject(project);
     }
     if (package == null) {
       throwToolExit('Problem building an application: see above error(s).');
@@ -386,6 +385,10 @@ class TizenDevice extends Device {
       if (debuggingOptions.traceAllowlist != null) ...<String>[
         '--trace-allowlist',
         debuggingOptions.traceAllowlist,
+      ],
+      if (debuggingOptions.traceSkiaAllowlist != null) ...<String>[
+        '--trace-skia-allowlist',
+        debuggingOptions.traceSkiaAllowlist,
       ],
       if (debuggingOptions.endlessTraceBuffer) '--endless-trace-buffer',
       if (debuggingOptions.dumpSkpOnShaderCompilation)
@@ -628,7 +631,7 @@ class TizenDlogReader extends DeviceLogReader {
   static const List<String> _filteredTexts = <String>[
     // Issue: https://github.com/flutter-tizen/engine/issues/91
     'xkbcommon: ERROR:',
-    'couldn\'t find a Compose file for locale',
+    "couldn't find a Compose file for locale",
   ];
 
   bool _acceptedLastLine = true;
@@ -776,13 +779,10 @@ class TizenDevicePortForwarder extends DevicePortForwarder {
       <String>['forward', '--remove', 'tcp:${forwardedPort.hostPort}'],
       checked: false,
     );
-    // The port may have already been unforwarded, for example if there
-    // are multiple attach process already connected.
-    if (result.stderr.isEmpty ||
-        result.stderr.contains('error: cannot remove forward listener')) {
+    if (result.stderr.isEmpty) {
       return;
     }
-    result.throwException('Process exited abnormally:\n$result');
+    _logger.printError('Failed to unforward port: $result');
   }
 
   @override

@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 // @dart = 2.8
+//
+// This file cannot opt in to null safety because Pub and _DefaultPub have
+// inconsistent method signatures.
 
 import 'package:file/file.dart';
 import 'package:flutter_tools/src/base/bot_detector.dart';
@@ -69,6 +72,7 @@ class TizenPub implements Pub {
     bool generateSyntheticPackage = false,
     String flutterRootOverride,
     bool checkUpToDate = false,
+    bool shouldSkipThirdPartyGenerator = true,
   }) async {
     await _pub.get(
       context: context,
@@ -79,6 +83,7 @@ class TizenPub implements Pub {
       generateSyntheticPackage: generateSyntheticPackage,
       flutterRootOverride: flutterRootOverride,
       checkUpToDate: checkUpToDate,
+      shouldSkipThirdPartyGenerator: shouldSkipThirdPartyGenerator,
     );
     await _postPub(directory);
   }

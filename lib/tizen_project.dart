@@ -3,21 +3,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @dart = 2.8
-
 import 'package:file/file.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/cache.dart';
+// ignore: import_of_legacy_library_into_null_safe
 import 'package:flutter_tools/src/commands/clean.dart';
-import 'package:flutter_tools/src/globals.dart' as globals;
+import 'package:flutter_tools/src/globals_null_migrated.dart' as globals;
 import 'package:flutter_tools/src/project.dart';
 import 'package:xml/xml.dart';
 
 import 'tizen_plugins.dart';
 import 'tizen_tpk.dart';
 
-/// Source: [WindowsProject] in `project.dart`
+/// Source: [WindowsProject] in `cmake_project.dart`
 class TizenProject extends FlutterProjectPlatform {
   TizenProject.fromFlutter(this.parent);
 
@@ -91,7 +90,7 @@ class TizenProject extends FlutterProjectPlatform {
       document = XmlDocument.parse(initialXmlContent);
     }
 
-    final File embeddingProjectFile = globals.fs
+    final File embeddingProjectFile = editableDirectory.fileSystem
         .directory(Cache.flutterRoot)
         .parent
         .childDirectory('embedding')
@@ -148,7 +147,7 @@ class TizenProject extends FlutterProjectPlatform {
     if (!file.existsSync()) {
       return;
     }
-    final String path = globals.fs.path.relative(file.path);
+    final String path = file.fileSystem.path.relative(file.path);
     final Status status = globals.logger.startProgress(
       'Deleting $path...',
     );
@@ -157,7 +156,7 @@ class TizenProject extends FlutterProjectPlatform {
     } on FileSystemException catch (error) {
       globals.printError('Failed to remove $path: $error');
     } finally {
-      status?.stop();
+      status.stop();
     }
   }
 }

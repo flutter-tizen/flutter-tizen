@@ -22,7 +22,7 @@ import '../src/pubspec_schema.dart';
 import '../src/test_flutter_command_runner.dart';
 
 const String _kNoPlatformsMessage =
-    'You\'ve created a plugin project that doesn\'t yet support any platforms.';
+    "You've created a plugin project that doesn't yet support any platforms.";
 
 void main() {
   Directory tempDir;

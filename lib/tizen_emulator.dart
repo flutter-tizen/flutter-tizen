@@ -50,7 +50,7 @@ class TizenEmulatorManager extends EmulatorManager {
   final TizenSdk _tizenSdk;
   final TizenEmulators _tizenEmulators;
 
-  /// Creates Tizen emulators
+  /// Creates a Tizen emulator.
   ///
   /// Source: [EmulatorManager.createEmulator] in `emulator.dart`
   @override
@@ -323,7 +323,7 @@ class TizenEmulator extends Emulator {
   PlatformType get platformType => PlatformType.custom;
 
   @override
-  Future<void> launch() async {
+  Future<void> launch({bool coldBoot}) async {
     final File emCli = _tizenSdk.emCli;
     if (emCli == null || !emCli.existsSync()) {
       throwToolExit('Unable to locate Tizen Emulator Manager.');

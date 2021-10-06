@@ -98,7 +98,7 @@ class NativePlugins extends Target {
     // Create a dummy project in the build directory.
     final Directory rootDir = environment.buildDir
         .childDirectory('tizen_plugins')
-          ..createSync(recursive: true);
+      ..createSync(recursive: true);
     final Directory includeDir = rootDir.childDirectory('include')
       ..createSync(recursive: true);
     final Directory libDir = rootDir.childDirectory('lib')
