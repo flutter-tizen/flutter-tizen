@@ -14,6 +14,7 @@ import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/base/net.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
+import 'package:pubspec_parse/pubspec_parse.dart';
 
 import '../src/common.dart';
 import '../src/context.dart';
@@ -106,6 +107,48 @@ void main() {
     expect(tizenDir.childFile('tizen-manifest.xml'), exists);
   }, overrides: <Type, Generator>{});
 
+  testUsingContext('Cannot create a C# multi app project', () async {
+    final TizenCreateCommand command = TizenCreateCommand();
+    final CommandRunner<void> runner = createTestCommandRunner(command);
+    await expectLater(
+      () => runner.run(<String>[
+        'create',
+        '--no-pub',
+        '--platforms=tizen',
+        '--app-type=multi',
+        projectDir.path,
+      ]),
+      throwsToolExit(message: 'Could not locate a template:'),
+    );
+  }, overrides: <Type, Generator>{});
+
+  testUsingContext('Can create a C++ multi app project', () async {
+    final TizenCreateCommand command = TizenCreateCommand();
+    final CommandRunner<void> runner = createTestCommandRunner(command);
+    await runner.run(<String>[
+      'create',
+      '--no-pub',
+      '--platforms=tizen',
+      '--app-type=multi',
+      '--tizen-language=cpp',
+      projectDir.path,
+    ]);
+
+    final File mainDart =
+        projectDir.childDirectory('lib').childFile('main.dart');
+    expect(mainDart.readAsStringSync(), contains('Tizen Multi App Demo'));
+
+    final String rawPubspec =
+        projectDir.childFile('pubspec.yaml').readAsStringSync();
+    final Pubspec pubspec = Pubspec.parse(rawPubspec);
+    expect(pubspec.dependencies, contains('tizen_app_control'));
+    expect(pubspec.dependencies, contains('messageport_tizen'));
+
+    final Directory tizenDir = projectDir.childDirectory('tizen');
+    expect(tizenDir.childDirectory('ui').listSync(), isNotEmpty);
+    expect(tizenDir.childDirectory('service').listSync(), isNotEmpty);
+  }, overrides: <Type, Generator>{});
+
   testUsingContext('Can create a plugin project', () async {
     final TizenCreateCommand command = TizenCreateCommand();
     final CommandRunner<void> runner = createTestCommandRunner(command);
@@ -135,6 +178,23 @@ void main() {
   }, overrides: <Type, Generator>{
     Logger: () => logger,
   });
+
+  testUsingContext(
+      'Cannot create a plugin project with --app-type=multi option', () async {
+    final TizenCreateCommand command = TizenCreateCommand();
+    final CommandRunner<void> runner = createTestCommandRunner(command);
+    await expectLater(
+      () => runner.run(<String>[
+        'create',
+        '--no-pub',
+        '--platforms=tizen',
+        '--template=plugin',
+        '--app-type=multi',
+        projectDir.path,
+      ]),
+      throwsToolExit(),
+    );
+  }, overrides: <Type, Generator>{});
 
   testUsingContext('Can add Tizen platform to existing plugin project',
       () async {
