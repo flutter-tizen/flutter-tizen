@@ -181,28 +181,40 @@ class TizenCreateCommand extends CreateCommand {
     }
 
     try {
-      void copyTemplate(String source, String language, String destination) {
-        final Directory sourceDir = tizenTemplates.childDirectory(source);
-        if (!sourceDir.childDirectory(language).existsSync()) {
-          throwToolExit('Could not locate a template: $source/$language');
-        }
-        final Directory destinationDir = templates.childDirectory(destination);
+      // Copy (appType)-app/(appLanguage) to app_shared/tizen.tmpl.
+      final Directory appTemplate =
+          tizenTemplates.childDirectory('$appType-app');
+      final Directory projectTemplate = appTemplate.childDirectory(appLanguage);
+      if (!projectTemplate.existsSync()) {
+        throwToolExit('Could not locate a template: $appType-app/$appLanguage');
+      }
+      copyDirectory(
+        projectTemplate,
+        templates.childDirectory('app_shared').childDirectory('tizen.tmpl'),
+      );
 
-        for (final FileSystemEntity entity in sourceDir.listSync()) {
-          if (entity.basename == language) {
-            copyDirectory(entity as Directory,
-                destinationDir.childDirectory('tizen.tmpl'));
-          } else if (entity.basename == 'lib') {
-            copyDirectory(entity as Directory,
-                destinationDir.childDirectory(entity.basename));
-          } else if (entity is File) {
-            entity.copySync(destinationDir.childFile(entity.basename).path);
-          }
+      // Copy (appType)-app/lib to app/lib (if exists).
+      final Directory libTemplate = appTemplate.childDirectory('lib');
+      if (libTemplate.existsSync()) {
+        copyDirectory(
+          libTemplate,
+          templates.childDirectory('app').childDirectory('lib'),
+        );
+      }
+
+      // Apply patch files in (appType)-app.
+      for (final File file in appTemplate.listSync().whereType<File>()) {
+        if (file.basename.endsWith('.patch')) {
+          _runGitApply(templates, file);
         }
       }
 
-      copyTemplate('$appType-app', appLanguage, 'app_shared');
-      copyTemplate('plugin', 'cpp', 'plugin');
+      // Copy plugin/cpp to plugin/tizen.tmpl.
+      final Directory pluginTemplate = tizenTemplates.childDirectory('plugin');
+      copyDirectory(
+        pluginTemplate.childDirectory('cpp'),
+        templates.childDirectory('plugin').childDirectory('tizen.tmpl'),
+      );
 
       return await _runCommand();
     } finally {
@@ -224,6 +236,16 @@ class TizenCreateCommand extends CreateCommand {
     );
     if (result.exitCode != 0) {
       throwToolExit('Failed to run git clean: $result');
+    }
+  }
+
+  void _runGitApply(Directory directory, File patchFile) {
+    final ProcessResult result = globals.processManager.runSync(
+      <String>['git', 'apply', patchFile.path],
+      workingDirectory: directory.path,
+    );
+    if (result.exitCode != 0) {
+      throwToolExit('Failed to run git apply: $result');
     }
   }
 }

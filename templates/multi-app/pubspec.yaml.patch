@@ -1,0 +1,15 @@
+diff --git a/packages/flutter_tools/templates/app/pubspec.yaml.tmpl b/packages/flutter_tools/templates/app/pubspec.yaml.tmpl
+index b8c0d2d2ee..a19e36199b 100644
+--- a/packages/flutter_tools/templates/app/pubspec.yaml.tmpl
++++ b/packages/flutter_tools/templates/app/pubspec.yaml.tmpl
+@@ -46,6 +46,10 @@ dependencies:
+   # Use with the CupertinoIcons class for iOS style icons.
+   cupertino_icons: ^1.0.2
+ 
++  # Tizen-specific dependencies.
++  messageport_tizen: ^0.1.0
++  tizen_app_control: ^0.1.0
++
+ dev_dependencies:
+   flutter_test:
+     sdk: flutter
