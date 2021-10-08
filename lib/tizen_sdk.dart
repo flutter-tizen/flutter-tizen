@@ -2,30 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @dart = 2.8
-
 import 'package:file/file.dart';
+// ignore: import_of_legacy_library_into_null_safe
 import 'package:flutter_tools/src/android/android_emulator.dart';
 import 'package:flutter_tools/src/android/android_sdk.dart';
 import 'package:flutter_tools/src/base/common.dart';
 import 'package:flutter_tools/src/base/context.dart';
 import 'package:flutter_tools/src/base/process.dart';
-import 'package:flutter_tools/src/globals.dart' as globals;
-import 'package:meta/meta.dart';
+import 'package:flutter_tools/src/globals_null_migrated.dart' as globals;
 import 'package:xml/xml.dart';
 
-TizenSdk get tizenSdk => context.get<TizenSdk>();
+TizenSdk? get tizenSdk => context.get<TizenSdk>();
 
-File get dotnetCli => globals.os.which('dotnet');
+File? get dotnetCli => globals.os.which('dotnet');
 
 class TizenSdk {
   TizenSdk._(this.directory);
 
   /// See: [AndroidSdk.locateAndroidSdk] in `android_sdk.dart`
-  static TizenSdk locateSdk() {
-    Directory tizenHomeDir;
+  static TizenSdk? locateSdk() {
+    Directory? tizenHomeDir;
     final Map<String, String> environment = globals.platform.environment;
-    final File sdb = globals.os.which('sdb');
+    final File? sdb = globals.os.which('sdb');
     if (environment.containsKey('TIZEN_SDK')) {
       tizenHomeDir = globals.fs.directory(environment['TIZEN_SDK']);
     } else if (sdb != null && sdb.parent.basename == 'tools') {
@@ -78,7 +76,7 @@ class TizenSdk {
   }
 
   /// The SDK version number in the "x.y[.z]" format, or null if not found.
-  String get sdkVersion {
+  String? get sdkVersion {
     final File versionFile = directory.childFile('sdk.version');
     if (!versionFile.existsSync()) {
       return null;
@@ -111,15 +109,15 @@ class TizenSdk {
           ? 'package-manager-cli.exe'
           : 'package-manager-cli.bin');
 
-  SecurityProfiles get securityProfiles {
+  SecurityProfiles? get securityProfiles {
     final File manifest =
         sdkDataDirectory.childDirectory('profile').childFile('profiles.xml');
     return SecurityProfiles.parseFromXml(manifest);
   }
 
-  String get defaultNativeCompiler => 'llvm-10.0';
+  final String defaultNativeCompiler = 'llvm-10.0';
 
-  String get defaultGccVersion => '9.2';
+  final String defaultGccVersion = '9.2';
 
   /// On non-Windows, returns the PATH environment variable.
   ///
@@ -138,19 +136,19 @@ class TizenSdk {
 
   Future<RunResult> buildApp(
     String workingDirectory, {
-    Map<String, dynamic> build = const <String, dynamic>{},
-    Map<String, dynamic> method = const <String, dynamic>{},
-    String output,
-    Map<String, dynamic> package = const <String, dynamic>{},
-    String sign,
+    Map<String, Object> build = const <String, Object>{},
+    Map<String, Object> method = const <String, Object>{},
+    String? output,
+    Map<String, Object> package = const <String, Object>{},
+    String? sign,
   }) {
-    String stringify(dynamic argument) {
+    String stringify(Object argument) {
       if (argument is String) {
         return '"${argument.replaceAll('"', r'\"')}"';
-      } else if (argument is List) {
-        return argument.map(stringify).toList().toString();
-      } else if (argument is Map<String, dynamic>) {
-        for (final MapEntry<String, dynamic> entry in argument.entries) {
+      } else if (argument is List<Object>) {
+        return argument.map<String>(stringify).toList().toString();
+      } else if (argument is Map<String, Object>) {
+        for (final MapEntry<String, Object> entry in argument.entries) {
           argument[entry.key] = stringify(entry.value);
         }
         return argument.toString();
@@ -159,7 +157,7 @@ class TizenSdk {
       }
     }
 
-    String flatten(Map<String, dynamic> argument) {
+    String flatten(Map<String, Object> argument) {
       final String string = stringify(argument);
       return string.substring(1, string.length - 1);
     }
@@ -184,16 +182,13 @@ class TizenSdk {
 
   Future<RunResult> buildNative(
     String workingDirectory, {
-    @required String configuration,
-    @required String arch,
-    String compiler,
+    required String configuration,
+    required String arch,
+    String? compiler,
     List<String> predefines = const <String>[],
     List<String> extraOptions = const <String>[],
-    String rootstrap,
-  }) async {
-    assert(configuration != null);
-    assert(arch != null);
-
+    String? rootstrap,
+  }) {
     return _processUtils.run(
       <String>[
         tizenCli.path,
@@ -219,8 +214,8 @@ class TizenSdk {
   Future<RunResult> package(
     String workingDirectory, {
     String type = 'tpk',
-    String reference,
-    String sign,
+    String? reference,
+    String? sign,
   }) {
     return _processUtils.run(<String>[
       tizenCli.path,
@@ -235,13 +230,10 @@ class TizenSdk {
   }
 
   Rootstrap getFlutterRootstrap({
-    @required String profile,
-    @required String apiVersion,
-    @required String arch,
+    required String profile,
+    required String apiVersion,
+    required String arch,
   }) {
-    assert(profile != null);
-    assert(apiVersion != null);
-
     if (profile == 'common') {
       // Note: The headless profile is not supported.
       profile = 'iot-headed';
@@ -252,7 +244,7 @@ class TizenSdk {
     }
 
     double versionToDouble(String versionString) {
-      final double version = double.tryParse(versionString);
+      final double? version = double.tryParse(versionString);
       if (version == null) {
         throwToolExit('The API version $versionString is invalid.');
       }
@@ -286,7 +278,7 @@ class TizenSdk {
     Rootstrap rootstrap = getRootstrap(profile, apiVersion, type);
     if (!rootstrap.isValid && profile == 'tv-samsung') {
       globals.printStatus(
-          'The TV SDK could not be found. Trying with the Wearable SDK...');
+          'TV SDK could not be found. Trying with Wearable SDK...');
       profile = 'wearable';
       rootstrap = getRootstrap(profile, apiVersion, type);
     }
@@ -388,10 +380,10 @@ String getTizenCliArch(String arch) {
 }
 
 class SecurityProfiles {
-  SecurityProfiles._(this.profiles, {@required this.active});
+  SecurityProfiles._(this.profiles, {required this.active});
 
-  static SecurityProfiles parseFromXml(File xmlFile) {
-    if (xmlFile == null || !xmlFile.existsSync()) {
+  static SecurityProfiles? parseFromXml(File xmlFile) {
+    if (!xmlFile.existsSync()) {
       return null;
     }
 
@@ -408,7 +400,7 @@ class SecurityProfiles {
       return null;
     }
 
-    String active = document.rootElement.getAttribute('active');
+    String? active = document.rootElement.getAttribute('active');
     if (active != null && active.isEmpty) {
       active = null;
     }
@@ -416,7 +408,7 @@ class SecurityProfiles {
     final List<String> profiles = <String>[];
     for (final XmlElement profile
         in document.rootElement.findAllElements('profile')) {
-      final String name = profile.getAttribute('name');
+      final String? name = profile.getAttribute('name');
       if (name != null) {
         profiles.add(name);
       }
@@ -426,7 +418,7 @@ class SecurityProfiles {
   }
 
   final List<String> profiles;
-  final String active;
+  final String? active;
 
   bool contains(String name) => profiles.contains(name);
 }

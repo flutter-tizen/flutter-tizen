@@ -2,13 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @dart = 2.8
-
 import 'package:file/file.dart';
 import 'package:flutter_tools/src/artifacts.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/build_info.dart';
-import 'package:flutter_tools/src/globals.dart' as globals;
+import 'package:flutter_tools/src/globals_null_migrated.dart' as globals;
 
 extension PathUtils on String {
   /// On non-Windows, encloses the string with [encloseWith].
@@ -29,7 +27,6 @@ extension PathUtils on String {
 
 /// See: [CachedArtifacts._getEngineArtifactsPath]
 Directory getEngineArtifactsDirectory(String arch, BuildMode mode) {
-  assert(mode != null, 'Need to specify a build mode.');
   return globals.cache
       .getArtifactDirectory('engine')
       .childDirectory('tizen-$arch-${mode.name}');
