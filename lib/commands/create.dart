@@ -228,14 +228,14 @@ class TizenCreateCommand extends CreateCommand {
       workingDirectory: directory.path,
     );
     if (result.exitCode != 0) {
-      throwToolExit('Failed to run git restore: $result');
+      throwToolExit('Failed to run git restore: ${result.stderr}');
     }
     result = globals.processManager.runSync(
       <String>['git', 'clean', '-df', '.'],
       workingDirectory: directory.path,
     );
     if (result.exitCode != 0) {
-      throwToolExit('Failed to run git clean: $result');
+      throwToolExit('Failed to run git clean: ${result.stderr}');
     }
   }
 
@@ -245,7 +245,7 @@ class TizenCreateCommand extends CreateCommand {
       workingDirectory: directory.path,
     );
     if (result.exitCode != 0) {
-      throwToolExit('Failed to run git apply: $result');
+      throwToolExit('Failed to run git apply: ${result.stderr}');
     }
   }
 }
