@@ -5,6 +5,7 @@
 // @dart = 2.8
 
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:args/command_runner.dart';
 import 'package:file_testing/file_testing.dart';
@@ -147,6 +148,14 @@ void main() {
     final Directory tizenDir = projectDir.childDirectory('tizen');
     expect(tizenDir.childDirectory('ui').listSync(), isNotEmpty);
     expect(tizenDir.childDirectory('service').listSync(), isNotEmpty);
+
+    final ProcessResult result = await Process.run(
+      'git',
+      <String>['diff', '--name-only'],
+      workingDirectory: Cache.flutterRoot,
+    );
+    expect(result.exitCode, 0);
+    expect(result.stdout, isEmpty);
   }, overrides: <Type, Generator>{});
 
   testUsingContext('Can create a plugin project', () async {
@@ -166,6 +175,7 @@ void main() {
       pluginClass: 'somePluginClass',
       unexpectedPlatforms: <String>['tizen'],
     );
+
     final Directory exampleDir = projectDir.childDirectory('example');
     expect(exampleDir.childDirectory('lib').childFile('main.dart'), exists);
     expect(exampleDir.childDirectory('tizen').listSync(), isNotEmpty);
