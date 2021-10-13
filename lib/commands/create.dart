@@ -4,13 +4,14 @@
 
 // @dart = 2.8
 
+import 'dart:io';
+
 import 'package:file/file.dart';
 import 'package:flutter_tools/src/base/common.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/base/terminal.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/commands/create.dart';
-import 'package:flutter_tools/src/dart/pub.dart';
 import 'package:flutter_tools/src/flutter_project_metadata.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/runner/flutter_command.dart';
@@ -105,15 +106,6 @@ class TizenCreateCommand extends CreateCommand {
 
   /// See: [CreateCommand.runCommand] in `create.dart`
   Future<FlutterCommandResult> _runCommand() async {
-    // Check if main.dart/pubspec.yaml exists before running super.runCommand().
-    final File mainFile =
-        projectDir.childDirectory('lib').childFile('main.dart');
-    final File pubspecFile = projectDir.childFile('pubspec.yaml');
-    final bool overwriteMainFile =
-        boolArg('overwrite') || !mainFile.existsSync();
-    final bool overwritePubspecFile =
-        boolArg('overwrite') || !pubspecFile.existsSync();
-
     final FlutterCommandResult result = await super.runCommand();
     if (result != FlutterCommandResult.success()) {
       return result;
@@ -141,34 +133,6 @@ class TizenCreateCommand extends CreateCommand {
         color: TerminalColor.blue,
       );
       globals.printStatus('');
-    }
-
-    // TODO(pkosko): Find better solution for inject a multi-project main.dart file
-    if (stringArg('app-type') == 'multi') {
-      final File createdMainFile =
-          projectDir.childDirectory('tizen').childFile('main.dart');
-      if (overwriteMainFile) {
-        createdMainFile.copySync(mainFile.path);
-      }
-      if (overwritePubspecFile) {
-        final List<String> pubspec = pubspecFile.readAsLinesSync();
-        pubspec.insert(
-          pubspec.indexWhere(
-              (String line) => line.startsWith('dev_dependencies:')),
-          '  # Tizen-specific dependencies.\n'
-          '  messageport_tizen: ^0.1.0\n'
-          '  tizen_app_control: ^0.1.0\n',
-        );
-        pubspecFile.writeAsStringSync('${pubspec.join('\n')}\n');
-
-        await pub.get(
-          context: PubContext.create,
-          directory: projectDir.path,
-          offline: boolArg('offline'),
-          generateSyntheticPackage: true,
-        );
-      }
-      createdMainFile.deleteSync();
     }
 
     return result;
@@ -206,44 +170,82 @@ class TizenCreateCommand extends CreateCommand {
         .childDirectory('packages')
         .childDirectory('flutter_tools')
         .childDirectory('templates');
+    _runGitClean(templates);
 
     final String appLanguage = stringArg('tizen-language');
-    // The Dart plugin template is not currently supported.
-    const String pluginLanguage = 'cpp';
+    final String appType = stringArg('app-type');
+    final String template = stringArg('template');
+    if (appType == 'multi' && template != null && template != 'app') {
+      throwToolExit(
+          '--app-type=$appType and --template=$template cannot be provided at the same time.');
+    }
 
-    final List<Directory> created = <Directory>[];
     try {
-      void copyTemplate(String source, String language, String destination) {
-        final Directory sourceDir =
-            tizenTemplates.childDirectory(source).childDirectory(language);
-        if (!sourceDir.existsSync()) {
-          throwToolExit('Could not locate a template: $source/$language');
-        }
-        final Directory destinationDir =
-            templates.childDirectory(destination).childDirectory('tizen.tmpl');
-        if (destinationDir.existsSync()) {
-          destinationDir.deleteSync(recursive: true);
-        }
-        copyDirectory(sourceDir, destinationDir);
-        created.add(destinationDir);
+      // Copy (appType)-app/(appLanguage) to app_shared/tizen.tmpl.
+      final Directory appTemplate =
+          tizenTemplates.childDirectory('$appType-app');
+      final Directory projectTemplate = appTemplate.childDirectory(appLanguage);
+      if (!projectTemplate.existsSync()) {
+        throwToolExit('Could not locate a template: $appType-app/$appLanguage');
       }
+      copyDirectory(
+        projectTemplate,
+        templates.childDirectory('app_shared').childDirectory('tizen.tmpl'),
+      );
 
-      final String appType = stringArg('app-type');
-      final String template = stringArg('template');
-      if (appType == 'multi' && template != null && template != 'app') {
-        throwToolExit(
-          'The options --app-type=multi and --template=$template cannot be '
-          'provided at the same time.',
+      // Copy (appType)-app/lib to app/lib (if exists).
+      final Directory libTemplate = appTemplate.childDirectory('lib');
+      if (libTemplate.existsSync()) {
+        copyDirectory(
+          libTemplate,
+          templates.childDirectory('app').childDirectory('lib'),
         );
       }
-      copyTemplate('$appType-app', appLanguage, 'app_shared');
-      copyTemplate('plugin', pluginLanguage, 'plugin');
+
+      // Apply patch files in (appType)-app.
+      for (final File file in appTemplate.listSync().whereType<File>()) {
+        if (file.basename.endsWith('.patch')) {
+          _runGitApply(templates, file);
+        }
+      }
+
+      // Copy plugin/cpp to plugin/tizen.tmpl.
+      final Directory pluginTemplate = tizenTemplates.childDirectory('plugin');
+      copyDirectory(
+        pluginTemplate.childDirectory('cpp'),
+        templates.childDirectory('plugin').childDirectory('tizen.tmpl'),
+      );
 
       return await _runCommand();
     } finally {
-      for (final Directory template in created) {
-        template.deleteSync(recursive: true);
-      }
+      _runGitClean(templates);
+    }
+  }
+
+  void _runGitClean(Directory directory) {
+    ProcessResult result = globals.processManager.runSync(
+      <String>['git', 'restore', '.'],
+      workingDirectory: directory.path,
+    );
+    if (result.exitCode != 0) {
+      throwToolExit('Failed to run git restore: ${result.stderr}');
+    }
+    result = globals.processManager.runSync(
+      <String>['git', 'clean', '-df', '.'],
+      workingDirectory: directory.path,
+    );
+    if (result.exitCode != 0) {
+      throwToolExit('Failed to run git clean: ${result.stderr}');
+    }
+  }
+
+  void _runGitApply(Directory directory, File patchFile) {
+    final ProcessResult result = globals.processManager.runSync(
+      <String>['git', 'apply', patchFile.path],
+      workingDirectory: directory.path,
+    );
+    if (result.exitCode != 0) {
+      throwToolExit('Failed to run git apply: ${result.stderr}');
     }
   }
 }

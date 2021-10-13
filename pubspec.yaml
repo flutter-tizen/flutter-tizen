@@ -26,4 +26,5 @@ dev_dependencies:
     sdk: flutter
   mockito:
   pedantic:
+  pubspec_parse:
   test:
