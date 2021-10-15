@@ -194,14 +194,30 @@ Future<String> _createEntrypoint(
 //
 // @dart = {{dartLanguageVersion}}
 
+// ignore_for_file: avoid_classes_with_only_static_members
+// ignore_for_file: unused_element
+
 import '{{mainImport}}' as entrypoint;
 import 'generated_plugin_registrant.dart';
 
+@pragma('vm:entry-point')
+class _PluginRegistrant {
+  @pragma('vm:entry-point')
+  static void register() {
+    registerPlugins();
+  }
+}
+
+typedef _UnaryFunction = dynamic Function(List<String> args);
+
 {{#dartEntrypoints}}
 @pragma('vm:entry-point')
-void {{name}}() {
-  registerPlugins();
-  entrypoint.{{name}}();
+void {{name}}(List<String> args) {
+  if (entrypoint.{{name}} is _UnaryFunction) {
+    (entrypoint.{{name}} as _UnaryFunction)(args);
+  } else {
+    entrypoint.{{name}}();
+  }
 }
 {{/dartEntrypoints}}
 ''',
