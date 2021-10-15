@@ -186,6 +186,7 @@ Future<String> _createEntrypoint(
     'dartLanguageVersion': languageVersion.toString(),
     'dartEntrypoints':
         dartEntrypoints.map((String name) => <String, String>{'name': name}),
+    'plugins': dartPlugins.map((TizenPlugin plugin) => plugin.toMap()),
   };
   _renderTemplateToFile(
     '''
@@ -195,20 +196,28 @@ Future<String> _createEntrypoint(
 // @dart = {{dartLanguageVersion}}
 
 // ignore_for_file: avoid_classes_with_only_static_members
-// ignore_for_file: unused_element
+// ignore_for_file: directives_ordering
+// ignore_for_file: lines_longer_than_80_chars
+// ignore_for_file: public_member_api_docs
+// ignore_for_file: unnecessary_cast
 
 import '{{mainImport}}' as entrypoint;
-import 'generated_plugin_registrant.dart';
+{{#plugins}}
+import 'package:{{name}}/{{name}}.dart';
+{{/plugins}}
 
 @pragma('vm:entry-point')
 class _PluginRegistrant {
   @pragma('vm:entry-point')
   static void register() {
-    registerPlugins();
+{{#plugins}}
+    {{dartPluginClass}}.register();
+{{/plugins}}
   }
 }
 
 typedef _UnaryFunction = dynamic Function(List<String> args);
+typedef _NullaryFunction = dynamic Function();
 
 {{#dartEntrypoints}}
 @pragma('vm:entry-point')
@@ -216,7 +225,7 @@ void {{name}}(List<String> args) {
   if (entrypoint.{{name}} is _UnaryFunction) {
     (entrypoint.{{name}} as _UnaryFunction)(args);
   } else {
-    entrypoint.{{name}}();
+    (entrypoint.main as _NullaryFunction)();
   }
 }
 {{/dartEntrypoints}}
@@ -228,7 +237,7 @@ void {{name}}(List<String> args) {
 }
 
 /// https://github.com/flutter-tizen/plugins
-const List<String> _knownPlugins = <String>[
+const List<String> _kKnownPlugins = <String>[
   'audioplayers',
   'battery',
   'battery_plus',
@@ -238,6 +247,8 @@ const List<String> _knownPlugins = <String>[
   'device_info',
   'device_info_plus',
   'flutter_tts',
+  'geolocator',
+  'google_maps_flutter',
   'image_picker',
   'integration_test',
   'network_info_plus',
@@ -280,11 +291,8 @@ Future<void> ensureReadyForTizenTooling(FlutterProject project) async {
 Future<void> injectTizenPlugins(FlutterProject project) async {
   final TizenProject tizenProject = TizenProject.fromFlutter(project);
   if (tizenProject.existsSync()) {
-    final List<TizenPlugin> dartPlugins =
-        await findTizenPlugins(project, dartOnly: true);
     final List<TizenPlugin> nativePlugins =
         await findTizenPlugins(project, nativeOnly: true);
-    _writeDartPluginRegistrant(tizenProject.managedDirectory, dartPlugins);
     _writeCppPluginRegistrant(tizenProject.managedDirectory, nativePlugins);
     _writeCsharpPluginRegistrant(tizenProject.managedDirectory, nativePlugins);
   }
@@ -293,7 +301,7 @@ Future<void> injectTizenPlugins(FlutterProject project) async {
       (await findPlugins(project)).map((Plugin p) => p.name).toList();
   for (final String plugin in plugins) {
     final String tizenPlugin = '${plugin}_tizen';
-    if (_knownPlugins.contains(plugin) && !plugins.contains(tizenPlugin)) {
+    if (_kKnownPlugins.contains(plugin) && !plugins.contains(tizenPlugin)) {
       globals.printStatus(
         '$tizenPlugin is available on pub.dev. Did you forget to add to pubspec.yaml?',
         color: TerminalColor.yellow,
@@ -380,40 +388,6 @@ TizenPlugin? _pluginFromPackage(
     name,
     packageDir.childDirectory('tizen'),
     platformsYaml[TizenPlugin.kConfigKey]! as YamlMap,
-  );
-}
-
-void _writeDartPluginRegistrant(
-  Directory registryDirectory,
-  List<TizenPlugin> plugins,
-) {
-  final List<Map<String, Object?>> pluginConfigs =
-      plugins.map((TizenPlugin plugin) => plugin.toMap()).toList();
-  final Map<String, Object> context = <String, Object>{
-    'plugins': pluginConfigs,
-  };
-  _renderTemplateToFile(
-    '''
-//
-// Generated file. Do not edit.
-//
-
-// ignore_for_file: directives_ordering
-// ignore_for_file: lines_longer_than_80_chars
-
-{{#plugins}}
-import 'package:{{name}}/{{name}}.dart';
-{{/plugins}}
-
-// ignore: public_member_api_docs
-void registerPlugins() {
-{{#plugins}}
-  {{dartPluginClass}}.register();
-{{/plugins}}
-}
-''',
-    context,
-    registryDirectory.childFile('generated_plugin_registrant.dart'),
   );
 }
 
