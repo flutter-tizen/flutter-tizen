@@ -75,7 +75,7 @@ GOTO :EOF
   EXIT /B
 
 :update_flutter_tizen
-  IF NOT EXIST "%cache_dir%" MKDIR %cache_dir%
+  IF NOT EXIST "%cache_dir%" MKDIR "%cache_dir%"
 
   PUSHD "%ROOT_DIR%"
     FOR /f %%r IN ('git rev-parse HEAD') DO SET revision=%%r
