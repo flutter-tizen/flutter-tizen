@@ -51,6 +51,11 @@ namespace Tizen.Flutter.Embedding
         protected bool IsWindowFocusable { get; set; } = true;
 
         /// <summary>
+        /// Whether the window should be on top layer or not.
+        /// </summary>
+        protected bool IsTop { get; set; } = true;
+
+        /// <summary>
         /// The switches to pass to the Flutter engine.
         /// Custom switches may be added before <see cref="OnCreate"/> is called.
         /// </summary>
@@ -96,6 +101,7 @@ namespace Tizen.Flutter.Embedding
                 height = WindowHeight,
                 transparent = IsWindowTransparent,
                 focusable = IsWindowFocusable,
+                top = IsTop,
             };
 
             Utils.ParseEngineArgs(EngineArgs);
