@@ -55,7 +55,7 @@ void main() {
         command: _sdbCommand(<String>['capability']),
         stdout: <String>[
           'cpu_arch:armv7',
-          'secure_protocol:false',
+          'secure_protocol:disabled',
           'platform_version:4.0',
         ].join('\n'),
       ),
@@ -91,8 +91,44 @@ void main() {
       platformArgs: <String, dynamic>{},
     );
 
-    expect(launchResult.started, true);
-    expect(launchResult.hasObservatory, true);
+    expect(launchResult.started, isTrue);
+    expect(launchResult.hasObservatory, isTrue);
+    expect(processManager, hasNoRemainingExpectations);
+  });
+
+  testWithoutContext(
+      'TizenDevice.installApp installs TPK twice for TV emulators', () async {
+    final TizenDevice device = TizenDevice(
+      _kDeviceId,
+      modelId: 'TestModel',
+      logger: BufferLogger.test(),
+      processManager: processManager,
+      tizenSdk: FakeTizenSdk(fileSystem),
+      fileSystem: fileSystem,
+    );
+    final TizenTpk tpk = TizenTpk(
+      file: fileSystem.file('app.tpk')..createSync(),
+      manifest: FakeTizenManifest(),
+    );
+
+    processManager.addCommands(<FakeCommand>[
+      FakeCommand(
+        command: _sdbCommand(<String>['capability']),
+        stdout: <String>[
+          'cpu_arch:x86',
+          'secure_protocol:enabled',
+          'platform_version:4.0',
+        ].join('\n'),
+      ),
+      FakeCommand(command: _sdbCommand(<String>['shell', '0', 'applist'])),
+      FakeCommand(command: _sdbCommand(<String>['install', 'app.tpk'])),
+      FakeCommand(command: _sdbCommand(<String>['install', 'app.tpk'])),
+    ]);
+
+    expect(await device.isLocalEmulator, isTrue);
+    expect(device.usesSecureProtocol, isTrue);
+
+    expect(await device.installApp(tpk), isTrue);
     expect(processManager, hasNoRemainingExpectations);
   });
 }

@@ -542,7 +542,7 @@ class TizenDevice extends Device {
   @override
   bool isSupported() {
     final Version deviceVersion = Version.parse(_platformVersion);
-    if (_isLocalEmulator &&
+    if (!_isLocalEmulator &&
         usesSecureProtocol &&
         deviceVersion < Version(6, 0, 0)) {
       return false;
