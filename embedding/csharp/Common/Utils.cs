@@ -24,7 +24,7 @@ namespace Tizen.Flutter.Embedding
             }
             try
             {
-                var lines = File.ReadAllText(tempPath).Trim().Split("\n");
+                var lines = File.ReadAllText(tempPath).Trim().Split('\n');
                 foreach (string line in lines)
                 {
                     TizenLog.Info($"Enabled: {line}");

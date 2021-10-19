@@ -1,0 +1,121 @@
+// Copyright 2021 Samsung Electronics Co., Ltd. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+using System;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
+using System.Threading.Tasks;
+using Tizen.Applications;
+using static Tizen.Flutter.Embedding.Interop;
+
+namespace Tizen.Flutter.Embedding
+{
+    internal class DefaultBinaryMessenger : IBinaryMessenger
+    {
+        private static DefaultBinaryMessenger _instance;
+
+        private readonly FlutterDesktopMessenger _messenger;
+        private readonly Dictionary<string, BinaryMessageHandler> _handlers = new Dictionary<string, BinaryMessageHandler>();
+        private readonly Dictionary<int, TaskCompletionSource<byte[]>> _replyCallbackSources = new Dictionary<int, TaskCompletionSource<byte[]>>();
+        private readonly FlutterDesktopBinaryReply _replyCallback;
+        private readonly FlutterDesktopMessageCallback _messageCallback;
+        private int _replyCallbackId = 0;
+
+        private DefaultBinaryMessenger(FlutterDesktopMessenger messenger)
+        {
+            _messenger = messenger;
+            _replyCallback = OnReplyMessageReceived;
+            _messageCallback = OnMessageReceived;
+        }
+
+        public static DefaultBinaryMessenger Instance
+        {
+            get
+            {
+                var app = Application.Current as FlutterApplication;
+                if (_instance == null && app != null)
+                {
+                    var messenger = Interop.FlutterDesktopEngineGetMessenger(app.Handle);
+                    _instance = new DefaultBinaryMessenger(messenger);
+                }
+                return _instance;
+            }
+        }
+
+        /// <summary>
+        /// Sends a binary message to the given channel.
+        /// </summary>
+        public void Send(string channel, byte[] message)
+        {
+            using (var pinned = PinnedObject.Get(message))
+            {
+                FlutterDesktopMessengerSend(_messenger, channel, pinned.Pointer, (uint)message.Length);
+            }
+        }
+
+        /// <summary>
+        /// Sends a binary message to the given channel.
+        ///
+        /// Returns a Task which completes to the received response.
+        /// </summary>
+        public Task<byte[]> SendAsync(string channel, byte[] message)
+        {
+            var tcs = new TaskCompletionSource<byte[]>();
+            int replyId;
+            lock (_replyCallbackSources)
+            {
+                replyId = _replyCallbackId++;
+                _replyCallbackSources.Add(replyId, tcs);
+            }
+            using (var pinned = PinnedObject.Get(message))
+            {
+                FlutterDesktopMessengerSendWithReply(_messenger, channel, pinned.Pointer, (uint)message.Length, _replyCallback, (IntPtr)replyId);
+            }
+            return tcs.Task;
+        }
+
+        /// <summary>
+        /// Registers a handler for binary messages on the given channel.
+        /// </summary>
+        public void SetMessageHandler(string channel, BinaryMessageHandler handler)
+        {
+            if (handler == null)
+            {
+                _handlers.Remove(channel);
+                FlutterDesktopMessengerSetCallback(_messenger, channel, null, IntPtr.Zero);
+                return;
+            }
+            _handlers[channel] = handler;
+            FlutterDesktopMessengerSetCallback(_messenger, channel, _messageCallback, IntPtr.Zero);
+        }
+
+        private void OnReplyMessageReceived(IntPtr message, uint messageSize, IntPtr userData)
+        {
+            int replyId = (int)userData;
+            if (_replyCallbackSources.TryGetValue(replyId, out TaskCompletionSource<byte[]> tcs))
+            {
+                _replyCallbackSources.Remove(replyId);
+                byte[] replyBytes = new byte[messageSize];
+                Marshal.Copy(message, replyBytes, 0, (int)messageSize);
+                tcs.TrySetResult(replyBytes);
+            }
+        }
+
+        private async void OnMessageReceived(FlutterDesktopMessenger messenger, IntPtr message, IntPtr userData)
+        {
+            var receivedMessage = Marshal.PtrToStructure<FlutterDesktopMessage>(message);
+            var messageBytes = new byte[receivedMessage.message_size];
+            Marshal.Copy(receivedMessage.message, messageBytes, 0, (int)receivedMessage.message_size);
+            var handler = _handlers[receivedMessage.channel];
+            byte[] replyBytes = await handler(messageBytes);
+            if (replyBytes != null)
+            {
+                using (var pinned = PinnedObject.Get(replyBytes))
+                {
+                    FlutterDesktopMessengerSendResponse(messenger, receivedMessage.response_handle, pinned.Pointer, (uint)replyBytes.Length);
+                }
+            }
+        }
+    }
+}
