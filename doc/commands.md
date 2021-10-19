@@ -189,7 +189,7 @@ Not all commands from the [`flutter`](https://flutter.dev/docs/reference/flutter
 
 - ### `run`
 
-  Build the current project and run on a connected device. For more information on each build mode, see [Flutter's build modes](https://flutter.dev/docs/testing/build-modes).
+  Build the current project and run on a connected device. For more information on each build mode, see [Flutter Docs: Flutter's build modes](https://flutter.dev/docs/testing/build-modes).
 
   ```sh
   # Build and run in debug mode.
@@ -231,9 +231,12 @@ Not all commands from the [`flutter`](https://flutter.dev/docs/reference/flutter
 
 - ### `test`
 
-  Run Flutter unit tests for the current project. (cf. [`drive`](#drive) for integration tests)
+  Run Flutter unit tests or integration tests for the current project. See [Flutter Docs: Testing Flutter apps](https://flutter.dev/docs/testing) for details. Consider using the [`drive`](#drive) command if you want to run integration tests on a web browser.
 
   ```sh
   # Run all tests in "test" directory.
   flutter-tizen test
+
+  # Run all integration tests in "integration_test" directory.
+  flutter-tizen test integration_test
   ```
