@@ -25,7 +25,7 @@ namespace Tizen.Flutter.Embedding
             [MarshalAs(UnmanagedType.U1)]
             public bool focusable;
             [MarshalAs(UnmanagedType.U1)]
-            public bool top;
+            public bool top_level;
         }
 
         [StructLayout(LayoutKind.Sequential)]
