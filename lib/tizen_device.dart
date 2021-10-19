@@ -149,6 +149,8 @@ class TizenDevice extends Device {
   @override
   String get name => 'Tizen $_modelId';
 
+  String get deviceProfile => getCapability('profile_name');
+
   bool get usesSecureProtocol => getCapability('secure_protocol') == 'enabled';
 
   String get architecture {
@@ -332,7 +334,7 @@ class TizenDevice extends Device {
         tizenBuildInfo: TizenBuildInfo(
           debuggingOptions.buildInfo,
           targetArch: architecture,
-          deviceProfile: getCapability('profile_name'),
+          deviceProfile: deviceProfile,
         ),
       );
       // Package has been built, so we can get the updated application id and
@@ -542,12 +544,12 @@ class TizenDevice extends Device {
   @override
   bool isSupported() {
     final Version deviceVersion = Version.parse(_platformVersion);
-    if (!_isLocalEmulator &&
-        usesSecureProtocol &&
-        deviceVersion < Version(6, 0, 0)) {
-      return false;
+    if (deviceProfile == 'wearable') {
+      return deviceVersion >= Version(4, 0, 0);
+    } else if (deviceProfile == 'tv') {
+      return deviceVersion >= Version(6, 0, 0);
     }
-    return deviceVersion >= Version(4, 0, 0);
+    return deviceVersion >= Version(5, 5, 0);
   }
 
   @override

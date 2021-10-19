@@ -21,6 +21,21 @@ import '../src/fake_process_manager.dart';
 
 const String _kDeviceId = 'TestDeviceId';
 
+TizenDevice _createTizenDevice({
+  ProcessManager processManager,
+  FileSystem fileSystem,
+}) {
+  fileSystem ??= MemoryFileSystem.test();
+  return TizenDevice(
+    _kDeviceId,
+    modelId: 'TestModel',
+    logger: BufferLogger.test(),
+    processManager: processManager ?? FakeProcessManager.any(),
+    tizenSdk: FakeTizenSdk(fileSystem),
+    fileSystem: fileSystem,
+  );
+}
+
 List<String> _sdbCommand(List<String> args) {
   return <String>['sdb', '-s', _kDeviceId, ...args];
 }
@@ -35,12 +50,8 @@ void main() {
   });
 
   testWithoutContext('TizenDevice.startApp succeeds in debug mode', () async {
-    final TizenDevice device = TizenDevice(
-      _kDeviceId,
-      modelId: 'TestModel',
-      logger: BufferLogger.test(),
+    final TizenDevice device = _createTizenDevice(
       processManager: processManager,
-      tizenSdk: FakeTizenSdk(fileSystem),
       fileSystem: fileSystem,
     );
     final FakeTizenManifest tizenManifest = FakeTizenManifest();
@@ -98,12 +109,8 @@ void main() {
 
   testWithoutContext(
       'TizenDevice.installApp installs TPK twice for TV emulators', () async {
-    final TizenDevice device = TizenDevice(
-      _kDeviceId,
-      modelId: 'TestModel',
-      logger: BufferLogger.test(),
+    final TizenDevice device = _createTizenDevice(
       processManager: processManager,
-      tizenSdk: FakeTizenSdk(fileSystem),
       fileSystem: fileSystem,
     );
     final TizenTpk tpk = TizenTpk(
@@ -130,6 +137,77 @@ void main() {
 
     expect(await device.installApp(tpk), isTrue);
     expect(processManager, hasNoRemainingExpectations);
+  });
+
+  testWithoutContext(
+      'TizenDevice.isSupported returns true for supported devices', () async {
+    final TizenDevice wearableDevice = _createTizenDevice(
+      processManager: processManager,
+      fileSystem: fileSystem,
+    );
+    processManager.addCommand(FakeCommand(
+      command: _sdbCommand(<String>['capability']),
+      stdout: <String>[
+        'cpu_arch:armv7',
+        'secure_protocol:disabled',
+        'platform_version:4.0',
+        'profile_name:wearable'
+      ].join('\n'),
+    ));
+    expect(wearableDevice.deviceProfile, equals('wearable'));
+    expect(wearableDevice.isSupported(), isTrue);
+
+    final TizenDevice tvDevice = _createTizenDevice(
+      processManager: processManager,
+      fileSystem: fileSystem,
+    );
+    processManager.addCommand(FakeCommand(
+      command: _sdbCommand(<String>['capability']),
+      stdout: <String>[
+        'cpu_arch:x86',
+        'secure_protocol:enabled',
+        'platform_version:6.0',
+        'profile_name:tv'
+      ].join('\n'),
+    ));
+    expect(tvDevice.deviceProfile, equals('tv'));
+    expect(tvDevice.isSupported(), isTrue);
+  });
+
+  testWithoutContext(
+      'TizenDevice.isSupported returns false for unsupported devices',
+      () async {
+    final TizenDevice mobileDevice = _createTizenDevice(
+      processManager: processManager,
+      fileSystem: fileSystem,
+    );
+    processManager.addCommand(FakeCommand(
+      command: _sdbCommand(<String>['capability']),
+      stdout: <String>[
+        'cpu_arch:armv7',
+        'secure_protocol:disabled',
+        'platform_version:4.0',
+        'profile_name:mobile'
+      ].join('\n'),
+    ));
+    expect(mobileDevice.deviceProfile, equals('mobile'));
+    expect(mobileDevice.isSupported(), isFalse);
+
+    final TizenDevice tvDevice = _createTizenDevice(
+      processManager: processManager,
+      fileSystem: fileSystem,
+    );
+    processManager.addCommand(FakeCommand(
+      command: _sdbCommand(<String>['capability']),
+      stdout: <String>[
+        'cpu_arch:armv7',
+        'secure_protocol:enabled',
+        'platform_version:5.5',
+        'profile_name:tv'
+      ].join('\n'),
+    ));
+    expect(tvDevice.deviceProfile, equals('tv'));
+    expect(tvDevice.isSupported(), isFalse);
   });
 }
 
