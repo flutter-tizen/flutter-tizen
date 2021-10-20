@@ -161,6 +161,8 @@ import '{{mainImport}}' as entrypoint;
 import 'package:{{name}}/{{name}}.dart';
 {{/plugins}}
 
+export '{{mainImport}}';
+
 @pragma('vm:entry-point')
 class _PluginRegistrant {
   @pragma('vm:entry-point')
