@@ -10,13 +10,13 @@ namespace Tizen.Flutter.Embedding
     public interface IMessageCodec<T>
     {
         /// <summary>
-        /// Encode the message.
+        /// Encodes the message.
         /// </summary>
         /// <param name="message">The message to encode.</param>
         byte[] EncodeMessage(T message);
 
         /// <summary>
-        /// Decode the message.
+        /// Decodes the message.
         /// </summary>
         /// <param name="message">The message to decode.</param>
         T DecodeMessage(byte[] message);

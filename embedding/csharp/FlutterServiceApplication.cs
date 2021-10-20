@@ -34,7 +34,7 @@ namespace Tizen.Flutter.Embedding
         /// <summary>
         /// The Flutter engine instance handle.
         /// </summary>
-        protected FlutterDesktopEngine Handle { get; private set; } = new FlutterDesktopEngine();
+        protected internal FlutterDesktopEngine Handle { get; private set; } = new FlutterDesktopEngine();
 
         public override void Run(string[] args)
         {

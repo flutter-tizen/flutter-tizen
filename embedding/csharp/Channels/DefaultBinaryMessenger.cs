@@ -14,12 +14,15 @@ namespace Tizen.Flutter.Embedding
     internal class DefaultBinaryMessenger : IBinaryMessenger
     {
         private static DefaultBinaryMessenger _instance;
-
         private readonly FlutterDesktopMessenger _messenger;
-        private readonly Dictionary<string, BinaryMessageHandler> _handlers = new Dictionary<string, BinaryMessageHandler>();
-        private readonly Dictionary<int, TaskCompletionSource<byte[]>> _replyCallbackSources = new Dictionary<int, TaskCompletionSource<byte[]>>();
+
+        private readonly Dictionary<string, BinaryMessageHandler> _handlers
+            = new Dictionary<string, BinaryMessageHandler>();
+        private readonly Dictionary<int, TaskCompletionSource<byte[]>> _replyCallbackSources
+            = new Dictionary<int, TaskCompletionSource<byte[]>>();
         private readonly FlutterDesktopBinaryReply _replyCallback;
         private readonly FlutterDesktopMessageCallback _messageCallback;
+
         private int _replyCallbackId = 0;
 
         private DefaultBinaryMessenger(FlutterDesktopMessenger messenger)
@@ -33,11 +36,16 @@ namespace Tizen.Flutter.Embedding
         {
             get
             {
-                var app = Application.Current as FlutterApplication;
-                if (_instance == null && app != null)
+                if (_instance == null)
                 {
-                    var messenger = Interop.FlutterDesktopEngineGetMessenger(app.Handle);
-                    _instance = new DefaultBinaryMessenger(messenger);
+                    if (Application.Current is FlutterApplication app)
+                    {
+                        _instance = new DefaultBinaryMessenger(FlutterDesktopEngineGetMessenger(app.Handle));
+                    }
+                    else if (Application.Current is FlutterServiceApplication service)
+                    {
+                        _instance = new DefaultBinaryMessenger(FlutterDesktopEngineGetMessenger(service.Handle));
+                    }
                 }
                 return _instance;
             }

@@ -57,7 +57,7 @@ namespace Tizen.Flutter.Embedding
         /// Sends a message to the Flutter framework asynchronously.
         /// </summary>
         /// <param name="message">The message to send.</param>
-        /// <returns>A task that completes to the response message.</returns>
+        /// <returns>A task that completes with the response message.</returns>
         public async Task<T> SendAsync(T message)
         {
             var replyBytes = await _messenger.SendAsync(_name, _codec.EncodeMessage(message));

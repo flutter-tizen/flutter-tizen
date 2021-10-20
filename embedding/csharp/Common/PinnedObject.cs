@@ -35,17 +35,17 @@ namespace Tizen.Flutter.Embedding
                 Dispose(false);
             }
 
-            private bool disposedValue = false;
+            private bool _disposed = false;
 
             protected virtual void Dispose(bool disposing)
             {
-                if (!disposedValue)
+                if (!_disposed)
                 {
                     if (disposing)
                     {
                         _handle.Free();
                     }
-                    disposedValue = true;
+                    _disposed = true;
                 }
             }
 
