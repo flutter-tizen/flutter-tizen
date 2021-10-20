@@ -24,8 +24,7 @@ import 'package:test_core/src/platform.dart' as hack
 import '../tizen_cache.dart';
 import '../tizen_plugins.dart';
 
-class TizenTestCommand extends TestCommand
-    with DartPluginRegistry, TizenRequiredArtifacts {
+class TizenTestCommand extends TestCommand with TizenRequiredArtifacts {
   TizenTestCommand({
     bool verboseHelp = false,
     TestWrapper testWrapper = const TestWrapper(),
@@ -68,11 +67,8 @@ class TizenTestWrapper implements TestWrapper {
 
     // Keep this logic in sync with _generateEntrypointWithPluginRegistrant
     // in tizen_plugins.dart.
-    final File packagesFile = project.directory
-        .childDirectory('.dart_tool')
-        .childFile('package_config.json');
     final PackageConfig packageConfig = await loadPackageConfigWithLogging(
-      packagesFile,
+      project.packageConfigFile,
       logger: globals.logger,
     );
     final Directory runnerDir = globals.fs.systemTempDirectory.createTempSync();

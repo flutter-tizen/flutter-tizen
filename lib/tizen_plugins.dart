@@ -161,11 +161,8 @@ Future<void> _generateEntrypointWithPluginRegistrant(
   File mainFile,
   File newMainFile,
 ) async {
-  final File packagesFile = project.directory
-      .childDirectory('.dart_tool')
-      .childFile('package_config.json');
   final PackageConfig packageConfig = await loadPackageConfigWithLogging(
-    packagesFile,
+    project.packageConfigFile,
     logger: globals.logger,
   );
   final Uri mainFileUri = mainFile.absolute.uri;
