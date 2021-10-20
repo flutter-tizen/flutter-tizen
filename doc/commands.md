@@ -1,15 +1,15 @@
 # Supported commands
 
-Not all commands in the [`flutter`](https://flutter.dev/docs/reference/flutter-cli) CLI are supported by `flutter-tizen`.
+Not all commands from the [`flutter`](https://flutter.dev/docs/reference/flutter-cli) CLI are supported by `flutter-tizen`.
 
 ## Global options
 
 - ### `-d`, `--device-id`
 
-  Specify the target device ID. The tool finds a connected device automatically if not specified.
+  Specify the target device ID. If not specified, the tool lists all connected devices.
 
   ```sh
-  flutter-tizen [command] -d emulator-26101
+  flutter-tizen -d emulator-26101 [command]
   ```
 
 - ### `-v`, `--verbose`
@@ -17,7 +17,7 @@ Not all commands in the [`flutter`](https://flutter.dev/docs/reference/flutter-c
   Show verbose output.
 
   ```sh
-  flutter-tizen [command] -v
+  flutter-tizen -v [command]
   ```
 
 ## Commands and examples
@@ -40,16 +40,16 @@ Not all commands in the [`flutter`](https://flutter.dev/docs/reference/flutter-c
 
 - ### `build`
 
-  Flutter build command. See `flutter-tizen build -h` for subcommands.
+  Flutter build command. See `flutter-tizen build -h` for all available subcommands.
 
   ```sh
   # Build a TPK for watch devices.
   flutter-tizen build tpk --device-profile wearable
 
-  # Build a TPK signed with a specific distributor certificate.
+  # Build a TPK and sign with a certificate profile named "foo".
   flutter-tizen build tpk --device-profile wearable --security-profile foo
 
-  # Build for emulator.
+  # Build a TPK for emulator.
   flutter-tizen build tpk --device-profile wearable --debug --target-arch x86
   ```
 
@@ -66,7 +66,7 @@ Not all commands in the [`flutter`](https://flutter.dev/docs/reference/flutter-c
   Configure Flutter settings. Identical to `flutter config`.
 
   ```sh
-  # Enable Flutter for web. This takes effect globally.
+  # Enable Flutter for web. This takes effect globally on your system.
   flutter-tizen config --enable-web
   ```
 
@@ -75,17 +75,25 @@ Not all commands in the [`flutter`](https://flutter.dev/docs/reference/flutter-c
   Create a new Flutter project.
 
   ```sh
-  # Create a new app project in the current directory.
-  # If a project already exists in the current directory, only missing files are added.
-  flutter-tizen create .
+  # Create a new app project in "app_name" directory.
+  # If a project already exists in the directory, only missing files are added.
+  flutter-tizen create app_name
 
-  # Choose the native app type when creating a Tizen project.
-  # Native apps have better performance and memory footprint than .NET (default) apps,
+  # Create a Tizen native app project in "app_name" directory.
+  # Native apps typically have lower memory footprints than .NET (default) apps,
   # but are not compatible with TV devices.
-  flutter-tizen create --tizen-language cpp .
+  flutter-tizen create --tizen-language cpp app_name
 
-  # Create a new plugin project in `foobar_tizen` directory.
-  flutter-tizen create --platforms tizen --template plugin --org com.example foobar_tizen
+  # Create a new plugin project in "plugin_name" directory.
+  flutter-tizen create --platforms tizen --template plugin plugin_name
+  ```
+
+- ### `custom-devices`
+
+  List, reset, add and delete custom devices, such as [flutter-pi](https://github.com/ardera/flutter-pi) devices.
+
+  ```sh
+  flutter-tizen custom-devices list
   ```
 
 - ### `devices`
@@ -109,13 +117,13 @@ Not all commands in the [`flutter`](https://flutter.dev/docs/reference/flutter-c
   Run integration tests for the project on an attached device. For detailed usage, see [`integration_test`](https://github.com/flutter/flutter/tree/master/packages/integration_test).
 
   ```sh
-  # Launch `foo_test.dart` on a Tizen device.
+  # Launch "integration_test/foo_test.dart" on a Tizen device.
   flutter-tizen drive --driver=test_driver/integration_test.dart --target=integration_test/foo_test.dart
   ```
 
 - ### `emulators`
 
-  List, launch, and create emulators.
+  List, launch, and create Tizen emulators.
 
   ```sh
   # List all emulator instances.
@@ -135,19 +143,18 @@ Not all commands in the [`flutter`](https://flutter.dev/docs/reference/flutter-c
 
 - ### `gen-l10n`
 
-  Generate localizations for the Flutter project. Identical to `flutter gen-l10n`.
+  Generate [localizations](https://flutter.dev/docs/development/accessibility-and-localization/internationalization) for the Flutter project. Identical to `flutter gen-l10n`.
 
   ```sh
-  # Note: Create a template arb file `app_en.arb` in `lib/l10n` before running this.
   flutter-tizen gen-l10n
   ```
 
 - ### `install`
 
-  Install a TPK package on an attached device.
+  Install a Flutter app on an attached device.
 
   ```sh
-  # Install `build/tizen/*.tpk` on a Tizen device.
+  # Install "build/tizen/tpk/*.tpk" on a Tizen device.
   flutter-tizen install
 
   # Uninstall if already installed.
@@ -156,7 +163,7 @@ Not all commands in the [`flutter`](https://flutter.dev/docs/reference/flutter-c
 
 - ### `logs`
 
-  Show the device log output associated with running Flutter apps.
+  Show the device log output for running Flutter apps.
 
   ```sh
   flutter-tizen logs
@@ -173,7 +180,7 @@ Not all commands in the [`flutter`](https://flutter.dev/docs/reference/flutter-c
 
 - ### `pub`
 
-  Commands for managing Flutter packages.
+  Commands for managing Flutter packages. Identical to `flutter pub`.
 
   ```sh
   # Get packages for the current project.
@@ -182,7 +189,7 @@ Not all commands in the [`flutter`](https://flutter.dev/docs/reference/flutter-c
 
 - ### `run`
 
-  Build the current project and run on a connected device. For more information on each build mode, see [Flutter's build modes](https://flutter.dev/docs/testing/build-modes).
+  Build the current project and run on a connected device. For more information on each build mode, see [Flutter Docs: Flutter's build modes](https://flutter.dev/docs/testing/build-modes).
 
   ```sh
   # Build and run in debug mode.
@@ -193,6 +200,15 @@ Not all commands in the [`flutter`](https://flutter.dev/docs/reference/flutter-c
 
   # Build and run in profile mode.
   flutter-tizen run --profile
+
+  # Show verbose logs from the Flutter engine (debug mode only).
+  flutter-tizen run --verbose-system-logs
+
+  # Install "foo.tpk" and run without building the project.
+  flutter-tizen run --use-application-binary foo.tpk
+
+  # Run and wait for a debugger to attach.
+  flutter-tizen run --start-paused
   ```
 
 - ### `screenshot`
@@ -215,9 +231,12 @@ Not all commands in the [`flutter`](https://flutter.dev/docs/reference/flutter-c
 
 - ### `test`
 
-  Run Flutter unit tests for the current project. (cf. [`drive`](#drive) for integration tests)
+  Run Flutter unit tests or integration tests for the current project. See [Flutter Docs: Testing Flutter apps](https://flutter.dev/docs/testing) for details. Consider using the [`drive`](#drive) command if you want to run integration tests on a web browser.
 
   ```sh
-  # Run all tests in the `test/general` directory.
-  flutter-tizen test test/general
+  # Run all tests in "test" directory.
+  flutter-tizen test
+
+  # Run all integration tests in "integration_test" directory.
+  flutter-tizen test integration_test
   ```
