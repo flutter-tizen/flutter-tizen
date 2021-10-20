@@ -16,6 +16,7 @@ import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/base/os.dart';
 import 'package:flutter_tools/src/base/template.dart';
 import 'package:flutter_tools/src/cache.dart';
+import 'package:flutter_tools/src/commands/analyze.dart';
 import 'package:flutter_tools/src/commands/config.dart';
 import 'package:flutter_tools/src/commands/custom_devices.dart';
 import 'package:flutter_tools/src/commands/daemon.dart';
@@ -39,7 +40,6 @@ import 'package:flutter_tools/src/isolated/mustache_template.dart';
 import 'package:flutter_tools/src/runner/flutter_command.dart';
 import 'package:path/path.dart';
 
-import 'commands/analyze.dart';
 import 'commands/attach.dart';
 import 'commands/build.dart';
 import 'commands/clean.dart';
@@ -96,6 +96,15 @@ Future<void> main(List<String> args) async {
     args,
     () => <FlutterCommand>[
       // Commands directly from flutter_tools.
+      AnalyzeCommand(
+        verboseHelp: verboseHelp,
+        fileSystem: globals.fs,
+        platform: globals.platform,
+        terminal: globals.terminal,
+        logger: globals.logger,
+        processManager: globals.processManager,
+        artifacts: globals.artifacts,
+      ),
       ConfigCommand(verboseHelp: verboseHelp),
       CustomDevicesCommand(
         customDevicesConfig: globals.customDevicesConfig,
@@ -122,15 +131,6 @@ Future<void> main(List<String> args) async {
       ScreenshotCommand(),
       SymbolizeCommand(stdio: globals.stdio, fileSystem: globals.fs),
       // Commands extended for Tizen.
-      TizenAnalyzeCommand(
-        verboseHelp: verboseHelp,
-        fileSystem: globals.fs,
-        platform: globals.platform,
-        processManager: globals.processManager,
-        logger: globals.logger,
-        terminal: globals.terminal,
-        artifacts: globals.artifacts,
-      ),
       TizenAttachCommand(verboseHelp: verboseHelp),
       TizenBuildCommand(verboseHelp: verboseHelp),
       TizenCleanCommand(verbose: verbose),
