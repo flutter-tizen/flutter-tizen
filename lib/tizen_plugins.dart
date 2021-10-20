@@ -3,10 +3,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'package:analyzer/dart/analysis/analysis_context.dart';
-import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
-import 'package:analyzer/dart/analysis/results.dart';
-import 'package:analyzer/dart/ast/ast.dart';
 import 'package:file/file.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/base/terminal.dart';
@@ -121,38 +117,6 @@ mixin DartPluginRegistry on FlutterCommand {
   String get targetFile => _targetFile ?? super.targetFile;
 }
 
-/// Finds entry point functions annotated with `@pragma('vm:entry-point')`
-/// from [dartFile] and returns their names.
-List<String> _findDartEntrypoints(File dartFile) {
-  final String path = dartFile.absolute.path;
-  final AnalysisContextCollection collection =
-      AnalysisContextCollection(includedPaths: <String>[path]);
-  final AnalysisContext context = collection.contextFor(path);
-  final SomeParsedUnitResult parsed =
-      context.currentSession.getParsedUnit2(path);
-  final List<String> names = <String>['main'];
-  if (parsed is ParsedUnitResult) {
-    for (final FunctionDeclaration function
-        in parsed.unit.declarations.whereType<FunctionDeclaration>()) {
-      if (function.name.name == 'main') {
-        continue;
-      }
-      for (final Annotation annotation in function.metadata) {
-        if (annotation.name.name != 'pragma') {
-          continue;
-        }
-        final ArgumentList? arguments = annotation.arguments;
-        if (arguments != null &&
-            arguments.arguments.isNotEmpty &&
-            arguments.arguments.first.toSource().contains('vm:entry-point')) {
-          names.add(function.name.name);
-        }
-      }
-    }
-  }
-  return names;
-}
-
 /// See:
 /// - [WebEntrypointTarget.build] in `web.dart`
 /// - [generateMainDartWithPluginRegistrant] in `flutter_plugins.dart`
@@ -172,15 +136,12 @@ Future<void> _generateEntrypointWithPluginRegistrant(
     Cache.flutterRoot!,
   );
   final Uri mainUri = packageConfig.toPackageUri(mainFileUri) ?? mainFileUri;
-  final List<String> dartEntrypoints = _findDartEntrypoints(mainFile);
   final List<TizenPlugin> dartPlugins =
       await findTizenPlugins(project, dartOnly: true);
 
   final Map<String, Object> context = <String, Object>{
     'mainImport': mainUri.toString(),
     'dartLanguageVersion': languageVersion.toString(),
-    'dartEntrypoints':
-        dartEntrypoints.map((String name) => <String, String>{'name': name}),
     'plugins': dartPlugins.map((TizenPlugin plugin) => plugin.toMap()),
   };
   renderTemplateToFile(
@@ -193,7 +154,6 @@ Future<void> _generateEntrypointWithPluginRegistrant(
 // ignore_for_file: avoid_classes_with_only_static_members
 // ignore_for_file: directives_ordering
 // ignore_for_file: lines_longer_than_80_chars
-// ignore_for_file: public_member_api_docs
 // ignore_for_file: unnecessary_cast
 
 import '{{mainImport}}' as entrypoint;
@@ -214,16 +174,14 @@ class _PluginRegistrant {
 typedef _UnaryFunction = dynamic Function(List<String> args);
 typedef _NullaryFunction = dynamic Function();
 
-{{#dartEntrypoints}}
 @pragma('vm:entry-point')
-void {{name}}(List<String> args) {
-  if (entrypoint.{{name}} is _UnaryFunction) {
-    (entrypoint.{{name}} as _UnaryFunction)(args);
+void main(List<String> args) {
+  if (entrypoint.main is _UnaryFunction) {
+    (entrypoint.main as _UnaryFunction)(args);
   } else {
-    (entrypoint.{{name}} as _NullaryFunction)();
+    (entrypoint.main as _NullaryFunction)();
   }
 }
-{{/dartEntrypoints}}
 ''',
     context,
     newMainFile,
