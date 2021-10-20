@@ -98,21 +98,27 @@ class TizenPlugin extends PluginPlatform implements NativeOrDartPlugin {
 ///
 /// See: [FlutterCommand.verifyThenRunCommand] in `flutter_command.dart`
 mixin DartPluginRegistry on FlutterCommand {
-  String? _entrypoint;
+  String? _targetFile;
 
   bool get _usesTargetOption => argParser.options.containsKey('target');
 
   @override
   Future<FlutterCommandResult> verifyThenRunCommand(String commandPath) async {
-    if (_usesTargetOption) {
-      _entrypoint =
-          await _createEntrypoint(FlutterProject.current(), super.targetFile);
+    final FlutterProject project = FlutterProject.current();
+    final TizenProject tizenProject = TizenProject.fromFlutter(project);
+    if (_usesTargetOption && tizenProject.existsSync()) {
+      final File mainDart = globals.fs.file(super.targetFile);
+      final File generatedMainDart =
+          tizenProject.managedDirectory.childFile('generated_main.dart');
+      await _generateEntrypointWithPluginRegistrant(
+          project, mainDart, generatedMainDart);
+      _targetFile = generatedMainDart.path;
     }
     return super.verifyThenRunCommand(commandPath);
   }
 
   @override
-  String get targetFile => _entrypoint ?? super.targetFile;
+  String get targetFile => _targetFile ?? super.targetFile;
 }
 
 /// Finds entry point functions annotated with `@pragma('vm:entry-point')`
@@ -147,48 +153,40 @@ List<String> _findDartEntrypoints(File dartFile) {
   return names;
 }
 
-/// Creates an entrypoint wrapper of [targetFile] and returns its path.
-/// This effectively adds support for Dart plugins.
-///
-/// Source: [WebEntrypointTarget.build] in `web.dart`
-Future<String> _createEntrypoint(
-    FlutterProject project, String targetFile) async {
-  final List<TizenPlugin> dartPlugins =
-      await findTizenPlugins(project, dartOnly: true);
-  if (dartPlugins.isEmpty) {
-    return targetFile;
-  }
-
-  final TizenProject tizenProject = TizenProject.fromFlutter(project);
-  if (!tizenProject.existsSync()) {
-    return targetFile;
-  }
-
-  final File entrypoint = tizenProject.managedDirectory.childFile('main.dart')
-    ..createSync(recursive: true);
+/// See:
+/// - [WebEntrypointTarget.build] in `web.dart`
+/// - [generateMainDartWithPluginRegistrant] in `flutter_plugins.dart`
+Future<void> _generateEntrypointWithPluginRegistrant(
+  FlutterProject project,
+  File mainFile,
+  File newMainFile,
+) async {
+  final File packagesFile = project.directory
+      .childDirectory('.dart_tool')
+      .childFile('package_config.json');
   final PackageConfig packageConfig = await loadPackageConfigWithLogging(
-    project.directory.childFile('.packages'),
+    packagesFile,
     logger: globals.logger,
   );
-  final File mainFile = globals.fs.file(targetFile);
-  final Uri mainUri = mainFile.absolute.uri;
+  final Uri mainFileUri = mainFile.absolute.uri;
   final LanguageVersion languageVersion = determineLanguageVersion(
     mainFile,
-    packageConfig.packageOf(mainUri),
+    packageConfig.packageOf(mainFileUri),
     Cache.flutterRoot!,
   );
-  final String mainImport =
-      packageConfig.toPackageUri(mainUri)?.toString() ?? mainUri.toString();
+  final Uri mainUri = packageConfig.toPackageUri(mainFileUri) ?? mainFileUri;
   final List<String> dartEntrypoints = _findDartEntrypoints(mainFile);
+  final List<TizenPlugin> dartPlugins =
+      await findTizenPlugins(project, dartOnly: true);
 
   final Map<String, Object> context = <String, Object>{
-    'mainImport': mainImport,
+    'mainImport': mainUri.toString(),
     'dartLanguageVersion': languageVersion.toString(),
     'dartEntrypoints':
         dartEntrypoints.map((String name) => <String, String>{'name': name}),
     'plugins': dartPlugins.map((TizenPlugin plugin) => plugin.toMap()),
   };
-  _renderTemplateToFile(
+  renderTemplateToFile(
     '''
 //
 // Generated file. Do not edit.
@@ -225,15 +223,14 @@ void {{name}}(List<String> args) {
   if (entrypoint.{{name}} is _UnaryFunction) {
     (entrypoint.{{name}} as _UnaryFunction)(args);
   } else {
-    (entrypoint.main as _NullaryFunction)();
+    (entrypoint.{{name}} as _NullaryFunction)();
   }
 }
 {{/dartEntrypoints}}
 ''',
     context,
-    entrypoint,
+    newMainFile,
   );
-  return entrypoint.path;
 }
 
 /// https://github.com/flutter-tizen/plugins
@@ -401,7 +398,7 @@ void _writeCppPluginRegistrant(
   final Map<String, Object> context = <String, Object>{
     'plugins': pluginConfigs,
   };
-  _renderTemplateToFile(
+  renderTemplateToFile(
     '''
 //
 // Generated file. Do not edit.
@@ -442,7 +439,7 @@ void _writeCsharpPluginRegistrant(
   final Map<String, Object> context = <String, Object>{
     'plugins': pluginConfigs,
   };
-  _renderTemplateToFile(
+  renderTemplateToFile(
     '''
 //
 // Generated file. Do not edit.
@@ -478,7 +475,7 @@ namespace Runner
 }
 
 /// Source: [_renderTemplateToFile] in `flutter_plugins.dart`
-void _renderTemplateToFile(String template, Object? context, File file) {
+void renderTemplateToFile(String template, Object? context, File file) {
   final String renderedTemplate = globals.templateRenderer
       .renderString(template, context, htmlEscapeValues: false);
   file.createSync(recursive: true);
