@@ -64,8 +64,8 @@ class TizenDevice extends Device {
   final ProcessUtils _processUtils;
 
   Map<String, String> _capabilities;
-  TizenDlogReader _logReader;
-  TizenDevicePortForwarder _portForwarder;
+  DeviceLogReader _logReader;
+  DevicePortForwarder _portForwarder;
 
   /// Source: [AndroidDevice.adbCommandForDevice] in `android_device.dart`
   List<String> sdbCommand(List<String> args) {
@@ -148,6 +148,8 @@ class TizenDevice extends Device {
 
   @override
   String get name => 'Tizen $_modelId';
+
+  String get deviceProfile => getCapability('profile_name');
 
   bool get usesSecureProtocol => getCapability('secure_protocol') == 'enabled';
 
@@ -332,7 +334,7 @@ class TizenDevice extends Device {
         tizenBuildInfo: TizenBuildInfo(
           debuggingOptions.buildInfo,
           targetArch: architecture,
-          deviceProfile: getCapability('profile_name'),
+          deviceProfile: deviceProfile,
         ),
       );
       // Package has been built, so we can get the updated application id and
@@ -359,14 +361,7 @@ class TizenDevice extends Device {
 
     if (debuggingOptions.debuggingEnabled) {
       observatoryDiscovery = ProtocolDiscovery.observatory(
-        // Avoid using getLogReader, which returns a singleton instance, because the
-        // observatory discovery will dipose at the end. creating a new logger here allows
-        // logs to be surfaced normally during `flutter drive`.
-        await TizenDlogReader.createLogReader(
-          this,
-          _processManager,
-          after: _currentDeviceTime,
-        ),
+        await getLogReader(),
         portForwarder: portForwarder,
         hostPort: debuggingOptions.hostVmServicePort,
         devicePort: debuggingOptions.deviceVmServicePort,
@@ -520,29 +515,41 @@ class TizenDevice extends Device {
   FutureOr<DeviceLogReader> getLogReader({
     TizenTpk app,
     bool includePastLogs = false,
-  }) async =>
-      _logReader ??= await TizenDlogReader.createLogReader(
-        this,
-        _processManager,
-        after: includePastLogs ? _lastClearLogTime : _currentDeviceTime,
-      );
+  }) async {
+    return _logReader ??= await TizenDlogReader.createLogReader(
+      this,
+      _processManager,
+      after: includePastLogs ? _lastClearLogTime : _currentDeviceTime,
+    );
+  }
+
+  @visibleForTesting
+  void setLogReader(DeviceLogReader logReader) {
+    _logReader = logReader;
+  }
 
   @override
-  DevicePortForwarder get portForwarder =>
-      _portForwarder ??= TizenDevicePortForwarder(
-        device: this,
-        logger: _logger,
-      );
+  DevicePortForwarder get portForwarder {
+    return _portForwarder ??= TizenDevicePortForwarder(
+      device: this,
+      logger: _logger,
+    );
+  }
+
+  @visibleForTesting
+  set portForwarder(DevicePortForwarder forwarder) {
+    _portForwarder = forwarder;
+  }
 
   @override
   bool isSupported() {
     final Version deviceVersion = Version.parse(_platformVersion);
-    if (_isLocalEmulator &&
-        usesSecureProtocol &&
-        deviceVersion < Version(6, 0, 0)) {
-      return false;
+    if (deviceProfile == 'wearable') {
+      return deviceVersion >= Version(4, 0, 0);
+    } else if (deviceProfile == 'tv') {
+      return deviceVersion >= Version(6, 0, 0);
     }
-    return deviceVersion >= Version(4, 0, 0);
+    return deviceVersion >= Version(5, 5, 0);
   }
 
   @override
@@ -557,7 +564,7 @@ class TizenDevice extends Device {
   /// Source: [AndroidDevice.dispose] in `android_device.dart`
   @override
   Future<void> dispose() async {
-    _logReader?._stop();
+    _logReader?.dispose();
     await _portForwarder?.dispose();
   }
 }
