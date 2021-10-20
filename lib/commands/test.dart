@@ -23,7 +23,6 @@ import 'package:test_core/src/platform.dart' as hack
 
 import '../tizen_cache.dart';
 import '../tizen_plugins.dart';
-import '../tizen_project.dart';
 
 class TizenTestCommand extends TestCommand
     with DartPluginRegistry, TizenRequiredArtifacts {
@@ -56,8 +55,7 @@ class TizenTestWrapper implements TestWrapper {
   @override
   Future<void> main(List<String> args) async {
     if (!_isIntegrationTest) {
-      await test.main(args);
-      return;
+      return test.main(args);
     }
 
     final int filesOptionIndex = args.lastIndexOf('--');
@@ -66,43 +64,60 @@ class TizenTestWrapper implements TestWrapper {
         .sublist(filesOptionIndex + 1)
         .map((String path) => globals.fs.file(path))
         .toList();
-    final FlutterProject flutterProject = FlutterProject.current();
+    final FlutterProject project = FlutterProject.current();
+
+    // Keep this logic in sync with _generateEntrypointWithPluginRegistrant
+    // in tizen_plugins.dart.
+    final File packagesFile = project.directory
+        .childDirectory('.dart_tool')
+        .childFile('package_config.json');
     final PackageConfig packageConfig = await loadPackageConfigWithLogging(
-      flutterProject.directory.childFile('.packages'),
+      packagesFile,
       logger: globals.logger,
     );
-    final File pluginRegistrant = TizenProject.fromFlutter(flutterProject)
-        .managedDirectory
-        .childFile('generated_plugin_registrant.dart');
-
     final Directory runnerDir = globals.fs.systemTempDirectory.createTempSync();
-    for (final File testFile in testFiles) {
-      final File runnerFile = runnerDir.childFile(
-          testFile.basename.replaceFirst('_test.dart', '_test_runner.dart'))
-        ..createSync(recursive: true);
 
+    for (final File testFile in testFiles) {
+      final Uri testFileUri = testFile.absolute.uri;
       final LanguageVersion languageVersion = determineLanguageVersion(
         testFile,
-        packageConfig[flutterProject.manifest.appName],
+        packageConfig.packageOf(testFileUri),
         Cache.flutterRoot,
       );
-      runnerFile.writeAsStringSync('''
+      final List<TizenPlugin> dartPlugins =
+          await findTizenPlugins(project, dartOnly: true);
+
+      final Map<String, Object> context = <String, Object>{
+        'mainImport': testFileUri.toString(),
+        'dartLanguageVersion': languageVersion.toString(),
+        'plugins': dartPlugins.map((TizenPlugin plugin) => plugin.toMap()),
+      };
+      final File newTestFile = runnerDir.childFile(testFile.basename);
+      renderTemplateToFile(
+        '''
 //
 // Generated file. Do not edit.
 //
-// @dart=${languageVersion.major}.${languageVersion.minor}
+// @dart = {{dartLanguageVersion}}
 
-import '${testFile.absolute.path}' as entrypoint;
-import '${pluginRegistrant.absolute.path}';
+import '{{mainImport}}' as entrypoint;
+{{#plugins}}
+import 'package:{{name}}/{{name}}.dart';
+{{/plugins}}
 
-Future<void> main() async {
-  registerPlugins();
+void main() {
+{{#plugins}}
+  {{dartPluginClass}}.register();
+{{/plugins}}
   entrypoint.main();
 }
-''');
-      newArgs.add(runnerFile.absolute.path);
+''',
+        context,
+        newTestFile,
+      );
+      newArgs.add(newTestFile.absolute.path);
     }
-    await test.main(newArgs);
+    return test.main(newArgs);
   }
 
   /// Source: [TestWrapper.registerPlatformPlugin] in `test_wrapper.dart`.
