@@ -7,24 +7,6 @@ using System.Threading.Tasks;
 
 namespace Tizen.Flutter.Embedding
 {
-    public class BasicMessageChannel
-    {
-        public static BasicMessageChannel<T> Create<T>(string name, IMessageCodec<T> codec, IBinaryMessenger messenger)
-        {
-            return new BasicMessageChannel<T>(name, codec, messenger);
-        }
-
-        public static BasicMessageChannel<T> Create<T>(string name, IMessageCodec<T> codec)
-        {
-            var messenger = DefaultBinaryMessenger.Instance;
-            if (messenger == null)
-            {
-                throw new InvalidOperationException("DefaultBinaryMessenger is not initialized.");
-            }
-            return new BasicMessageChannel<T>(name, codec, messenger);
-        }
-    }
-
     /// <summary>
     /// A channel that communicates with the Flutter framework.
     /// </summary>
@@ -39,9 +21,32 @@ namespace Tizen.Flutter.Embedding
         /// </summary>
         public BasicMessageChannel(string name, IMessageCodec<T> codec, IBinaryMessenger messenger)
         {
-            _messenger = messenger;
+            if (string.IsNullOrEmpty(name))
+            {
+                throw new ArgumentException("name cannot be null or empty");
+            }
+
+            if (codec == null)
+            {
+                throw new ArgumentNullException(nameof(codec));
+            }
+
+            if (messenger == null)
+            {
+                throw new ArgumentNullException(nameof(messenger));
+            }
+
             _name = name;
             _codec = codec;
+            _messenger = messenger;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BasicMessageChannel{T}"/> class.
+        /// </summary>
+        public BasicMessageChannel(string name, IMessageCodec<T> codec)
+            : this(name, codec, DefaultBinaryMessenger.Instance)
+        {
         }
 
         /// <summary>
