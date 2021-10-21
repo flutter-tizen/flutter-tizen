@@ -3,10 +3,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'package:analyzer/dart/analysis/analysis_context.dart';
-import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
-import 'package:analyzer/dart/analysis/results.dart';
-import 'package:analyzer/dart/ast/ast.dart';
 import 'package:file/file.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/base/terminal.dart';
@@ -98,121 +94,104 @@ class TizenPlugin extends PluginPlatform implements NativeOrDartPlugin {
 ///
 /// See: [FlutterCommand.verifyThenRunCommand] in `flutter_command.dart`
 mixin DartPluginRegistry on FlutterCommand {
-  String? _entrypoint;
+  String? _targetFile;
 
   bool get _usesTargetOption => argParser.options.containsKey('target');
 
   @override
   Future<FlutterCommandResult> verifyThenRunCommand(String commandPath) async {
-    if (_usesTargetOption) {
-      _entrypoint =
-          await _createEntrypoint(FlutterProject.current(), super.targetFile);
+    final FlutterProject project = FlutterProject.current();
+    final TizenProject tizenProject = TizenProject.fromFlutter(project);
+    if (_usesTargetOption && tizenProject.existsSync()) {
+      final File mainDart = globals.fs.file(super.targetFile);
+      final File generatedMainDart =
+          tizenProject.managedDirectory.childFile('generated_main.dart');
+      await _generateEntrypointWithPluginRegistrant(
+          project, mainDart, generatedMainDart);
+      _targetFile = generatedMainDart.path;
     }
     return super.verifyThenRunCommand(commandPath);
   }
 
   @override
-  String get targetFile => _entrypoint ?? super.targetFile;
+  String get targetFile => _targetFile ?? super.targetFile;
 }
 
-/// Finds entry point functions annotated with `@pragma('vm:entry-point')`
-/// from [dartFile] and returns their names.
-List<String> _findDartEntrypoints(File dartFile) {
-  final String path = dartFile.absolute.path;
-  final AnalysisContextCollection collection =
-      AnalysisContextCollection(includedPaths: <String>[path]);
-  final AnalysisContext context = collection.contextFor(path);
-  final SomeParsedUnitResult parsed =
-      context.currentSession.getParsedUnit2(path);
-  final List<String> names = <String>['main'];
-  if (parsed is ParsedUnitResult) {
-    for (final FunctionDeclaration function
-        in parsed.unit.declarations.whereType<FunctionDeclaration>()) {
-      if (function.name.name == 'main') {
-        continue;
-      }
-      for (final Annotation annotation in function.metadata) {
-        if (annotation.name.name != 'pragma') {
-          continue;
-        }
-        final ArgumentList? arguments = annotation.arguments;
-        if (arguments != null &&
-            arguments.arguments.isNotEmpty &&
-            arguments.arguments.first.toSource().contains('vm:entry-point')) {
-          names.add(function.name.name);
-        }
-      }
-    }
-  }
-  return names;
-}
-
-/// Creates an entrypoint wrapper of [targetFile] and returns its path.
-/// This effectively adds support for Dart plugins.
-///
-/// Source: [WebEntrypointTarget.build] in `web.dart`
-Future<String> _createEntrypoint(
-    FlutterProject project, String targetFile) async {
-  final List<TizenPlugin> dartPlugins =
-      await findTizenPlugins(project, dartOnly: true);
-  if (dartPlugins.isEmpty) {
-    return targetFile;
-  }
-
-  final TizenProject tizenProject = TizenProject.fromFlutter(project);
-  if (!tizenProject.existsSync()) {
-    return targetFile;
-  }
-
-  final File entrypoint = tizenProject.managedDirectory.childFile('main.dart')
-    ..createSync(recursive: true);
+/// See:
+/// - [WebEntrypointTarget.build] in `web.dart`
+/// - [generateMainDartWithPluginRegistrant] in `flutter_plugins.dart`
+Future<void> _generateEntrypointWithPluginRegistrant(
+  FlutterProject project,
+  File mainFile,
+  File newMainFile,
+) async {
   final PackageConfig packageConfig = await loadPackageConfigWithLogging(
-    project.directory.childFile('.packages'),
+    project.packageConfigFile,
     logger: globals.logger,
   );
-  final File mainFile = globals.fs.file(targetFile);
-  final Uri mainUri = mainFile.absolute.uri;
+  final Uri mainFileUri = mainFile.absolute.uri;
   final LanguageVersion languageVersion = determineLanguageVersion(
     mainFile,
-    packageConfig.packageOf(mainUri),
+    packageConfig.packageOf(mainFileUri),
     Cache.flutterRoot!,
   );
-  final String mainImport =
-      packageConfig.toPackageUri(mainUri)?.toString() ?? mainUri.toString();
-  final List<String> dartEntrypoints = _findDartEntrypoints(mainFile);
+  final Uri mainUri = packageConfig.toPackageUri(mainFileUri) ?? mainFileUri;
+  final List<TizenPlugin> dartPlugins =
+      await findTizenPlugins(project, dartOnly: true);
 
   final Map<String, Object> context = <String, Object>{
-    'mainImport': mainImport,
+    'mainImport': mainUri.toString(),
     'dartLanguageVersion': languageVersion.toString(),
-    'dartEntrypoints':
-        dartEntrypoints.map((String name) => <String, String>{'name': name}),
+    'plugins': dartPlugins.map((TizenPlugin plugin) => plugin.toMap()),
   };
-  _renderTemplateToFile(
+  renderTemplateToFile(
     '''
 //
 // Generated file. Do not edit.
 //
 // @dart = {{dartLanguageVersion}}
 
-import '{{mainImport}}' as entrypoint;
-import 'generated_plugin_registrant.dart';
+// ignore_for_file: avoid_classes_with_only_static_members
+// ignore_for_file: directives_ordering
+// ignore_for_file: lines_longer_than_80_chars
+// ignore_for_file: unnecessary_cast
 
-{{#dartEntrypoints}}
+import '{{mainImport}}' as entrypoint;
+{{#plugins}}
+import 'package:{{name}}/{{name}}.dart';
+{{/plugins}}
+
+export '{{mainImport}}';
+
 @pragma('vm:entry-point')
-void {{name}}() {
-  registerPlugins();
-  entrypoint.{{name}}();
+class _PluginRegistrant {
+  @pragma('vm:entry-point')
+  static void register() {
+{{#plugins}}
+    {{dartPluginClass}}.register();
+{{/plugins}}
+  }
 }
-{{/dartEntrypoints}}
+
+typedef _UnaryFunction = dynamic Function(List<String> args);
+typedef _NullaryFunction = dynamic Function();
+
+@pragma('vm:entry-point')
+void main(List<String> args) {
+  if (entrypoint.main is _UnaryFunction) {
+    (entrypoint.main as _UnaryFunction)(args);
+  } else {
+    (entrypoint.main as _NullaryFunction)();
+  }
+}
 ''',
     context,
-    entrypoint,
+    newMainFile,
   );
-  return entrypoint.path;
 }
 
 /// https://github.com/flutter-tizen/plugins
-const List<String> _knownPlugins = <String>[
+const List<String> _kKnownPlugins = <String>[
   'audioplayers',
   'battery',
   'battery_plus',
@@ -222,6 +201,8 @@ const List<String> _knownPlugins = <String>[
   'device_info',
   'device_info_plus',
   'flutter_tts',
+  'geolocator',
+  'google_maps_flutter',
   'image_picker',
   'integration_test',
   'network_info_plus',
@@ -264,11 +245,8 @@ Future<void> ensureReadyForTizenTooling(FlutterProject project) async {
 Future<void> injectTizenPlugins(FlutterProject project) async {
   final TizenProject tizenProject = TizenProject.fromFlutter(project);
   if (tizenProject.existsSync()) {
-    final List<TizenPlugin> dartPlugins =
-        await findTizenPlugins(project, dartOnly: true);
     final List<TizenPlugin> nativePlugins =
         await findTizenPlugins(project, nativeOnly: true);
-    _writeDartPluginRegistrant(tizenProject.managedDirectory, dartPlugins);
     _writeCppPluginRegistrant(tizenProject.managedDirectory, nativePlugins);
     _writeCsharpPluginRegistrant(tizenProject.managedDirectory, nativePlugins);
   }
@@ -277,7 +255,7 @@ Future<void> injectTizenPlugins(FlutterProject project) async {
       (await findPlugins(project)).map((Plugin p) => p.name).toList();
   for (final String plugin in plugins) {
     final String tizenPlugin = '${plugin}_tizen';
-    if (_knownPlugins.contains(plugin) && !plugins.contains(tizenPlugin)) {
+    if (_kKnownPlugins.contains(plugin) && !plugins.contains(tizenPlugin)) {
       globals.printStatus(
         '$tizenPlugin is available on pub.dev. Did you forget to add to pubspec.yaml?',
         color: TerminalColor.yellow,
@@ -367,40 +345,6 @@ TizenPlugin? _pluginFromPackage(
   );
 }
 
-void _writeDartPluginRegistrant(
-  Directory registryDirectory,
-  List<TizenPlugin> plugins,
-) {
-  final List<Map<String, Object?>> pluginConfigs =
-      plugins.map((TizenPlugin plugin) => plugin.toMap()).toList();
-  final Map<String, Object> context = <String, Object>{
-    'plugins': pluginConfigs,
-  };
-  _renderTemplateToFile(
-    '''
-//
-// Generated file. Do not edit.
-//
-
-// ignore_for_file: directives_ordering
-// ignore_for_file: lines_longer_than_80_chars
-
-{{#plugins}}
-import 'package:{{name}}/{{name}}.dart';
-{{/plugins}}
-
-// ignore: public_member_api_docs
-void registerPlugins() {
-{{#plugins}}
-  {{dartPluginClass}}.register();
-{{/plugins}}
-}
-''',
-    context,
-    registryDirectory.childFile('generated_plugin_registrant.dart'),
-  );
-}
-
 /// See: [writeWindowsPluginFiles] in `flutter_plugins.dart`
 void _writeCppPluginRegistrant(
   Directory registryDirectory,
@@ -411,7 +355,7 @@ void _writeCppPluginRegistrant(
   final Map<String, Object> context = <String, Object>{
     'plugins': pluginConfigs,
   };
-  _renderTemplateToFile(
+  renderTemplateToFile(
     '''
 //
 // Generated file. Do not edit.
@@ -452,7 +396,7 @@ void _writeCsharpPluginRegistrant(
   final Map<String, Object> context = <String, Object>{
     'plugins': pluginConfigs,
   };
-  _renderTemplateToFile(
+  renderTemplateToFile(
     '''
 //
 // Generated file. Do not edit.
@@ -488,7 +432,7 @@ namespace Runner
 }
 
 /// Source: [_renderTemplateToFile] in `flutter_plugins.dart`
-void _renderTemplateToFile(String template, Object? context, File file) {
+void renderTemplateToFile(String template, Object? context, File file) {
   final String renderedTemplate = globals.templateRenderer
       .renderString(template, context, htmlEscapeValues: false);
   file.createSync(recursive: true);
