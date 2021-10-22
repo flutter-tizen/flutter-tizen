@@ -65,7 +65,7 @@ namespace Tizen.Flutter.Embedding
         /// <summary>
         /// Sends a binary message to the given channel.
         ///
-        /// Returns a Task which completes to the received response.
+        /// Returns a Task which completes with the received response.
         /// </summary>
         public Task<byte[]> SendAsync(string channel, byte[] message)
         {
