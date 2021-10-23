@@ -25,20 +25,9 @@ namespace Tizen.Flutter.Embedding
             {
                 throw new ArgumentException("name cannot be null or empty");
             }
-
-            if (codec == null)
-            {
-                throw new ArgumentNullException(nameof(codec));
-            }
-
-            if (messenger == null)
-            {
-                throw new ArgumentNullException(nameof(messenger));
-            }
-
             _name = name;
-            _codec = codec;
-            _messenger = messenger;
+            _codec = codec ?? throw new ArgumentNullException(nameof(codec));
+            _messenger = messenger ?? throw new ArgumentNullException(nameof(messenger));
         }
 
         /// <summary>
