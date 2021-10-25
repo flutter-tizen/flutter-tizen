@@ -53,7 +53,7 @@ namespace Tizen.Flutter.Embedding
         /// <summary>
         /// Whether the window should be on top layer or not.
         /// </summary>
-        protected bool IsTopLevel { get; set; } = true;
+        protected bool IsTopLevel { get; set; } = false;
 
         /// <summary>
         /// The switches to pass to the Flutter engine.

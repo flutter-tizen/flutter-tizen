@@ -21,6 +21,7 @@ bool FlutterApp::OnCreate() {
   window_prop.height = window_height_;
   window_prop.transparent = is_window_transparent_;
   window_prop.focusable = is_window_focusable_;
+  window_prop.top_level = is_top_level_;
 
   // Read engine arguments passed from the tool.
   ParseEngineArgs();
