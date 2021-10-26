@@ -76,10 +76,10 @@ class TizenValidator extends DoctorValidator {
     }
     if (!tizenSdk.platformsDirectory
         .childDirectory('tizen-4.0')
-        .childDirectory('wearable')
+        .childDirectory('iot-headed')
         .childDirectory('rootstraps')
         .existsSync()) {
-      missingPackages.add('WEARABLE-4.0-NativeAppDevelopment-CLI');
+      missingPackages.add('IOT-Headed-4.0-NativeAppDevelopment-CLI');
     }
 
     if (missingPackages.isNotEmpty) {

@@ -74,7 +74,7 @@ class BuildTpkCommand extends BuildSubCommand
     if (deviceProfile == null) {
       globals.printStatus(
         'The "--device-profile" option is not set. Specify the target profile '
-        'for which you want to build your app.',
+        'for which you want to build your app. [default: "common"]',
         color: TerminalColor.yellow,
       );
       deviceProfile = 'common';
