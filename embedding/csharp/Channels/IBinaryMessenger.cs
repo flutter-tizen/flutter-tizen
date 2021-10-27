@@ -18,14 +18,14 @@ namespace Tizen.Flutter.Embedding
     public interface IBinaryMessenger
     {
         /// <summary>
-        /// Sends a binary message to the Flutter.
+        /// Sends a binary message to the Flutter application on the given channel.
         /// </summary>
         /// <param name="channel">The channel to send the message to.</param>
         /// <param name="message">The message to send.</param>
         void Send(string channel, Byte[] message);
 
         /// <summary>
-        /// Sends a binary message to the Flutter asynchronously.
+        /// Sends a binary message to the Flutter application on the given channel asynchronously.
         /// </summary>
         /// <param name="channel">The channel to send the message to.</param>
         /// <param name="message">The message to send.</param>
@@ -33,7 +33,8 @@ namespace Tizen.Flutter.Embedding
         Task<byte[]> SendAsync(string channel, byte[] message);
 
         /// <summary>
-        /// Sets a callback for a binary message channel.
+        /// Sets a callback for receiving messages from the Flutter application on the given channel,
+        /// without decoding them.
         /// </summary>
         /// <param name="channel">The channel to listen on.</param>
         /// <param name="handler">The callback to invoke when a message is received.</param>

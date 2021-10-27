@@ -5,7 +5,7 @@
 namespace Tizen.Flutter.Embedding
 {
     /// <summary>
-    /// The message codec for binary data.
+    /// <see cref="T:IMessageCodec" /> with unencoded binary messages.
     /// </summary>
     public class BinaryCodec : IMessageCodec<byte[]>
     {
