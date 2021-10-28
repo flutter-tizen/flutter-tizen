@@ -11,15 +11,14 @@ import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/commands/test.dart';
 import 'package:flutter_tools/src/dart/language_version.dart';
 import 'package:flutter_tools/src/dart/package_map.dart';
+import 'package:flutter_tools/src/device.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/project.dart';
 import 'package:flutter_tools/src/runner/flutter_command.dart';
 import 'package:flutter_tools/src/test/runner.dart';
 import 'package:flutter_tools/src/test/test_wrapper.dart';
+import 'package:flutter_tools/src/test/watcher.dart';
 import 'package:package_config/package_config.dart';
-import 'package:test_core/src/executable.dart' as test;
-import 'package:test_core/src/platform.dart' as hack
-    show registerPlatformPlugin;
 
 import '../tizen_cache.dart';
 import '../tizen_plugins.dart';
@@ -28,61 +27,49 @@ class TizenTestCommand extends TestCommand with TizenRequiredArtifacts {
   TizenTestCommand({
     bool verboseHelp = false,
     TestWrapper testWrapper = const TestWrapper(),
-    FlutterTestRunner testRunner = const FlutterTestRunner(),
+    FlutterTestRunner testRunner,
   }) : super(
           verboseHelp: verboseHelp,
           testWrapper: testWrapper,
-          testRunner: testRunner,
+          testRunner: testRunner ?? TizenTestRunner(),
         );
 
   @override
   Future<FlutterCommandResult> runCommand() {
-    // ignore: invalid_use_of_visible_for_testing_member
-    if (isIntegrationTest && testWrapper is TizenTestWrapper) {
-      (testWrapper as TizenTestWrapper).setIntegrationTestMode();
+    if (testRunner is TizenTestRunner) {
+      // ignore: invalid_use_of_visible_for_testing_member
+      (testRunner as TizenTestRunner).isIntegrationTest = isIntegrationTest;
     }
     return super.runCommand();
   }
 }
 
-/// See: [TestWrapper] in `test_wrapper.dart`
-class TizenTestWrapper implements TestWrapper {
-  bool _isIntegrationTest = false;
+class TizenTestRunner implements FlutterTestRunner {
+  TizenTestRunner();
 
-  void setIntegrationTestMode() => _isIntegrationTest = true;
+  final FlutterTestRunner testRunner = const FlutterTestRunner();
 
-  @override
-  Future<void> main(List<String> args) async {
-    if (!_isIntegrationTest) {
-      return test.main(args);
-    }
+  bool isIntegrationTest = false;
 
-    final int filesOptionIndex = args.lastIndexOf('--');
-    final List<String> newArgs = args.sublist(0, filesOptionIndex + 1);
-    final List<File> testFiles = args
-        .sublist(filesOptionIndex + 1)
-        .map((String path) => globals.fs.file(path))
-        .toList();
+  /// See: [_generateEntrypointWithPluginRegistrant] in `tizen_plugins.dart`
+  Stream<String> _generateEntrypointWrappers(List<String> testFiles) async* {
     final FlutterProject project = FlutterProject.current();
-
-    // Keep this logic in sync with _generateEntrypointWithPluginRegistrant
-    // in tizen_plugins.dart.
     final PackageConfig packageConfig = await loadPackageConfigWithLogging(
       project.packageConfigFile,
       logger: globals.logger,
     );
+    final List<TizenPlugin> dartPlugins =
+        await findTizenPlugins(project, dartOnly: true);
     final Directory runnerDir = globals.fs.systemTempDirectory.createTempSync();
 
-    for (final File testFile in testFiles) {
+    for (final File testFile
+        in testFiles.map((String path) => globals.fs.file(path))) {
       final Uri testFileUri = testFile.absolute.uri;
       final LanguageVersion languageVersion = determineLanguageVersion(
         testFile,
         packageConfig.packageOf(testFileUri),
         Cache.flutterRoot,
       );
-      final List<TizenPlugin> dartPlugins =
-          await findTizenPlugins(project, dartOnly: true);
-
       final Map<String, Object> context = <String, Object>{
         'mainImport': testFileUri.toString(),
         'dartLanguageVersion': languageVersion.toString(),
@@ -111,15 +98,73 @@ void main() {
         context,
         newTestFile,
       );
-      newArgs.add(newTestFile.absolute.path);
+      yield newTestFile.absolute.path;
     }
-    return test.main(newArgs);
   }
 
-  /// Source: [TestWrapper.registerPlatformPlugin] in `test_wrapper.dart`.
   @override
-  void registerPlatformPlugin(Iterable<Runtime> runtimes,
-      FutureOr<PlatformPlugin> Function() platforms) {
-    hack.registerPlatformPlugin(runtimes, platforms);
+  Future<int> runTests(
+    TestWrapper testWrapper,
+    List<String> testFiles, {
+    DebuggingOptions debuggingOptions,
+    List<String> names = const <String>[],
+    List<String> plainNames = const <String>[],
+    String tags,
+    String excludeTags,
+    bool enableObservatory = false,
+    bool ipv6 = false,
+    bool machine = false,
+    String precompiledDillPath,
+    Map<String, String> precompiledDillFiles,
+    bool updateGoldens = false,
+    TestWatcher watcher,
+    int concurrency,
+    bool buildTestAssets = false,
+    FlutterProject flutterProject,
+    String icudtlPath,
+    Directory coverageDirectory,
+    bool web = false,
+    String randomSeed,
+    String reporter,
+    String timeout,
+    bool runSkipped = false,
+    int shardIndex,
+    int totalShards,
+    Device integrationTestDevice,
+    String integrationTestUserIdentifier,
+  }) async {
+    if (isIntegrationTest) {
+      testFiles = await _generateEntrypointWrappers(testFiles).toList();
+    }
+    return testRunner.runTests(
+      testWrapper,
+      testFiles,
+      debuggingOptions: debuggingOptions,
+      names: names,
+      plainNames: plainNames,
+      tags: tags,
+      excludeTags: excludeTags,
+      enableObservatory: enableObservatory,
+      ipv6: ipv6,
+      machine: machine,
+      precompiledDillPath: precompiledDillPath,
+      precompiledDillFiles: precompiledDillFiles,
+      updateGoldens: updateGoldens,
+      watcher: watcher,
+      concurrency: concurrency,
+      buildTestAssets: buildTestAssets,
+      flutterProject: flutterProject,
+      icudtlPath: icudtlPath,
+      coverageDirectory: coverageDirectory,
+      web: web,
+      randomSeed: randomSeed,
+      reporter: reporter,
+      timeout: timeout,
+      runSkipped: runSkipped,
+      shardIndex: shardIndex,
+      totalShards: totalShards,
+      integrationTestDevice: integrationTestDevice,
+      integrationTestUserIdentifier: integrationTestUserIdentifier,
+    );
   }
 }

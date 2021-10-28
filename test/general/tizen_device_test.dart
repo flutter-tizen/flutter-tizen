@@ -31,7 +31,7 @@ TizenDevice _createTizenDevice({
     modelId: 'TestModel',
     logger: BufferLogger.test(),
     processManager: processManager ?? FakeProcessManager.any(),
-    tizenSdk: FakeTizenSdk(fileSystem),
+    tizenSdk: _FakeTizenSdk(fileSystem),
     fileSystem: fileSystem,
   );
 }
@@ -54,7 +54,7 @@ void main() {
       processManager: processManager,
       fileSystem: fileSystem,
     );
-    final FakeTizenManifest tizenManifest = FakeTizenManifest();
+    final TizenManifest tizenManifest = _FakeTizenManifest();
     final TizenTpk tpk = TizenTpk(
       file: fileSystem.file('app.tpk')..createSync(),
       manifest: tizenManifest,
@@ -115,7 +115,7 @@ void main() {
     );
     final TizenTpk tpk = TizenTpk(
       file: fileSystem.file('app.tpk')..createSync(),
-      manifest: FakeTizenManifest(),
+      manifest: _FakeTizenManifest(),
     );
 
     processManager.addCommands(<FakeCommand>[
@@ -211,15 +211,15 @@ void main() {
   });
 }
 
-class FakeTizenSdk extends Fake implements TizenSdk {
-  FakeTizenSdk(FileSystem fileSystem) : sdb = fileSystem.file('sdb');
+class _FakeTizenSdk extends Fake implements TizenSdk {
+  _FakeTizenSdk(FileSystem fileSystem) : sdb = fileSystem.file('sdb');
 
   @override
   File sdb;
 }
 
-class FakeTizenManifest extends Fake implements TizenManifest {
-  FakeTizenManifest();
+class _FakeTizenManifest extends Fake implements TizenManifest {
+  _FakeTizenManifest();
 
   @override
   String packageId = 'TestPackage';
