@@ -8,13 +8,13 @@ using System.Threading.Tasks;
 namespace Tizen.Flutter.Embedding
 {
     /// <summary>
-    /// A channel that communicates with the Flutter framework.
+    /// A named channel for communicating with the Flutter application using asynchronous message passing.
     /// </summary>
     public class BasicMessageChannel<T>
     {
-        private readonly IBinaryMessenger _messenger;
         private readonly string _name;
         private readonly IMessageCodec<T> _codec;
+        private readonly IBinaryMessenger _messenger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BasicMessageChannel{T}"/> class.
@@ -39,7 +39,22 @@ namespace Tizen.Flutter.Embedding
         }
 
         /// <summary>
-        /// Sends a message to the Flutter framework.
+        /// The logical channel on which communication happens, not null
+        /// </summary>
+        public string Name => _name;
+
+        /// <summary>
+        /// The message codec used by this channel, not null
+        /// </summary>
+        public IMessageCodec<T> Codec => _codec;
+
+        /// <summary>
+        /// The messenger which sends the bytes for this channel, not null
+        /// </summary>
+        public IBinaryMessenger BinaryMessenger => _messenger;
+
+        /// <summary>
+        /// Sends the specified message to the Flutter application on this channel.
         /// </summary>
         /// <param name="message">The message to send.</param>
         public void Send(T message)
@@ -48,7 +63,7 @@ namespace Tizen.Flutter.Embedding
         }
 
         /// <summary>
-        /// Sends a message to the Flutter framework asynchronously.
+        /// Sends the specified message to the Flutter application on this channel asynchronously.
         /// </summary>
         /// <param name="message">The message to send.</param>
         /// <returns>A task that completes with the response message.</returns>
@@ -59,7 +74,7 @@ namespace Tizen.Flutter.Embedding
         }
 
         /// <summary>
-        /// Sets a callback that is invoked when a message is received from the Flutter framework.
+        /// Sets a callback for receiving messages from the Flutter application on this channel.
         /// </summary>
         /// <param name="callback">The callback to invoke when a message is received.</param>
         public void SetMessageHandler(Func<T, Task<T>> handler)
