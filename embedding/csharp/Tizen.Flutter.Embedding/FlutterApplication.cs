@@ -51,7 +51,8 @@ namespace Tizen.Flutter.Embedding
         protected bool IsWindowFocusable { get; set; } = true;
 
         /// <summary>
-        /// Whether the window should be on top layer or not.
+        /// Whether the app should be displayed over other apps.
+        /// If true, the "http://tizen.org/privilege/window.priority.set" privilege must be added to tizen-manifest.xml file.
         /// </summary>
         protected bool IsTopLevel { get; set; } = false;
 
