@@ -6,12 +6,13 @@ namespace Tizen.Flutter.Embedding
 {
     /// <summary>
     /// A message encoding/decoding mechanism.
-    /// Both operations throw an exception, if conversion fails, Such situations should be treated as programming errors.
+    /// <para>Both operations throw an exception, if conversion fails, Such situations should be treated
+    /// as programming errors.</para>
     /// </summary>
     public interface IMessageCodec<T>
     {
         /// <summary>
-        /// Encodes the specified message in binary.
+        /// Encodes the specified message into binary.
         /// </summary>
         /// <param name="message">The message to encode.</param>
         byte[] EncodeMessage(T message);
@@ -22,5 +23,4 @@ namespace Tizen.Flutter.Embedding
         /// <param name="message">The message to decode.</param>
         T DecodeMessage(byte[] message);
     }
-
 }
