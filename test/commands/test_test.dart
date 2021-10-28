@@ -77,10 +77,7 @@ void main() {
       "packageUri": "lib/",
       "languageVersion": "2.12"
     }
-  ],
-  "generated": "2021-02-24T07:55:20.084834Z",
-  "generator": "pub",
-  "generatorVersion": "2.13.0"
+  ]
 }
 ''');
     await runner.run(const <String>[
@@ -144,10 +141,7 @@ dependencies:
       "packageUri": "lib/",
       "languageVersion": "2.12"
     }
-  ],
-  "generated": "2021-02-24T07:55:20.084834Z",
-  "generator": "pub",
-  "generatorVersion": "2.13.0"
+  ]
 }
 ''');
     await runner.run(const <String>[
