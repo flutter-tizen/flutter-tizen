@@ -35,13 +35,10 @@ void main() {
     final Directory projectDir = fileSystem.directory('/project');
     pubspecFile = projectDir.childFile('pubspec.yaml')
       ..createSync(recursive: true);
-    packageConfigFile = projectDir
-        .childDirectory('.dart_tool')
-        .childFile('package_config.json')
+    packageConfigFile = projectDir.childFile('.dart_tool/package_config.json')
       ..createSync(recursive: true);
     projectDir
-        .childDirectory('integration_test')
-        .childFile('some_integration_test.dart')
+        .childFile('integration_test/some_integration_test.dart')
         .createSync(recursive: true);
     fileSystem.currentDirectory = projectDir.path;
 
@@ -118,7 +115,6 @@ dependencies:
   some_dart_plugin:
     path: ${pluginDir.path}
 ''');
-    final Uri pluginUri = Uri.file(pluginDir.path);
     packageConfigFile.writeAsStringSync('''
 {
   "configVersion": 2,
@@ -137,7 +133,7 @@ dependencies:
     },
     {
       "name": "some_dart_plugin",
-      "rootUri": "${pluginUri.toString()}",
+      "rootUri": "${pluginDir.uri}",
       "packageUri": "lib/",
       "languageVersion": "2.12"
     }

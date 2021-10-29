@@ -6,7 +6,6 @@
 
 import 'package:file/memory.dart';
 import 'package:flutter_tizen/tizen_device.dart';
-import 'package:flutter_tizen/tizen_sdk.dart';
 import 'package:flutter_tizen/tizen_tpk.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/base/logger.dart';
@@ -18,6 +17,7 @@ import 'package:test/fake.dart';
 import '../src/common.dart';
 import '../src/fake_devices.dart';
 import '../src/fake_process_manager.dart';
+import '../src/fake_tizen_sdk.dart';
 
 const String _kDeviceId = 'TestDeviceId';
 
@@ -31,13 +31,13 @@ TizenDevice _createTizenDevice({
     modelId: 'TestModel',
     logger: BufferLogger.test(),
     processManager: processManager ?? FakeProcessManager.any(),
-    tizenSdk: _FakeTizenSdk(fileSystem),
+    tizenSdk: FakeTizenSdk(fileSystem),
     fileSystem: fileSystem,
   );
 }
 
 List<String> _sdbCommand(List<String> args) {
-  return <String>['sdb', '-s', _kDeviceId, ...args];
+  return <String>['/tizen-studio/tools/sdb', '-s', _kDeviceId, ...args];
 }
 
 void main() {
@@ -209,13 +209,6 @@ void main() {
     expect(tvDevice.deviceProfile, equals('tv'));
     expect(tvDevice.isSupported(), isFalse);
   });
-}
-
-class _FakeTizenSdk extends Fake implements TizenSdk {
-  _FakeTizenSdk(FileSystem fileSystem) : sdb = fileSystem.file('sdb');
-
-  @override
-  File sdb;
 }
 
 class _FakeTizenManifest extends Fake implements TizenManifest {

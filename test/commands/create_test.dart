@@ -75,13 +75,12 @@ void main() {
       projectDir.path,
     ]);
 
-    expect(projectDir.childDirectory('lib').childFile('main.dart'), exists);
-    final Directory tizenDir = projectDir.childDirectory('tizen');
-    expect(tizenDir.childDirectory('shared').listSync(), isNotEmpty);
-    expect(tizenDir.childFile('.gitignore'), exists);
-    expect(tizenDir.childFile('App.cs'), exists);
-    expect(tizenDir.childFile('Runner.csproj'), exists);
-    expect(tizenDir.childFile('tizen-manifest.xml'), exists);
+    expect(projectDir.childFile('lib/main.dart'), exists);
+    expect(projectDir.childDirectory('tizen/shared').listSync(), isNotEmpty);
+    expect(projectDir.childFile('tizen/.gitignore'), exists);
+    expect(projectDir.childFile('tizen/App.cs'), exists);
+    expect(projectDir.childFile('tizen/Runner.csproj'), exists);
+    expect(projectDir.childFile('tizen/tizen-manifest.xml'), exists);
   }, overrides: <Type, Generator>{});
 
   testUsingContext('Can create a C++ service app project', () async {
@@ -97,15 +96,14 @@ void main() {
       projectDir.path,
     ]);
 
-    expect(projectDir.childDirectory('lib').childFile('main.dart'), exists);
-    final Directory tizenDir = projectDir.childDirectory('tizen');
-    expect(tizenDir.childDirectory('inc').listSync(), isNotEmpty);
-    expect(tizenDir.childDirectory('shared').listSync(), isNotEmpty);
-    expect(tizenDir.childDirectory('src').listSync(), isNotEmpty);
-    expect(tizenDir.childFile('.exportMap'), exists);
-    expect(tizenDir.childFile('.gitignore'), exists);
-    expect(tizenDir.childFile('project_def.prop'), exists);
-    expect(tizenDir.childFile('tizen-manifest.xml'), exists);
+    expect(projectDir.childFile('lib/main.dart'), exists);
+    expect(projectDir.childDirectory('tizen/inc').listSync(), isNotEmpty);
+    expect(projectDir.childDirectory('tizen/shared').listSync(), isNotEmpty);
+    expect(projectDir.childDirectory('tizen/src').listSync(), isNotEmpty);
+    expect(projectDir.childFile('tizen/.exportMap'), exists);
+    expect(projectDir.childFile('tizen/.gitignore'), exists);
+    expect(projectDir.childFile('tizen/project_def.prop'), exists);
+    expect(projectDir.childFile('tizen/tizen-manifest.xml'), exists);
   }, overrides: <Type, Generator>{});
 
   testUsingContext('Cannot create a C# multi app project', () async {
@@ -135,8 +133,7 @@ void main() {
       projectDir.path,
     ]);
 
-    final File mainDart =
-        projectDir.childDirectory('lib').childFile('main.dart');
+    final File mainDart = projectDir.childFile('lib/main.dart');
     expect(mainDart.readAsStringSync(), contains('Tizen Multi App Demo'));
 
     final String rawPubspec =
@@ -145,9 +142,8 @@ void main() {
     expect(pubspec.dependencies, contains('tizen_app_control'));
     expect(pubspec.dependencies, contains('messageport_tizen'));
 
-    final Directory tizenDir = projectDir.childDirectory('tizen');
-    expect(tizenDir.childDirectory('ui').listSync(), isNotEmpty);
-    expect(tizenDir.childDirectory('service').listSync(), isNotEmpty);
+    expect(projectDir.childDirectory('tizen/ui').listSync(), isNotEmpty);
+    expect(projectDir.childDirectory('tizen/service').listSync(), isNotEmpty);
 
     final ProcessResult result = await Process.run(
       'git',
@@ -176,14 +172,12 @@ void main() {
       unexpectedPlatforms: <String>['tizen'],
     );
 
-    final Directory exampleDir = projectDir.childDirectory('example');
-    expect(exampleDir.childDirectory('lib').childFile('main.dart'), exists);
-    expect(exampleDir.childDirectory('tizen').listSync(), isNotEmpty);
-    final Directory tizenDir = projectDir.childDirectory('tizen');
-    expect(tizenDir.childDirectory('inc').listSync(), isNotEmpty);
-    expect(tizenDir.childDirectory('src').listSync(), isNotEmpty);
-    expect(tizenDir.childFile('.gitignore'), exists);
-    expect(tizenDir.childFile('project_def.prop'), exists);
+    expect(projectDir.childFile('example/lib/main.dart'), exists);
+    expect(projectDir.childDirectory('example/tizen').listSync(), isNotEmpty);
+    expect(projectDir.childDirectory('tizen/inc').listSync(), isNotEmpty);
+    expect(projectDir.childDirectory('tizen/src').listSync(), isNotEmpty);
+    expect(projectDir.childFile('tizen/.gitignore'), exists);
+    expect(projectDir.childFile('tizen/project_def.prop'), exists);
     expect(logger.errorText, contains(_kNoPlatformsMessage));
   }, overrides: <Type, Generator>{
     Logger: () => logger,
@@ -216,9 +210,7 @@ void main() {
       '--template=plugin',
       projectDir.path,
     ]);
-
-    final Directory exampleDir = projectDir.childDirectory('example');
-    expect(exampleDir.childDirectory('tizen'), isNot(exists));
+    expect(projectDir.childDirectory('example/tizen'), isNot(exists));
     expect(projectDir.childDirectory('tizen'), isNot(exists));
     expect(logger.errorText, contains(_kNoPlatformsMessage));
 
@@ -228,7 +220,7 @@ void main() {
       '--platforms=tizen',
       projectDir.path,
     ]);
-    expect(exampleDir.childDirectory('tizen').listSync(), isNotEmpty);
+    expect(projectDir.childDirectory('example/tizen').listSync(), isNotEmpty);
     expect(projectDir.childDirectory('tizen').listSync(), isNotEmpty);
     expect(logger.statusText, isNot(contains(_kNoPlatformsMessage)));
   }, overrides: <Type, Generator>{
