@@ -52,7 +52,8 @@ class TizenTestRunner implements FlutterTestRunner {
   bool isIntegrationTest = false;
 
   /// See: [_generateEntrypointWithPluginRegistrant] in `tizen_plugins.dart`
-  Stream<String> _generateEntrypointWrappers(List<String> testFiles) async* {
+  Future<List<String>> _generateEntrypointWrappers(
+      List<String> testFiles) async {
     final FlutterProject project = FlutterProject.current();
     final PackageConfig packageConfig = await loadPackageConfigWithLogging(
       project.packageConfigFile,
@@ -62,6 +63,7 @@ class TizenTestRunner implements FlutterTestRunner {
         await findTizenPlugins(project, dartOnly: true);
     final Directory runnerDir = globals.fs.systemTempDirectory.createTempSync();
 
+    final List<String> newTestFiles = <String>[];
     for (final File testFile
         in testFiles.map((String path) => globals.fs.file(path))) {
       final Uri testFileUri = testFile.absolute.uri;
@@ -98,8 +100,9 @@ void main() {
         context,
         newTestFile,
       );
-      yield newTestFile.absolute.path;
+      newTestFiles.add(newTestFile.absolute.path);
     }
+    return newTestFiles;
   }
 
   @override
@@ -134,7 +137,7 @@ void main() {
     String integrationTestUserIdentifier,
   }) async {
     if (isIntegrationTest) {
-      testFiles = await _generateEntrypointWrappers(testFiles).toList();
+      testFiles = await _generateEntrypointWrappers(testFiles);
     }
     return testRunner.runTests(
       testWrapper,
