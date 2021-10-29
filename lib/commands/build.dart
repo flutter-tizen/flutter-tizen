@@ -6,11 +6,9 @@
 
 import 'package:flutter_tools/src/android/build_validation.dart';
 import 'package:flutter_tools/src/base/common.dart';
-import 'package:flutter_tools/src/base/terminal.dart';
 import 'package:flutter_tools/src/build_info.dart';
 import 'package:flutter_tools/src/commands/build.dart';
 import 'package:flutter_tools/src/commands/build_apk.dart';
-import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/project.dart';
 import 'package:flutter_tools/src/runner/flutter_command.dart';
 
@@ -36,20 +34,20 @@ class BuildTpkCommand extends BuildSubCommand
       'target-arch',
       defaultsTo: 'arm',
       allowed: <String>['arm', 'arm64', 'x86'],
-      help: 'Target architecture for which the the app is compiled',
+      help: 'The target architecture for which the the app is compiled.',
     );
     argParser.addOption(
       'device-profile',
       abbr: 'p',
       allowed: <String>['mobile', 'wearable', 'tv', 'common'],
-      help: 'Target device type that the app will run on. Choose "wearable" '
+      help: 'The type of device that the app will run on. Choose "wearable" '
           'for watch devices and "common" for IoT (Raspberry Pi) devices.',
     );
     argParser.addOption(
       'security-profile',
       abbr: 's',
-      help: 'The security profile name to sign the TPK with (defaults to the '
-          'current active profile)',
+      help: 'The name of security profile to sign the TPK with. (defaults to '
+          'the current active profile)',
     );
   }
 
@@ -70,14 +68,10 @@ class BuildTpkCommand extends BuildSubCommand
   /// See: [BuildApkCommand.runCommand] in `build_apk.dart`
   @override
   Future<FlutterCommandResult> runCommand() async {
-    String deviceProfile = stringArg('device-profile');
+    final String deviceProfile = stringArg('device-profile');
     if (deviceProfile == null) {
-      globals.printStatus(
-        'The "--device-profile" option is not set. Specify the target profile '
-        'for which you want to build your app.',
-        color: TerminalColor.yellow,
-      );
-      deviceProfile = 'common';
+      throwToolExit(
+          'The --device-profile (-p) option is mandatory. e.g. -pwearable, -ptv');
     }
     final BuildInfo buildInfo = await getBuildInfo();
     final TizenBuildInfo tizenBuildInfo = TizenBuildInfo(
