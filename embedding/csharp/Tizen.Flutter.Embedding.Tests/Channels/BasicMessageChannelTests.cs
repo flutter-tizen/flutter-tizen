@@ -1,4 +1,4 @@
-// Copyright 2020 Samsung Electronics Co., Ltd. All rights reserved.
+// Copyright 2021 Samsung Electronics Co., Ltd. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -98,7 +98,7 @@ namespace Tizen.Flutter.Embedding.Tests.Channels
                     return null;
                 });
 
-                messenger.SetMessageHandler(Arg.Is<string>(x => x == TEST_CHANNEL_NAME), Arg.Any<BinaryMessageHandler>());
+                messenger.Received().SetMessageHandler(Arg.Is<string>(x => x == TEST_CHANNEL_NAME), Arg.Any<BinaryMessageHandler>());
             }
 
             [Fact]
@@ -108,7 +108,7 @@ namespace Tizen.Flutter.Embedding.Tests.Channels
                 var channel = new BasicMessageChannel<string>(TEST_CHANNEL_NAME, new StringCodec(), messenger);
                 channel.SetMessageHandler(null);
 
-                messenger.SetMessageHandler(Arg.Is<string>(x => x == TEST_CHANNEL_NAME), null);
+                messenger.Received().SetMessageHandler(Arg.Is<string>(x => x == TEST_CHANNEL_NAME), null);
             }
         }
     }

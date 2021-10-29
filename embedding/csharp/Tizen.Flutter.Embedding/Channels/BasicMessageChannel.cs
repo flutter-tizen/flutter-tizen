@@ -76,9 +76,18 @@ namespace Tizen.Flutter.Embedding
         /// <summary>
         /// Sets a callback for receiving messages from the Flutter application on this channel.
         /// </summary>
-        /// <param name="callback">The callback to invoke when a message is received.</param>
+        /// <remarks>
+        /// The given callback will replace the currently registered callback for this channel, if any.
+        /// To remove the handler, pass null as the handler argument.
+        /// </remarks>
+        /// <param name="handler">The callback to invoke when a message is received.</param>
         public void SetMessageHandler(Func<T, Task<T>> handler)
         {
+            if (handler == null)
+            {
+                _messenger.SetMessageHandler(_name, null);
+                return;
+            }
             _messenger.SetMessageHandler(_name, async (bytes) =>
             {
                 var message = _codec.DecodeMessage(bytes);

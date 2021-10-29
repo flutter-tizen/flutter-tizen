@@ -1,4 +1,4 @@
-// Copyright 2020 Samsung Electronics Co., Ltd. All rights reserved.
+// Copyright 2021 Samsung Electronics Co., Ltd. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,7 +30,8 @@ namespace Tizen.Flutter.Embedding.Tests.Channels
         }
 
         [Fact]
-        public void Returns_Null_If_Message_Is_Null() {
+        public void Returns_Null_If_Message_Is_Null()
+        {
             BinaryCodec codec = new BinaryCodec();
             Assert.Null(codec.EncodeMessage(null));
             Assert.Null(codec.DecodeMessage(null));
