@@ -274,9 +274,8 @@ Future<List<TizenPlugin>> findTizenPlugins(
 }) async {
   final List<TizenPlugin> plugins = <TizenPlugin>[];
   final FileSystem fs = project.directory.fileSystem;
-  final File packagesFile = project.directory.childFile('.packages');
   final PackageConfig packageConfig = await loadPackageConfigWithLogging(
-    packagesFile,
+    project.packageConfigFile,
     logger: globals.logger,
     throwOnError: throwOnError,
   );
