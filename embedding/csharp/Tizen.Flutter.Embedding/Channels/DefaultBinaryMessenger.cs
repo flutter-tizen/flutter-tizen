@@ -6,9 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-
 using Tizen.Applications;
-
 using static Tizen.Flutter.Embedding.Interop;
 
 namespace Tizen.Flutter.Embedding
