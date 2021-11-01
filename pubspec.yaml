@@ -20,10 +20,9 @@ dependencies:
   yaml:
 
 dev_dependencies:
+  args:
   file_testing:
   flutter_test:
     sdk: flutter
-  mockito:
-  pedantic:
   pubspec_parse:
   test:

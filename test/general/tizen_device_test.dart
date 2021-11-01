@@ -6,7 +6,6 @@
 
 import 'package:file/memory.dart';
 import 'package:flutter_tizen/tizen_device.dart';
-import 'package:flutter_tizen/tizen_sdk.dart';
 import 'package:flutter_tizen/tizen_tpk.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/base/logger.dart';
@@ -18,6 +17,7 @@ import 'package:test/fake.dart';
 import '../src/common.dart';
 import '../src/fake_devices.dart';
 import '../src/fake_process_manager.dart';
+import '../src/fake_tizen_sdk.dart';
 
 const String _kDeviceId = 'TestDeviceId';
 
@@ -37,7 +37,7 @@ TizenDevice _createTizenDevice({
 }
 
 List<String> _sdbCommand(List<String> args) {
-  return <String>['sdb', '-s', _kDeviceId, ...args];
+  return <String>['/tizen-studio/tools/sdb', '-s', _kDeviceId, ...args];
 }
 
 void main() {
@@ -54,7 +54,7 @@ void main() {
       processManager: processManager,
       fileSystem: fileSystem,
     );
-    final FakeTizenManifest tizenManifest = FakeTizenManifest();
+    final TizenManifest tizenManifest = _FakeTizenManifest();
     final TizenTpk tpk = TizenTpk(
       file: fileSystem.file('app.tpk')..createSync(),
       manifest: tizenManifest,
@@ -115,7 +115,7 @@ void main() {
     );
     final TizenTpk tpk = TizenTpk(
       file: fileSystem.file('app.tpk')..createSync(),
-      manifest: FakeTizenManifest(),
+      manifest: _FakeTizenManifest(),
     );
 
     processManager.addCommands(<FakeCommand>[
@@ -211,15 +211,8 @@ void main() {
   });
 }
 
-class FakeTizenSdk extends Fake implements TizenSdk {
-  FakeTizenSdk(FileSystem fileSystem) : sdb = fileSystem.file('sdb');
-
-  @override
-  File sdb;
-}
-
-class FakeTizenManifest extends Fake implements TizenManifest {
-  FakeTizenManifest();
+class _FakeTizenManifest extends Fake implements TizenManifest {
+  _FakeTizenManifest();
 
   @override
   String packageId = 'TestPackage';

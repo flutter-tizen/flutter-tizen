@@ -8,8 +8,11 @@ import 'package:flutter_tools/src/android/android_emulator.dart';
 import 'package:flutter_tools/src/android/android_sdk.dart';
 import 'package:flutter_tools/src/base/common.dart';
 import 'package:flutter_tools/src/base/context.dart';
+import 'package:flutter_tools/src/base/logger.dart';
+import 'package:flutter_tools/src/base/platform.dart';
 import 'package:flutter_tools/src/base/process.dart';
 import 'package:flutter_tools/src/globals_null_migrated.dart' as globals;
+import 'package:process/process.dart';
 import 'package:xml/xml.dart';
 
 TizenSdk? get tizenSdk => context.get<TizenSdk>();
@@ -17,7 +20,14 @@ TizenSdk? get tizenSdk => context.get<TizenSdk>();
 File? get dotnetCli => globals.os.which('dotnet');
 
 class TizenSdk {
-  TizenSdk._(this.directory);
+  TizenSdk(
+    this.directory, {
+    required Logger logger,
+    required Platform platform,
+    required ProcessManager processManager,
+  })  : _platform = platform,
+        _processUtils =
+            ProcessUtils(logger: logger, processManager: processManager);
 
   /// See: [AndroidSdk.locateAndroidSdk] in `android_sdk.dart`
   static TizenSdk? locateSdk() {
@@ -44,15 +54,18 @@ class TizenSdk {
     if (tizenHomeDir == null || !tizenHomeDir.existsSync()) {
       return null;
     }
-    return TizenSdk._(tizenHomeDir);
+    return TizenSdk(
+      tizenHomeDir,
+      logger: globals.logger,
+      platform: globals.platform,
+      processManager: globals.processManager,
+    );
   }
 
-  final ProcessUtils _processUtils = ProcessUtils(
-    logger: globals.logger,
-    processManager: globals.processManager,
-  );
-
   final Directory directory;
+
+  final Platform _platform;
+  final ProcessUtils _processUtils;
 
   Directory get platformsDirectory => directory.childDirectory('platforms');
 
@@ -91,21 +104,20 @@ class TizenSdk {
   }
 
   File get sdb =>
-      toolsDirectory.childFile(globals.platform.isWindows ? 'sdb.exe' : 'sdb');
+      toolsDirectory.childFile(_platform.isWindows ? 'sdb.exe' : 'sdb');
 
   File get tizenCli => toolsDirectory
       .childDirectory('ide')
       .childDirectory('bin')
-      .childFile(globals.platform.isWindows ? 'tizen.bat' : 'tizen');
+      .childFile(_platform.isWindows ? 'tizen.bat' : 'tizen');
 
   File get emCli => toolsDirectory
       .childDirectory('emulator')
       .childDirectory('bin')
-      .childFile(globals.platform.isWindows ? 'em-cli.bat' : 'em-cli');
+      .childFile(_platform.isWindows ? 'em-cli.bat' : 'em-cli');
 
-  File get packageManagerCli => directory
-      .childDirectory('package-manager')
-      .childFile(globals.platform.isWindows
+  File get packageManagerCli =>
+      directory.childDirectory('package-manager').childFile(_platform.isWindows
           ? 'package-manager-cli.exe'
           : 'package-manager-cli.bin');
 
@@ -123,8 +135,8 @@ class TizenSdk {
   ///
   /// On Windows, appends the msys2 executables directory to PATH and returns.
   String _getPathVariable() {
-    String path = globals.platform.environment['PATH'] ?? '';
-    if (globals.platform.isWindows) {
+    String path = _platform.environment['PATH'] ?? '';
+    if (_platform.isWindows) {
       final Directory msysUsrBin = toolsDirectory
           .childDirectory('msys2')
           .childDirectory('usr')
