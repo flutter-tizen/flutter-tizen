@@ -56,6 +56,11 @@ namespace Tizen.Flutter.Embedding
         /// </summary>
         public void Send(string channel, byte[] message)
         {
+            if (message == null)
+            {
+                FlutterDesktopMessengerSend(_messenger, channel, IntPtr.Zero, 0);
+                return;
+            }
             using (var pinned = PinnedObject.Get(message))
             {
                 FlutterDesktopMessengerSend(_messenger, channel, pinned.Pointer, (uint)message.Length);
@@ -75,6 +80,11 @@ namespace Tizen.Flutter.Embedding
             {
                 replyId = _replyCallbackId++;
                 _replyCallbackSources.Add(replyId, tcs);
+            }
+            if (message == null)
+            {
+                FlutterDesktopMessengerSendWithReply(_messenger, channel, IntPtr.Zero, 0, _replyCallback, (IntPtr)replyId);
+                return tcs.Task;
             }
             using (var pinned = PinnedObject.Get(message))
             {

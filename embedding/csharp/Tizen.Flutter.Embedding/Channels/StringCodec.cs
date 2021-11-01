@@ -14,12 +14,20 @@ namespace Tizen.Flutter.Embedding
         /// <InheritDoc/>
         public byte[] EncodeMessage(string message)
         {
+            if (message == null)
+            {
+                return null;
+            }
             return Encoding.UTF8.GetBytes(message);
         }
 
         /// <InheritDoc/>
         public string DecodeMessage(byte[] message)
         {
+            if (message == null)
+            {
+                return null;
+            }
             return Encoding.UTF8.GetString(message);
         }
     }

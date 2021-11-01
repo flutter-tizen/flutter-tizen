@@ -95,6 +95,7 @@ class TizenProject extends FlutterProjectPlatform {
         .parent
         .childDirectory('embedding')
         .childDirectory('csharp')
+        .childDirectory('Tizen.Flutter.Embedding')
         .childFile('Tizen.Flutter.Embedding.csproj');
     final Iterable<XmlElement> elements =
         document.findAllElements('FlutterEmbeddingPath');
