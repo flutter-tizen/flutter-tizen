@@ -296,11 +296,14 @@ namespace Tizen.Flutter.Embedding.Tests.Channels
             {
                 var codec = new StandardMessageCodec();
                 var encoded = codec.EncodeMessage("TEST_MESSAGE");
-                var corrupted = new byte[encoded.Length + 1];
-                Assert.Throws<InvalidOperationException>(() =>
+                using (var corrupted = new MemoryStream(encoded))
                 {
-                    codec.DecodeMessage(corrupted);
-                });
+                    corrupted.WriteByte(127);
+                    Assert.Throws<InvalidOperationException>(() =>
+                    {
+                        codec.DecodeMessage(corrupted.ToArray());
+                    });
+                }
             }
         }
     }
