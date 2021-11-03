@@ -18,14 +18,24 @@ namespace Tizen.Flutter.Embedding
     /// </summary>
     public class StandardMethodCodec : IMethodCodec
     {
+        /// <summary>
+        /// Creates a new method codec based on the specified message codec.
+        /// </summary>
+        /// <param name="messageCodec"></param>
         public StandardMethodCodec(StandardMessageCodec messageCodec)
         {
             MessageCodec = messageCodec;
         }
 
+        /// <summary>
+        /// A singleton <see cref="StandardMethodCodec"/> instance created with the <see cref="StandardMessageCodec"/>.
+        /// </summary>
         public static StandardMethodCodec Instance => new StandardMethodCodec(StandardMessageCodec.Instance);
 
 
+        /// <summary>
+        /// A <see cref="StandardMessageCodec"/>.
+        /// </summary>
         public StandardMessageCodec MessageCodec { get; private set; }
 
         /// <InheritDoc/>
