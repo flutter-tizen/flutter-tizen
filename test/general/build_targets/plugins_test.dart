@@ -102,7 +102,7 @@ dependencies:
         .createSync(recursive: true);
   });
 
-  testUsingContext('Can build shared object for debug-x86', () async {
+  testUsingContext('Can build for debug x86', () async {
     final Environment environment = Environment.test(
       projectDir,
       fileSystem: fileSystem,
@@ -164,7 +164,7 @@ dependencies:
     TizenSdk: () => FakeTizenSdk(fileSystem, processManager: processManager),
   });
 
-  testUsingContext('Copies user libs to build dir if exist', () async {
+  testUsingContext('Can link to user libraries', () async {
     final Environment environment = Environment.test(
       projectDir,
       fileSystem: fileSystem,
@@ -218,9 +218,14 @@ dependencies:
       deviceProfile: 'common',
     )).build(environment);
 
-    final Directory userLibDir =
-        environment.buildDir.childDirectory('tizen_plugins/lib');
-    expect(userLibDir.listSync(), isNotEmpty);
+    final Directory rootDir =
+        environment.buildDir.childDirectory('tizen_plugins');
+    expect(
+      rootDir.childFile('project_def.prop').readAsStringSync(),
+      contains('USER_LIBS = some_native_plugin static shared'),
+    );
+    expect(rootDir.childFile('lib/libstatic.a'), isNot(exists));
+    expect(rootDir.childFile('lib/libshared.so'), exists);
     expect(processManager, hasNoRemainingExpectations);
   }, overrides: <Type, Generator>{
     FileSystem: () => fileSystem,
