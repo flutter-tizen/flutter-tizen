@@ -10,7 +10,7 @@
 
      ![About watch](images/watch-developer-option-1.png) ![Software version](images/watch-developer-option-2.png) ![Debugging mode](images/watch-developer-option-3.png)
 
-     Also make sure to disable **Bluetooth** and turn **Wi-Fi** to **Always on**.
+     Also make sure to disable **Bluetooth** (if connecting for the first time) and turn **Wi-Fi** to **Always on**.
 
      ![Wi-Fi Always On](images/watch-developer-option-4.png)
 
@@ -48,9 +48,9 @@
 
 ### Install Tizen OS on Raspberry Pi 3/4
 
-You need a Linux host PC (for flashing), a Raspberry Pi 3 or 4 board, and a micro SD card with a minimum capacity of 8 GB.
+You need a Linux PC (for flashing), a Raspberry Pi 3 or 4 board, and a micro SD card with a minimum capacity of 8 GB.
 
-1. Insert the SD card into your PC, and **format** the drive.
+1. Insert an SD card to your PC, and **format** the disk.
 
 1. Find the device name (such as `/dev/sdc`). You can list all available devices using the `lsblk` command:
 
@@ -65,12 +65,12 @@ You need a Linux host PC (for flashing), a Raspberry Pi 3 or 4 board, and a micr
    └─sdc1        8:33   1  29.3G  0 part
    ```
 
-1. Download the flashing script from the official repository:
+1. Download a flashing script from either of the following sites.
 
    - https://git.tizen.org/cgit/platform/kernel/u-boot/plain/scripts/tizen/sd_fusing_rpi3.sh?h=tizen
    - https://review.tizen.org/git/?p=platform/kernel/u-boot.git;a=blob_plain;f=scripts/tizen/sd_fusing_rpi3.sh;hb=refs/heads/tizen
 
-1. Re-partition the SD card drive (replace `/dev/sdc` with your device name):
+1. Re-partition the SD card (replace `/dev/sdc` with your own device name):
 
    ```sh
    $ chmod 755 sd_fusing_rpi3.sh
@@ -87,15 +87,18 @@ You need a Linux host PC (for flashing), a Raspberry Pi 3 or 4 board, and a micr
    End /dev/sdc format
    ```
 
-1. Download the Tizen OS image. Visit the links below and download two `.tar.gz` files (for boot and platform). Choose Tizen 6.0 (arm) if you are not sure which image to download.
+1. Download a Tizen OS image. Visit the links below and download two `.tar.gz` files (for boot and platform). Choose Tizen 6.5 (arm) if you are not sure which image to download.
 
    | Tizen version | Image type | Latest image |
    |-|-|-|
-   | Tizen 5.5 | Pi 3 (arm) | [iot-boot-armv7l-rpi3](http://download.tizen.org/snapshots/tizen/5.5-unified/latest/images/standard/iot-boot-armv7l-rpi3)<br>[iot-headed-3parts-armv7l-rpi3](http://download.tizen.org/snapshots/tizen/5.5-unified/latest/images/standard/iot-headed-3parts-armv7l-rpi3) |
    | Tizen 6.0 | Pi 3 (arm) | [iot-boot-armv7l-rpi3](http://download.tizen.org/snapshots/tizen/6.0-unified/latest/images/standard/iot-boot-armv7l-rpi3)<br>[iot-headed-3parts-armv7l-rpi](http://download.tizen.org/snapshots/tizen/6.0-unified/latest/images/standard/iot-headed-3parts-armv7l-rpi) |
    | | Pi 3 (arm64) | [iot-boot-arm64-rpi3](http://download.tizen.org/snapshots/tizen/6.0-unified/latest/images/standard/iot-boot-arm64-rpi3)<br>[iot-headed-3parts-aarch64-rpi](http://download.tizen.org/snapshots/tizen/6.0-unified/latest/images/standard/iot-headed-3parts-aarch64-rpi) |
    | | Pi 4 (arm) | [iot-boot-armv7l-rpi4](http://download.tizen.org/snapshots/tizen/6.0-unified/latest/images/standard/iot-boot-armv7l-rpi4)<br>[iot-headed-3parts-armv7l-rpi](http://download.tizen.org/snapshots/tizen/6.0-unified/latest/images/standard/iot-headed-3parts-armv7l-rpi) |
    | | Pi 4 (arm64) | [iot-boot-arm64-rpi4](http://download.tizen.org/snapshots/tizen/6.0-unified/latest/images/standard/iot-boot-arm64-rpi4)<br>[iot-headed-3parts-aarch64-rpi](http://download.tizen.org/snapshots/tizen/6.0-unified/latest/images/standard/iot-headed-3parts-aarch64-rpi) |
+   | Tizen 6.5 | Pi 3 (arm) | [tizen-boot-armv7l-rpi3](http://download.tizen.org/snapshots/tizen/6.5-unified/latest/images/standard/tizen-boot-armv7l-rpi3)<br>[tizen-headed-armv7l](http://download.tizen.org/snapshots/tizen/6.5-unified/latest/images/standard/tizen-headed-armv7l) |
+   | | Pi 3 (arm64) | [tizen-boot-arm64-rpi3](http://download.tizen.org/snapshots/tizen/6.5-unified/latest/images/standard/tizen-boot-arm64-rpi3)<br>[tizen-headed-aarch64](http://download.tizen.org/snapshots/tizen/6.5-unified/latest/images/standard/tizen-headed-aarch64) |
+   | | Pi 4 (arm) | [tizen-boot-armv7l-rpi4](http://download.tizen.org/snapshots/tizen/6.5-unified/latest/images/standard/tizen-boot-armv7l-rpi4)<br>[tizen-headed-armv7l](http://download.tizen.org/snapshots/tizen/6.5-unified/latest/images/standard/tizen-headed-armv7l) |
+   | | Pi 4 (arm64) | [tizen-boot-arm64-rpi4](http://download.tizen.org/snapshots/tizen/6.5-unified/latest/images/standard/tizen-boot-arm64-rpi4)<br>[tizen-headed-aarch64](http://download.tizen.org/snapshots/tizen/6.5-unified/latest/images/standard/tizen-headed-aarch64) |
 
 1. Flash the image to the SD card. For example:
 
@@ -120,13 +123,13 @@ You need a Linux host PC (for flashing), a Raspberry Pi 3 or 4 board, and a micr
    The filesystem on /dev/sdc5 is now 6456832 (4k) blocks long.
    ```
 
-1. Done. Detach the SD card and insert to the Pi device.
+1. Done. Remove the SD card and insert to your Pi device.
 
 ### Connect
 
 1. Connect the Pi device to the same network as your host PC using an Ethernet or Wi-Fi (built-in or extra USB dongle) connection.
 
-   > Alternatively, you can use some extra hardware (USB/PWR splitter) to connect Pi directly to the host PC in OTG (USB slave) mode. The Tizen device will be ready to use just after plugging the USB - the next step should be skipped.
+   Alternatively, you can use some extra hardware (USB/PWR splitter) to connect Pi directly to the host PC in OTG (USB slave) mode. The Tizen device will be ready to use just after plugging the USB - the next step should be skipped.
 
 1. Find the device's IP address and connect. If `sdb` is not on your PATH, refer to the above guide for Watch/TV.
 
@@ -146,7 +149,7 @@ You need a Linux host PC (for flashing), a Raspberry Pi 3 or 4 board, and a micr
   failed to connect to 192.168.0.101:26101
   ```
 
-  Check if the target device is on the same network as the host, and the port is not blocked by a firewall. For _Smart TV_, make sure you entered the host IP address correctly in the developer mode settings.
+  Check if the target device is on the same network as the host, and the port is not blocked by a firewall. For TV devices, make sure you entered the host IP address correctly in the developer mode settings.
 
 - #### Device unauthorized
 
@@ -165,7 +168,7 @@ You need a Linux host PC (for flashing), a Raspberry Pi 3 or 4 board, and a micr
   List of devices attached
   0000d85900006200        offline         device-1
   ```
-  
+
   If the device is connected to a Windows host via USB, make sure to install the [Android USB Driver for Windows](https://developer.samsung.com/mobile/android-usb-driver.html).
 
 - #### Device not listed when using WSL
@@ -173,6 +176,7 @@ You need a Linux host PC (for flashing), a Raspberry Pi 3 or 4 board, and a micr
   ```powershell
   PS> sdb devices
   List of devices attached
+
   PS> sdb kill-server
   PS> sdb devices
   * Server is not running. Start it now on port 26099 *
@@ -181,6 +185,6 @@ You need a Linux host PC (for flashing), a Raspberry Pi 3 or 4 board, and a micr
   00000314f59bd733        device          SM-R800
   ```
 
-  If you are using WSL and Tizen Studio has been installed onto both Windows and Linux, you have to start the sdb server from the Windows side.
+  If you are using WSL1 and Tizen Studio has been installed onto both Windows and Linux, you have to start the sdb server from the Windows side.
 
 - If you still have any problem, open an [issue](../../../issues) in this repo or ask for help in [Samsung Developers](https://forum.developer.samsung.com/) / [Tizen Forums](https://developer.tizen.org/forums/sdk-ide/active) / [stackoverflow](https://stackoverflow.com/questions/tagged/tizen).
