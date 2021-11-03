@@ -134,7 +134,7 @@ namespace Tizen.Flutter.Embedding
         /// <param name="handler">A <see cref="MethodCallHandler"/>, or null to deregister.</param>
         public void SetMethodCallHandler(MethodCallHandler handler)
         {
-            BinaryMessageHandler binaryHandler = async (bytes) =>
+            async Task<byte[]> binaryHandler(byte[] bytes)
             {
                 MethodCall call = Codec.DecodeMethodCall(bytes);
                 try
@@ -149,8 +149,8 @@ namespace Tizen.Flutter.Embedding
                 {
                     return Codec.EncodeErrorEnvelope("error", e.Message, null);
                 }
-            };
-            BinaryMessenger.SetMessageHandler(Name, handler == null ? null : binaryHandler);
+            }
+            BinaryMessenger.SetMessageHandler(Name, handler == null ? null : (BinaryMessageHandler)binaryHandler);
         }
     }
 }

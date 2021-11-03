@@ -128,14 +128,12 @@ namespace Tizen.Flutter.Embedding.Tests.Channels
         {
             var codec = StandardMethodCodec.Instance;
             var encoded = codec.EncodeMethodCall(new MethodCall("TEST_METHOD", 1));
-            using (var corrupted = new MemoryStream(encoded))
+            using var corrupted = new MemoryStream(encoded);
+            corrupted.WriteByte(127);
+            Assert.Throws<InvalidOperationException>(() =>
             {
-                corrupted.WriteByte(127);
-                Assert.Throws<InvalidOperationException>(() =>
-                {
-                    codec.DecodeMethodCall(corrupted.ToArray());
-                });
-            }
+                codec.DecodeMethodCall(corrupted.ToArray());
+            });
         }
     }
 }
