@@ -13,7 +13,7 @@ using Tizen.Flutter.Embedding.Common;
 namespace Tizen.Flutter.Embedding
 {
     /// <summary>
-    /// <see cref="T:IMessageCodec" /> using the Flutter standard binary encoding.
+    /// <see cref="IMessageCodec{T}" /> using the Flutter standard binary encoding.
     /// <para>
     /// This codec is guaranteed to be compatible with the corresponding
     /// <see href = "https://api.flutter.dev/flutter/services/StandardMessageCodec-class.html">StandardMessageCodec</see>
@@ -37,6 +37,15 @@ namespace Tizen.Flutter.Embedding
         private const byte LIST = 12;
         private const byte MAP = 13;
         private const byte FLOAT_ARRAY = 14;
+
+        /// <summary>
+        /// Singleton instance of <see cref="StandardMessageCodec" />.
+        /// </summary>
+        public static StandardMessageCodec Instance => new StandardMessageCodec();
+
+        private StandardMessageCodec()
+        {
+        }
 
         /// <InheritDoc/>
         public byte[] EncodeMessage(object message)

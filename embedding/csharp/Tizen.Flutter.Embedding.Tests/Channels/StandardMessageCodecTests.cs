@@ -35,7 +35,7 @@ namespace Tizen.Flutter.Embedding.Tests.Channels
             [Fact]
             public void Encodes_Correct_Null_Literals()
             {
-                var codec = new StandardMessageCodec();
+                var codec = StandardMessageCodec.Instance;
                 var content = new List<object> { null };
                 byte[] encodedValue = codec.EncodeMessage(content);
                 Assert.Equal(new byte[] { LIST, 1, NULL }, encodedValue);
@@ -44,7 +44,7 @@ namespace Tizen.Flutter.Embedding.Tests.Channels
             [Fact]
             public void Encodes_Correct_Booleans()
             {
-                var codec = new StandardMessageCodec();
+                var codec = StandardMessageCodec.Instance;
                 var content = new List<object> { true, false };
                 byte[] encodedValue = codec.EncodeMessage(content);
                 Assert.Equal(new byte[] { LIST, 2, TRUE, FALSE }, encodedValue);
@@ -53,7 +53,7 @@ namespace Tizen.Flutter.Embedding.Tests.Channels
             [Fact]
             public void Encodes_Correct_IntegerList()
             {
-                var codec = new StandardMessageCodec();
+                var codec = StandardMessageCodec.Instance;
                 var content = new List<object> { (short)1, 2U, 5 };
                 byte[] encodedValue = codec.EncodeMessage(content);
 
@@ -76,7 +76,7 @@ namespace Tizen.Flutter.Embedding.Tests.Channels
             [Fact]
             public void Encodes_Correct_LongList()
             {
-                var codec = new StandardMessageCodec();
+                var codec = StandardMessageCodec.Instance;
                 var content = new List<object> { 1L, 2L, 5L };
                 byte[] encodedValue = codec.EncodeMessage(content);
 
@@ -99,7 +99,7 @@ namespace Tizen.Flutter.Embedding.Tests.Channels
             [Fact]
             public void Encodes_Correct_FloatList()
             {
-                var codec = new StandardMessageCodec();
+                var codec = StandardMessageCodec.Instance;
                 var content = new List<object> { 1.1d, 2.2f, 5.5d };
                 byte[] encodedValue = codec.EncodeMessage(content);
 
@@ -127,7 +127,7 @@ namespace Tizen.Flutter.Embedding.Tests.Channels
             [InlineData("999999999999999999999999999999", "0c9f2c9cd04674edea3fffffff")]
             public void Encodes_Correct_BigInteger(string value, string hex)
             {
-                var codec = new StandardMessageCodec();
+                var codec = StandardMessageCodec.Instance;
                 byte[] encoded = codec.EncodeMessage(BigInteger.Parse(value));
                 byte[] expected;
                 using (var stream = new MemoryStream())
@@ -144,7 +144,7 @@ namespace Tizen.Flutter.Embedding.Tests.Channels
             [InlineData("HELLO Flutter!")]
             public void Encodes_Correct_ByteArray(string value)
             {
-                var codec = new StandardMessageCodec();
+                var codec = StandardMessageCodec.Instance;
                 byte[] bytes = Encoding.UTF8.GetBytes(value);
                 byte[] encodedValue = codec.EncodeMessage(bytes);
                 byte[] expected;
@@ -164,7 +164,7 @@ namespace Tizen.Flutter.Embedding.Tests.Channels
             [InlineData(new double[] { 1.1d, 2.2d, 5.5d }, DOUBLE_ARRAY, 8)]
             public void Encodes_Correct_ArrayTypes(ICollection content, byte type, int alignment)
             {
-                var codec = new StandardMessageCodec();
+                var codec = StandardMessageCodec.Instance;
                 byte[] encodedValue = codec.EncodeMessage(content);
                 byte[] expected;
                 using (var stream = new MemoryStream())
@@ -184,7 +184,7 @@ namespace Tizen.Flutter.Embedding.Tests.Channels
             [Fact]
             public void Encodes_Correct_String()
             {
-                var codec = new StandardMessageCodec();
+                var codec = StandardMessageCodec.Instance;
                 string content = StringCodecTests.TEST_STRING;
                 byte[] encodedValue = codec.EncodeMessage(content);
                 byte[] expected;
@@ -200,7 +200,7 @@ namespace Tizen.Flutter.Embedding.Tests.Channels
             [Fact]
             public void Encodes_Correct_Map()
             {
-                var codec = new StandardMessageCodec();
+                var codec = StandardMessageCodec.Instance;
                 var content = new Dictionary<string, object>
                 {
                     ["Key_1"] = 1,
@@ -232,14 +232,14 @@ namespace Tizen.Flutter.Embedding.Tests.Channels
             [Fact]
             public void Returns_Null_If_Message_Is_Null()
             {
-                var codec = new StandardMessageCodec();
+                var codec = StandardMessageCodec.Instance;
                 Assert.Null(codec.EncodeMessage(null));
             }
 
             [Fact]
             public void Throws_When_Message_Is_Not_Supported_Type()
             {
-                var codec = new StandardMessageCodec();
+                var codec = StandardMessageCodec.Instance;
                 Assert.Throws<ArgumentException>(() =>
                 {
                     codec.EncodeMessage((char)1);
@@ -271,7 +271,7 @@ namespace Tizen.Flutter.Embedding.Tests.Channels
             [InlineData(new double[] { 1.1d, 2.2d, 5.5d })]
             public void Decodes_Correct_Value(object value)
             {
-                var codec = new StandardMessageCodec();
+                var codec = StandardMessageCodec.Instance;
                 byte[] encoded = codec.EncodeMessage(value);
                 object decoded = codec.DecodeMessage(encoded);
 
@@ -283,7 +283,7 @@ namespace Tizen.Flutter.Embedding.Tests.Channels
             [InlineData("999999999999999999999999999999")]
             public void Decodes_Correct_BigInteger(string value)
             {
-                var codec = new StandardMessageCodec();
+                var codec = StandardMessageCodec.Instance;
                 byte[] encoded = codec.EncodeMessage(BigInteger.Parse(value));
                 object decoded = codec.DecodeMessage(encoded);
                 Assert.Equal(value, decoded.ToString());
@@ -293,7 +293,7 @@ namespace Tizen.Flutter.Embedding.Tests.Channels
             [MemberData(nameof(TestListValues))]
             public void Decodes_Correct_List(IList values)
             {
-                var codec = new StandardMessageCodec();
+                var codec = StandardMessageCodec.Instance;
                 byte[] encoded = codec.EncodeMessage(values);
                 var decoded = codec.DecodeMessage(encoded) as IList;
 
@@ -319,7 +319,7 @@ namespace Tizen.Flutter.Embedding.Tests.Channels
             [Fact]
             public void Decodes_Correct_Map()
             {
-                var codec = new StandardMessageCodec();
+                var codec = StandardMessageCodec.Instance;
                 var content = new Dictionary<string, object>
                 {
                     ["Key_1"] = 1,
@@ -337,14 +337,14 @@ namespace Tizen.Flutter.Embedding.Tests.Channels
             [Fact]
             public void Returns_Null_If_Message_Is_Null()
             {
-                var codec = new StandardMessageCodec();
+                var codec = StandardMessageCodec.Instance;
                 Assert.Null(codec.DecodeMessage(null));
             }
 
             [Fact]
             public void Throws_When_Message_Is_Corrupted()
             {
-                var codec = new StandardMessageCodec();
+                var codec = StandardMessageCodec.Instance;
                 byte[] encoded = codec.EncodeMessage("TEST_MESSAGE");
                 using (var corrupted = new MemoryStream(encoded))
                 {
