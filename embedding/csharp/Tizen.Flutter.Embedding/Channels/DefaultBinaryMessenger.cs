@@ -51,9 +51,6 @@ namespace Tizen.Flutter.Embedding
             }
         }
 
-        /// <summary>
-        /// Sends a binary message to the given channel.
-        /// </summary>
         public void Send(string channel, byte[] message)
         {
             if (message == null)
@@ -67,11 +64,6 @@ namespace Tizen.Flutter.Embedding
             }
         }
 
-        /// <summary>
-        /// Sends a binary message to the given channel.
-        ///
-        /// Returns a Task which completes with the received response.
-        /// </summary>
         public Task<byte[]> SendAsync(string channel, byte[] message)
         {
             var tcs = new TaskCompletionSource<byte[]>();
@@ -93,9 +85,6 @@ namespace Tizen.Flutter.Embedding
             return tcs.Task;
         }
 
-        /// <summary>
-        /// Registers a handler for binary messages on the given channel.
-        /// </summary>
         public void SetMessageHandler(string channel, BinaryMessageHandler handler)
         {
             if (handler == null)
