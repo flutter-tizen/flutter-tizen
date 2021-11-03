@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Numerics;
 using System.Text;
 using Xunit;
+using static Tizen.Flutter.Embedding.StandardMessageHelper;
 
 namespace Tizen.Flutter.Embedding.Tests.Channels
 {
@@ -109,13 +110,13 @@ namespace Tizen.Flutter.Embedding.Tests.Channels
                     stream.WriteByte(LIST);
                     stream.WriteByte(3);
                     stream.WriteByte(DOUBLE);
-                    CodecTestsHelper.WriteAlignment(stream, 8);
+                    WriteAlignment(stream, 8);
                     stream.Write(BitConverter.GetBytes(1.1d));
                     stream.WriteByte(DOUBLE);
-                    CodecTestsHelper.WriteAlignment(stream, 8);
+                    WriteAlignment(stream, 8);
                     stream.Write(BitConverter.GetBytes(Convert.ToDouble(2.2f)));
                     stream.WriteByte(DOUBLE);
-                    CodecTestsHelper.WriteAlignment(stream, 8);
+                    WriteAlignment(stream, 8);
                     stream.Write(BitConverter.GetBytes(5.5d));
                     expected = stream.ToArray();
                 }
@@ -133,7 +134,7 @@ namespace Tizen.Flutter.Embedding.Tests.Channels
                 using (var stream = new MemoryStream())
                 {
                     stream.WriteByte(BIGINT);
-                    CodecTestsHelper.WriteBytes(stream, Encoding.UTF8.GetBytes(hex));
+                    WriteBytesWithSize(stream, Encoding.UTF8.GetBytes(hex));
                     expected = stream.ToArray();
                 }
                 Assert.Equal(expected, encoded);
@@ -151,7 +152,7 @@ namespace Tizen.Flutter.Embedding.Tests.Channels
                 using (var stream = new MemoryStream())
                 {
                     stream.WriteByte(BYTE_ARRAY);
-                    CodecTestsHelper.WriteBytes(stream, bytes);
+                    WriteBytesWithSize(stream, bytes);
                     expected = stream.ToArray();
                 }
                 Assert.Equal(expected, encodedValue);
@@ -170,8 +171,8 @@ namespace Tizen.Flutter.Embedding.Tests.Channels
                 using (var stream = new MemoryStream())
                 {
                     stream.WriteByte(type);
-                    CodecTestsHelper.WriteSize(stream, content.Count);
-                    CodecTestsHelper.WriteAlignment(stream, alignment);
+                    WriteSize(stream, content.Count);
+                    WriteAlignment(stream, alignment);
                     foreach (dynamic value in content)
                     {
                         stream.Write(BitConverter.GetBytes(value));
@@ -191,7 +192,7 @@ namespace Tizen.Flutter.Embedding.Tests.Channels
                 using (var stream = new MemoryStream())
                 {
                     stream.WriteByte(STRING);
-                    CodecTestsHelper.WriteBytes(stream, StringCodecTests.TEST_BYTES);
+                    WriteBytesWithSize(stream, StringCodecTests.TEST_BYTES);
                     expected = stream.ToArray();
                 }
                 Assert.Equal(expected, encodedValue);
@@ -212,17 +213,17 @@ namespace Tizen.Flutter.Embedding.Tests.Channels
                 using (var stream = new MemoryStream())
                 {
                     stream.WriteByte(MAP);
-                    CodecTestsHelper.WriteSize(stream, 3);
+                    WriteSize(stream, 3);
                     stream.WriteByte(STRING);
-                    CodecTestsHelper.WriteString(stream, "Key_1");
+                    WriteUTF8String(stream, "Key_1");
                     stream.WriteByte(INT);
                     stream.Write(BitConverter.GetBytes(1));
                     stream.WriteByte(STRING);
-                    CodecTestsHelper.WriteString(stream, "Key_2");
+                    WriteUTF8String(stream, "Key_2");
                     stream.WriteByte(STRING);
-                    CodecTestsHelper.WriteString(stream, "TEST_STRING");
+                    WriteUTF8String(stream, "TEST_STRING");
                     stream.WriteByte(STRING);
-                    CodecTestsHelper.WriteString(stream, "Key_3");
+                    WriteUTF8String(stream, "Key_3");
                     stream.WriteByte(TRUE);
                     expected = stream.ToArray();
                 }

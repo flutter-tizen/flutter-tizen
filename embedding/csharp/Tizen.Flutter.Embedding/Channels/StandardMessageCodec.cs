@@ -9,6 +9,7 @@ using System.IO;
 using System.Numerics;
 using System.Text;
 using Tizen.Flutter.Embedding.Common;
+using static Tizen.Flutter.Embedding.StandardMessageHelper;
 
 namespace Tizen.Flutter.Embedding
 {
@@ -296,71 +297,6 @@ namespace Tizen.Flutter.Embedding
                     }
                 default:
                     throw new InvalidOperationException("Message corrupted");
-            }
-        }
-
-        private void WriteAlignment(BinaryWriter writer, int alignment)
-        {
-            long mod = writer.BaseStream.Length % alignment;
-            if (mod != 0)
-            {
-                for (int i = 0; i < alignment - mod; i++)
-                {
-                    writer.Write((byte)0);
-                }
-            }
-        }
-
-        private void ReadAlignment(BinaryReader reader, int alignment)
-        {
-            var buffer = reader.BaseStream;
-            long mod = buffer.Position % alignment;
-            if (mod != 0)
-            {
-                buffer.Position = buffer.Position + alignment - mod;
-            }
-        }
-
-        private void WriteSize(BinaryWriter writer, int value)
-        {
-            if (value < 0)
-            {
-                throw new ArgumentException("value can not be negative.", nameof(value));
-            }
-            if (value < 254)
-            {
-                writer.Write(Convert.ToByte(value));
-            }
-            else if (value <= 0xffff)
-            {
-                writer.Write((byte)254);
-                writer.Write(Convert.ToChar(value));
-            }
-            else
-            {
-                writer.Write((byte)255);
-                writer.Write(value);
-            }
-        }
-
-        private int ReadSize(BinaryReader reader)
-        {
-            if (!reader.BaseStream.HasRemaining())
-            {
-                throw new InvalidOperationException("Message corrupted");
-            }
-            int value = reader.ReadByte() & 0xff;
-            if (value < 254)
-            {
-                return value;
-            }
-            else if (value == 254)
-            {
-                return reader.ReadChar();
-            }
-            else
-            {
-                return reader.ReadInt32();
             }
         }
     }
