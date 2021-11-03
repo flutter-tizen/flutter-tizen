@@ -13,6 +13,12 @@ namespace Tizen.Flutter.Embedding.Tests.Channels
     public class StandardMethodCodecTests
     {
         [Fact]
+        public void Ensures_Message_Codec_Is_Not_Null()
+        {
+            Assert.Throws<ArgumentNullException>(() => new StandardMethodCodec(null));
+        }
+
+        [Fact]
         public void Encodes_Correct_MethodCall()
         {
             var codec = StandardMethodCodec.Instance;
