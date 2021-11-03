@@ -62,7 +62,7 @@ namespace Tizen.Flutter.Embedding.Tests.Channels
                 using (var stream = new MemoryStream())
                 {
                     stream.WriteByte(LIST);
-                    stream.WriteByte(3);
+                    WriteSize(stream, 3);
                     stream.WriteByte(INT);
                     stream.Write(BitConverter.GetBytes(1));
                     stream.WriteByte(INT);
@@ -85,7 +85,7 @@ namespace Tizen.Flutter.Embedding.Tests.Channels
                 using (var stream = new MemoryStream())
                 {
                     stream.WriteByte(LIST);
-                    stream.WriteByte(3);
+                    WriteSize(stream, 3);
                     stream.WriteByte(LONG);
                     stream.Write(BitConverter.GetBytes(1L));
                     stream.WriteByte(LONG);
@@ -108,7 +108,7 @@ namespace Tizen.Flutter.Embedding.Tests.Channels
                 using (var stream = new MemoryStream())
                 {
                     stream.WriteByte(LIST);
-                    stream.WriteByte(3);
+                    WriteSize(stream, 3);
                     stream.WriteByte(DOUBLE);
                     WriteAlignment(stream, 8);
                     stream.Write(BitConverter.GetBytes(1.1d));
