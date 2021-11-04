@@ -64,7 +64,7 @@ namespace Tizen.Flutter.Embedding
         public string Name { get; }
 
         /// <summary>
-        /// The message codec used by this channel, not null.
+        /// The method codec used by this channel, not null.
         /// </summary>
         public IMethodCodec Codec { get; }
 
