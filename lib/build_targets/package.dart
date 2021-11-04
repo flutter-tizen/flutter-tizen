@@ -4,6 +4,7 @@
 
 import 'package:file/file.dart';
 import 'package:flutter_tools/src/base/common.dart';
+import 'package:flutter_tools/src/base/context.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/base/process.dart';
 import 'package:flutter_tools/src/build_info.dart';
@@ -11,6 +12,7 @@ import 'package:flutter_tools/src/build_system/build_system.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/globals_null_migrated.dart' as globals;
 import 'package:flutter_tools/src/project.dart';
+import 'package:meta/meta.dart';
 
 import '../tizen_build_info.dart';
 import '../tizen_project.dart';
@@ -18,7 +20,39 @@ import '../tizen_sdk.dart';
 import '../tizen_tpk.dart';
 import 'utils.dart';
 
-class DotnetTpk {
+PackageBuilder? get packageBuilder => context.get<PackageBuilder>();
+
+/// A pseudo [BuildSystem] that performs a non-incremental build of [Package]
+/// without skipping.
+class PackageBuilder {
+  const PackageBuilder();
+
+  Future<void> build(Package target, Environment environment) async {
+    environment.buildDir.createSync(recursive: true);
+    environment.outputDir.createSync(recursive: true);
+
+    environment.logger.printTrace('Building target: ${target.name}');
+    await target.build(environment);
+  }
+}
+
+abstract class Package extends Target {
+  const Package();
+
+  @nonVirtual
+  @override
+  List<Source> get inputs => const <Source>[];
+
+  @nonVirtual
+  @override
+  List<Source> get outputs => const <Source>[];
+
+  @nonVirtual
+  @override
+  List<Target> get dependencies => const <Target>[];
+}
+
+class DotnetTpk extends Package {
   DotnetTpk(this.buildInfo);
 
   final TizenBuildInfo buildInfo;
@@ -26,6 +60,10 @@ class DotnetTpk {
   final ProcessUtils _processUtils = ProcessUtils(
       logger: globals.logger, processManager: globals.processManager);
 
+  @override
+  String get name => 'dotnet_tpk';
+
+  @override
   Future<void> build(Environment environment) async {
     final FlutterProject project =
         FlutterProject.fromDirectory(environment.projectDir);
@@ -145,11 +183,15 @@ class DotnetTpk {
   }
 }
 
-class NativeTpk {
+class NativeTpk extends Package {
   NativeTpk(this.buildInfo);
 
   final TizenBuildInfo buildInfo;
 
+  @override
+  String get name => 'native_tpk';
+
+  @override
   Future<void> build(Environment environment) async {
     final FlutterProject project =
         FlutterProject.fromDirectory(environment.projectDir);

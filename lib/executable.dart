@@ -40,6 +40,7 @@ import 'package:flutter_tools/src/isolated/mustache_template.dart';
 import 'package:flutter_tools/src/runner/flutter_command.dart';
 import 'package:path/path.dart';
 
+import 'build_targets/package.dart';
 import 'commands/attach.dart';
 import 'commands/build.dart';
 import 'commands/clean.dart';
@@ -221,6 +222,7 @@ Future<void> main(List<String> args) async {
             tizenSdk: tizenSdk,
             operatingSystemUtils: globals.os,
           ),
+      PackageBuilder: () => const PackageBuilder(),
       Pub: () => TizenPub(
             fileSystem: globals.fs,
             logger: globals.logger,
