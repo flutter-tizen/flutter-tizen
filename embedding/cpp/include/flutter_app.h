@@ -85,7 +85,7 @@ class FlutterApp : public flutter::PluginRegistry {
   std::vector<std::string> dart_entrypoint_args_;
 
   // The Flutter engine instance handle.
-  FlutterDesktopEngineRef handle_;
+  FlutterDesktopEngineRef handle_ = nullptr;
 };
 
 #endif /* FLUTTER_TIZEN_EMBEDDING_CPP_INCLUDE_FLUTTER_APP_H_ */
