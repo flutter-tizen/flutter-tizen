@@ -9,6 +9,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:flutter_tools/src/base/terminal.dart';
 import 'package:flutter_tools/src/device.dart';
 import 'package:flutter_tools/src/device_port_forwarder.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
@@ -16,9 +17,9 @@ import 'package:flutter_tools/src/globals.dart' as globals;
 import 'tizen_device.dart';
 
 class ForwardingLogReader extends DeviceLogReader {
-  ForwardingLogReader._(this.name, this.hostPort, this.portForwarder) {
-    _linesController = StreamController<String>.broadcast();
-  }
+  ForwardingLogReader._(this.name, this.hostPort, this.portForwarder)
+      : assert(hostPort != null),
+        assert(portForwarder != null);
 
   static Future<ForwardingLogReader> createLogReader(TizenDevice device) async {
     return ForwardingLogReader._(
@@ -35,99 +36,108 @@ class ForwardingLogReader extends DeviceLogReader {
 
   final DevicePortForwarder portForwarder;
 
-  StreamController<String> _linesController;
+  final StreamController<String> _linesController =
+      StreamController<String>.broadcast();
+
   Socket _socket;
 
   @override
   Stream<String> get logLines => _linesController.stream;
 
+  final RegExp _logFormat = RegExp(r'^(\[[IWEF]\]) .+');
+
+  String _colorizePrefix(String message) {
+    final Match match = _logFormat.firstMatch(message);
+    if (match == null) {
+      return message;
+    }
+    final String prefix = match.group(1);
+    TerminalColor color;
+    if (prefix == '[I]') {
+      color = TerminalColor.cyan;
+    } else if (prefix == '[W]') {
+      color = TerminalColor.yellow;
+    } else if (prefix == '[E]') {
+      color = TerminalColor.red;
+    } else if (prefix == '[F]') {
+      color = TerminalColor.magenta;
+    }
+    return message.replaceFirst(prefix, globals.terminal.color(prefix, color));
+  }
+
+  final List<String> _filteredTexts = <String>[
+    // Issue: https://github.com/flutter-tizen/engine/issues/91
+    'xkbcommon: ERROR:',
+    "couldn't find a Compose file for locale",
+  ];
+
+  Future<Socket> _connectAndListen() async {
+    globals.printTrace('Connecting to localhost:$hostPort...');
+    Socket socket = await Socket.connect('localhost', hostPort);
+
+    const Utf8Decoder decoder = Utf8Decoder();
+    final Completer<void> completer = Completer<void>();
+
+    socket.listen(
+      (Uint8List data) {
+        String response = decoder.convert(data).trim();
+        if (!completer.isCompleted) {
+          if (response.startsWith('ACCEPTED')) {
+            response = response.substring(8);
+          } else {
+            globals.printError(
+                'Invalid message received from the device logger: $response');
+            socket.destroy();
+            socket = null;
+          }
+          completer.complete();
+        }
+        for (final String line in LineSplitter.split(response)) {
+          if (line.isEmpty ||
+              _filteredTexts.any((String text) => line.contains(text))) {
+            continue;
+          }
+          _linesController.add(_colorizePrefix(line));
+        }
+      },
+      onError: (Object error) {
+        globals.printError(error.toString());
+      },
+      onDone: () {
+        socket?.destroy();
+        socket = null;
+        if (!completer.isCompleted) {
+          completer.complete();
+        }
+      },
+    );
+
+    await completer.future;
+    return socket;
+  }
+
   Future<void> start() async {
-    Future<Socket> connect(int hostPort) async {
-      Socket socket = await Socket.connect('localhost', hostPort);
-      final Completer<void> completer = Completer<void>();
-      const Utf8Decoder decoder = Utf8Decoder();
-      bool isHandshakeDone = false;
-      socket.listen(
-        (Uint8List data) {
-          String response = decoder.convert(data).trim();
-          globals.printError('[[ $response ]]');
-          if (!isHandshakeDone) {
-            if (!response.startsWith('ACCEPTED')) {
-              globals.printError(
-                  'Something went wrong! $response (${response.length})');
-              socket.destroy();
-              socket = null;
-            } else {
-              isHandshakeDone = true;
-              response = response.substring(8);
-            }
-            completer.complete();
-          }
-          response.split('\n').forEach((String line) {
-            if (line.isNotEmpty) {
-              _linesController.add(line);
-            }
-          });
-        },
-        onError: (dynamic error) {
-          globals.printTrace(error.toString());
-          socket.destroy();
-          socket = null;
-          if (!completer.isCompleted) {
-            completer.complete();
-          }
-        },
-        onDone: () async {
-          socket?.destroy();
-          socket = null;
-          if (!completer.isCompleted) {
-            completer.complete();
-          }
-        },
-      );
-      await completer.future;
-      return socket;
-    }
+    // The host port is also used as a device port. This could result in a
+    // binding error if the port is already in use by another process on the
+    // device.
+    // The forwarded port will be automatically unforwarded when
+    // TizenDevicePortForwarder is disposed.
+    await portForwarder.forward(hostPort, hostPort: hostPort);
 
-    int devicePort = hostPort;
-    await portForwarder.forward(devicePort, hostPort: hostPort);
-    _socket = await connect(hostPort);
-    if (_socket == null) {
+    int retryCount = 5;
+    while (_socket == null && retryCount-- > 0) {
+      _socket = await _connectAndListen();
       await Future<void>.delayed(const Duration(seconds: 2));
-      globals.printStatus('Try again');
-      _socket = await connect(hostPort);
     }
-    // if (_socket == null) {
-    //   globals.printStatus('Failed to connect!');
-    //   await portForwarder.unforward(ForwardedPort(hostPort, devicePort));
-    //   devicePort += 1;
-    //   await portForwarder.forward(devicePort, hostPort: hostPort);
-    //   _socket = await connect(hostPort);
-    // }
     if (_socket == null) {
-      globals.printError('Failed to connect!');
-      await portForwarder.unforward(ForwardedPort(hostPort, devicePort));
-      return;
+      globals.printError(
+        'Failed to connect to the device logger.\n'
+        'Please open an issue in https://github.com/flutter-tizen/flutter-tizen/issues if the problem persists.',
+      );
+    } else {
+      globals.printTrace(
+          'The logging service started at ${_socket.remoteAddress.address}:${_socket.remotePort}.');
     }
-
-    // TODO: unforward forwared ports
-
-    // TODO: change to printTrace
-    globals.printStatus(
-        'Connected to ${_socket.remoteAddress.address}:${_socket.remotePort}.');
-    // _socket.listen(
-    //   (Uint8List data) {
-    //     String res = decoder.convert(data);
-    //     final String response = String.fromCharCodes(data);
-    //     // TODO: What's the maximum length of response?
-    //     // TODO: multiline message?
-    //     globals.printStatus('RECEIVED: [[ $response ]]');
-    //     response.split('\n').map(_linesController.add);
-    //   },
-    //   onError: (dynamic error) {
-    //     globals.printTrace(error.toString());
-    //   },
-    // );
   }
 
   @override

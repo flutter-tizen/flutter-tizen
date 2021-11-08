@@ -192,6 +192,9 @@ void FlutterApp::ParseEngineArgs() {
   size_t len = 0;
 
   while (getline(&line, &len, file) > 0) {
+    if (line[strlen(line) - 1] == '\n') {
+      line[strlen(line) - 1] = 0;
+    }
     TizenLog::Info("Enabled: %s", line);
     engine_args_.push_back(line);
   }

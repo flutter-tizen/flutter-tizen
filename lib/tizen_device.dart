@@ -405,7 +405,8 @@ class TizenDevice extends Device {
         if (debuggingOptions.useTestFonts) '--use-test-fonts',
         if (debuggingOptions.verboseSystemLogs) '--verbose-logging',
       ],
-      '--tizen-logging-port=${logReader.hostPort}',
+      '--tizen-logging-port',
+      logReader.hostPort.toString(),
     ];
 
     // Create a temp file to be consumed by a launching app.
@@ -420,7 +421,7 @@ class TizenDevice extends Device {
       return LaunchResult.failed();
     }
 
-    // The logging service becomes available right after the app is launched.
+    // The logger becomes available right after the launch.
     await logReader.start();
 
     if (!debuggingOptions.debuggingEnabled) {
