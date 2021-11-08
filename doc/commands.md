@@ -30,14 +30,6 @@ Not all commands from the [`flutter`](https://flutter.dev/docs/reference/flutter
   flutter-tizen analyze
   ```
 
-- ### `attach`
-
-  Attach to a Flutter app running on a connected device.
-
-  ```sh
-  flutter-tizen attach
-  ```
-
 - ### `build`
 
   Flutter build command. See `flutter-tizen build -h` for all available subcommands.
@@ -159,14 +151,6 @@ Not all commands from the [`flutter`](https://flutter.dev/docs/reference/flutter
 
   # Uninstall if already installed.
   flutter-tizen install --uninstall-only
-  ```
-
-- ### `logs`
-
-  Show the device log output for running Flutter apps.
-
-  ```sh
-  flutter-tizen logs
   ```
 
 - ### `precache`
