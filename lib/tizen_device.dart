@@ -47,7 +47,6 @@ class TizenDevice extends Device {
     @required FileSystem fileSystem,
   })  : _modelId = modelId,
         _logger = logger,
-        _processManager = processManager,
         _tizenSdk = tizenSdk,
         _fileSystem = fileSystem,
         _processUtils =
@@ -59,7 +58,6 @@ class TizenDevice extends Device {
 
   final String _modelId;
   final Logger _logger;
-  final ProcessManager _processManager;
   final TizenSdk _tizenSdk;
   final FileSystem _fileSystem;
   final ProcessUtils _processUtils;
@@ -358,8 +356,7 @@ class TizenDevice extends Device {
     final bool traceStartup = platformArgs['trace-startup'] as bool ?? false;
     _logger.printTrace('$this startApp');
 
-    final ForwardingLogReader logReader =
-        await getLogReader() as ForwardingLogReader;
+    final DeviceLogReader logReader = await getLogReader();
     ProtocolDiscovery observatoryDiscovery;
 
     if (debuggingOptions.debuggingEnabled) {
@@ -405,8 +402,10 @@ class TizenDevice extends Device {
         if (debuggingOptions.useTestFonts) '--use-test-fonts',
         if (debuggingOptions.verboseSystemLogs) '--verbose-logging',
       ],
-      '--tizen-logging-port',
-      logReader.hostPort.toString(),
+      if (logReader is ForwardingLogReader) ...<String>[
+        '--tizen-logging-port',
+        logReader.hostPort.toString(),
+      ],
     ];
 
     // Create a temp file to be consumed by a launching app.
@@ -421,8 +420,10 @@ class TizenDevice extends Device {
       return LaunchResult.failed();
     }
 
-    // The logger becomes available right after the launch.
-    await logReader.start();
+    // The device logger becomes available right after the launch.
+    if (logReader is ForwardingLogReader) {
+      await logReader.start();
+    }
 
     if (!debuggingOptions.debuggingEnabled) {
       return LaunchResult.succeeded();
