@@ -51,6 +51,12 @@ namespace Tizen.Flutter.Embedding
         protected bool IsWindowFocusable { get; set; } = true;
 
         /// <summary>
+        /// Whether the app should be displayed over other apps.
+        /// If true, the "http://tizen.org/privilege/window.priority.set" privilege must be added to tizen-manifest.xml file.
+        /// </summary>
+        protected bool IsTopLevel { get; set; } = false;
+
+        /// <summary>
         /// The switches to pass to the Flutter engine.
         /// Custom switches may be added before <see cref="OnCreate"/> is called.
         /// </summary>
@@ -96,6 +102,7 @@ namespace Tizen.Flutter.Embedding
                 height = WindowHeight,
                 transparent = IsWindowTransparent,
                 focusable = IsWindowFocusable,
+                top_level = IsTopLevel,
             };
 
             Utils.ParseEngineArgs(EngineArgs);

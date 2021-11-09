@@ -73,6 +73,11 @@ class FlutterApp : public flutter::PluginRegistry {
   // Whether the window should be focusable or not.
   bool is_window_focusable_ = true;
 
+  // Whether the app should be displayed over other apps.
+  // If true, the "http://tizen.org/privilege/window.priority.set" privilege
+  // must be added to tizen-manifest.xml file.
+  bool is_top_level_ = false;
+
   // The switches to pass to the Flutter engine.
   // Custom switches may be added before `OnCreate` is called.
   std::vector<std::string> engine_args_;

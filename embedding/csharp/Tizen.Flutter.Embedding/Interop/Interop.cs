@@ -24,8 +24,10 @@ namespace Tizen.Flutter.Embedding
             public bool transparent;
             [MarshalAs(UnmanagedType.U1)]
             public bool focusable;
+            [MarshalAs(UnmanagedType.U1)]
+            public bool top_level;
         }
-        
+
         [StructLayout(LayoutKind.Sequential)]
         public struct FlutterDesktopEngineProperties
         {
