@@ -169,6 +169,7 @@ Future<void> main(List<String> args) async {
             logger: globals.logger,
             platform: globals.platform,
             osUtils: globals.os,
+            processManager: globals.processManager,
           ),
       DeviceManager: () => TizenDeviceManager(
             fileSystem: globals.fs,
