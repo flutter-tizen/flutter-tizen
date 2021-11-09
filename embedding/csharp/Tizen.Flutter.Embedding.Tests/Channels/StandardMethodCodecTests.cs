@@ -84,6 +84,20 @@ namespace Tizen.Flutter.Embedding.Tests.Channels
         }
 
         [Fact]
+        public void Ensures_ErrorEnvelope_With_Null_Details()
+        {
+            var codec = StandardMethodCodec.Instance;
+            var encoded = codec.EncodeErrorEnvelope("error", "TEST_MESSAGE", null);
+            var exception = Assert.Throws<FlutterException>(() =>
+            {
+                codec.DecodeEnvelope(encoded);
+            });
+            Assert.Equal("error", exception.Code);
+            Assert.Equal("TEST_MESSAGE", exception.Message);
+            Assert.Null(exception.Details);
+        }
+
+        [Fact]
         public void Decodes_Correct_MethodCall()
         {
             var codec = StandardMethodCodec.Instance;

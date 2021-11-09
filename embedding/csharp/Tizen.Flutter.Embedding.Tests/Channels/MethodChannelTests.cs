@@ -155,6 +155,49 @@ namespace Tizen.Flutter.Embedding.Tests.Channels
 
                 messenger.Received().SetMessageHandler(Arg.Is<string>(x => x == TEST_CHANNEL_NAME), null);
             }
+
+            [Fact]
+            public void Ensures_Error_Response_When_FlutterException_Is_Thrown()
+            {
+                var messenger = Substitute.For<IBinaryMessenger>();
+                var codec = StandardMethodCodec.Instance;
+                var channel = new MethodChannel(TEST_CHANNEL_NAME, StandardMethodCodec.Instance, messenger);
+                byte[] testCall = codec.EncodeMethodCall(new MethodCall("test", 1));
+                byte[] expected = codec.EncodeErrorEnvelope("E0001", "TEST_MESSAGE", "TEST_DETAIL");
+                messenger.When(x => x.SetMessageHandler(TEST_CHANNEL_NAME, Arg.Any<BinaryMessageHandler>()))
+                         .Do(async x =>
+                         {
+                             var binaryHandler = x[1] as BinaryMessageHandler;
+                             byte[] result = await binaryHandler(testCall);
+                             for (int i = 0; i < expected.Length; i++)
+                             {
+                                 Assert.Equal(expected[i], result[i]);
+                             }
+                         });
+                channel.SetMethodCallHandler((call) =>
+                {
+                    throw new FlutterException("E0001", "TEST_MESSAGE", "TEST_DETAIL");
+                });
+            }
+
+            [Fact]
+            public void Ensures_Empty_Response_When_MissingPluginException_Is_Thrown()
+            {
+                var messenger = Substitute.For<IBinaryMessenger>();
+                var channel = new MethodChannel(TEST_CHANNEL_NAME, StandardMethodCodec.Instance, messenger);
+                byte[] testCall = StandardMethodCodec.Instance.EncodeMethodCall(new MethodCall("test", 1));
+                messenger.When(x => x.SetMessageHandler(TEST_CHANNEL_NAME, Arg.Any<BinaryMessageHandler>()))
+                         .Do(async x =>
+                         {
+                             var binaryHandler = x[1] as BinaryMessageHandler;
+                             byte[] result = await binaryHandler(testCall);
+                             Assert.Null(result);
+                         });
+                channel.SetMethodCallHandler((call) =>
+                {
+                    throw new MissingPluginException("Not found method.");
+                });
+            }
         }
     }
 }

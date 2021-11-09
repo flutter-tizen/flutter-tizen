@@ -114,14 +114,24 @@ namespace Tizen.Flutter.Embedding
             var receivedMessage = Marshal.PtrToStructure<FlutterDesktopMessage>(message);
             var messageBytes = new byte[receivedMessage.message_size];
             Marshal.Copy(receivedMessage.message, messageBytes, 0, (int)receivedMessage.message_size);
-            var handler = _handlers[receivedMessage.channel];
-            byte[] replyBytes = await handler(messageBytes);
-            if (replyBytes != null)
+            if (_handlers.TryGetValue(receivedMessage.channel, out var handler))
             {
-                using (var pinned = PinnedObject.Get(replyBytes))
+                byte[] replyBytes = await handler(messageBytes);
+                if (replyBytes != null)
                 {
-                    FlutterDesktopMessengerSendResponse(messenger, receivedMessage.response_handle, pinned.Pointer, (uint)replyBytes.Length);
+                    using (var pinned = PinnedObject.Get(replyBytes))
+                    {
+                        FlutterDesktopMessengerSendResponse(messenger, receivedMessage.response_handle, pinned.Pointer, (uint)replyBytes.Length);
+                    }
                 }
+                else
+                {
+                    FlutterDesktopMessengerSendResponse(messenger, receivedMessage.response_handle, IntPtr.Zero, 0);
+                }
+            }
+            else
+            {
+                FlutterDesktopMessengerSendResponse(messenger, receivedMessage.response_handle, IntPtr.Zero, 0);
             }
         }
     }

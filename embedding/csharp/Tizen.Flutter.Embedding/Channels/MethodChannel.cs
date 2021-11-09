@@ -141,13 +141,17 @@ namespace Tizen.Flutter.Embedding
                 {
                     return Codec.EncodeSuccessEnvelope(await handler(call));
                 }
-                catch (FlutterException fe)
+                catch (FlutterException e)
                 {
-                    return Codec.EncodeErrorEnvelope(fe.Code, fe.Message, fe.Details, fe.StackTrace);
+                    return Codec.EncodeErrorEnvelope(e.Code, e.Message, e.Details, e.StackTrace);
+                }
+                catch (MissingPluginException)
+                {
+                    return null;
                 }
                 catch (Exception e)
                 {
-                    return Codec.EncodeErrorEnvelope("error", e.Message, null);
+                    return Codec.EncodeErrorEnvelope("error", e.Message, null, e.StackTrace);
                 }
             }
             BinaryMessenger.SetMessageHandler(Name, handler == null ? null : (BinaryMessageHandler)binaryHandler);
