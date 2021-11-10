@@ -98,7 +98,6 @@ namespace Tizen.Flutter.Embedding.Tests.Channels
                 var codec = StandardMethodCodec.Instance;
                 var channel = new MethodChannel(TEST_CHANNEL_NAME, codec, messenger);
                 var call = new MethodCall(TEST_METHOD_NAME, new int[] { 1, 2, 5 });
-                byte[] encodedCall = codec.EncodeMethodCall(call);
                 messenger.SendAsync(TEST_CHANNEL_NAME, Arg.Any<byte[]>())
                          .Returns(codec.EncodeErrorEnvelope("E0001", "TEST_ERROR", "TEST_ERROR_DETAILS"));
 
@@ -162,7 +161,7 @@ namespace Tizen.Flutter.Embedding.Tests.Channels
                 var messenger = Substitute.For<IBinaryMessenger>();
                 var codec = StandardMethodCodec.Instance;
                 var channel = new MethodChannel(TEST_CHANNEL_NAME, StandardMethodCodec.Instance, messenger);
-                byte[] testCall = codec.EncodeMethodCall(new MethodCall("test", 1));
+                byte[] testCall = codec.EncodeMethodCall(new MethodCall(TEST_METHOD_NAME, 1));
                 byte[] expected = codec.EncodeErrorEnvelope("E0001", "TEST_MESSAGE", "TEST_DETAIL");
                 messenger.When(x => x.SetMessageHandler(TEST_CHANNEL_NAME, Arg.Any<BinaryMessageHandler>()))
                          .Do(async x =>
@@ -185,7 +184,7 @@ namespace Tizen.Flutter.Embedding.Tests.Channels
             {
                 var messenger = Substitute.For<IBinaryMessenger>();
                 var channel = new MethodChannel(TEST_CHANNEL_NAME, StandardMethodCodec.Instance, messenger);
-                byte[] testCall = StandardMethodCodec.Instance.EncodeMethodCall(new MethodCall("test", 1));
+                byte[] testCall = StandardMethodCodec.Instance.EncodeMethodCall(new MethodCall(TEST_METHOD_NAME, 1));
                 messenger.When(x => x.SetMessageHandler(TEST_CHANNEL_NAME, Arg.Any<BinaryMessageHandler>()))
                          .Do(async x =>
                          {
@@ -195,7 +194,7 @@ namespace Tizen.Flutter.Embedding.Tests.Channels
                          });
                 channel.SetMethodCallHandler((call) =>
                 {
-                    throw new MissingPluginException("Not found method.");
+                    throw new MissingPluginException();
                 });
             }
         }
