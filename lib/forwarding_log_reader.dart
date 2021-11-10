@@ -101,15 +101,22 @@ class ForwardingLogReader extends DeviceLogReader {
         }
       },
       onError: (Object error) {
-        globals.printError(error.toString());
-      },
-      onDone: () {
-        socket?.destroy();
-        socket = null;
+        globals
+            .printError('An error occurred while reading from socket: $error');
         if (!completer.isCompleted) {
+          socket?.destroy();
+          socket = null;
           completer.complete();
         }
       },
+      onDone: () {
+        if (!completer.isCompleted) {
+          socket?.destroy();
+          socket = null;
+          completer.complete();
+        }
+      },
+      cancelOnError: true,
     );
 
     await completer.future;
