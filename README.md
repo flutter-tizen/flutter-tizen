@@ -2,7 +2,7 @@
 
 # Flutter for Tizen
 
-[![Dart](https://github.com/flutter-tizen/flutter-tizen/workflows/Dart/badge.svg)](https://github.com/flutter-tizen/flutter-tizen/actions)
+[![Test](https://github.com/flutter-tizen/flutter-tizen/workflows/Test/badge.svg)](https://github.com/flutter-tizen/flutter-tizen/actions)
 
 An extension to the [Flutter SDK](https://github.com/flutter/flutter) for building Flutter applications for Tizen devices.
 

@@ -1,0 +1,31 @@
+name: Test
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  tool:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Fetch Flutter SDK
+        run: |
+          git clone --depth=1 https://github.com/flutter/flutter.git
+          cd flutter
+          git fetch --depth=1 https://github.com/flutter/flutter.git $(cat ../bin/internal/flutter.version)
+          git checkout FETCH_HEAD
+      - name: Run tests
+        run: flutter/bin/flutter test
+  embedding:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '5.0.x'
+      - name: Run tests
+        run: dotnet test embedding/csharp

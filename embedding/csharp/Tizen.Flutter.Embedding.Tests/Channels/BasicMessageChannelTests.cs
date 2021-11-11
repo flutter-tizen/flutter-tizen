@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+using NSubstitute;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
-using NSubstitute;
 
 namespace Tizen.Flutter.Embedding.Tests.Channels
 {
