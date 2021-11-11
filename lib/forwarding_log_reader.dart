@@ -13,19 +13,33 @@ import 'package:flutter_tools/src/base/terminal.dart';
 import 'package:flutter_tools/src/device.dart';
 import 'package:flutter_tools/src/device_port_forwarder.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
+import 'package:meta/meta.dart';
 
-import 'tizen_device.dart';
+/// Default factory that creates a real socket connection.
+Future<Socket> kSocketFactory(String host, int port) =>
+    Socket.connect(host, port);
+
+/// Override this in tests with an implementation that returns mock responses.
+typedef SocketFactory = Future<Socket> Function(String host, int port);
 
 class ForwardingLogReader extends DeviceLogReader {
-  ForwardingLogReader._(this.name, this.hostPort, this.portForwarder)
-      : assert(hostPort != null),
-        assert(portForwarder != null);
+  ForwardingLogReader._(
+    this.name,
+    this.hostPort, {
+    @required DevicePortForwarder portForwarder,
+    @required SocketFactory socketFactory,
+  })  : _portForwarder = portForwarder,
+        _socketFactory = socketFactory;
 
-  static Future<ForwardingLogReader> createLogReader(TizenDevice device) async {
+  static Future<ForwardingLogReader> createLogReader(
+    Device device, {
+    SocketFactory socketFactory = kSocketFactory,
+  }) async {
     return ForwardingLogReader._(
       device.name,
       await globals.os.findFreePort(ipv6: false),
-      device.portForwarder,
+      portForwarder: device.portForwarder,
+      socketFactory: socketFactory,
     );
   }
 
@@ -34,12 +48,12 @@ class ForwardingLogReader extends DeviceLogReader {
 
   final int hostPort;
 
-  final DevicePortForwarder portForwarder;
+  final DevicePortForwarder _portForwarder;
+  final SocketFactory _socketFactory;
+  Socket _socket;
 
   final StreamController<String> _linesController =
       StreamController<String>.broadcast();
-
-  Socket _socket;
 
   @override
   Stream<String> get logLines => _linesController.stream;
@@ -73,7 +87,7 @@ class ForwardingLogReader extends DeviceLogReader {
 
   Future<Socket> _connectAndListen() async {
     globals.printTrace('Connecting to localhost:$hostPort...');
-    Socket socket = await Socket.connect('localhost', hostPort);
+    Socket socket = await _socketFactory('localhost', hostPort);
 
     const Utf8Decoder decoder = Utf8Decoder();
     final Completer<void> completer = Completer<void>();
@@ -123,18 +137,29 @@ class ForwardingLogReader extends DeviceLogReader {
     return socket;
   }
 
-  Future<void> start() async {
+  Future<void> start({int retry = 3}) async {
+    if (_socket != null) {
+      globals.printTrace('Already connected to the device logger.');
+      return;
+    }
+
     // The host port is also used as a device port. This could result in a
     // binding error if the port is already in use by another process on the
     // device.
-    // The forwarded port will be automatically unforwarded when
-    // TizenDevicePortForwarder is disposed.
-    await portForwarder.forward(hostPort, hostPort: hostPort);
+    // The forwarded port will be automatically unforwarded when portForwarder
+    // is disposed.
+    await _portForwarder.forward(hostPort, hostPort: hostPort);
 
-    int retryCount = 5;
-    while (_socket == null && retryCount-- > 0) {
-      _socket = await _connectAndListen();
-      await Future<void>.delayed(const Duration(seconds: 2));
+    try {
+      while (true) {
+        _socket = await _connectAndListen();
+        if (_socket != null || --retry < 0) {
+          break;
+        }
+        await Future<void>.delayed(const Duration(seconds: 2));
+      }
+    } on Exception catch (error) {
+      globals.printError('Connection failed: $error');
     }
     if (_socket == null) {
       globals.printError(
