@@ -26,7 +26,6 @@ import 'package:flutter_tools/src/commands/emulators.dart';
 import 'package:flutter_tools/src/commands/format.dart';
 import 'package:flutter_tools/src/commands/generate_localizations.dart';
 import 'package:flutter_tools/src/commands/install.dart';
-import 'package:flutter_tools/src/commands/logs.dart';
 import 'package:flutter_tools/src/commands/packages.dart';
 import 'package:flutter_tools/src/commands/screenshot.dart';
 import 'package:flutter_tools/src/commands/symbolize.dart';
@@ -41,7 +40,6 @@ import 'package:flutter_tools/src/runner/flutter_command.dart';
 import 'package:path/path.dart';
 
 import 'build_targets/package.dart';
-import 'commands/attach.dart';
 import 'commands/build.dart';
 import 'commands/clean.dart';
 import 'commands/create.dart';
@@ -77,9 +75,7 @@ Future<void> main(List<String> args) async {
   final bool muteCommandLogging = (help || doctor) && !veryVerbose;
   final bool verboseHelp = help && verbose;
   final bool daemon = args.contains('daemon');
-  final bool runMachine =
-      (args.contains('--machine') && args.contains('run')) ||
-          (args.contains('--machine') && args.contains('attach'));
+  final bool runMachine = args.contains('--machine') && args.contains('run');
 
   final bool hasSpecifiedDeviceId =
       args.contains('-d') || args.contains('--device-id');
@@ -127,12 +123,10 @@ Future<void> main(List<String> args) async {
         logger: globals.logger,
       ),
       InstallCommand(),
-      LogsCommand(),
       PackagesCommand(),
       ScreenshotCommand(),
       SymbolizeCommand(stdio: globals.stdio, fileSystem: globals.fs),
       // Commands extended for Tizen.
-      TizenAttachCommand(verboseHelp: verboseHelp),
       TizenBuildCommand(verboseHelp: verboseHelp),
       TizenCleanCommand(verbose: verbose),
       TizenCreateCommand(verboseHelp: verboseHelp),
