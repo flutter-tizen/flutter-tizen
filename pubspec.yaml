@@ -1,7 +1,7 @@
 name: flutter_tizen
 description: Flutter application build tools for Tizen devices
 homepage: https://github.com/flutter-tizen/flutter-tizen
-version: 2.5.1
+version: 2.5.3
 publish_to: none
 
 environment:
