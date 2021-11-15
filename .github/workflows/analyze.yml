@@ -1,11 +1,11 @@
-name: Dart
+name: Analyze
 
 on:
   push:
   pull_request:
 
 jobs:
-  analysis:
+  dart:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -21,18 +21,12 @@ jobs:
         run: flutter/bin/dart format --output=none --set-exit-if-changed lib test
       - name: Analyze project source
         run: flutter/bin/dart analyze --fatal-infos lib
-  test:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+  csharp:
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Fetch Flutter SDK
-        run: |
-          git clone --depth=1 https://github.com/flutter/flutter.git
-          cd flutter
-          git fetch --depth=1 https://github.com/flutter/flutter.git $(cat ../bin/internal/flutter.version)
-          git checkout FETCH_HEAD
-      - name: Run tests
-        run: flutter/bin/flutter test
+      - uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '6.0.x'
+      - name: Verify formatting
+        run: dotnet format --verify-no-changes embedding/csharp

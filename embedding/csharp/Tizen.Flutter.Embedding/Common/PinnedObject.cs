@@ -58,7 +58,6 @@ namespace Tizen.Flutter.Embedding
             public T Target { get; }
 
             public IntPtr Pointer => _handle.AddrOfPinnedObject();
-            
         }
     }
 }

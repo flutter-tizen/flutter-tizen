@@ -5,8 +5,8 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Xunit;
 using NSubstitute;
+using Xunit;
 
 namespace Tizen.Flutter.Embedding.Tests.Channels
 {

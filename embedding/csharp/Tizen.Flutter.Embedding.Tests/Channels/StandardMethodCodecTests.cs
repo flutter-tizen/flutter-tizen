@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 using System;
-using System.IO;
 using System.Collections;
+using System.IO;
 using Xunit;
 using static Tizen.Flutter.Embedding.StandardMessageHelper;
 
