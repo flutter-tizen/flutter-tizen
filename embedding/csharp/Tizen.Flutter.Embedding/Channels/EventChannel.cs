@@ -151,7 +151,7 @@ namespace Tizen.Flutter.Embedding
             }
             else
             {
-                return Task.FromResult(_channel.Codec.EncodeErrorEnvelope("error", "No active stream to cancle.", null));
+                return Task.FromResult(_channel.Codec.EncodeErrorEnvelope("error", "No active stream to cancel.", null));
             }
         }
 

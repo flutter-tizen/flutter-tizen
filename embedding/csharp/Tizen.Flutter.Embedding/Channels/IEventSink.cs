@@ -19,7 +19,7 @@ namespace Tizen.Flutter.Embedding
         /// Consumes an error event.
         /// </summary>
         /// <param name="code">An error code string.</param>
-        /// <param name="message">An human-readable error message string, possibly null.</param>
+        /// <param name="message">A human-readable error message string, possibly null.</param>
         /// <param name="details">Error details, possibly null.</param>
         void Error(string code, string message, object details);
 
