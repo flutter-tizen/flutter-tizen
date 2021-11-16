@@ -154,11 +154,12 @@ class TizenEngineArtifacts extends EngineCachedArtifact {
     FileSystem fileSystem,
     OperatingSystemUtils operatingSystemUtils,
   ) async {
-    final String? ghRunId = _platform.environment['TIZEN_ENGINE_GITHUB_RUN_ID'];
+    final String? githubRunId =
+        _platform.environment['TIZEN_ENGINE_GITHUB_RUN_ID'];
     final String? azureBuildId =
         _platform.environment['TIZEN_ENGINE_AZURE_BUILD_ID'];
-    if (ghRunId != null) {
-      await _downloadArtifactsFromGithub(operatingSystemUtils, ghRunId);
+    if (githubRunId != null) {
+      await _downloadArtifactsFromGithub(operatingSystemUtils, githubRunId);
     } else if (azureBuildId != null) {
       await _downloadArtifactsFromAzure(artifactUpdater, azureBuildId);
     } else {
