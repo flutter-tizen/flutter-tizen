@@ -242,7 +242,7 @@ USER_INC_DIRS = ${clientWrapperDir.basename}/include
 USER_SRCS = ${clientWrapperDir.basename}/*.cc
 
 USER_LFLAGS = -Wl,-rpath='\$\$ORIGIN'
-USER_LIBS = ${userLibs.join(' ')}
+USER_LIBS = pthread ${userLibs.join(' ')}
 ''');
 
     final File embedder =

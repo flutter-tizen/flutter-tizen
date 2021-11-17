@@ -222,7 +222,7 @@ dependencies:
         environment.buildDir.childDirectory('tizen_plugins');
     expect(
       rootDir.childFile('project_def.prop').readAsStringSync(),
-      contains('USER_LIBS = some_native_plugin static shared'),
+      contains('USER_LIBS = pthread some_native_plugin static shared'),
     );
     expect(rootDir.childFile('lib/libstatic.a'), isNot(exists));
     expect(rootDir.childFile('lib/libshared.so'), exists);
