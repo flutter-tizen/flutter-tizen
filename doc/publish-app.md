@@ -1,4 +1,4 @@
-# Publishing apps on Samsung Galaxy Store/TV App Store
+# Publishing apps on Samsung Galaxy Store and TV Seller Office
 
 ## Prepare for release
 
@@ -16,7 +16,7 @@
   flutter-tizen build tpk --device-profile tv
   ```
 
-  A signed `.tpk` file should be generated in `build/tizen`.
+  A signed `.tpk` file should be generated in `build/tizen/tpk`.
 
 - Test the release version of your app thoroughly on at least one real device.
 
@@ -39,9 +39,36 @@ Note that flutter-tizen only supports Tizen 4.0 and newer. Some old Gear devices
 
   ![Device settings](images/galaxy-store-device-settings.png)
 
-A newly registered app usually takes around 2 weeks for review, but the time may vary depending on various factors such as the countries selected in the _Country/Region & Price_ page.
+The testing and review process may take more than 2 weeks to complete, depending on various conditions such as the number of countries selected in the **Country/Region & Price** page.
 
 ## Release a TV app
 
 1. Visit [**Samsung Apps TV Seller Office**](https://seller.samsungapps.com/tv) and sign up for an account.
-1. (To be detailed.)
+1. After logging in, go to **Membership - Group Information** and fill out your group and seller information.
+1. If you want to distribute your app outside the United States, you need to set your group type to Partner Group. Click **Request Partnership** and enter any necessary information to request partnership.
+
+   ![Group type](images/seller-office-group-type.png)
+
+   For detailed information on the Seller Office partnership, see [Becoming Partner](https://developer.samsung.com/smarttv/develop/distribute/seller-office/membership/becoming-partner.html). To request the contact information for your local Content Manager, create a [**1:1 Q&A**](https://seller.samsungapps.com/tv/qna) support ticket.
+
+1. If done, go back to the **Applications** screen, and click the **Create App** button to get started with the app registration process. Make sure to choose **Tizen .NET Application (TPK package)** as your app type.
+
+   ![App type](images/seller-office-app-type.png)
+
+1. Fill out detailed information about your app until all check marks in the left menu bar become blue. Make sure to attach a valid description file that clearly describes your app's features in the **Verification Info** step.
+
+   ![App registration](images/seller-office-app-details.png)
+
+1. In the **Request New Release** page of the final **Distribute** step, check and add only **2021 and later** model groups to the selected model group list. Flutter apps are not compatible with 2020 or older models.
+
+   ![Model groups](images/seller-office-model-group.png)
+
+1. Click **Done** to finish the registration process.
+
+The testing and review process may take more than 4 weeks to complete. If you run into any problem, create a [1:1 Q&A](https://seller.samsungapps.com/tv/qna) support ticket or open an [issue](https://github.com/flutter-tizen/flutter-tizen/issues) in this repo.
+
+The following pages might also be useful.
+
+- [Seller Office Introduction](https://developer.samsung.com/smarttv/develop/distribute/seller-office.html)
+- [Seller Office FAQ](https://developer.samsung.com/smarttv/develop/distribute/seller-office/faq.html)
+- [Distributing Applications Q&A](https://developer.samsung.com/smarttv/develop/support/documentation-qa/distributing-applications-qa/seller-office-use.html)
