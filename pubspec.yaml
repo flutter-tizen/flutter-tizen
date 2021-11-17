@@ -8,6 +8,7 @@ environment:
   sdk: ">=2.12.0 <3.0.0"
 
 dependencies:
+  analyzer:
   archive:
   flutter_tools:
     path: flutter/packages/flutter_tools
