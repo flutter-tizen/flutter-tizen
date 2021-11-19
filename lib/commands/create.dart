@@ -224,11 +224,11 @@ class TizenCreateCommand extends CreateCommand {
 
   void _runGitClean(Directory directory) {
     ProcessResult result = globals.processManager.runSync(
-      <String>['git', 'restore', '.'],
+      <String>['git', 'checkout', '--', '.'],
       workingDirectory: directory.path,
     );
     if (result.exitCode != 0) {
-      throwToolExit('Failed to run git restore: ${result.stderr}');
+      throwToolExit('Failed to run git checkout: ${result.stderr}');
     }
     result = globals.processManager.runSync(
       <String>['git', 'clean', '-df', '.'],
