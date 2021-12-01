@@ -7,9 +7,7 @@
 #include <flutter/plugin_registrar.h>
 #include <flutter/standard_method_codec.h>
 
-#include <map>
 #include <memory>
-#include <sstream>
 #include <string>
 
 #include "log.h"
@@ -42,9 +40,11 @@ class {{pluginClass}} : public flutter::Plugin {
   void HandleMethodCall(
       const flutter::MethodCall<flutter::EncodableValue> &method_call,
       std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result) {
+    const auto &method_name = method_call.method_name();
+
     // Replace "getPlatformVersion" check with your plugin's method.
-    if (method_call.method_name().compare("getPlatformVersion") == 0) {
-      char *value = NULL;
+    if (method_name == "getPlatformVersion") {
+      char *value = nullptr;
       int ret = system_info_get_platform_string(
           "http://tizen.org/feature/platform.version", &value);
       if (ret == SYSTEM_INFO_ERROR_NONE) {
