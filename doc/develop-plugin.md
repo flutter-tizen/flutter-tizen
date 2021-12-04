@@ -101,12 +101,11 @@ then it can be parsed as a `flutter::EncodableMap` in C/C++ code like:
 
 ```cpp
 template <typename T>
-bool GetValueFromEncodableMap(const flutter::EncodableMap* map,
-                              const char* key,
-                              T& out) {
+static bool GetValueFromEncodableMap(const flutter::EncodableMap *map,
+                                     const char *key, T &out) {
   auto iter = map->find(flutter::EncodableValue(key));
   if (iter != map->end() && !iter->second.IsNull()) {
-    if (auto value = std::get_if<T>(&iter->second)) {
+    if (auto *value = std::get_if<T>(&iter->second)) {
       out = *value;
       return true;
     }
@@ -117,10 +116,10 @@ bool GetValueFromEncodableMap(const flutter::EncodableMap* map,
 void HandleMethodCall(
     const flutter::MethodCall<flutter::EncodableValue> &method_call,
     std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result) {
-  const auto& method_name = method_call.method_name();
+  const auto &method_name = method_call.method_name();
 
   if (method_name == "create") {
-    auto arguments =
+    const auto *arguments =
         std::get_if<flutter::EncodableMap>(method_call.arguments());
     if (!arguments) {
       result->Error("Invalid arguments", "Invalid argument type.");
@@ -131,6 +130,7 @@ void HandleMethodCall(
       result->Error("Invalid arguments", "No cameraName provided.");
       return;
     }
+    // The implementation goes here.
     ...
     result->Success();
   }
