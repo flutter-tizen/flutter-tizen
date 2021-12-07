@@ -76,6 +76,7 @@ class TizenBuilder {
     @required FlutterProject project,
     @required TizenBuildInfo tizenBuildInfo,
     @required String targetFile,
+    SizeAnalyzer sizeAnalyzer,
   }) async {
     final TizenProject tizenProject = TizenProject.fromFlutter(project);
     if (!tizenProject.existsSync()) {
@@ -169,7 +170,7 @@ class TizenBuilder {
 
     final Directory tpkrootDir = tpkDir.childDirectory('tpkroot');
     if (buildInfo.codeSizeDirectory != null && tpkrootDir.existsSync()) {
-      final SizeAnalyzer sizeAnalyzer = SizeAnalyzer(
+      sizeAnalyzer ??= SizeAnalyzer(
         fileSystem: _fileSystem,
         logger: _logger,
         flutterUsage: _usage,
