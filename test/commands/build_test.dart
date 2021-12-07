@@ -75,13 +75,13 @@ void main() {
   }, overrides: <Type, Generator>{
     FileSystem: () => fileSystem,
     ProcessManager: () => FakeProcessManager.any(),
-    TizenBuilder: () => FakeTizenBuilder(
+    TizenBuilder: () => _FakeTizenBuilder(
         deviceProfile: 'common', securityProfile: 'test_profile'),
   });
 }
 
-class FakeTizenBuilder extends Fake implements TizenBuilder {
-  FakeTizenBuilder({
+class _FakeTizenBuilder extends Fake implements TizenBuilder {
+  _FakeTizenBuilder({
     this.deviceProfile,
     this.securityProfile,
   });

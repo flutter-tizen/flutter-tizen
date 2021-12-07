@@ -14,6 +14,8 @@ import 'package:meta/meta.dart';
 
 import '../tizen_cache.dart';
 
+const String kTizenStampName = 'tizen-sdk';
+
 class TizenPrecacheCommand extends PrecacheCommand {
   TizenPrecacheCommand({
     bool verboseHelp = false,
@@ -52,8 +54,6 @@ class TizenPrecacheCommand extends PrecacheCommand {
     final bool includeTizen = boolArg('tizen');
     final bool includeDefaults = !includeTizen && !_includeOtherPlatforms;
 
-    const String tizenStampName = 'tizen-sdk';
-
     // Re-lock the cache.
     if (_platform.environment['FLUTTER_ALREADY_LOCKED'] != 'true') {
       await _cache.lock();
@@ -61,7 +61,7 @@ class TizenPrecacheCommand extends PrecacheCommand {
 
     if (includeAllPlatforms || includeDefaults || includeTizen) {
       if (boolArg('force')) {
-        _cache.setStampFor(tizenStampName, '');
+        _cache.setStampFor(kTizenStampName, '');
       }
       await _cache.updateAll(<DevelopmentArtifact>{
         TizenDevelopmentArtifact.tizen,
@@ -74,10 +74,10 @@ class TizenPrecacheCommand extends PrecacheCommand {
     if (includeAllPlatforms || includeDefaults || _includeOtherPlatforms) {
       // If the '--force' option is used, the super.runCommand() will delete
       // the tizen's stamp file. It should be restored.
-      final String tizenStamp = _cache.getStampFor(tizenStampName);
+      final String tizenStamp = _cache.getStampFor(kTizenStampName);
       final FlutterCommandResult result = await super.runCommand();
       if (tizenStamp != null) {
-        _cache.setStampFor(tizenStampName, tizenStamp);
+        _cache.setStampFor(kTizenStampName, tizenStamp);
       }
       return result;
     }
