@@ -507,6 +507,7 @@ class TizenDevice extends Device {
 
   @visibleForTesting
   void setLogReader(DeviceLogReader logReader) {
+    _logReader?.dispose();
     _logReader = logReader;
   }
 

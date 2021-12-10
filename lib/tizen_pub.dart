@@ -44,11 +44,11 @@ class TizenPub implements Pub {
   @override
   Future<void> batch(
     List<String> arguments, {
-    PubContext context,
+    @required PubContext context,
     String directory,
     MessageFilter filter,
     String failureMessage = 'pub failed',
-    bool retry,
+    @required bool retry,
     bool showTraceForErrors,
   }) {
     return _pub.batch(
@@ -64,7 +64,7 @@ class TizenPub implements Pub {
 
   @override
   Future<void> get({
-    PubContext context,
+    @required PubContext context,
     String directory,
     bool skipIfAbsent = false,
     bool upgrade = false,
@@ -73,6 +73,7 @@ class TizenPub implements Pub {
     String flutterRootOverride,
     bool checkUpToDate = false,
     bool shouldSkipThirdPartyGenerator = true,
+    bool printProgress = true,
   }) async {
     await _pub.get(
       context: context,
@@ -84,6 +85,7 @@ class TizenPub implements Pub {
       flutterRootOverride: flutterRootOverride,
       checkUpToDate: checkUpToDate,
       shouldSkipThirdPartyGenerator: shouldSkipThirdPartyGenerator,
+      printProgress: printProgress,
     );
     await _postPub(directory);
   }
@@ -92,7 +94,7 @@ class TizenPub implements Pub {
   Future<void> interactively(
     List<String> arguments, {
     String directory,
-    Stdio stdio,
+    @required Stdio stdio,
     bool touchesPackageConfig = false,
     bool generateSyntheticPackage = false,
   }) async {

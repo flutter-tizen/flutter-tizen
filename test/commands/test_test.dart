@@ -43,13 +43,7 @@ void main() {
     fileSystem.currentDirectory = projectDir.path;
 
     deviceManager = _FakeDeviceManager(<Device>[
-      FakeDevice(
-        'ephemeral',
-        'ephemeral',
-        ephemeral: true,
-        isSupported: true,
-        type: PlatformType.custom,
-      ),
+      FakeDevice('ephemeral', 'ephemeral', type: PlatformType.custom),
     ]);
   });
 
