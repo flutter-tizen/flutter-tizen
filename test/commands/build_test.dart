@@ -21,6 +21,7 @@ import '../src/test_flutter_command_runner.dart';
 
 void main() {
   FileSystem fileSystem;
+  _FakeTizenBuilder tizenBuilder;
 
   setUpAll(() {
     Cache.disableLocking();
@@ -30,6 +31,8 @@ void main() {
     fileSystem = MemoryFileSystem.test();
     fileSystem.file('lib/main.dart').createSync(recursive: true);
     fileSystem.file('pubspec.yaml').createSync(recursive: true);
+
+    tizenBuilder = _FakeTizenBuilder();
   });
 
   testUsingContext('Device profile must be specified', () async {
@@ -65,29 +68,34 @@ void main() {
   testUsingContext('Can compute build info', () async {
     final TizenBuildCommand command = TizenBuildCommand();
     final CommandRunner<void> runner = createTestCommandRunner(command);
+
+    fileSystem.file('test_main.dart').createSync(recursive: true);
+
     await runner.run(<String>[
       'build',
       'tpk',
       '--no-pub',
       '--device-profile=common',
       '--security-profile=test_profile',
+      '--target=test_main.dart',
     ]);
+
+    expect(tizenBuilder.deviceProfile, equals('common'));
+    expect(tizenBuilder.securityProfile, equals('test_profile'));
+    expect(tizenBuilder.target, equals('test_main.dart'));
   }, overrides: <Type, Generator>{
     FileSystem: () => fileSystem,
     ProcessManager: () => FakeProcessManager.any(),
-    TizenBuilder: () => _FakeTizenBuilder(
-        deviceProfile: 'common', securityProfile: 'test_profile'),
+    TizenBuilder: () => tizenBuilder,
   });
 }
 
 class _FakeTizenBuilder extends Fake implements TizenBuilder {
-  _FakeTizenBuilder({
-    this.deviceProfile,
-    this.securityProfile,
-  });
+  _FakeTizenBuilder();
 
-  final String deviceProfile;
-  final String securityProfile;
+  String deviceProfile;
+  String securityProfile;
+  String target;
 
   @override
   Future<void> buildTpk({
@@ -95,7 +103,8 @@ class _FakeTizenBuilder extends Fake implements TizenBuilder {
     @required TizenBuildInfo tizenBuildInfo,
     @required String targetFile,
   }) async {
-    expect(tizenBuildInfo.deviceProfile, equals(deviceProfile));
-    expect(tizenBuildInfo.securityProfile, equals(securityProfile));
+    deviceProfile = tizenBuildInfo.deviceProfile;
+    securityProfile = tizenBuildInfo.securityProfile;
+    target = targetFile;
   }
 }
