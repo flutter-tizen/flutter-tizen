@@ -14,7 +14,7 @@ import 'package:flutter_tools/src/globals_null_migrated.dart' as globals;
 import 'package:flutter_tools/src/project.dart';
 import 'package:meta/meta.dart';
 
-import '../tizen_build_info.dart';
+import '../tizen_builder.dart';
 import '../tizen_project.dart';
 import '../tizen_sdk.dart';
 import '../tizen_tpk.dart';
