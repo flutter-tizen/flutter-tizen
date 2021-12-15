@@ -24,6 +24,7 @@ import 'package:process/process.dart';
 
 import 'tizen_device_discovery.dart';
 import 'tizen_doctor.dart';
+import 'tizen_sdk.dart';
 
 /// An extended [FlutterDeviceManager] for managing Tizen devices.
 class TizenDeviceManager extends FlutterDeviceManager {
@@ -34,6 +35,7 @@ class TizenDeviceManager extends FlutterDeviceManager {
     @required Platform platform,
     @required ProcessManager processManager,
   })  : _tizenDeviceDiscovery = TizenDeviceDiscovery(
+          tizenSdk: tizenSdk,
           tizenWorkflow: tizenWorkflow,
           logger: logger,
           fileSystem: fileSystem,
