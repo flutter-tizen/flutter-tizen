@@ -210,6 +210,8 @@ Future<void> main(List<String> args) async {
           ),
       TizenSdk: () => TizenSdk.locateSdk(),
       TizenValidator: () => TizenValidator(
+            tizenSdk: tizenSdk,
+            dotnetCli: dotnetCli,
             logger: globals.logger,
             processManager: globals.processManager,
           ),

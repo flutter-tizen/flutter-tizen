@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @dart = 2.8
-
 import 'dart:io';
 
 import 'package:flutter_tools/src/android/android_workflow.dart';
@@ -18,14 +16,14 @@ import 'package:flutter_tools/src/doctor.dart';
 import 'package:flutter_tools/src/doctor_validator.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/version.dart';
-import 'package:meta/meta.dart';
 import 'package:process/process.dart';
 
+// ignore: import_of_legacy_library_into_null_safe
 import 'executable.dart';
 import 'tizen_sdk.dart';
 
-TizenWorkflow get tizenWorkflow => context.get<TizenWorkflow>();
-TizenValidator get tizenValidator => context.get<TizenValidator>();
+TizenWorkflow? get tizenWorkflow => context.get<TizenWorkflow>();
+TizenValidator? get tizenValidator => context.get<TizenValidator>();
 
 /// See: [_DefaultDoctorValidatorsProvider] in `doctor.dart`
 class TizenDoctorValidatorsProvider extends DoctorValidatorsProvider {
@@ -35,7 +33,7 @@ class TizenDoctorValidatorsProvider extends DoctorValidatorsProvider {
         DoctorValidatorsProvider.defaultInstance.validators;
     return <DoctorValidator>[
       validators.first,
-      tizenValidator,
+      tizenValidator!,
       ...validators.sublist(1)
     ];
   }
@@ -43,38 +41,43 @@ class TizenDoctorValidatorsProvider extends DoctorValidatorsProvider {
   @override
   List<Workflow> get workflows => <Workflow>[
         ...DoctorValidatorsProvider.defaultInstance.workflows,
-        tizenWorkflow,
+        tizenWorkflow!,
       ];
 }
 
 /// A validator that checks for Tizen SDK and .NET CLI installation.
 class TizenValidator extends DoctorValidator {
   TizenValidator({
-    @required Logger logger,
-    @required ProcessManager processManager,
-  })  : _processManager = processManager,
+    required TizenSdk? tizenSdk,
+    required File? dotnetCli,
+    required Logger logger,
+    required ProcessManager processManager,
+  })  : _tizenSdk = tizenSdk,
+        _dotnetCli = dotnetCli,
+        _processManager = processManager,
         _processUtils =
             ProcessUtils(logger: logger, processManager: processManager),
         super('Tizen toolchain - develop for Tizen devices');
 
+  final TizenSdk? _tizenSdk;
+  final File? _dotnetCli;
   final ProcessManager _processManager;
   final ProcessUtils _processUtils;
 
   bool _validatePackages(List<ValidationMessage> messages) {
-    assert(tizenSdk != null);
-    final String gccVersion = tizenSdk.defaultGccVersion;
-    final String packageManager = tizenSdk.packageManagerCli.path;
+    final String gccVersion = _tizenSdk!.defaultGccVersion;
+    final String packageManager = _tizenSdk!.packageManagerCli.path;
     final List<String> missingPackages = <String>[];
 
-    if (!tizenSdk.tizenCli.existsSync()) {
+    if (!_tizenSdk!.tizenCli.existsSync()) {
       missingPackages.add('NativeCLI');
     }
-    if (!tizenSdk.toolsDirectory
+    if (!_tizenSdk!.toolsDirectory
         .childDirectory('arm-linux-gnueabi-gcc-$gccVersion')
         .existsSync()) {
       missingPackages.add('NativeToolchain-Gcc-$gccVersion');
     }
-    if (!tizenSdk.platformsDirectory
+    if (!_tizenSdk!.platformsDirectory
         .childDirectory('tizen-4.0')
         .childDirectory('wearable')
         .childDirectory('rootstraps')
@@ -104,7 +107,7 @@ class TizenValidator extends DoctorValidator {
     messages.add(ValidationMessage(
         globals.userMessages.engineRevision(version.engineRevisionShort)));
 
-    if (tizenSdk == null) {
+    if (_tizenSdk == null) {
       messages.add(const ValidationMessage.error(
         'Unable to locate Tizen SDK.\n'
         'Install Tizen Studio from: https://developer.tizen.org/development/tizen-studio/download\n'
@@ -113,17 +116,17 @@ class TizenValidator extends DoctorValidator {
       return ValidationResult(ValidationType.missing, messages);
     }
 
-    final Version sdkVersion = Version.parse(tizenSdk.sdkVersion);
+    final Version? sdkVersion = Version.parse(_tizenSdk!.sdkVersion);
     if (sdkVersion != null && sdkVersion < Version(4, 0, 0)) {
       messages.add(ValidationMessage.error(
         'A newer version of Tizen Studio is required. To update, run:\n'
-        '${tizenSdk.packageManagerCli.path} update',
+        '${_tizenSdk!.packageManagerCli.path} update',
       ));
       return ValidationResult(ValidationType.missing, messages);
     } else {
       final String versionText = sdkVersion != null ? ' $sdkVersion' : '';
       messages.add(ValidationMessage(
-        'Tizen Studio$versionText at ${tizenSdk.directory.path}',
+        'Tizen Studio$versionText at ${_tizenSdk!.directory.path}',
       ));
     }
 
@@ -131,10 +134,10 @@ class TizenValidator extends DoctorValidator {
       return ValidationResult(ValidationType.partial, messages);
     }
 
-    if (dotnetCli != null && _processManager.canRun(dotnetCli.path)) {
-      final Version dotnetVersion = Version.parse(
+    if (_dotnetCli != null && _processManager.canRun(_dotnetCli!.path)) {
+      final Version? dotnetVersion = Version.parse(
         _processUtils
-            .runSync(<String>[dotnetCli.path, '--version'])
+            .runSync(<String>[_dotnetCli!.path, '--version'])
             .stdout
             .trim(),
       );
@@ -146,7 +149,7 @@ class TizenValidator extends DoctorValidator {
         return ValidationResult(ValidationType.missing, messages);
       } else {
         messages.add(ValidationMessage(
-          '.NET SDK $dotnetVersion at ${dotnetCli.path}',
+          '.NET SDK $dotnetVersion at ${_dotnetCli!.path}',
         ));
       }
     } else {
@@ -166,12 +169,12 @@ class TizenValidator extends DoctorValidator {
 /// See: [AndroidWorkflow] in `android_workflow.dart`
 class TizenWorkflow extends Workflow {
   TizenWorkflow({
-    @required TizenSdk tizenSdk,
-    @required OperatingSystemUtils operatingSystemUtils,
+    required TizenSdk? tizenSdk,
+    required OperatingSystemUtils operatingSystemUtils,
   })  : _tizenSdk = tizenSdk,
         _operatingSystemUtils = operatingSystemUtils;
 
-  final TizenSdk _tizenSdk;
+  final TizenSdk? _tizenSdk;
   final OperatingSystemUtils _operatingSystemUtils;
 
   @override
@@ -185,14 +188,14 @@ class TizenWorkflow extends Workflow {
   bool get canListDevices => appliesToHostPlatform && _tizenSdk != null;
 
   @override
-  bool get canListEmulators => canListDevices && _tizenSdk.emCli.existsSync();
+  bool get canListEmulators => canListDevices && _tizenSdk!.emCli.existsSync();
 }
 
 class _FlutterTizenVersion extends FlutterVersion {
   _FlutterTizenVersion() : super(workingDirectory: rootPath);
 
   /// See: [Cache.getVersionFor] in `cache.dart`
-  String _getVersionFor(String artifactName) {
+  String? _getVersionFor(String artifactName) {
     final File versionFile = globals.fs
         .directory(rootPath)
         .childDirectory('bin')
@@ -206,7 +209,7 @@ class _FlutterTizenVersion extends FlutterVersion {
   /// Source: [Cache.engineRevision] in `cache.dart`
   @override
   String get engineRevision {
-    final String engineRevision = _getVersionFor('engine');
+    final String? engineRevision = _getVersionFor('engine');
     if (engineRevision == null) {
       throwToolExit('Could not determine engine revision.');
     }
