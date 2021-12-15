@@ -71,6 +71,7 @@ void main() {
   });
 }
 
+// ignore: avoid_implementing_value_types
 class _FakeDevice extends Fake implements Device {
   _FakeDevice();
 
