@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @dart = 2.8
-
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -13,7 +11,6 @@ import 'package:flutter_tools/src/base/terminal.dart';
 import 'package:flutter_tools/src/device.dart';
 import 'package:flutter_tools/src/device_port_forwarder.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
-import 'package:meta/meta.dart';
 
 /// Default factory that creates a real socket connection.
 Future<Socket> kSocketFactory(String host, int port) =>
@@ -26,8 +23,8 @@ class ForwardingLogReader extends DeviceLogReader {
   ForwardingLogReader._(
     this.name,
     this.hostPort, {
-    @required DevicePortForwarder portForwarder,
-    @required SocketFactory socketFactory,
+    required DevicePortForwarder portForwarder,
+    required SocketFactory socketFactory,
   })  : _portForwarder = portForwarder,
         _socketFactory = socketFactory;
 
@@ -37,8 +34,8 @@ class ForwardingLogReader extends DeviceLogReader {
   }) async {
     return ForwardingLogReader._(
       device.name,
-      await globals.os.findFreePort(ipv6: false),
-      portForwarder: device.portForwarder,
+      await globals.os.findFreePort(),
+      portForwarder: device.portForwarder!,
       socketFactory: socketFactory,
     );
   }
@@ -50,7 +47,7 @@ class ForwardingLogReader extends DeviceLogReader {
 
   final DevicePortForwarder _portForwarder;
   final SocketFactory _socketFactory;
-  Socket _socket;
+  Socket? _socket;
 
   final StreamController<String> _linesController =
       StreamController<String>.broadcast();
@@ -58,14 +55,14 @@ class ForwardingLogReader extends DeviceLogReader {
   @override
   Stream<String> get logLines => _linesController.stream;
 
-  final RegExp _logFormat = RegExp(r'^(\[[IWEF]\]) .+');
+  final RegExp _logFormat = RegExp(r'^(\[[IWEF]\]).+');
 
   String _colorizePrefix(String message) {
-    final Match match = _logFormat.firstMatch(message);
+    final Match? match = _logFormat.firstMatch(message);
     if (match == null) {
       return message;
     }
-    final String prefix = match.group(1);
+    final String prefix = match.group(1)!;
     TerminalColor color;
     if (prefix == '[I]') {
       color = TerminalColor.cyan;
@@ -75,6 +72,8 @@ class ForwardingLogReader extends DeviceLogReader {
       color = TerminalColor.red;
     } else if (prefix == '[F]') {
       color = TerminalColor.magenta;
+    } else {
+      return message;
     }
     return message.replaceFirst(prefix, globals.terminal.color(prefix, color));
   }
@@ -85,9 +84,9 @@ class ForwardingLogReader extends DeviceLogReader {
     "couldn't find a Compose file for locale",
   ];
 
-  Future<Socket> _connectAndListen() async {
+  Future<Socket?> _connectAndListen() async {
     globals.printTrace('Connecting to localhost:$hostPort...');
-    Socket socket = await _socketFactory('localhost', hostPort);
+    Socket? socket = await _socketFactory('localhost', hostPort);
 
     const Utf8Decoder decoder = Utf8Decoder();
     final Completer<void> completer = Completer<void>();
@@ -101,7 +100,7 @@ class ForwardingLogReader extends DeviceLogReader {
           } else {
             globals.printError(
                 'Invalid message received from the device logger: $response');
-            socket.destroy();
+            socket?.destroy();
             socket = null;
           }
           completer.complete();
@@ -168,7 +167,7 @@ class ForwardingLogReader extends DeviceLogReader {
       );
     } else {
       globals.printTrace(
-          'The logging service started at ${_socket.remoteAddress.address}:${_socket.remotePort}.');
+          'The logging service started at ${_socket!.remoteAddress.address}:${_socket!.remotePort}.');
     }
   }
 
