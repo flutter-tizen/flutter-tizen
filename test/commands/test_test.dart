@@ -32,15 +32,12 @@ void main() {
 
   setUp(() {
     fileSystem = MemoryFileSystem.test();
-    final Directory projectDir = fileSystem.directory('/project');
-    pubspecFile = projectDir.childFile('pubspec.yaml')
+    pubspecFile = fileSystem.file('pubspec.yaml')..createSync(recursive: true);
+    packageConfigFile = fileSystem.file('.dart_tool/package_config.json')
       ..createSync(recursive: true);
-    packageConfigFile = projectDir.childFile('.dart_tool/package_config.json')
-      ..createSync(recursive: true);
-    projectDir
-        .childFile('integration_test/some_integration_test.dart')
+    fileSystem
+        .file('integration_test/some_integration_test.dart')
         .createSync(recursive: true);
-    fileSystem.currentDirectory = projectDir.path;
 
     deviceManager = _FakeDeviceManager(<Device>[
       FakeDevice(
@@ -150,7 +147,7 @@ dependencies:
         fileSystem.file('/.tmp_rand0/rand0/some_integration_test.dart');
     expect(testWrapper.lastArgs, contains(generatedEntrypoint.path));
     expect(generatedEntrypoint.readAsStringSync(), contains('''
-import 'file:///project/integration_test/some_integration_test.dart' as entrypoint;
+import 'file:///integration_test/some_integration_test.dart' as entrypoint;
 import 'package:some_dart_plugin/some_dart_plugin.dart';
 
 void main() {
