@@ -50,7 +50,7 @@ import 'commands/test.dart';
 import 'tizen_application_package.dart';
 import 'tizen_builder.dart';
 import 'tizen_cache.dart';
-import 'tizen_device_discovery.dart';
+import 'tizen_device_manager.dart';
 import 'tizen_doctor.dart';
 import 'tizen_emulator.dart';
 import 'tizen_osutils.dart';
