@@ -51,10 +51,11 @@ class TizenFlutterCache extends FlutterCache {
     required OperatingSystemUtils osUtils,
     required ProcessManager processManager,
   }) : super(
-            logger: logger,
-            fileSystem: fileSystem,
-            platform: platform,
-            osUtils: osUtils) {
+          logger: logger,
+          fileSystem: fileSystem,
+          platform: platform,
+          osUtils: osUtils,
+        ) {
     registerArtifact(TizenEngineArtifacts(
       this,
       logger: logger,
@@ -74,11 +75,7 @@ class TizenEngineArtifacts extends EngineCachedArtifact {
         _platform = platform,
         _processUtils =
             ProcessUtils(processManager: processManager, logger: logger),
-        super(
-          'tizen-sdk',
-          cache,
-          TizenDevelopmentArtifact.tizen,
-        );
+        super('tizen-sdk', cache, TizenDevelopmentArtifact.tizen);
 
   final Logger _logger;
   final Platform _platform;
@@ -171,7 +168,9 @@ class TizenEngineArtifacts extends EngineCachedArtifact {
   }
 
   Future<void> _downloadArtifactsFromUrl(
-      ArtifactUpdater artifactUpdater, String downloadUrl) async {
+    ArtifactUpdater artifactUpdater,
+    String downloadUrl,
+  ) async {
     for (final List<String> toolsDir in getBinaryDirs()) {
       final String cacheDir = toolsDir[0];
       final String urlPath = toolsDir[1];
@@ -184,7 +183,9 @@ class TizenEngineArtifacts extends EngineCachedArtifact {
   }
 
   Future<void> _downloadArtifactsFromAzure(
-      ArtifactUpdater updater, String buildId) async {
+    ArtifactUpdater updater,
+    String buildId,
+  ) async {
     _logger.printStatus(
         'Downloading Tizen engine artifacts from Azure Pipelines...');
     final String downloadUrl = await _getDownloadUrlFromAzure(buildId);
@@ -192,14 +193,14 @@ class TizenEngineArtifacts extends EngineCachedArtifact {
   }
 
   Future<void> _downloadArtifactsFromGithub(
-      OperatingSystemUtils operatingSystemUtils, String ghRunId) async {
+    OperatingSystemUtils operatingSystemUtils,
+    String githubRunId,
+  ) async {
     _logger.printStatus(
         'Downloading Tizen engine artifacts from GitHub Actions...');
     if (operatingSystemUtils.which('gh') == null) {
       throwToolExit(
-        'Github CLI not found. Please install it first. '
-        'https://cli.github.com/',
-      );
+          'GitHub CLI not found. Please install it first: https://cli.github.com');
     }
     for (final List<String> toolsDir in getBinaryDirs()) {
       final String cacheDir = toolsDir[0];
@@ -222,11 +223,11 @@ class TizenEngineArtifacts extends EngineCachedArtifact {
           basenameWithoutExtension(urlPath),
           '-D',
           artifactDir.path,
-          ghRunId,
+          githubRunId,
         ]);
         if (result.exitCode != 0) {
           throwToolExit(
-            'Failed to download Tizen engine artifact from Github actions. \n\n'
+            'Failed to download Tizen engine artifact from GitHub Actions.\n\n'
             '$result',
           );
         }
