@@ -1,6 +1,6 @@
 # Supported commands
 
-Not all commands from the [`flutter`](https://flutter.dev/docs/reference/flutter-cli) CLI are supported by `flutter-tizen`.
+The following commands from the [Flutter CLI](https://flutter.dev/docs/reference/flutter-cli) are supported by flutter-tizen.
 
 ## Global options
 
@@ -78,14 +78,6 @@ Not all commands from the [`flutter`](https://flutter.dev/docs/reference/flutter
 
   # Create a new plugin project in "plugin_name" directory.
   flutter-tizen create --platforms tizen --template plugin plugin_name
-  ```
-
-- ### `custom-devices`
-
-  List, reset, add and delete custom devices, such as [flutter-pi](https://github.com/ardera/flutter-pi) devices.
-
-  ```sh
-  flutter-tizen custom-devices list
   ```
 
 - ### `devices`
@@ -224,3 +216,16 @@ Not all commands from the [`flutter`](https://flutter.dev/docs/reference/flutter
   # Run all integration tests in "integration_test" directory.
   flutter-tizen test integration_test
   ```
+
+## Not supported
+
+The following commands from the Flutter CLI are not supported by flutter-tizen.
+
+- `assemble`
+- `attach`
+- `bash-completion`
+- `channel`
+- `custom-devices`
+- `downgrade`
+- `logs`
+- `upgrade`

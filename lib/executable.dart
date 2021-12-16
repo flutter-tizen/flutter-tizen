@@ -18,7 +18,6 @@ import 'package:flutter_tools/src/base/template.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/commands/analyze.dart';
 import 'package:flutter_tools/src/commands/config.dart';
-import 'package:flutter_tools/src/commands/custom_devices.dart';
 import 'package:flutter_tools/src/commands/daemon.dart';
 import 'package:flutter_tools/src/commands/devices.dart';
 import 'package:flutter_tools/src/commands/doctor.dart';
@@ -103,16 +102,6 @@ Future<void> main(List<String> args) async {
         artifacts: globals.artifacts,
       ),
       ConfigCommand(verboseHelp: verboseHelp),
-      CustomDevicesCommand(
-        customDevicesConfig: globals.customDevicesConfig,
-        operatingSystemUtils: globals.os,
-        terminal: globals.terminal,
-        platform: globals.platform,
-        featureFlags: featureFlags,
-        processManager: globals.processManager,
-        fileSystem: globals.fs,
-        logger: globals.logger,
-      ),
       DaemonCommand(hidden: !verboseHelp),
       DevicesCommand(verboseHelp: verboseHelp),
       DoctorCommand(verbose: verbose),
