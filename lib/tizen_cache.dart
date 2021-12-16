@@ -24,7 +24,7 @@ mixin TizenRequiredArtifacts on FlutterCommand {
   @override
   Future<Set<DevelopmentArtifact>> get requiredArtifacts async =>
       <DevelopmentArtifact>{
-        DevelopmentArtifact.androidGenSnapshot,
+        ...await super.requiredArtifacts,
         TizenDevelopmentArtifact.tizen,
       };
 }
