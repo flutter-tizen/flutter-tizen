@@ -3,8 +3,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @dart = 2.8
-
 import 'dart:convert';
 
 import 'package:file/file.dart';
@@ -21,13 +19,14 @@ import 'package:flutter_tools/src/base/utils.dart';
 import 'package:flutter_tools/src/build_info.dart';
 import 'package:flutter_tools/src/build_system/build_system.dart';
 import 'package:flutter_tools/src/cache.dart';
+// ignore: import_of_legacy_library_into_null_safe
 import 'package:flutter_tools/src/commands/assemble.dart';
+// ignore: import_of_legacy_library_into_null_safe
 import 'package:flutter_tools/src/commands/build_ios_framework.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/linux/build_linux.dart';
 import 'package:flutter_tools/src/project.dart';
 import 'package:flutter_tools/src/reporting/reporting.dart';
-import 'package:meta/meta.dart';
 import 'package:process/process.dart';
 
 import 'build_targets/application.dart';
@@ -40,7 +39,7 @@ import 'tizen_tpk.dart';
 /// The define to control what Tizen device is built for.
 const String kDeviceProfile = 'DeviceProfile';
 
-TizenBuilder get tizenBuilder => context.get<TizenBuilder>();
+TizenBuilder? get tizenBuilder => context.get<TizenBuilder>();
 
 /// See:
 /// - [AndroidGradleBuilder.buildApk] in `gradle.dart`
@@ -49,12 +48,12 @@ TizenBuilder get tizenBuilder => context.get<TizenBuilder>();
 /// - [buildLinux] in `build_linux.dart` (code size)
 class TizenBuilder {
   TizenBuilder({
-    @required Logger logger,
-    @required ProcessManager processManager,
-    @required FileSystem fileSystem,
-    @required Artifacts artifacts,
-    @required Usage usage,
-    @required Platform platform,
+    required Logger logger,
+    required ProcessManager processManager,
+    required FileSystem fileSystem,
+    required Artifacts artifacts,
+    required Usage usage,
+    required Platform platform,
   })  : _logger = logger,
         _processManager = processManager,
         _fileSystem = fileSystem,
@@ -73,9 +72,9 @@ class TizenBuilder {
   final FileSystemUtils _fileSystemUtils;
 
   Future<void> buildTpk({
-    @required FlutterProject project,
-    @required TizenBuildInfo tizenBuildInfo,
-    @required String targetFile,
+    required FlutterProject project,
+    required TizenBuildInfo tizenBuildInfo,
+    required String targetFile,
   }) async {
     final TizenProject tizenProject = TizenProject.fromFlutter(project);
     if (!tizenProject.existsSync()) {
@@ -84,7 +83,7 @@ class TizenBuilder {
         'To fix this problem, create a new project by running `flutter-tizen create <app-dir>`.',
       );
     }
-    if (tizenSdk == null || !tizenSdk.tizenCli.existsSync()) {
+    if (tizenSdk == null || !tizenSdk!.tizenCli.existsSync()) {
       throwToolExit(
         'Unable to locate Tizen CLI executable.\n'
         'Run "flutter-tizen doctor" and install required components.',
@@ -130,7 +129,7 @@ class TizenBuilder {
         'Building a Tizen application in $buildModeName mode...');
     try {
       final BuildResult result =
-          await globals.buildSystem.build(target, environment);
+          await globals.buildSystem!.build(target, environment);
       if (!result.success) {
         for (final ExceptionMeasurement measurement
             in result.exceptions.values) {
@@ -143,7 +142,7 @@ class TizenBuilder {
       final Package package = tizenProject.isDotnet
           ? DotnetTpk(tizenBuildInfo)
           : NativeTpk(tizenBuildInfo);
-      await packageBuilder.build(package, environment);
+      await packageBuilder!.build(package, environment);
 
       if (buildInfo.performanceMeasurementFile != null) {
         final File outFile =
@@ -180,7 +179,7 @@ class TizenBuilder {
       final File precompilerTrace = _fileSystem
           .directory(buildInfo.codeSizeDirectory)
           .childFile('trace.$targetPlatform.json');
-      final Map<String, Object> output = await sizeAnalyzer.analyzeAotSnapshot(
+      final Map<String, Object?> output = await sizeAnalyzer.analyzeAotSnapshot(
         aotSnapshot: codeSizeFile,
         outputDirectory: tpkrootDir,
         precompilerTrace: precompilerTrace,
@@ -212,15 +211,12 @@ class TizenBuilder {
   void _updateManifest(TizenProject project, TizenBuildInfo buildInfo) {
     void updateManifestFile(File manifestFile) {
       final TizenManifest manifest = TizenManifest.parseFromXml(manifestFile);
-      final String buildName =
+      final String? buildName =
           buildInfo.buildInfo.buildName ?? project.parent.manifest.buildName;
       if (buildName != null) {
         manifest.version = buildName;
       }
-      final String deviceProfile = buildInfo.deviceProfile;
-      if (deviceProfile != null) {
-        manifest.profile = deviceProfile;
-      }
+      manifest.profile = buildInfo.deviceProfile;
       manifestFile.writeAsStringSync('$manifest\n');
     }
 
