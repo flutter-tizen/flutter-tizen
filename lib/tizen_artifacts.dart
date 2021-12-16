@@ -41,6 +41,7 @@ class TizenArtifacts extends CachedArtifacts {
     EnvironmentType? environmentType,
   }) {
     if (artifact == Artifact.genSnapshot) {
+      assert(mode != null, 'Need to specify a build mode.');
       assert(mode != BuildMode.debug,
           'Artifact $artifact only available in non-debug mode.');
       final String arch =
