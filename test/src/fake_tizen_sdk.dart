@@ -23,7 +23,9 @@ class FakeTizenSdk extends TizenSdk {
     Logger logger,
     Platform platform,
     ProcessManager processManager,
-  }) : super(
+    String securityProfile,
+  })  : _securityProfile = securityProfile,
+        super(
           fileSystem.directory('/tizen-studio'),
           logger: logger ?? BufferLogger.test(),
           platform: platform ?? FakePlatform(),
@@ -31,12 +33,33 @@ class FakeTizenSdk extends TizenSdk {
         );
 
   final FileSystem fileSystem;
+  final String _securityProfile;
 
   @override
   File get sdb => super.sdb..createSync(recursive: true);
 
   @override
   File get tizenCli => super.tizenCli..createSync(recursive: true);
+
+  @override
+  Future<RunResult> buildApp(
+    String workingDirectory, {
+    Map<String, Object> build = const <String, Object>{},
+    Map<String, Object> method = const <String, Object>{},
+    String output,
+    Map<String, Object> package = const <String, Object>{},
+    String sign,
+  }) async {
+    final List<String> buildConfigs = method['configs'] as List<String>;
+    expect(buildConfigs, isNotEmpty);
+
+    final Directory projectDir = fileSystem.directory(workingDirectory);
+    projectDir
+        .childFile('${buildConfigs.first}/app.tpk')
+        .createSync(recursive: true);
+
+    return RunResult(ProcessResult(0, 0, '', ''), <String>['build-app']);
+  }
 
   @override
   Future<RunResult> buildNative(
@@ -78,4 +101,8 @@ class FakeTizenSdk extends TizenSdk {
   }) {
     return Rootstrap('rootstrap', directory.childDirectory('rootstrap'));
   }
+
+  @override
+  SecurityProfiles get securityProfiles =>
+      SecurityProfiles.test(_securityProfile);
 }
