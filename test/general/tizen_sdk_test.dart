@@ -18,22 +18,24 @@ import '../src/test_flutter_command_runner.dart';
 void main() {
   FileSystem fileSystem;
   FakeProcessManager processManager;
-  TizenSdk tizenSdk;
   Directory projectDir;
+  TizenSdk tizenSdk;
 
   setUp(() {
     fileSystem = MemoryFileSystem.test();
     processManager = FakeProcessManager.empty();
+    projectDir = fileSystem.currentDirectory;
+
     tizenSdk = TizenSdk(
       fileSystem.directory('/tizen-studio'),
       logger: BufferLogger.test(),
       platform: FakePlatform(),
       processManager: processManager,
     );
-    projectDir = fileSystem.currentDirectory;
   });
 
-  testWithoutContext('Build native app', () async {
+  testWithoutContext('TizenSdk.buildApp invokes the build-app command',
+      () async {
     processManager.addCommand(FakeCommand(
       command: <String>[
         '/tizen-studio/tools/ide/bin/tizen',
@@ -81,7 +83,8 @@ void main() {
     expect(processManager, hasNoRemainingExpectations);
   });
 
-  testWithoutContext('Build native library', () async {
+  testWithoutContext('TizenSdk.buildNative invokes the build-native command',
+      () async {
     processManager.addCommand(FakeCommand(
       command: <String>[
         '/tizen-studio/tools/ide/bin/tizen',
@@ -114,5 +117,21 @@ void main() {
     );
 
     expect(processManager, hasNoRemainingExpectations);
+  });
+
+  testWithoutContext('parseIniFile can parse properties from file', () async {
+    final File file = fileSystem.file('test_file.ini');
+    file.writeAsStringSync('''
+AAA=aaa
+ BBB = bbb
+CCC=ccc=ccc
+#DDD=ddd
+''');
+    final Map<String, String> properties = parseIniFile(file);
+
+    expect(properties['AAA'], equals('aaa'));
+    expect(properties['BBB'], equals('bbb'));
+    expect(properties['CCC'], equals('ccc=ccc'));
+    expect(properties['DDD'], isNull);
   });
 }

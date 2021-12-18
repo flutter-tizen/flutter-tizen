@@ -3,8 +3,6 @@
 // found in the LICENSE file.
 
 import 'package:file/file.dart';
-// ignore: import_of_legacy_library_into_null_safe
-import 'package:flutter_tools/src/android/android_emulator.dart';
 import 'package:flutter_tools/src/android/android_sdk.dart';
 import 'package:flutter_tools/src/base/common.dart';
 import 'package:flutter_tools/src/base/context.dart';
@@ -78,8 +76,7 @@ class TizenSdk {
         'The sdk.info file could not be found. Tizen Studio is out of date or corrupted.',
       );
     }
-    // ignore: invalid_use_of_visible_for_testing_member
-    final Map<String, String> info = parseIniLines(sdkInfo.readAsLinesSync());
+    final Map<String, String> info = parseIniFile(sdkInfo);
     if (info.containsKey('TIZEN_SDK_DATA_PATH')) {
       return globals.fs.directory(info['TIZEN_SDK_DATA_PATH']);
     }
@@ -94,9 +91,7 @@ class TizenSdk {
     if (!versionFile.existsSync()) {
       return null;
     }
-    final Map<String, String> info =
-        // ignore: invalid_use_of_visible_for_testing_member
-        parseIniLines(versionFile.readAsLinesSync());
+    final Map<String, String> info = parseIniFile(versionFile);
     if (info.containsKey('TIZEN_SDK_VERSION')) {
       return info['TIZEN_SDK_VERSION'];
     }
@@ -433,4 +428,21 @@ class SecurityProfiles {
   final String? active;
 
   bool contains(String name) => profiles.contains(name);
+}
+
+Map<String, String> parseIniFile(File file) {
+  final Map<String, String> result = <String, String>{};
+  if (file.existsSync()) {
+    for (String line in file.readAsLinesSync()) {
+      line = line.trim();
+      if (line.isEmpty || line.startsWith('#') || !line.contains('=')) {
+        continue;
+      }
+      final int splitIndex = line.indexOf('=');
+      final String name = line.substring(0, splitIndex).trim();
+      final String value = line.substring(splitIndex + 1).trim();
+      result[name] = value;
+    }
+  }
+  return result;
 }
