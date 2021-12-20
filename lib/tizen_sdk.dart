@@ -23,7 +23,8 @@ class TizenSdk {
     required Logger logger,
     required Platform platform,
     required ProcessManager processManager,
-  })  : _platform = platform,
+  })  : _logger = logger,
+        _platform = platform,
         _processUtils =
             ProcessUtils(logger: logger, processManager: processManager);
 
@@ -62,6 +63,7 @@ class TizenSdk {
 
   final Directory directory;
 
+  final Logger _logger;
   final Platform _platform;
   final ProcessUtils _processUtils;
 
@@ -73,16 +75,18 @@ class TizenSdk {
     final File sdkInfo = directory.childFile('sdk.info');
     if (!sdkInfo.existsSync()) {
       throwToolExit(
-        'The sdk.info file could not be found. Tizen Studio is out of date or corrupted.',
-      );
+          'The sdk.info file could not be found. Tizen Studio is out of date or corrupted.');
     }
     final Map<String, String> info = parseIniFile(sdkInfo);
     if (info.containsKey('TIZEN_SDK_DATA_PATH')) {
-      return globals.fs.directory(info['TIZEN_SDK_DATA_PATH']);
+      final Directory dataDir =
+          directory.fileSystem.directory(info['TIZEN_SDK_DATA_PATH']);
+      if (dataDir.existsSync()) {
+        return dataDir;
+      }
     }
     throwToolExit(
-      'The SDK data directory could not be found. Tizen Studio is out of date or corrupted.',
-    );
+        'The SDK data directory could not be found. Tizen Studio is out of date or corrupted.');
   }
 
   /// The SDK version number in the "x.y[.z]" format, or null if not found.
@@ -91,11 +95,7 @@ class TizenSdk {
     if (!versionFile.existsSync()) {
       return null;
     }
-    final Map<String, String> info = parseIniFile(versionFile);
-    if (info.containsKey('TIZEN_SDK_VERSION')) {
-      return info['TIZEN_SDK_VERSION'];
-    }
-    return null;
+    return parseIniFile(versionFile)['TIZEN_SDK_VERSION'];
   }
 
   File get sdb =>
@@ -164,8 +164,7 @@ class TizenSdk {
       }
     }
 
-    String flatten(Map<String, Object> argument) {
-      final String string = stringify(argument);
+    String trim(String string) {
       return string.substring(1, string.length - 1);
     }
 
@@ -173,10 +172,10 @@ class TizenSdk {
       <String>[
         tizenCli.path,
         'build-app',
-        if (build.isNotEmpty) ...<String>['-b', flatten(build)],
-        if (method.isNotEmpty) ...<String>['-m', flatten(method)],
+        if (build.isNotEmpty) ...<String>['-b', trim(stringify(build))],
+        if (method.isNotEmpty) ...<String>['-m', trim(stringify(method))],
         if (output != null) ...<String>['-o', output],
-        if (package.isNotEmpty) ...<String>['-p', flatten(package)],
+        if (package.isNotEmpty) ...<String>['-p', trim(stringify(package))],
         if (sign != null) ...<String>['-s', sign],
         '--',
         workingDirectory,
@@ -262,7 +261,7 @@ class TizenSdk {
     if (arch == 'arm64') {
       // The arm64 build is only supported by iot-headed-6.0+ rootstraps.
       if (profile != 'iot-headed') {
-        globals.printError(
+        _logger.printError(
             'The arm64 build is not supported by the $profile profile.');
         profile = 'iot-headed';
       }
@@ -284,7 +283,7 @@ class TizenSdk {
 
     Rootstrap rootstrap = getRootstrap(profile, apiVersion, type);
     if (!rootstrap.isValid && profile == 'tv-samsung') {
-      globals.printStatus(
+      _logger.printStatus(
           'TV SDK could not be found. Trying with Wearable SDK...');
       profile = 'wearable';
       rootstrap = getRootstrap(profile, apiVersion, type);
@@ -298,7 +297,7 @@ class TizenSdk {
         '${packageManagerCli.path} install $profileUpperCase-$apiVersion-NativeAppDevelopment-CLI',
       );
     }
-    globals.printTrace('Found a rootstrap: ${rootstrap.id}');
+    _logger.printTrace('Found a rootstrap: ${rootstrap.id}');
 
     // Create a custom rootstrap definition to override the GCC version.
     final String flutterRootstrapId =
@@ -319,7 +318,9 @@ class TizenSdk {
     final Directory pluginsDir = toolsDirectory
         .childDirectory('smart-build-interface')
         .childDirectory('plugins');
-    pluginsDir.childFile('flutter-rootstrap.xml').writeAsStringSync('''
+    pluginsDir.childFile('flutter-rootstrap.xml')
+      ..createSync(recursive: true)
+      ..writeAsStringSync('''
 <?xml version="1.0"?>
 <extension point="rootstrapDefinition">
   <rootstrap id="$flutterRootstrapId" name="Flutter" version="Tizen $apiVersion" architecture="$buildArch" path="${rootstrap.rootDirectory.path}" supportToolchainType="tizen.core">
