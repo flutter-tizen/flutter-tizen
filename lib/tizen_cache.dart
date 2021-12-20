@@ -11,7 +11,6 @@ import 'package:flutter_tools/src/base/process.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/features.dart';
 import 'package:flutter_tools/src/flutter_cache.dart';
-import 'package:flutter_tools/src/globals_null_migrated.dart' as globals;
 // ignore: import_of_legacy_library_into_null_safe
 import 'package:flutter_tools/src/runner/flutter_command.dart';
 import 'package:path/path.dart';
@@ -56,6 +55,7 @@ class TizenFlutterCache extends FlutterCache {
     registerArtifact(TizenEngineArtifacts(
       this,
       logger: logger,
+      fileSystem: fileSystem,
       platform: platform,
       processManager: processManager,
     ));
@@ -66,22 +66,25 @@ class TizenEngineArtifacts extends EngineCachedArtifact {
   TizenEngineArtifacts(
     Cache cache, {
     required Logger logger,
+    required FileSystem fileSystem,
     required Platform platform,
     required ProcessManager processManager,
   })  : _logger = logger,
+        _fileSystem = fileSystem,
         _platform = platform,
         _processUtils =
             ProcessUtils(processManager: processManager, logger: logger),
         super('tizen-sdk', cache, TizenDevelopmentArtifact.tizen);
 
   final Logger _logger;
+  final FileSystem _fileSystem;
   final Platform _platform;
   final ProcessUtils _processUtils;
 
   /// See: [Cache.getVersionFor] in `cache.dart`
   @override
   String? get version {
-    final File versionFile = globals.fs
+    final File versionFile = _fileSystem
         .directory(Cache.flutterRoot)
         .parent
         .childDirectory('bin')
@@ -114,16 +117,45 @@ class TizenEngineArtifacts extends EngineCachedArtifact {
   }
 
   @override
-  List<List<String>> getBinaryDirs() => <List<String>>[
-        <String>['tizen-common', 'tizen-common.zip'],
-        <String>['tizen-x86-debug', 'tizen-x86-debug.zip'],
-        <String>['tizen-arm-debug', 'tizen-arm-debug.zip'],
-        <String>['tizen-arm-profile', 'tizen-arm-profile.zip'],
-        <String>['tizen-arm-release', 'tizen-arm-release.zip'],
-        <String>['tizen-arm64-debug', 'tizen-arm64-debug.zip'],
-        <String>['tizen-arm64-profile', 'tizen-arm64-profile.zip'],
-        <String>['tizen-arm64-release', 'tizen-arm64-release.zip'],
-      ];
+  List<List<String>> getBinaryDirs() {
+    return <List<String>>[
+      <String>['tizen-common', 'tizen-common.zip'],
+      <String>['tizen-x86-debug', 'tizen-x86-debug.zip'],
+      <String>['tizen-arm-debug', 'tizen-arm-debug.zip'],
+      <String>['tizen-arm-profile', 'tizen-arm-profile.zip'],
+      <String>['tizen-arm-release', 'tizen-arm-release.zip'],
+      <String>['tizen-arm64-debug', 'tizen-arm64-debug.zip'],
+      <String>['tizen-arm64-profile', 'tizen-arm64-profile.zip'],
+      <String>['tizen-arm64-release', 'tizen-arm64-release.zip'],
+      if (_platform.isWindows)
+        ..._binaryDirsForHostPlatform('windows-x64')
+      else if (_platform.isMacOS)
+        ..._binaryDirsForHostPlatform('darwin-x64')
+      else if (_platform.isLinux)
+        ..._binaryDirsForHostPlatform('linux-x64'),
+    ];
+  }
+
+  List<List<String>> _binaryDirsForHostPlatform(String platform) {
+    return <List<String>>[
+      <String>[
+        'tizen-arm-profile/$platform',
+        'tizen-arm-profile_$platform.zip'
+      ],
+      <String>[
+        'tizen-arm-release/$platform',
+        'tizen-arm-release_$platform.zip'
+      ],
+      <String>[
+        'tizen-arm64-profile/$platform',
+        'tizen-arm64-profile_$platform.zip'
+      ],
+      <String>[
+        'tizen-arm64-release/$platform',
+        'tizen-arm64-release_$platform.zip'
+      ],
+    ];
+  }
 
   @override
   List<String> getLicenseDirs() => const <String>[];
