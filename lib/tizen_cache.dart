@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'dart:convert';
-
 import 'package:flutter_tools/src/base/common.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/base/logger.dart';
@@ -16,7 +14,6 @@ import 'package:flutter_tools/src/flutter_cache.dart';
 import 'package:flutter_tools/src/globals_null_migrated.dart' as globals;
 // ignore: import_of_legacy_library_into_null_safe
 import 'package:flutter_tools/src/runner/flutter_command.dart';
-import 'package:http/http.dart' as http;
 import 'package:path/path.dart';
 import 'package:process/process.dart';
 
@@ -136,9 +133,8 @@ class TizenEngineArtifacts extends EngineCachedArtifact {
 
   @override
   bool isUpToDateInner(FileSystem fileSystem) {
-    // Download always happens, if following variables are set.
-    if (_platform.environment['TIZEN_ENGINE_GITHUB_RUN_ID'] != null ||
-        _platform.environment['TIZEN_ENGINE_AZURE_BUILD_ID'] != null) {
+    // Download always happens, if the following variable is set.
+    if (_platform.environment['TIZEN_ENGINE_GITHUB_RUN_ID'] != null) {
       return false;
     }
     return super.isUpToDateInner(fileSystem);
@@ -153,12 +149,8 @@ class TizenEngineArtifacts extends EngineCachedArtifact {
   ) async {
     final String? githubRunId =
         _platform.environment['TIZEN_ENGINE_GITHUB_RUN_ID'];
-    final String? azureBuildId =
-        _platform.environment['TIZEN_ENGINE_AZURE_BUILD_ID'];
     if (githubRunId != null) {
       await _downloadArtifactsFromGithub(operatingSystemUtils, githubRunId);
-    } else if (azureBuildId != null) {
-      await _downloadArtifactsFromAzure(artifactUpdater, azureBuildId);
     } else {
       await _downloadArtifactsFromUrl(
         artifactUpdater,
@@ -180,16 +172,6 @@ class TizenEngineArtifacts extends EngineCachedArtifact {
         location.childDirectory(cacheDir),
       );
     }
-  }
-
-  Future<void> _downloadArtifactsFromAzure(
-    ArtifactUpdater updater,
-    String buildId,
-  ) async {
-    _logger.printStatus(
-        'Downloading Tizen engine artifacts from Azure Pipelines...');
-    final String downloadUrl = await _getDownloadUrlFromAzure(buildId);
-    await _downloadArtifactsFromUrl(updater, downloadUrl);
   }
 
   Future<void> _downloadArtifactsFromGithub(
@@ -234,23 +216,6 @@ class TizenEngineArtifacts extends EngineCachedArtifact {
       } finally {
         status.stop();
       }
-    }
-  }
-
-  Future<String> _getDownloadUrlFromAzure(String buildId) async {
-    final String azureRestUrl =
-        'https://dev.azure.com/flutter-tizen/flutter-tizen'
-        '/_apis/build/builds/$buildId/artifacts?artifactName=release';
-
-    final http.Response response = await http.get(Uri.parse(azureRestUrl));
-    if (response.statusCode == 200) {
-      // ignore: avoid_dynamic_calls
-      return json
-          .decode(response.body)['resource']['downloadUrl']
-          .toString()
-          .replaceAll('content?format=zip', 'content?format=file&subPath=');
-    } else {
-      throwToolExit('Failed to get the download URL from $azureRestUrl.');
     }
   }
 }
