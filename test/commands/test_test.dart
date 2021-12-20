@@ -44,7 +44,7 @@ void main() {
     ]);
   });
 
-  testUsingContext('Requests Tizen artifacts', () async {
+  testUsingContext('Integration test requires Tizen artifacts', () async {
     final _FakeTestWrapper testWrapper = _FakeTestWrapper();
     final TizenTestCommand command = TizenTestCommand(testWrapper: testWrapper);
     final CommandRunner<void> runner = createTestCommandRunner(command);
@@ -74,10 +74,10 @@ void main() {
       'integration_test',
     ]);
 
-    expect(await command.requiredArtifacts, <DevelopmentArtifact>[
-      DevelopmentArtifact.androidGenSnapshot,
-      TizenDevelopmentArtifact.tizen,
-    ]);
+    expect(
+      await command.requiredArtifacts,
+      contains(TizenDevelopmentArtifact.tizen),
+    );
   }, overrides: <Type, Generator>{
     FileSystem: () => fileSystem,
     ProcessManager: () => FakeProcessManager.any(),
