@@ -4,18 +4,22 @@
 
 // @dart = 2.8
 
+import 'dart:io';
+
 import 'package:flutter_tizen/tizen_sdk.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/base/platform.dart';
+import 'package:flutter_tools/src/base/process.dart';
 import 'package:meta/meta.dart';
 import 'package:process/process.dart';
+import 'package:test/test.dart';
 
 import 'fake_process_manager.dart';
 
 class FakeTizenSdk extends TizenSdk {
   FakeTizenSdk(
-    FileSystem fileSystem, {
+    this.fileSystem, {
     Logger logger,
     Platform platform,
     ProcessManager processManager,
@@ -26,11 +30,45 @@ class FakeTizenSdk extends TizenSdk {
           processManager: processManager ?? FakeProcessManager.any(),
         );
 
+  final FileSystem fileSystem;
+
   @override
   File get sdb => super.sdb..createSync(recursive: true);
 
   @override
   File get tizenCli => super.tizenCli..createSync(recursive: true);
+
+  @override
+  Future<RunResult> buildNative(
+    String workingDirectory, {
+    @required String configuration,
+    @required String arch,
+    String compiler,
+    List<String> predefines = const <String>[],
+    List<String> extraOptions = const <String>[],
+    String rootstrap,
+  }) async {
+    final Directory projectDir = fileSystem.directory(workingDirectory);
+    final Map<String, String> projectDef =
+        parseIniFile(projectDir.childFile('project_def.prop'));
+
+    final String libName = projectDef['APPNAME'];
+    final String libType = projectDef['type'];
+    expect(libName, isNotNull);
+    expect(libType, isNotNull);
+
+    String outPath = '$configuration/lib$libName';
+    if (libType == 'staticLib') {
+      outPath += '.a';
+    } else if (libType == 'sharedLib') {
+      outPath += '.so';
+    } else {
+      throw 'The project type $libType is not supported.';
+    }
+    projectDir.childFile(outPath).createSync(recursive: true);
+
+    return RunResult(ProcessResult(0, 0, '', ''), <String>['build-native']);
+  }
 
   @override
   Rootstrap getFlutterRootstrap({

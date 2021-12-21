@@ -144,9 +144,7 @@ class TizenEmulatorManager extends EmulatorManager {
         if (!infoFile.existsSync()) {
           continue;
         }
-        final Map<String, String> info =
-            // ignore: invalid_use_of_visible_for_testing_member
-            parseIniLines(infoFile.readAsLinesSync());
+        final Map<String, String> info = parseIniFile(infoFile);
         if (info.containsKey('name') &&
             info.containsKey('profile') &&
             info.containsKey('version')) {
