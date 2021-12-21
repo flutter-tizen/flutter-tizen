@@ -19,7 +19,14 @@ jobs:
           git fetch --depth=1 https://github.com/flutter/flutter.git $(cat ../bin/internal/flutter.version)
           git checkout FETCH_HEAD
       - name: Run tests
-        run: flutter/bin/flutter test
+        run: flutter/bin/flutter test --coverage
+      - name: Report coverage
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt update
+          sudo apt install -y lcov
+          lcov --summary coverage/lcov.info
+          lcov --list coverage/lcov.info
   embedding:
     runs-on: ubuntu-latest
     steps:
