@@ -249,16 +249,12 @@ USER_LIBS = pthread ${userLibs.join(' ')}
         engineDir.childFile('libflutter_tizen_${buildInfo.deviceProfile}.so');
     inputs.add(embedder);
 
-    // Create a temp directory to use as a build directory.
-    // This is a workaround for the long path issue on Windows:
-    // https://github.com/flutter-tizen/flutter-tizen/issues/122
-    final Directory tempDir =
-        environment.fileSystem.systemTempDirectory.createTempSync();
-    copyDirectory(rootDir, tempDir);
-
-    // Run the native build.
+    final Directory buildDir = rootDir.childDirectory(buildConfig);
+    if (buildDir.existsSync()) {
+      buildDir.deleteSync(recursive: true);
+    }
     final RunResult result = await tizenSdk!.buildNative(
-      tempDir.path,
+      rootDir.path,
       configuration: buildConfig,
       arch: getTizenCliArch(buildInfo.targetArch),
       extraOptions: <String>[
@@ -278,17 +274,15 @@ USER_LIBS = pthread ${userLibs.join(' ')}
       throwToolExit('Failed to build native plugins:\n$result');
     }
 
-    final File outputLib =
-        tempDir.childDirectory(buildConfig).childFile('libflutter_plugins.so');
+    File outputLib = buildDir.childFile('libflutter_plugins.so');
     if (!outputLib.existsSync()) {
       throwToolExit(
         'Build succeeded but the file ${outputLib.path} is not found:\n'
         '${result.stdout}',
       );
     }
-    final File outputLibCopy =
-        outputLib.copySync(rootDir.childFile(outputLib.basename).path);
-    outputs.add(outputLibCopy);
+    outputLib = outputLib.copySync(rootDir.childFile(outputLib.basename).path);
+    outputs.add(outputLib);
 
     // Remove intermediate files.
     for (final File lib in libDir
