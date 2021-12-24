@@ -67,16 +67,6 @@ class TizenPlugin extends PluginPlatform implements NativeOrDartPlugin {
   final String? dartPluginClass;
   final String? fileName;
 
-  TizenPlugin copyWith({Directory? directory}) {
-    return TizenPlugin(
-      name: name,
-      directory: directory ?? this.directory,
-      pluginClass: pluginClass,
-      dartPluginClass: dartPluginClass,
-      fileName: fileName,
-    );
-  }
-
   @override
   bool isNative() => pluginClass != null;
 
