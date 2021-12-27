@@ -110,8 +110,8 @@ class DotnetTpk extends Package {
     icuData.copySync(resDir.childFile(icuData.basename).path);
 
     if (buildMode.isPrecompiled) {
-      final File aotSharedLib = environment.buildDir.childFile('app.so');
-      aotSharedLib.copySync(libDir.childFile('libapp.so').path);
+      final File aotSnapshot = environment.buildDir.childFile('app.so');
+      aotSnapshot.copySync(libDir.childFile('libapp.so').path);
     }
 
     final Directory pluginsDir =
@@ -176,7 +176,7 @@ class DotnetTpk extends Package {
       }
     } else {
       environment.logger.printStatus(
-        'The TPK was signed with a default certificate. You can create one using Certificate Manager.\n'
+        'The TPK was signed with the default certificate. You can create one using Certificate Manager.\n'
         'https://github.com/flutter-tizen/flutter-tizen/blob/master/doc/install-tizen-sdk.md#create-a-tizen-certificate',
       );
     }
@@ -242,8 +242,8 @@ class NativeTpk extends Package {
     icuData.copySync(resDir.childFile(icuData.basename).path);
 
     if (buildMode.isPrecompiled) {
-      final File aotSharedLib = environment.buildDir.childFile('app.so');
-      aotSharedLib.copySync(libDir.childFile('libapp.so').path);
+      final File aotSnapshot = environment.buildDir.childFile('app.so');
+      aotSnapshot.copySync(libDir.childFile('libapp.so').path);
     }
 
     final Directory pluginsDir =
@@ -323,7 +323,7 @@ class NativeTpk extends Package {
           .printStatus('The $securityProfile profile is used for signing.');
     } else {
       throwToolExit(
-        'Native TPKs cannot be built without valid certificates. You can create one using Certificate Manager.\n'
+        'Native TPKs cannot be built without a valid certificate. You can create one using Certificate Manager.\n'
         'https://github.com/flutter-tizen/flutter-tizen/blob/master/doc/install-tizen-sdk.md#create-a-tizen-certificate',
       );
     }

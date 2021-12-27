@@ -10,6 +10,7 @@ import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/base/platform.dart';
 import 'package:flutter_tools/src/base/process.dart';
 import 'package:flutter_tools/src/globals_null_migrated.dart' as globals;
+import 'package:meta/meta.dart';
 import 'package:process/process.dart';
 import 'package:xml/xml.dart';
 
@@ -389,6 +390,11 @@ String getTizenCliArch(String arch) {
 
 class SecurityProfiles {
   SecurityProfiles._(this.profiles, {required this.active});
+
+  @visibleForTesting
+  SecurityProfiles.test(String? profile)
+      : profiles = profile == null ? <String>[] : <String>[profile],
+        active = profile;
 
   static SecurityProfiles? parseFromXml(File xmlFile) {
     if (!xmlFile.existsSync()) {
