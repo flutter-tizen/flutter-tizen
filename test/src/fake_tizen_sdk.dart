@@ -19,20 +19,20 @@ import 'fake_process_manager.dart';
 
 class FakeTizenSdk extends TizenSdk {
   FakeTizenSdk(
-    this.fileSystem, {
+    this._fileSystem, {
     Logger logger,
     Platform platform,
     ProcessManager processManager,
     String securityProfile,
   })  : _securityProfile = securityProfile,
         super(
-          fileSystem.directory('/tizen-studio'),
+          _fileSystem.directory('/tizen-studio'),
           logger: logger ?? BufferLogger.test(),
           platform: platform ?? FakePlatform(),
           processManager: processManager ?? FakeProcessManager.any(),
         );
 
-  final FileSystem fileSystem;
+  final FileSystem _fileSystem;
   final String _securityProfile;
 
   @override
@@ -53,7 +53,7 @@ class FakeTizenSdk extends TizenSdk {
     final List<String> buildConfigs = method['configs'] as List<String>;
     expect(buildConfigs, isNotEmpty);
 
-    final Directory projectDir = fileSystem.directory(workingDirectory);
+    final Directory projectDir = _fileSystem.directory(workingDirectory);
     projectDir
         .childFile('${buildConfigs.first}/app.tpk')
         .createSync(recursive: true);
@@ -71,7 +71,7 @@ class FakeTizenSdk extends TizenSdk {
     List<String> extraOptions = const <String>[],
     String rootstrap,
   }) async {
-    final Directory projectDir = fileSystem.directory(workingDirectory);
+    final Directory projectDir = _fileSystem.directory(workingDirectory);
     final Map<String, String> projectDef =
         parseIniFile(projectDir.childFile('project_def.prop'));
 
