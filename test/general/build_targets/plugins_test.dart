@@ -52,12 +52,17 @@ flutter:
         pluginClass: SomeNativePlugin
         fileName: some_native_plugin.h
 ''');
-    pluginDir.childFile('tizen/project_def.prop').createSync(recursive: true);
+    pluginDir.childFile('tizen/project_def.prop')
+      ..createSync(recursive: true)
+      ..writeAsStringSync('''
+APPNAME = some_native_plugin
+type = staticLib
+''');
     pluginDir
         .childFile('tizen/inc/some_native_plugin.h')
         .createSync(recursive: true);
 
-    projectDir = fileSystem.directory('/project');
+    projectDir = fileSystem.directory('/flutter_project');
     projectDir.childFile('pubspec.yaml')
       ..createSync(recursive: true)
       ..writeAsStringSync('''
@@ -111,42 +116,6 @@ dependencies:
       processManager: processManager,
     );
 
-    processManager.addCommand(FakeCommand(
-      command: _tizenBuildCommand(
-        'Debug',
-        'x86',
-        '/.tmp_rand0/rand0',
-        predefine: 'WEARABLE_PROFILE',
-        extraOptions: <String>[
-          '-fPIC',
-          '-I"cache/bin/cache/artifacts/engine/tizen-common/cpp_client_wrapper/include"',
-          '-I"cache/bin/cache/artifacts/engine/tizen-common/public"',
-        ],
-      ),
-      onRun: () {
-        fileSystem
-            .file('/.tmp_rand0/rand0/Debug/libsome_native_plugin.a')
-            .createSync(recursive: true);
-      },
-    ));
-    processManager.addCommand(FakeCommand(
-      command: _tizenBuildCommand(
-        'Debug',
-        'x86',
-        '/.tmp_rand0/rand1',
-        extraOptions: <String>[
-          '-lflutter_tizen_wearable',
-          '-L"cache/bin/cache/artifacts/engine/tizen-x86-debug"',
-          '-I"cache/bin/cache/artifacts/engine/tizen-common/public"',
-          '-L"/project/build/2ca1f4ebdc59348ffdc31d97a51a98d5/tizen_plugins/lib"',
-          '-Wl,--undefined=SomeNativePluginRegisterWithRegistrar',
-        ],
-      ),
-      onRun: () => fileSystem
-          .file('/.tmp_rand0/rand1/Debug/libflutter_plugins.so')
-          .createSync(recursive: true),
-    ));
-
     await NativePlugins(const TizenBuildInfo(
       BuildInfo.debug,
       targetArch: 'x86',
@@ -156,12 +125,15 @@ dependencies:
     final File outputLib =
         environment.buildDir.childFile('tizen_plugins/libflutter_plugins.so');
     expect(outputLib, exists);
-    expect(processManager, hasNoRemainingExpectations);
+
+    final File header = environment.buildDir
+        .childFile('tizen_plugins/include/some_native_plugin.h');
+    expect(header, exists);
   }, overrides: <Type, Generator>{
     FileSystem: () => fileSystem,
     ProcessManager: () => processManager,
     Cache: () => cache,
-    TizenSdk: () => FakeTizenSdk(fileSystem, processManager: processManager),
+    TizenSdk: () => FakeTizenSdk(fileSystem),
   });
 
   testUsingContext('Can link to user libraries', () async {
@@ -172,45 +144,8 @@ dependencies:
       artifacts: artifacts,
       processManager: processManager,
     );
-
     pluginDir.childFile('tizen/lib/libstatic.a').createSync(recursive: true);
     pluginDir.childFile('tizen/lib/libshared.so').createSync(recursive: true);
-
-    processManager.addCommand(FakeCommand(
-      command: _tizenBuildCommand(
-        'Release',
-        'arm',
-        '/.tmp_rand0/rand0',
-        predefine: 'COMMON_PROFILE',
-        extraOptions: <String>[
-          '-fPIC',
-          '-I"cache/bin/cache/artifacts/engine/tizen-common/cpp_client_wrapper/include"',
-          '-I"cache/bin/cache/artifacts/engine/tizen-common/public"',
-        ],
-      ),
-      onRun: () {
-        fileSystem
-            .file('/.tmp_rand0/rand0/Release/libsome_native_plugin.a')
-            .createSync(recursive: true);
-      },
-    ));
-    processManager.addCommand(FakeCommand(
-      command: _tizenBuildCommand(
-        'Release',
-        'arm',
-        '/.tmp_rand0/rand1',
-        extraOptions: <String>[
-          '-lflutter_tizen_common',
-          '-L"cache/bin/cache/artifacts/engine/tizen-arm-release"',
-          '-I"cache/bin/cache/artifacts/engine/tizen-common/public"',
-          '-L"/project/build/2ca1f4ebdc59348ffdc31d97a51a98d5/tizen_plugins/lib"',
-          '-Wl,--undefined=SomeNativePluginRegisterWithRegistrar',
-        ],
-      ),
-      onRun: () => fileSystem
-          .file('/.tmp_rand0/rand1/Release/libflutter_plugins.so')
-          .createSync(recursive: true),
-    ));
 
     await NativePlugins(const TizenBuildInfo(
       BuildInfo.release,
@@ -220,42 +155,19 @@ dependencies:
 
     final Directory rootDir =
         environment.buildDir.childDirectory('tizen_plugins');
-    expect(
-      rootDir.childFile('project_def.prop').readAsStringSync(),
-      contains('USER_LIBS = pthread some_native_plugin static shared'),
-    );
     expect(rootDir.childFile('lib/libstatic.a'), isNot(exists));
     expect(rootDir.childFile('lib/libshared.so'), exists);
-    expect(processManager, hasNoRemainingExpectations);
+
+    final Map<String, String> projectDef =
+        parseIniFile(rootDir.childFile('project_def.prop'));
+    expect(
+      projectDef['USER_LIBS'],
+      contains('some_native_plugin static shared'),
+    );
   }, overrides: <Type, Generator>{
     FileSystem: () => fileSystem,
     ProcessManager: () => processManager,
     Cache: () => cache,
-    TizenSdk: () => FakeTizenSdk(fileSystem, processManager: processManager),
+    TizenSdk: () => FakeTizenSdk(fileSystem),
   });
-}
-
-List<String> _tizenBuildCommand(
-  String buildMode,
-  String arch,
-  String workingDir, {
-  String predefine,
-  List<String> extraOptions,
-}) {
-  return <String>[
-    '/tizen-studio/tools/ide/bin/tizen',
-    'build-native',
-    '-C',
-    buildMode,
-    '-a',
-    arch,
-    '-c',
-    'llvm-10.0',
-    if (predefine != null) ...<String>['-d', predefine],
-    if (extraOptions.isNotEmpty) ...<String>['-e', extraOptions.join(' ')],
-    '-r',
-    'rootstrap',
-    '--',
-    workingDir,
-  ];
 }

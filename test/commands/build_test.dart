@@ -9,6 +9,7 @@ import 'package:file/memory.dart';
 import 'package:flutter_tizen/commands/build.dart';
 import 'package:flutter_tizen/tizen_build_info.dart';
 import 'package:flutter_tizen/tizen_builder.dart';
+import 'package:flutter_tools/src/base/analyze_size.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/project.dart';
@@ -102,6 +103,7 @@ class _FakeTizenBuilder extends Fake implements TizenBuilder {
     @required FlutterProject project,
     @required TizenBuildInfo tizenBuildInfo,
     @required String targetFile,
+    SizeAnalyzer sizeAnalyzer,
   }) async {
     deviceProfile = tizenBuildInfo.deviceProfile;
     securityProfile = tizenBuildInfo.securityProfile;

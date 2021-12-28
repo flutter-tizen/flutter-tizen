@@ -10,6 +10,7 @@ import 'package:flutter_tizen/tizen_build_info.dart';
 import 'package:flutter_tizen/tizen_builder.dart';
 import 'package:flutter_tizen/tizen_sdk.dart';
 import 'package:flutter_tools/src/artifacts.dart';
+import 'package:flutter_tools/src/base/analyze_size.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/base/platform.dart';
@@ -18,6 +19,7 @@ import 'package:flutter_tools/src/build_system/build_system.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/project.dart';
 import 'package:flutter_tools/src/reporting/reporting.dart';
+import 'package:meta/meta.dart';
 
 import '../src/common.dart';
 import '../src/context.dart';
@@ -35,6 +37,8 @@ const String _kTizenManifestContents = '''
 void main() {
   FileSystem fileSystem;
   ProcessManager processManager;
+  BufferLogger logger;
+  Platform platform;
   FlutterProject project;
   TizenBuildInfo tizenBuildInfo;
   TizenBuilder tizenBuilder;
@@ -50,6 +54,8 @@ void main() {
       ..createSync(recursive: true)
       ..writeAsStringSync('{"configVersion": 2, "packages": []}');
     processManager = FakeProcessManager.any();
+    logger = BufferLogger.test();
+    platform = FakePlatform(environment: <String, String>{'HOME': '/'});
     project = FlutterProject.fromDirectoryTest(fileSystem.currentDirectory);
 
     tizenBuildInfo = const TizenBuildInfo(
@@ -58,12 +64,12 @@ void main() {
       deviceProfile: 'common',
     );
     tizenBuilder = TizenBuilder(
-      logger: BufferLogger.test(),
+      logger: logger,
       processManager: processManager,
       fileSystem: fileSystem,
       artifacts: Artifacts.test(),
       usage: TestUsage(),
-      platform: FakePlatform(),
+      platform: platform,
     );
   });
 
@@ -120,6 +126,30 @@ void main() {
     PackageBuilder: () => _FakePackageBuilder(null),
   });
 
+  testUsingContext('Indicates that TPK has been built successfully', () async {
+    fileSystem.file('tizen/tizen-manifest.xml')
+      ..createSync(recursive: true)
+      ..writeAsStringSync(_kTizenManifestContents);
+
+    await tizenBuilder.buildTpk(
+      project: project,
+      tizenBuildInfo: tizenBuildInfo,
+      targetFile: 'main.dart',
+    );
+
+    expect(
+      logger.statusText,
+      contains('Built build/tizen/tpk/package_id-1.0.0.tpk (0.0MB).'),
+    );
+  }, overrides: <Type, Generator>{
+    FileSystem: () => fileSystem,
+    ProcessManager: () => processManager,
+    Logger: () => logger,
+    TizenSdk: () => FakeTizenSdk(fileSystem),
+    BuildSystem: () => TestBuildSystem.all(BuildResult(success: true)),
+    PackageBuilder: () => _FakePackageBuilder('package_id-1.0.0.tpk'),
+  });
+
   testUsingContext('Can update tizen-manifest.xml', () async {
     fileSystem.file('tizen/tizen-manifest.xml')
       ..createSync(recursive: true)
@@ -151,21 +181,83 @@ void main() {
     ProcessManager: () => processManager,
     TizenSdk: () => FakeTizenSdk(fileSystem),
     BuildSystem: () => TestBuildSystem.all(BuildResult(success: true)),
-    PackageBuilder: () => _FakePackageBuilder('tpk/package_id-9.9.9.tpk'),
+    PackageBuilder: () => _FakePackageBuilder('package_id-9.9.9.tpk'),
+  });
+
+  testUsingContext('Performs code size analysis', () async {
+    fileSystem.file('tizen/tizen-manifest.xml')
+      ..createSync(recursive: true)
+      ..writeAsStringSync(_kTizenManifestContents);
+
+    const BuildInfo buildInfo = BuildInfo(
+      BuildMode.release,
+      null,
+      treeShakeIcons: false,
+      codeSizeDirectory: 'code_size_analysis',
+    );
+    await tizenBuilder.buildTpk(
+      project: project,
+      tizenBuildInfo: const TizenBuildInfo(
+        buildInfo,
+        targetArch: 'arm',
+        deviceProfile: 'wearable',
+      ),
+      targetFile: 'main.dart',
+      sizeAnalyzer: _FakeSizeAnalyzer(fileSystem: fileSystem, logger: logger),
+    );
+
+    final File outputFile =
+        fileSystem.file('.flutter-devtools/tpk-code-size-analysis_01.json');
+    expect(outputFile.existsSync(), isTrue);
+    expect(
+      logger.statusText,
+      contains('A summary of your TPK analysis can be found at'),
+    );
+  }, overrides: <Type, Generator>{
+    FileSystem: () => fileSystem,
+    ProcessManager: () => processManager,
+    Logger: () => logger,
+    TizenSdk: () => FakeTizenSdk(fileSystem),
+    BuildSystem: () => TestBuildSystem.all(BuildResult(success: true)),
+    PackageBuilder: () => _FakePackageBuilder('package_id-1.0.0.tpk'),
+    FileSystemUtils: () =>
+        FileSystemUtils(fileSystem: fileSystem, platform: platform),
   });
 }
 
 class _FakePackageBuilder extends PackageBuilder {
-  _FakePackageBuilder(this._relativeOutputPath);
+  _FakePackageBuilder(this._outputTpkName);
 
-  final String _relativeOutputPath;
+  final String _outputTpkName;
 
   @override
   Future<void> build(Target target, Environment environment) async {
-    if (_relativeOutputPath != null) {
-      environment.outputDir
-          .childFile(_relativeOutputPath)
-          .createSync(recursive: true);
+    if (_outputTpkName != null) {
+      final Directory tpkDir = environment.outputDir.childDirectory('tpk');
+      tpkDir.childDirectory('tpkroot').createSync(recursive: true);
+      tpkDir.childFile(_outputTpkName).createSync(recursive: true);
     }
+  }
+}
+
+class _FakeSizeAnalyzer extends SizeAnalyzer {
+  _FakeSizeAnalyzer({
+    @required FileSystem fileSystem,
+    @required Logger logger,
+  }) : super(
+          fileSystem: fileSystem,
+          logger: logger,
+          flutterUsage: TestUsage(),
+        );
+
+  @override
+  Future<Map<String, Object>> analyzeAotSnapshot({
+    @required Directory outputDirectory,
+    @required File aotSnapshot,
+    @required File precompilerTrace,
+    @required String type,
+    String excludePath,
+  }) async {
+    return <String, Object>{};
   }
 }
