@@ -185,6 +185,7 @@ class TizenEngineArtifacts extends EngineCachedArtifact {
       await _downloadArtifactsFromGithub(operatingSystemUtils, githubRunId);
     } else {
       await _downloadArtifactsFromUrl(
+        operatingSystemUtils,
         artifactUpdater,
         '$engineBaseUrl/download/$shortVersion',
       );
@@ -192,17 +193,20 @@ class TizenEngineArtifacts extends EngineCachedArtifact {
   }
 
   Future<void> _downloadArtifactsFromUrl(
+    OperatingSystemUtils operatingSystemUtils,
     ArtifactUpdater artifactUpdater,
     String downloadUrl,
   ) async {
     for (final List<String> toolsDir in getBinaryDirs()) {
       final String cacheDir = toolsDir[0];
       final String urlPath = toolsDir[1];
+      final Directory artifactDir = location.childDirectory(cacheDir);
       await artifactUpdater.downloadZipArchive(
         'Downloading $cacheDir tools...',
         Uri.parse('$downloadUrl/$urlPath'),
-        location.childDirectory(cacheDir),
+        artifactDir,
       );
+      _makeFilesExecutable(artifactDir, operatingSystemUtils);
     }
   }
 
@@ -247,6 +251,17 @@ class TizenEngineArtifacts extends EngineCachedArtifact {
         }
       } finally {
         status.stop();
+      }
+      _makeFilesExecutable(artifactDir, operatingSystemUtils);
+    }
+  }
+
+  void _makeFilesExecutable(
+      Directory dir, OperatingSystemUtils operatingSystemUtils) {
+    operatingSystemUtils.chmod(dir, 'a+r,a+x');
+    for (final File file in dir.listSync(recursive: true).whereType<File>()) {
+      if (file.basename == 'gen_snapshot') {
+        operatingSystemUtils.chmod(file, 'a+r,a+x');
       }
     }
   }
