@@ -170,4 +170,31 @@ dependencies:
     Cache: () => cache,
     TizenSdk: () => FakeTizenSdk(fileSystem),
   });
+
+  testUsingContext('Building non-staticLib project fails', () async {
+    final Environment environment = Environment.test(
+      projectDir,
+      fileSystem: fileSystem,
+      logger: logger,
+      artifacts: artifacts,
+      processManager: processManager,
+    );
+    final File projectDef = pluginDir.childFile('tizen/project_def.prop');
+    projectDef.writeAsStringSync(
+        projectDef.readAsStringSync().replaceFirst('staticLib', 'sharedLib'));
+
+    await expectLater(
+      () => NativePlugins(const TizenBuildInfo(
+        BuildInfo.release,
+        targetArch: 'arm',
+        deviceProfile: 'common',
+      )).build(environment),
+      throwsToolExit(),
+    );
+  }, overrides: <Type, Generator>{
+    FileSystem: () => fileSystem,
+    ProcessManager: () => processManager,
+    Cache: () => cache,
+    TizenSdk: () => FakeTizenSdk(fileSystem),
+  });
 }

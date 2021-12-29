@@ -46,6 +46,19 @@ class NativePlugins extends Target {
   @override
   List<Target> get dependencies => const <Target>[];
 
+  void _checkProjectType(TizenPlugin plugin) {
+    final Map<String, String> properties = parseIniFile(plugin.projectFile);
+    final String? type = properties['type'];
+    if (type != 'staticLib') {
+      throwToolExit(
+        'The project type of ${plugin.name} is "$type" which is not supported.\n'
+        'Make sure the package is up to date by running "flutter-tizen pub upgrade".\n\n'
+        'If you are the maintainer of the ${plugin.name} package, consider migrating the project to "staticLib" type.\n'
+        'Otherwise, you may modify the value of "type" in ${plugin.projectFile.path} to temporarily fix the problem.',
+      );
+    }
+  }
+
   @override
   Future<void> build(Environment environment) async {
     final List<File> inputs = <File>[];
@@ -110,6 +123,7 @@ class NativePlugins extends Target {
     final List<String> pluginClasses = <String>[];
 
     for (final TizenPlugin plugin in nativePlugins) {
+      _checkProjectType(plugin);
       inputs.add(plugin.projectFile);
 
       final Directory buildDir = plugin.directory.childDirectory(buildConfig);
