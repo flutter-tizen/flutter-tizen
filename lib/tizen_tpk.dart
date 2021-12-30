@@ -78,8 +78,11 @@ class TizenTpk extends ApplicationPackage {
   /// The SHA512 signature.
   final Signature? signature;
 
-  /// The application id if applicable.
+  /// The application ID.
   String get applicationId => manifest.applicationId;
+
+  /// Whether the application is a .NET application.
+  bool get isDotnet => manifest.applicationType == 'dotnet';
 
   @override
   String get name => file.basename;
@@ -134,7 +137,7 @@ class TizenManifest {
   /// The target API version number.
   String get apiVersion => _manifest.getAttribute('api-version') ?? '4.0';
 
-  XmlElement get _profile {
+  late final XmlElement _profile = () {
     if (_manifest.findElements('profile').isEmpty) {
       final XmlBuilder builder = XmlBuilder();
       builder.element(
@@ -144,41 +147,43 @@ class TizenManifest {
       _manifest.children.insert(0, builder.buildFragment());
     }
     return _manifest.findElements('profile').first;
-  }
+  }();
 
-  /// The profile name representing the device type.
+  /// The profile name representing the target device type.
   String get profile => _profile.getAttribute('name')!;
   set profile(String value) => _profile.setAttribute('name', value);
 
-  String? _applicationId;
-
-  /// The unique application ID used for launching and terminating applications.
-  String get applicationId {
-    if (_applicationId == null) {
-      final Iterable<XmlElement> applications = _manifest.children
-          .whereType<XmlElement>()
-          .where((XmlElement element) =>
-              element.name.local.endsWith('-application') &&
-              element.getAttribute('appid') != null);
-      if (applications.isEmpty) {
-        throwToolExit('Found no *-application element with appid attribute in '
-            'tizen-manifest.xml.');
-      }
-      final XmlElement application = applications.first;
-      final String tag = application.name.local;
-      if (tag != 'ui-application' && tag != 'service-application') {
-        globals.printTrace(
-            'tizen-manifest.xml: <$tag> is not officially supported.');
-      }
-      _applicationId = application.getAttribute('appid');
-      if (applications.length > 1) {
-        globals.printTrace(
-            'tizen-manifest.xml: Found ${applications.length} application declarations. '
-            'Using the first one: <$tag appid="$_applicationId">');
-      }
+  late final Iterable<XmlElement> _applications = () {
+    final Iterable<XmlElement> elements = _manifest.children
+        .whereType<XmlElement>()
+        .where((XmlElement element) =>
+            element.name.local.endsWith('-application') &&
+            element.getAttribute('appid') != null);
+    if (elements.isEmpty) {
+      throwToolExit(
+          'Found no *-application element with appid attribute in tizen-manifest.xml.');
     }
-    return _applicationId!;
-  }
+    final XmlElement first = elements.first;
+    final String tag = first.name.local;
+    if (tag != 'ui-application' && tag != 'service-application') {
+      globals.printTrace(
+          'tizen-manifest.xml: <$tag> is not officially supported.');
+    }
+    final String appid = first.getAttribute('appid')!;
+    if (elements.length > 1) {
+      globals.printTrace(
+        'tizen-manifest.xml: Found ${elements.length} application declarations. '
+        'Using the first one: <$tag appid="$appid">',
+      );
+    }
+    return elements;
+  }();
+
+  /// The unique ID used for launching and terminating the application.
+  String get applicationId => _applications.first.getAttribute('appid')!;
+
+  /// The application type (either "capp" or "dotnet").
+  String? get applicationType => _applications.first.getAttribute('type');
 
   @override
   String toString() => _document.toXmlString(pretty: true, indent: '    ');
