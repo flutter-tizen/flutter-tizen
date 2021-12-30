@@ -3,8 +3,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @dart = 2.8
-
 import 'package:file/file.dart';
 import 'package:flutter_tools/src/artifacts.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
@@ -51,11 +49,11 @@ abstract class TizenAssetBundle extends Target {
 
   @override
   Future<void> build(Environment environment) async {
-    if (environment.defines[kBuildMode] == null) {
+    final String? buildModeEnvironment = environment.defines[kBuildMode];
+    if (buildModeEnvironment == null) {
       throw MissingDefineException(kBuildMode, name);
     }
-    final BuildMode buildMode =
-        getBuildModeForName(environment.defines[kBuildMode]);
+    final BuildMode buildMode = getBuildModeForName(buildModeEnvironment);
     final Directory outputDirectory = environment.outputDir
         .childDirectory('flutter_assets')
       ..createSync(recursive: true);
@@ -79,7 +77,7 @@ abstract class TizenAssetBundle extends Target {
     final Depfile assetDepfile = await copyAssets(
       environment,
       outputDirectory,
-      targetPlatform: null, // corresponds to flutter-tester
+      targetPlatform: TargetPlatform.android,
     );
     final DepfileService depfileService = DepfileService(
       fileSystem: environment.fileSystem,
@@ -96,7 +94,9 @@ abstract class TizenAssetBundle extends Target {
 ///
 /// Source: [AotElfRelease] in `common.dart`
 class TizenAotElf extends AotElfBase {
-  TizenAotElf();
+  TizenAotElf(this.buildMode);
+
+  final BuildMode buildMode;
 
   @override
   String get name => 'tizen_aot_elf';
@@ -106,10 +106,7 @@ class TizenAotElf extends AotElfBase {
         const Source.pattern('{BUILD_DIR}/app.dill'),
         const Source.hostArtifact(HostArtifact.engineDartBinary),
         const Source.artifact(Artifact.skyEnginePath),
-        // Any type of gen_snapshot is applicable here because engine artifacts
-        // are assumed to be updated at once, not one by one for each platform
-        // or build mode.
-        const Source.artifact(Artifact.genSnapshot, mode: BuildMode.release),
+        Source.artifact(Artifact.genSnapshot, mode: buildMode),
       ];
 
   @override
@@ -168,7 +165,7 @@ class ReleaseTizenApplication extends TizenAssetBundle {
   @override
   List<Target> get dependencies => <Target>[
         ...super.dependencies,
-        TizenAotElf(),
+        TizenAotElf(buildInfo.buildInfo.mode),
         NativePlugins(buildInfo),
       ];
 }

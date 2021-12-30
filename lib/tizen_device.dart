@@ -3,8 +3,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @dart = 2.8
-
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -40,11 +38,11 @@ import 'vscode_helper.dart';
 class TizenDevice extends Device {
   TizenDevice(
     String id, {
-    String modelId,
-    @required Logger logger,
-    @required ProcessManager processManager,
-    @required TizenSdk tizenSdk,
-    @required FileSystem fileSystem,
+    required String modelId,
+    required Logger logger,
+    required ProcessManager processManager,
+    required TizenSdk tizenSdk,
+    required FileSystem fileSystem,
   })  : _modelId = modelId,
         _logger = logger,
         _tizenSdk = tizenSdk,
@@ -62,9 +60,9 @@ class TizenDevice extends Device {
   final FileSystem _fileSystem;
   final ProcessUtils _processUtils;
 
-  Map<String, String> _capabilities;
-  DeviceLogReader _logReader;
-  DevicePortForwarder _portForwarder;
+  Map<String, String>? _capabilities;
+  DeviceLogReader? _logReader;
+  DevicePortForwarder? _portForwarder;
 
   /// Source: [AndroidDevice.adbCommandForDevice] in `android_device.dart`
   List<String> sdbCommand(List<String> args) {
@@ -99,11 +97,11 @@ class TizenDevice extends Device {
       }
       _capabilities = capabilities;
     }
-    if (!_capabilities.containsKey(name)) {
+    if (!_capabilities!.containsKey(name)) {
       throwToolExit(
           'Failed to read the $name capability value from device $id.');
     }
-    return _capabilities[name];
+    return _capabilities![name]!;
   }
 
   bool get _isLocalEmulator => getCapability('cpu_arch') == 'x86';
@@ -112,7 +110,7 @@ class TizenDevice extends Device {
   Future<bool> get isLocalEmulator async => _isLocalEmulator;
 
   @override
-  Future<String> get emulatorId async => _isLocalEmulator ? _modelId : null;
+  Future<String?> get emulatorId async => _isLocalEmulator ? _modelId : null;
 
   @override
   Future<TargetPlatform> get targetPlatform async {
@@ -134,7 +132,7 @@ class TizenDevice extends Device {
   String get _platformVersion {
     final String version = getCapability('platform_version');
 
-    // Truncate if the version string is like "x.y.z.v".
+    // Truncate if the version string has more than 3 segments.
     final List<String> segments = version.split('.');
     if (segments.length > 3) {
       return segments.sublist(0, 3).join('.');
@@ -170,7 +168,7 @@ class TizenDevice extends Device {
 
   /// See: [AndroidDevice.isAppInstalled] in `android_device.dart`
   @override
-  Future<bool> isAppInstalled(TizenTpk app, {String userIdentifier}) async {
+  Future<bool> isAppInstalled(TizenTpk app, {String? userIdentifier}) async {
     try {
       final List<String> command = usesSecureProtocol
           ? <String>['shell', '0', 'applist']
@@ -183,7 +181,7 @@ class TizenDevice extends Device {
     }
   }
 
-  Future<String> _getDeviceAppSignature(TizenTpk app) async {
+  Future<String?> _getDeviceAppSignature(TizenTpk app) async {
     final List<String> rootCandidates = <String>[
       '/opt/usr/apps',
       '/opt/usr/globalapps',
@@ -201,7 +199,7 @@ class TizenDevice extends Device {
         checked: false,
       );
       if (result.exitCode == 0 && signatureFile.existsSync()) {
-        final Signature signature = Signature.parseFromXml(signatureFile);
+        final Signature? signature = Signature.parseFromXml(signatureFile);
         return signature?.signatureValue;
       }
     }
@@ -211,13 +209,13 @@ class TizenDevice extends Device {
   /// Source: [AndroidDevice.isLatestBuildInstalled] in `android_device.dart`
   @override
   Future<bool> isLatestBuildInstalled(TizenTpk app) async {
-    final String installed = await _getDeviceAppSignature(app);
+    final String? installed = await _getDeviceAppSignature(app);
     return installed != null && installed == app.signature?.signatureValue;
   }
 
   /// Source: [AndroidDevice.installApp] in `android_device.dart`
   @override
-  Future<bool> installApp(TizenTpk app, {String userIdentifier}) async {
+  Future<bool> installApp(TizenTpk app, {String? userIdentifier}) async {
     final bool wasInstalled = await isAppInstalled(app);
     if (wasInstalled) {
       if (await isLatestBuildInstalled(app)) {
@@ -258,8 +256,8 @@ class TizenDevice extends Device {
       return false;
     }
 
-    final Version deviceVersion = Version.parse(_platformVersion);
-    final Version apiVersion = Version.parse(app.manifest.apiVersion);
+    final Version? deviceVersion = Version.parse(_platformVersion);
+    final Version? apiVersion = Version.parse(app.manifest.apiVersion);
     if (deviceVersion != null &&
         apiVersion != null &&
         apiVersion > deviceVersion) {
@@ -295,7 +293,7 @@ class TizenDevice extends Device {
   }
 
   @override
-  Future<bool> uninstallApp(TizenTpk app, {String userIdentifier}) async {
+  Future<bool> uninstallApp(TizenTpk app, {String? userIdentifier}) async {
     final RunResult result =
         await runSdbAsync(<String>['uninstall', app.id], checked: false);
     if (result.exitCode != 0 || !result.stdout.contains('val[ok]')) {
@@ -309,13 +307,13 @@ class TizenDevice extends Device {
   @override
   Future<LaunchResult> startApp(
     TizenTpk package, {
-    String mainPath,
-    String route,
-    DebuggingOptions debuggingOptions,
-    Map<String, dynamic> platformArgs,
+    String? mainPath,
+    String? route,
+    required DebuggingOptions debuggingOptions,
+    Map<String, Object?> platformArgs = const <String, Object>{},
     bool prebuiltApplication = false,
     bool ipv6 = false,
-    String userIdentifier,
+    String? userIdentifier,
   }) async {
     if (!debuggingOptions.buildInfo.isDebug && await isLocalEmulator) {
       _logger.printError(
@@ -327,9 +325,9 @@ class TizenDevice extends Device {
     if (!prebuiltApplication) {
       _logger.printTrace('Building TPK');
       final FlutterProject project = FlutterProject.current();
-      await tizenBuilder.buildTpk(
+      await tizenBuilder!.buildTpk(
         project: project,
-        targetFile: mainPath,
+        targetFile: mainPath ?? 'lib/main.dart',
         tizenBuildInfo: TizenBuildInfo(
           debuggingOptions.buildInfo,
           targetArch: architecture,
@@ -339,9 +337,6 @@ class TizenDevice extends Device {
       // Package has been built, so we can get the updated application id and
       // activity name from the tpk.
       package = TizenTpk.fromProject(project);
-    }
-    if (package == null) {
-      throwToolExit('Problem building an application: see above error(s).');
     }
 
     _logger.printTrace("Stopping app '${package.name}' on $name.");
@@ -353,11 +348,11 @@ class TizenDevice extends Device {
       return LaunchResult.failed();
     }
 
-    final bool traceStartup = platformArgs['trace-startup'] as bool ?? false;
+    final bool traceStartup = platformArgs['trace-startup'] as bool? ?? false;
     _logger.printTrace('$this startApp');
 
     final DeviceLogReader logReader = await getLogReader();
-    ProtocolDiscovery observatoryDiscovery;
+    ProtocolDiscovery? observatoryDiscovery;
 
     if (debuggingOptions.debuggingEnabled) {
       observatoryDiscovery = ProtocolDiscovery.observatory(
@@ -380,11 +375,11 @@ class TizenDevice extends Device {
       if (debuggingOptions.traceSkia) '--trace-skia',
       if (debuggingOptions.traceAllowlist != null) ...<String>[
         '--trace-allowlist',
-        debuggingOptions.traceAllowlist,
+        debuggingOptions.traceAllowlist!,
       ],
       if (debuggingOptions.traceSkiaAllowlist != null) ...<String>[
         '--trace-skia-allowlist',
-        debuggingOptions.traceSkiaAllowlist,
+        debuggingOptions.traceSkiaAllowlist!,
       ],
       if (debuggingOptions.endlessTraceBuffer) '--endless-trace-buffer',
       if (debuggingOptions.dumpSkpOnShaderCompilation)
@@ -408,7 +403,8 @@ class TizenDevice extends Device {
       ],
     ];
 
-    // Create a temp file to be consumed by a launching app.
+    // Pass engine arguments to the app by writing to a temporary file.
+    // See: https://github.com/flutter-tizen/flutter-tizen/pull/19
     await _writeEngineArguments(engineArgs, '${package.applicationId}.rpm');
 
     final List<String> command = usesSecureProtocol
@@ -434,10 +430,10 @@ class TizenDevice extends Device {
     _logger.printTrace('Waiting for observatory port to be available...');
 
     try {
-      Uri observatoryUri;
+      Uri? observatoryUri;
       if (debuggingOptions.buildInfo.isDebug ||
           debuggingOptions.buildInfo.isProfile) {
-        observatoryUri = await observatoryDiscovery.uri;
+        observatoryUri = await observatoryDiscovery?.uri;
         if (observatoryUri == null) {
           _logger.printError(
             'Error waiting for a debug connection: '
@@ -445,16 +441,16 @@ class TizenDevice extends Device {
           );
           return LaunchResult.failed();
         }
-      }
-      if (!prebuiltApplication) {
-        updateLaunchJsonFile(FlutterProject.current(), observatoryUri);
+        if (!prebuiltApplication) {
+          updateLaunchJsonFile(FlutterProject.current(), observatoryUri);
+        }
       }
       return LaunchResult.succeeded(observatoryUri: observatoryUri);
     } on Exception catch (error) {
       _logger.printError('Error waiting for a debug connection: $error');
       return LaunchResult.failed();
     } finally {
-      await observatoryDiscovery.cancel();
+      await observatoryDiscovery?.cancel();
     }
   }
 
@@ -474,10 +470,7 @@ class TizenDevice extends Device {
   }
 
   @override
-  Future<bool> stopApp(TizenTpk app, {String userIdentifier}) async {
-    if (app == null) {
-      return false;
-    }
+  Future<bool> stopApp(TizenTpk app, {String? userIdentifier}) async {
     try {
       final List<String> command = usesSecureProtocol
           ? <String>['shell', '0', 'kill', app.applicationId]
@@ -499,13 +492,14 @@ class TizenDevice extends Device {
   /// Source: [AndroidDevice.getLogReader] in `android_device.dart`
   @override
   FutureOr<DeviceLogReader> getLogReader({
-    TizenTpk app,
+    TizenTpk? app,
     bool includePastLogs = false,
   }) async {
     return _logReader ??= await ForwardingLogReader.createLogReader(this);
   }
 
   @visibleForTesting
+  // ignore: use_setters_to_change_properties
   void setLogReader(DeviceLogReader logReader) {
     _logReader = logReader;
   }
@@ -525,7 +519,10 @@ class TizenDevice extends Device {
 
   @override
   bool isSupported() {
-    final Version deviceVersion = Version.parse(_platformVersion);
+    final Version? deviceVersion = Version.parse(_platformVersion);
+    if (deviceVersion == null) {
+      return false;
+    }
     if (deviceProfile == 'wearable') {
       return deviceVersion >= Version(4, 0, 0);
     } else if (deviceProfile == 'tv') {
@@ -556,15 +553,15 @@ class TizenDevice extends Device {
 /// Source: [AndroidDevicePortForwarder] in `android_device.dart`
 class TizenDevicePortForwarder extends DevicePortForwarder {
   TizenDevicePortForwarder({
-    @required TizenDevice device,
-    @required Logger logger,
+    required TizenDevice device,
+    required Logger logger,
   })  : _device = device,
         _logger = logger;
 
   final TizenDevice _device;
   final Logger _logger;
 
-  static int _extractPort(String portString) {
+  static int? _extractPort(String portString) {
     return int.tryParse(portString.trim().split(':')[1]);
   }
 
@@ -592,10 +589,8 @@ class TizenDevicePortForwarder extends DevicePortForwarder {
       }
 
       // Attempt to extract ports.
-      final int hostPort = _extractPort(splitLine[1]);
-      final int devicePort = _extractPort(splitLine[2]);
-
-      // Failed, skip.
+      final int? hostPort = _extractPort(splitLine[1]);
+      final int? devicePort = _extractPort(splitLine[2]);
       if (hostPort == null || devicePort == null) {
         continue;
       }
@@ -607,8 +602,8 @@ class TizenDevicePortForwarder extends DevicePortForwarder {
   }
 
   @override
-  Future<int> forward(int devicePort, {int hostPort}) async {
-    hostPort ??= await globals.os.findFreePort(ipv6: false);
+  Future<int> forward(int devicePort, {int? hostPort}) async {
+    hostPort ??= await globals.os.findFreePort();
     if (hostPort == 0) {
       throwToolExit('No available port could be found on the host.');
     }

@@ -11,6 +11,7 @@ import 'package:flutter_tools/executable.dart' as flutter show main;
 import 'package:flutter_tools/executable.dart';
 import 'package:flutter_tools/runner.dart' as runner;
 import 'package:flutter_tools/src/application_package.dart';
+import 'package:flutter_tools/src/artifacts.dart';
 import 'package:flutter_tools/src/base/context.dart';
 import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/base/os.dart';
@@ -47,9 +48,10 @@ import 'commands/precache.dart';
 import 'commands/run.dart';
 import 'commands/test.dart';
 import 'tizen_application_package.dart';
+import 'tizen_artifacts.dart';
 import 'tizen_builder.dart';
 import 'tizen_cache.dart';
-import 'tizen_device_discovery.dart';
+import 'tizen_device_manager.dart';
 import 'tizen_doctor.dart';
 import 'tizen_emulator.dart';
 import 'tizen_osutils.dart';
@@ -147,6 +149,12 @@ Future<void> main(List<String> args) async {
             userMessages: globals.userMessages,
             fileSystem: globals.fs,
           ),
+      Artifacts: () => TizenArtifacts(
+            fileSystem: globals.fs,
+            cache: globals.cache,
+            platform: globals.platform,
+            operatingSystemUtils: globals.os,
+          ),
       Cache: () => TizenFlutterCache(
             fileSystem: globals.fs,
             logger: globals.logger,
@@ -199,6 +207,8 @@ Future<void> main(List<String> args) async {
           ),
       TizenSdk: () => TizenSdk.locateSdk(),
       TizenValidator: () => TizenValidator(
+            tizenSdk: tizenSdk,
+            dotnetCli: dotnetCli,
             logger: globals.logger,
             processManager: globals.processManager,
           ),

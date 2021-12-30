@@ -129,7 +129,7 @@ List<String> _findDartEntrypoints(File dartFile) {
       AnalysisContextCollection(includedPaths: <String>[path]);
   final AnalysisContext context = collection.contextFor(path);
   final SomeParsedUnitResult parsed =
-      context.currentSession.getParsedUnit2(path);
+      context.currentSession.getParsedUnit(path);
   final List<String> names = <String>['main'];
   if (parsed is ParsedUnitResult) {
     for (final FunctionDeclaration function
@@ -472,8 +472,8 @@ namespace Runner
 
 /// Source: [_renderTemplateToFile] in `flutter_plugins.dart`
 void renderTemplateToFile(String template, Object? context, File file) {
-  final String renderedTemplate = globals.templateRenderer
-      .renderString(template, context, htmlEscapeValues: false);
+  final String renderedTemplate =
+      globals.templateRenderer.renderString(template, context);
   file.createSync(recursive: true);
   file.writeAsStringSync(renderedTemplate);
 }
