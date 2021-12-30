@@ -64,8 +64,7 @@ class TizenDevice extends Device {
   DeviceLogReader? _logReader;
   DevicePortForwarder? _portForwarder;
 
-  /// Source: [AndroidDevice.adbCommandForDevice] in `android_device.dart`
-  List<String> sdbCommand(List<String> args) {
+  List<String> _sdbCommand(List<String> args) {
     return <String>[_tizenSdk.sdb.path, '-s', id, ...args];
   }
 
@@ -73,7 +72,7 @@ class TizenDevice extends Device {
     List<String> params, {
     bool checked = true,
   }) {
-    return _processUtils.runSync(sdbCommand(params), throwOnError: checked);
+    return _processUtils.runSync(_sdbCommand(params), throwOnError: checked);
   }
 
   /// See: [AndroidDevice.runAdbCheckedAsync] in `android_device.dart`
@@ -81,7 +80,7 @@ class TizenDevice extends Device {
     List<String> params, {
     bool checked = true,
   }) async {
-    return _processUtils.run(sdbCommand(params), throwOnError: checked);
+    return _processUtils.run(_sdbCommand(params), throwOnError: checked);
   }
 
   String getCapability(String name) {
@@ -256,13 +255,13 @@ class TizenDevice extends Device {
       return false;
     }
 
-    final Version? deviceVersion = Version.parse(_platformVersion);
+    final Version? platformVersion = Version.parse(_platformVersion);
     final Version? apiVersion = Version.parse(app.manifest.apiVersion);
-    if (deviceVersion != null &&
+    if (platformVersion != null &&
         apiVersion != null &&
-        apiVersion > deviceVersion) {
+        apiVersion > platformVersion) {
       _logger.printStatus(
-        'Warning: The package API version ($apiVersion) is greater than the device API version ($deviceVersion).\n'
+        'Warning: The package API version ($apiVersion) is greater than the device API version ($platformVersion).\n'
         'Check "tizen-manifest.xml" of your Tizen project to fix this problem.',
         color: TerminalColor.yellow,
       );
@@ -301,6 +300,21 @@ class TizenDevice extends Device {
       return false;
     }
     return true;
+  }
+
+  Future<void> _writeEngineArguments(
+    List<String> arguments,
+    String filename,
+  ) async {
+    final File localFile =
+        _fileSystem.systemTempDirectory.createTempSync().childFile(filename);
+    localFile.writeAsStringSync(arguments.join('\n'));
+    final String remotePath = '/home/owner/share/tmp/sdk_tools/$filename';
+    final RunResult result =
+        await runSdbAsync(<String>['push', localFile.path, remotePath]);
+    if (!result.stdout.contains('file(s) pushed')) {
+      _logger.printError('Failed to push a file: $result');
+    }
   }
 
   /// Source: [AndroidDevice.startApp] in `android_device.dart`
@@ -454,21 +468,6 @@ class TizenDevice extends Device {
     }
   }
 
-  Future<void> _writeEngineArguments(
-    List<String> arguments,
-    String filename,
-  ) async {
-    final File localFile =
-        _fileSystem.systemTempDirectory.createTempSync().childFile(filename);
-    localFile.writeAsStringSync(arguments.join('\n'));
-    final String remotePath = '/home/owner/share/tmp/sdk_tools/$filename';
-    final RunResult result =
-        await runSdbAsync(<String>['push', localFile.path, remotePath]);
-    if (!result.stdout.contains('file(s) pushed')) {
-      _logger.printError('Failed to push a file: $result');
-    }
-  }
-
   @override
   Future<bool> stopApp(TizenTpk app, {String? userIdentifier}) async {
     try {
@@ -519,16 +518,16 @@ class TizenDevice extends Device {
 
   @override
   bool isSupported() {
-    final Version? deviceVersion = Version.parse(_platformVersion);
-    if (deviceVersion == null) {
+    final Version? platformVersion = Version.parse(_platformVersion);
+    if (platformVersion == null) {
       return false;
     }
     if (deviceProfile == 'wearable') {
-      return deviceVersion >= Version(4, 0, 0);
+      return platformVersion >= Version(4, 0, 0);
     } else if (deviceProfile == 'tv') {
-      return deviceVersion >= Version(6, 0, 0);
+      return platformVersion >= Version(6, 0, 0);
     }
-    return deviceVersion >= Version(5, 5, 0);
+    return platformVersion >= Version(5, 5, 0);
   }
 
   @override
