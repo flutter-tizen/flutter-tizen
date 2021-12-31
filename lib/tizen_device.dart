@@ -128,7 +128,7 @@ class TizenDevice extends Device {
     }
   }
 
-  String get _platformVersion {
+  late final String _platformVersion = () {
     final String version = getCapability('platform_version');
 
     // Truncate if the version string has more than 3 segments.
@@ -137,7 +137,7 @@ class TizenDevice extends Device {
       return segments.sublist(0, 3).join('.');
     }
     return version;
-  }
+  }();
 
   @override
   Future<String> get sdkNameAndVersion async => 'Tizen $_platformVersion';
@@ -149,7 +149,7 @@ class TizenDevice extends Device {
 
   bool get usesSecureProtocol => getCapability('secure_protocol') == 'enabled';
 
-  String get architecture {
+  late final String architecture = () {
     final String cpuArch = getCapability('cpu_arch');
     if (_isLocalEmulator) {
       return cpuArch;
@@ -163,7 +163,7 @@ class TizenDevice extends Device {
           runSdbSync(<String>['shell', 'ls', '/usr/lib64']).stdout;
       return stdout.contains('No such file or directory') ? 'arm' : 'arm64';
     }
-  }
+  }();
 
   /// See: [AndroidDevice.isAppInstalled] in `android_device.dart`
   @override
