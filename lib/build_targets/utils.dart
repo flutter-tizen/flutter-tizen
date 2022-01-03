@@ -25,6 +25,10 @@ extension PathUtils on String {
   }
 }
 
+String getBuildConfig(BuildMode buildMode) {
+  return buildMode == BuildMode.debug ? 'Debug' : 'Release';
+}
+
 /// See: [CachedArtifacts._getEngineArtifactsPath]
 Directory getEngineArtifactsDirectory(String arch, BuildMode mode) {
   return globals.cache

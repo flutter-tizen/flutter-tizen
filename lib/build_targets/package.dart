@@ -226,7 +226,7 @@ class NativeTpk extends Package {
     );
 
     final BuildMode buildMode = buildInfo.buildInfo.mode;
-    final String buildConfig = buildMode.isPrecompiled ? 'Release' : 'Debug';
+    final String buildConfig = getBuildConfig(buildMode);
     final Directory engineDir =
         getEngineArtifactsDirectory(buildInfo.targetArch, buildMode);
     final Directory commonDir = engineDir.parent.childDirectory('tizen-common');

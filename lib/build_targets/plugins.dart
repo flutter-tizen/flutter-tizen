@@ -5,7 +5,6 @@
 import 'package:file/file.dart';
 import 'package:flutter_tools/src/base/common.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
-import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/base/process.dart';
 import 'package:flutter_tools/src/build_info.dart';
 import 'package:flutter_tools/src/build_system/build_system.dart';
@@ -47,26 +46,17 @@ class NativePlugins extends Target {
   @override
   List<Target> get dependencies => const <Target>[];
 
-  void _ensureStaticLibType(TizenPlugin plugin, Logger logger) {
-    final List<String> properties = <String>[];
-    for (String line in plugin.projectFile.readAsLinesSync()) {
-      final List<String> splitLine = line.split('=');
-      if (splitLine.length >= 2) {
-        final String key = splitLine[0].trim();
-        final String value = splitLine[1].trim();
-        if (key == 'type') {
-          if (value != 'staticLib') {
-            logger.printStatus(
-              'The project type of ${plugin.name} plugin is "$value",'
-              ' which is deprecated in favor of "staticLib".',
-            );
-          }
-          line = 'type = staticLib';
-        }
-      }
-      properties.add(line);
+  void _checkProjectType(TizenPlugin plugin) {
+    final Map<String, String> properties = parseIniFile(plugin.projectFile);
+    final String? type = properties['type'];
+    if (type != 'staticLib') {
+      throwToolExit(
+        'The project type of ${plugin.name} is "$type" which is not supported.\n'
+        'Make sure the package is up to date by running "flutter-tizen pub upgrade".\n\n'
+        'If you are the maintainer of the ${plugin.name} package, consider migrating the project to "staticLib" type.\n'
+        'Otherwise, you may modify the value of "type" in ${plugin.projectFile.path} to temporarily fix the problem.',
+      );
     }
-    plugin.projectFile.writeAsStringSync(properties.join('\n'));
   }
 
   @override
@@ -103,7 +93,7 @@ class NativePlugins extends Target {
       ..createSync(recursive: true);
 
     final BuildMode buildMode = buildInfo.buildInfo.mode;
-    final String buildConfig = buildMode.isPrecompiled ? 'Release' : 'Debug';
+    final String buildConfig = getBuildConfig(buildMode);
     final Directory engineDir =
         getEngineArtifactsDirectory(buildInfo.targetArch, buildMode);
     final Directory commonDir = engineDir.parent.childDirectory('tizen-common');
@@ -133,17 +123,15 @@ class NativePlugins extends Target {
     final List<String> pluginClasses = <String>[];
 
     for (final TizenPlugin plugin in nativePlugins) {
-      // Create a copy of the plugin to allow editing its projectFile.
-      final TizenPlugin pluginCopy = plugin.copyWith(
-        directory: environment.fileSystem.systemTempDirectory.createTempSync(),
-      );
-      copyDirectory(plugin.directory, pluginCopy.directory);
-
-      _ensureStaticLibType(pluginCopy, environment.logger);
+      _checkProjectType(plugin);
       inputs.add(plugin.projectFile);
 
+      final Directory buildDir = plugin.directory.childDirectory(buildConfig);
+      if (buildDir.existsSync()) {
+        buildDir.deleteSync(recursive: true);
+      }
       final RunResult result = await tizenSdk!.buildNative(
-        pluginCopy.directory.path,
+        plugin.directory.path,
         configuration: buildConfig,
         arch: getTizenCliArch(buildInfo.targetArch),
         predefines: <String>[
@@ -164,9 +152,7 @@ class NativePlugins extends Target {
       assert(plugin.pluginClass != null);
       final String libName =
           getLibNameForFileName(plugin.fileName!.toLowerCase());
-      final File libFile = pluginCopy.directory
-          .childDirectory(buildConfig)
-          .childFile('lib$libName.a');
+      final File libFile = buildDir.childFile('lib$libName.a');
       if (!libFile.existsSync()) {
         throwToolExit(
           'Build succeeded but the file ${libFile.path} is not found:\n'
@@ -249,16 +235,12 @@ USER_LIBS = pthread ${userLibs.join(' ')}
         engineDir.childFile('libflutter_tizen_${buildInfo.deviceProfile}.so');
     inputs.add(embedder);
 
-    // Create a temp directory to use as a build directory.
-    // This is a workaround for the long path issue on Windows:
-    // https://github.com/flutter-tizen/flutter-tizen/issues/122
-    final Directory tempDir =
-        environment.fileSystem.systemTempDirectory.createTempSync();
-    copyDirectory(rootDir, tempDir);
-
-    // Run the native build.
+    final Directory buildDir = rootDir.childDirectory(buildConfig);
+    if (buildDir.existsSync()) {
+      buildDir.deleteSync(recursive: true);
+    }
     final RunResult result = await tizenSdk!.buildNative(
-      tempDir.path,
+      rootDir.path,
       configuration: buildConfig,
       arch: getTizenCliArch(buildInfo.targetArch),
       extraOptions: <String>[
@@ -278,17 +260,15 @@ USER_LIBS = pthread ${userLibs.join(' ')}
       throwToolExit('Failed to build native plugins:\n$result');
     }
 
-    final File outputLib =
-        tempDir.childDirectory(buildConfig).childFile('libflutter_plugins.so');
+    File outputLib = buildDir.childFile('libflutter_plugins.so');
     if (!outputLib.existsSync()) {
       throwToolExit(
         'Build succeeded but the file ${outputLib.path} is not found:\n'
         '${result.stdout}',
       );
     }
-    final File outputLibCopy =
-        outputLib.copySync(rootDir.childFile(outputLib.basename).path);
-    outputs.add(outputLibCopy);
+    outputLib = outputLib.copySync(rootDir.childFile(outputLib.basename).path);
+    outputs.add(outputLib);
 
     // Remove intermediate files.
     for (final File lib in libDir
