@@ -64,7 +64,7 @@ class TizenDevice extends Device {
   DeviceLogReader? _logReader;
   DevicePortForwarder? _portForwarder;
 
-  List<String> _sdbCommand(List<String> args) {
+  List<String> sdbCommand(List<String> args) {
     return <String>[_tizenSdk.sdb.path, '-s', id, ...args];
   }
 
@@ -72,7 +72,7 @@ class TizenDevice extends Device {
     List<String> params, {
     bool checked = true,
   }) {
-    return _processUtils.runSync(_sdbCommand(params), throwOnError: checked);
+    return _processUtils.runSync(sdbCommand(params), throwOnError: checked);
   }
 
   /// See: [AndroidDevice.runAdbCheckedAsync] in `android_device.dart`
@@ -80,7 +80,7 @@ class TizenDevice extends Device {
     List<String> params, {
     bool checked = true,
   }) async {
-    return _processUtils.run(_sdbCommand(params), throwOnError: checked);
+    return _processUtils.run(sdbCommand(params), throwOnError: checked);
   }
 
   String getCapability(String name) {
@@ -348,8 +348,6 @@ class TizenDevice extends Device {
           deviceProfile: deviceProfile,
         ),
       );
-      // Package has been built, so we can get the updated application id and
-      // activity name from the tpk.
       package = TizenTpk.fromProject(project);
     }
 
@@ -423,7 +421,7 @@ class TizenDevice extends Device {
 
     final List<String> command = usesSecureProtocol
         ? <String>['shell', '0', 'execute', package.applicationId]
-        : <String>['shell', 'app_launcher', '-s', package.applicationId];
+        : <String>['shell', 'app_launcher', '-e', package.applicationId];
     final String stdout = (await runSdbAsync(command)).stdout;
     if (!stdout.contains('successfully launched')) {
       _logger.printError(stdout.trim());
@@ -456,7 +454,8 @@ class TizenDevice extends Device {
           return LaunchResult.failed();
         }
         if (!prebuiltApplication) {
-          updateLaunchJsonFile(FlutterProject.current(), observatoryUri);
+          final FlutterProject project = FlutterProject.current();
+          updateLaunchJsonWithObservatoryInfo(project, observatoryUri);
         }
       }
       return LaunchResult.succeeded(observatoryUri: observatoryUri);
@@ -537,6 +536,64 @@ class TizenDevice extends Device {
   bool isSupportedForProject(FlutterProject flutterProject) {
     return flutterProject.isModule &&
         flutterProject.directory.childDirectory('tizen').existsSync();
+  }
+
+  Future<bool> installGdbServer() async {
+    // gdbserver 8.3.1 is corrupted. Use gdbserver 7.8.1.
+    // Issue: https://github.com/flutter-tizen/plugins/issues/295
+    final String arch = getTizenBuildArch(architecture, Version(5, 5, 0));
+    final String tarName = 'gdbserver_7.8.1_$arch.tar';
+    final File tarArchive =
+        _tizenSdk.toolsDirectory.childDirectory('on-demand').childFile(tarName);
+    if (!tarArchive.existsSync()) {
+      globals.printError('The file ${tarArchive.path} could not be found.');
+      return false;
+    }
+    globals.printTrace('Installing $tarName to $name.');
+
+    const String sdkToolsPath = '/home/owner/share/tmp/sdk_tools';
+    final String remoteArchivePath = '$sdkToolsPath/$tarName';
+    try {
+      final RunResult mkdirResult = await runSdbAsync(<String>[
+        'shell',
+        'mkdir',
+        '-p',
+        sdkToolsPath,
+      ]);
+      if (mkdirResult.stdout.isNotEmpty) {
+        mkdirResult.throwException(mkdirResult.stdout);
+      }
+      final RunResult pushResult = await runSdbAsync(<String>[
+        'push',
+        tarArchive.path,
+        remoteArchivePath,
+      ]);
+      if (!pushResult.stdout.contains('file(s) pushed')) {
+        pushResult.throwException(pushResult.stdout);
+      }
+      final RunResult extractResult = await runSdbAsync(<String>[
+        'shell',
+        'tar',
+        '-xf',
+        remoteArchivePath,
+        '-C',
+        sdkToolsPath
+      ]);
+      if (extractResult.stdout.isNotEmpty) {
+        extractResult.throwException(extractResult.stdout);
+      }
+    } on ProcessException catch (error) {
+      globals.printError('Error installing gdbserver: $error');
+      return false;
+    }
+    // Remove a temporary file.
+    await runSdbAsync(<String>[
+      'shell',
+      'rm',
+      remoteArchivePath,
+    ], checked: false);
+
+    return true;
   }
 
   /// Source: [AndroidDevice.dispose] in `android_device.dart`

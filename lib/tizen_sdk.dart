@@ -9,6 +9,7 @@ import 'package:flutter_tools/src/base/context.dart';
 import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/base/platform.dart';
 import 'package:flutter_tools/src/base/process.dart';
+import 'package:flutter_tools/src/base/version.dart';
 import 'package:flutter_tools/src/globals_null_migrated.dart' as globals;
 import 'package:meta/meta.dart';
 import 'package:process/process.dart';
@@ -126,6 +127,21 @@ class TizenSdk {
   final String defaultNativeCompiler = 'llvm-10.0';
 
   final String defaultGccVersion = '9.2';
+
+  File getGdbExecutable(String arch) {
+    String targetTriple = 'arm-linux-gnueabi';
+    if (arch == 'arm64') {
+      targetTriple = 'aarch64-linux-gnu';
+    } else if (arch == 'x86') {
+      targetTriple = 'i586-linux-gnueabi';
+    }
+    return toolsDirectory
+        .childDirectory('$targetTriple-gdb-8.3.1')
+        .childDirectory('bin')
+        .childFile(_platform.isWindows
+            ? '$targetTriple-gdb.exe'
+            : '$targetTriple-gdb');
+  }
 
   /// On non-Windows, returns the PATH environment variable.
   ///
@@ -361,13 +377,16 @@ class Rootstrap {
 
 /// Converts [arch] to an arch name that corresponds to the `BUILD_ARCH`
 /// value used by the Tizen native builder.
-String getTizenBuildArch(String arch) {
+String getTizenBuildArch(String arch, [Version? platformVersion]) {
   switch (arch) {
     case 'arm':
       return 'armel';
     case 'arm64':
       return 'aarch64';
     case 'x86':
+      if (platformVersion != null && platformVersion < Version(6, 0, 0)) {
+        return 'i386';
+      }
       return 'i586';
     default:
       return arch;

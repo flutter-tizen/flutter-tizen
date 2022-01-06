@@ -43,6 +43,7 @@ import 'build_targets/package.dart';
 import 'commands/build.dart';
 import 'commands/clean.dart';
 import 'commands/create.dart';
+import 'commands/debug_native.dart';
 import 'commands/drive.dart';
 import 'commands/precache.dart';
 import 'commands/run.dart';
@@ -118,6 +119,11 @@ Future<void> main(List<String> args) async {
       ScreenshotCommand(),
       SymbolizeCommand(stdio: globals.stdio, fileSystem: globals.fs),
       // Commands extended for Tizen.
+      DebugNativeCommand(
+        hidden: !verboseHelp,
+        terminal: globals.terminal,
+        tizenSdk: tizenSdk,
+      ),
       TizenBuildCommand(verboseHelp: verboseHelp),
       TizenCleanCommand(verbose: verbose),
       TizenCreateCommand(verboseHelp: verboseHelp),

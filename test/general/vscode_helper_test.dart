@@ -12,7 +12,7 @@ import 'package:flutter_tools/src/project.dart';
 
 import '../src/common.dart';
 
-const String _kLaunchJson = r'''
+const String _kLaunchJsonAttach = r'''
 {
     "version": "0.2.0",
     "configurations": [
@@ -36,39 +36,75 @@ const String _kEmptyLaunchJson = r'''
 
 void main() {
   FileSystem fileSystem;
+  FlutterProject project;
 
   setUp(() {
     fileSystem = MemoryFileSystem.test();
+    project = FlutterProject.fromDirectoryTest(fileSystem.currentDirectory);
   });
 
   testWithoutContext('Can create launch.json file', () async {
-    final FlutterProject project =
-        FlutterProject.fromDirectoryTest(fileSystem.currentDirectory);
-    final Uri observatoryUri = Uri.parse('http://127.0.0.1:12345');
-
     final File launchJsonFile =
         project.directory.childDirectory('.vscode').childFile('launch.json');
     expect(launchJsonFile, isNot(exists));
 
-    updateLaunchJsonFile(project, observatoryUri);
+    updateLaunchJsonWithObservatoryInfo(
+      project,
+      Uri.parse('http://127.0.0.1:12345'),
+    );
 
     expect(launchJsonFile, exists);
-    expect(launchJsonFile.readAsStringSync(), equals(_kLaunchJson));
+    expect(launchJsonFile.readAsStringSync(), equals(_kLaunchJsonAttach));
   });
 
-  testWithoutContext('Can update launch.json file', () async {
-    final FlutterProject project =
-        FlutterProject.fromDirectoryTest(fileSystem.currentDirectory);
-    final Uri observatoryUri = Uri.parse('http://127.0.0.1:12345');
-
+  testWithoutContext('Can update launch.json file (Attach)', () async {
     final File launchJsonFile =
-        project.directory.childDirectory('.vscode').childFile('launch.json');
-    launchJsonFile.createSync(recursive: true);
-    launchJsonFile.writeAsStringSync(_kEmptyLaunchJson);
+        project.directory.childDirectory('.vscode').childFile('launch.json')
+          ..createSync(recursive: true)
+          ..writeAsStringSync(_kEmptyLaunchJson);
 
-    updateLaunchJsonFile(project, observatoryUri);
+    updateLaunchJsonWithObservatoryInfo(
+      project,
+      Uri.parse('http://127.0.0.1:12345'),
+    );
 
-    expect(launchJsonFile, exists);
-    expect(launchJsonFile.readAsStringSync(), equals(_kLaunchJson));
+    expect(launchJsonFile.readAsStringSync(), equals(_kLaunchJsonAttach));
+  });
+
+  testWithoutContext('Can update launch.json file (gdb)', () async {
+    final File launchJsonFile =
+        project.directory.childDirectory('.vscode').childFile('launch.json')
+          ..createSync(recursive: true)
+          ..writeAsStringSync(_kEmptyLaunchJson);
+
+    updateLaunchJsonWithRemoteDebuggingInfo(
+      project,
+      program: fileSystem.file('test_program'),
+      gdbPath: '/path/to/gdb',
+      debugPort: 12345,
+    );
+
+    expect(launchJsonFile.readAsStringSync(), equals(r'''
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "flutter-tizen: gdb",
+            "request": "launch",
+            "type": "cppdbg",
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "sourceFileMap": {},
+            "symbolLoadInfo": {
+                "loadAll": false,
+                "exceptionList": "libflutter*.so"
+            },
+            "cwd": "${workspaceFolder}",
+            "program": "test_program",
+            "miDebuggerPath": "/path/to/gdb",
+            "miDebuggerServerAddress": ":12345"
+        }
+    ]
+}'''));
   });
 }

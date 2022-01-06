@@ -5,11 +5,23 @@
 import 'dart:convert';
 
 import 'package:file/file.dart';
+import 'package:flutter_tools/src/base/common.dart';
 import 'package:flutter_tools/src/convert.dart';
-import 'package:flutter_tools/src/globals_null_migrated.dart' as globals;
 import 'package:flutter_tools/src/project.dart';
 
 const String kConfigNameAttach = 'flutter-tizen: Attach';
+const String kConfigNameGdb = 'flutter-tizen: gdb';
+
+FlutterProject? _findParentProject(FlutterProject project) {
+  if (project.directory.basename == 'example') {
+    final FlutterProject parent =
+        FlutterProject.fromDirectory(project.directory.parent);
+    if (parent.pubspecFile.existsSync()) {
+      return parent;
+    }
+  }
+  return null;
+}
 
 String _processJson(String jsonString) {
   // The extended JSON format used by launch.json files allows comments and
@@ -23,18 +35,7 @@ String _processJson(String jsonString) {
       .trim();
 }
 
-void updateLaunchJsonFile(FlutterProject project, Uri observatoryUri) {
-  if (project.directory.basename == 'example') {
-    final FlutterProject parentProject =
-        FlutterProject.fromDirectory(project.directory.parent);
-    if (parentProject.pubspecFile.existsSync()) {
-      updateLaunchJsonFile(parentProject, observatoryUri);
-    }
-  }
-
-  final Directory vscodeDir = project.directory.childDirectory('.vscode')
-    ..createSync(recursive: true);
-  final File launchJsonFile = vscodeDir.childFile('launch.json');
+Map<Object?, Object?> _parseLaunchJson(File launchJsonFile) {
   String jsonString = '';
   if (launchJsonFile.existsSync()) {
     jsonString = _processJson(launchJsonFile.readAsStringSync());
@@ -45,12 +46,28 @@ void updateLaunchJsonFile(FlutterProject project, Uri observatoryUri) {
     try {
       decoded = jsonDecode(jsonString) as Map<Object?, Object?>;
     } on FormatException catch (error) {
-      globals.printError('Failed to parse ${launchJsonFile.path}:\n$error');
-      return;
+      // Unexpected failure. It is safe not to overwrite the file.
+      throwToolExit('Failed to parse ${launchJsonFile.path}:\n$error');
     }
   }
   decoded['version'] ??= '0.2.0';
   decoded['configurations'] ??= <Object?>[];
+
+  return decoded;
+}
+
+void updateLaunchJsonWithObservatoryInfo(
+  FlutterProject project,
+  Uri observatoryUri,
+) {
+  final FlutterProject? parentProject = _findParentProject(project);
+  if (parentProject != null) {
+    updateLaunchJsonWithObservatoryInfo(parentProject, observatoryUri);
+  }
+
+  final File launchJsonFile =
+      project.directory.childDirectory('.vscode').childFile('launch.json');
+  final Map<Object?, Object?> decoded = _parseLaunchJson(launchJsonFile);
 
   final List<Object?> configs = decoded['configurations']! as List<Object?>;
   if (!configs.any((Object? config) =>
@@ -73,5 +90,62 @@ void updateLaunchJsonFile(FlutterProject project, Uri observatoryUri) {
   }
 
   const JsonEncoder encoder = JsonEncoder.withIndent('    ');
-  launchJsonFile.writeAsStringSync(encoder.convert(decoded));
+  launchJsonFile
+    ..createSync(recursive: true)
+    ..writeAsStringSync(encoder.convert(decoded));
+}
+
+void updateLaunchJsonWithRemoteDebuggingInfo(
+  FlutterProject project, {
+  required File program,
+  required String gdbPath,
+  required int debugPort,
+}) {
+  final FlutterProject? parentProject = _findParentProject(project);
+  if (parentProject != null) {
+    updateLaunchJsonWithRemoteDebuggingInfo(
+      parentProject,
+      program: program,
+      gdbPath: gdbPath,
+      debugPort: debugPort,
+    );
+  }
+
+  final File launchJsonFile =
+      project.directory.childDirectory('.vscode').childFile('launch.json');
+  final Map<Object?, Object?> decoded = _parseLaunchJson(launchJsonFile);
+
+  final List<Object?> configs = decoded['configurations']! as List<Object?>;
+  if (!configs.any(
+      (Object? config) => config is Map && config['name'] == kConfigNameGdb)) {
+    configs.add(<String, Object>{
+      'name': kConfigNameGdb,
+      'request': 'launch',
+      'type': 'cppdbg',
+      'externalConsole': false,
+      'MIMode': 'gdb',
+      'sourceFileMap': <String, Object>{},
+      'symbolLoadInfo': <String, Object>{
+        'loadAll': false,
+        'exceptionList': 'libflutter*.so'
+      },
+    });
+  }
+  for (final Object? config in configs) {
+    if (config is! Map || config['name'] != kConfigNameGdb) {
+      continue;
+    }
+    config['cwd'] = project.hasExampleApp
+        ? r'${workspaceFolder}/example'
+        : r'${workspaceFolder}';
+    config['program'] = program.path
+        .replaceFirst(project.directory.path, r'${workspaceFolder}');
+    config['miDebuggerPath'] = gdbPath;
+    config['miDebuggerServerAddress'] = ':$debugPort';
+  }
+
+  const JsonEncoder encoder = JsonEncoder.withIndent('    ');
+  launchJsonFile
+    ..createSync(recursive: true)
+    ..writeAsStringSync(encoder.convert(decoded));
 }
