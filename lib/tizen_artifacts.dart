@@ -9,6 +9,8 @@ import 'package:flutter_tools/src/base/platform.dart';
 import 'package:flutter_tools/src/build_info.dart';
 import 'package:flutter_tools/src/cache.dart';
 
+import 'tizen_build_info.dart';
+
 class TizenArtifacts extends CachedArtifacts {
   TizenArtifacts({
     required FileSystem fileSystem,
@@ -46,7 +48,7 @@ class TizenArtifacts extends CachedArtifacts {
       assert(mode != null, 'Need to specify a build mode.');
       assert(mode != BuildMode.debug,
           'Artifact $artifact only available in non-debug mode.');
-      final String arch = _getArchForTargetPlatform(platform);
+      final String arch = getArchForTargetPlatform(platform);
       final HostPlatform hostPlatform = getCurrentHostPlatform();
       assert(hostPlatform != HostPlatform.linux_arm64,
           'Artifact $artifact not available on Linux arm64.');
@@ -56,16 +58,5 @@ class TizenArtifacts extends CachedArtifacts {
           .path;
     }
     return super.getArtifactPath(artifact, platform: platform, mode: mode);
-  }
-}
-
-/// See: [getNameForTargetPlatform] in `build_info.dart`
-String _getArchForTargetPlatform(TargetPlatform platform) {
-  if (platform == TargetPlatform.android_arm64) {
-    return 'arm64';
-  } else if (platform == TargetPlatform.android_x86) {
-    return 'x86';
-  } else {
-    return 'arm';
   }
 }
