@@ -202,8 +202,10 @@ Future<void> main(List<String> args) async {
       TizenValidator: () => TizenValidator(
             tizenSdk: tizenSdk,
             dotnetCli: dotnetCli,
+            fileSystem: globals.fs,
             logger: globals.logger,
             processManager: globals.processManager,
+            userMessages: globals.userMessages,
           ),
       TizenWorkflow: () => TizenWorkflow(
             tizenSdk: tizenSdk,

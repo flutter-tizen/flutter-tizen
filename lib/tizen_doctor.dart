@@ -2,19 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'dart:io';
-
+import 'package:file/file.dart';
 import 'package:flutter_tools/src/android/android_workflow.dart';
 import 'package:flutter_tools/src/base/common.dart';
 import 'package:flutter_tools/src/base/context.dart';
 import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/base/os.dart';
 import 'package:flutter_tools/src/base/process.dart';
+import 'package:flutter_tools/src/base/user_messages.dart';
 import 'package:flutter_tools/src/base/version.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/doctor.dart';
 import 'package:flutter_tools/src/doctor_validator.dart';
-import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/version.dart';
 import 'package:process/process.dart';
 
@@ -50,19 +49,25 @@ class TizenValidator extends DoctorValidator {
   TizenValidator({
     required TizenSdk? tizenSdk,
     required File? dotnetCli,
+    required FileSystem fileSystem,
     required Logger logger,
     required ProcessManager processManager,
+    required UserMessages userMessages,
   })  : _tizenSdk = tizenSdk,
         _dotnetCli = dotnetCli,
+        _fileSystem = fileSystem,
         _processManager = processManager,
         _processUtils =
             ProcessUtils(logger: logger, processManager: processManager),
+        _userMessages = userMessages,
         super('Tizen toolchain - develop for Tizen devices');
 
   final TizenSdk? _tizenSdk;
   final File? _dotnetCli;
+  final FileSystem _fileSystem;
   final ProcessManager _processManager;
   final ProcessUtils _processUtils;
+  final UserMessages _userMessages;
 
   bool _validatePackages(List<ValidationMessage> messages) {
     final String gccVersion = _tizenSdk!.defaultGccVersion;
@@ -98,14 +103,15 @@ class TizenValidator extends DoctorValidator {
   Future<ValidationResult> validate() async {
     final List<ValidationMessage> messages = <ValidationMessage>[];
 
-    final FlutterVersion version = _FlutterTizenVersion();
-    messages.add(ValidationMessage(globals.userMessages.flutterRevision(
+    final FlutterVersion version = _FlutterTizenVersion(
+        fileSystem: _fileSystem, processUtils: _processUtils);
+    messages.add(ValidationMessage(_userMessages.flutterRevision(
       version.frameworkRevisionShort,
       version.frameworkAge,
       version.frameworkCommitDate,
     )));
     messages.add(ValidationMessage(
-        globals.userMessages.engineRevision(version.engineRevisionShort)));
+        _userMessages.engineRevision(version.engineRevisionShort)));
 
     if (_tizenSdk == null) {
       messages.add(const ValidationMessage.error(
@@ -192,11 +198,19 @@ class TizenWorkflow extends Workflow {
 }
 
 class _FlutterTizenVersion extends FlutterVersion {
-  _FlutterTizenVersion() : super(workingDirectory: rootPath);
+  _FlutterTizenVersion({
+    required FileSystem fileSystem,
+    required ProcessUtils processUtils,
+  })  : _fileSystem = fileSystem,
+        _processUtils = processUtils,
+        super(workingDirectory: rootPath);
+
+  final FileSystem _fileSystem;
+  final ProcessUtils _processUtils;
 
   /// See: [Cache.getVersionFor] in `cache.dart`
   String? _getVersionFor(String artifactName) {
-    final File versionFile = globals.fs
+    final File versionFile = _fileSystem
         .directory(rootPath)
         .childDirectory('bin')
         .childDirectory('internal')
@@ -217,7 +231,7 @@ class _FlutterTizenVersion extends FlutterVersion {
   }
 
   /// See: [_runGit] in `version.dart`
-  String _runGit(String command) => globals.processUtils
+  String _runGit(String command) => _processUtils
       .runSync(command.split(' '), workingDirectory: rootPath)
       .stdout
       .trim();
