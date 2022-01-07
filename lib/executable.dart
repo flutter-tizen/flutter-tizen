@@ -162,12 +162,7 @@ Future<void> main(List<String> args) async {
             osUtils: globals.os,
             processManager: globals.processManager,
           ),
-      DeviceManager: () => TizenDeviceManager(
-            fileSystem: globals.fs,
-            logger: globals.logger,
-            platform: globals.platform,
-            processManager: globals.processManager,
-          ),
+      DeviceManager: () => TizenDeviceManager(),
       DoctorValidatorsProvider: () => TizenDoctorValidatorsProvider(),
       EmulatorManager: () => TizenEmulatorManager(
             tizenSdk: tizenSdk,
