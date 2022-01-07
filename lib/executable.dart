@@ -197,14 +197,7 @@ Future<void> main(List<String> args) async {
             processManager: globals.processManager,
           ),
       TemplateRenderer: () => const MustacheTemplateRenderer(),
-      TizenBuilder: () => TizenBuilder(
-            logger: globals.logger,
-            processManager: globals.processManager,
-            fileSystem: globals.fs,
-            artifacts: globals.artifacts,
-            usage: globals.flutterUsage,
-            platform: globals.platform,
-          ),
+      TizenBuilder: () => TizenBuilder(),
       TizenSdk: () => TizenSdk.locateSdk(),
       TizenValidator: () => TizenValidator(
             tizenSdk: tizenSdk,
