@@ -12,13 +12,11 @@ import 'package:flutter_tools/src/base/common.dart';
 import 'package:flutter_tools/src/base/io.dart';
 import 'package:flutter_tools/src/base/process.dart';
 import 'package:flutter_tools/src/base/signals.dart';
-import 'package:flutter_tools/src/base/terminal.dart';
 import 'package:flutter_tools/src/convert.dart';
 import 'package:flutter_tools/src/device.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/project.dart';
 import 'package:flutter_tools/src/runner/flutter_command.dart';
-import 'package:meta/meta.dart';
 
 import '../tizen_device.dart';
 import '../tizen_sdk.dart';
@@ -29,12 +27,7 @@ const String kWikiPageUrl =
     "https://github.com/flutter-tizen/flutter-tizen/wiki/Debugging-app's-native-code";
 
 class DebugNativeCommand extends FlutterCommand {
-  DebugNativeCommand({
-    this.hidden = false,
-    @required Terminal terminal,
-    @required TizenSdk tizenSdk,
-  })  : _terminal = terminal,
-        _tizenSdk = tizenSdk {
+  DebugNativeCommand({this.hidden = false}) {
     requiresPubspecYaml();
   }
 
@@ -52,9 +45,6 @@ class DebugNativeCommand extends FlutterCommand {
 
   @override
   final bool hidden;
-
-  final Terminal _terminal;
-  final TizenSdk _tizenSdk;
 
   TizenDevice _device;
   FlutterProject _project;
@@ -156,8 +146,11 @@ class DebugNativeCommand extends FlutterCommand {
     if (!program.existsSync()) {
       throwToolExit(
         'Could not find the runner executable.\n'
-        'Did you build and install the app to your device?',
+        'Did you build and install the app to the device?',
       );
+    }
+    if (tizenSdk == null) {
+      throwToolExit('Unable to locate Tizen SDK.');
     }
 
     // Forward a port to allow communication between gdb and gdbserver.
@@ -179,7 +172,7 @@ class DebugNativeCommand extends FlutterCommand {
     }
     await _startGdbServer(_package.applicationId, debugPort, processId);
 
-    final File gdb = _tizenSdk.getGdbExecutable(_device.architecture);
+    final File gdb = tizenSdk.getGdbExecutable(_device.architecture);
     updateLaunchJsonWithRemoteDebuggingInfo(
       _project,
       program: program,
@@ -209,14 +202,14 @@ For detailed instructions, see: $kWikiPageUrl
 ''');
 
     _registerSignalHandlers(_cleanUp);
-    _terminal.singleCharMode = true;
+    globals.terminal.singleCharMode = true;
 
     final Completer<void> finished = Completer<void>();
-    _subscription = _terminal.keystrokes.listen((String key) async {
-      switch (key) {
+    _subscription = globals.terminal.keystrokes.listen((String key) async {
+      switch (key.trim()) {
         case 'q':
         case 'Q':
-          globals.printStatus('Exiting');
+          globals.printStatus('Quit');
           await _cleanUp();
           finished.complete();
           break;
@@ -233,7 +226,7 @@ For detailed instructions, see: $kWikiPageUrl
   }
 
   Future<void> _cleanUp([ProcessSignal signal]) async {
-    _terminal.singleCharMode = false;
+    globals.terminal.singleCharMode = false;
     await _device?.dispose();
     await _subscription?.cancel();
   }

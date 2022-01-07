@@ -119,11 +119,7 @@ Future<void> main(List<String> args) async {
       ScreenshotCommand(),
       SymbolizeCommand(stdio: globals.stdio, fileSystem: globals.fs),
       // Commands extended for Tizen.
-      DebugNativeCommand(
-        hidden: !verboseHelp,
-        terminal: globals.terminal,
-        tizenSdk: tizenSdk,
-      ),
+      DebugNativeCommand(hidden: !verboseHelp),
       TizenBuildCommand(verboseHelp: verboseHelp),
       TizenCleanCommand(verbose: verbose),
       TizenCreateCommand(verboseHelp: verboseHelp),

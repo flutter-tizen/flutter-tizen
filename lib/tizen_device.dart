@@ -539,10 +539,9 @@ class TizenDevice extends Device {
   }
 
   Future<bool> installGdbServer() async {
-    // gdbserver 8.3.1 is corrupted. Use gdbserver 7.8.1.
-    // Issue: https://github.com/flutter-tizen/plugins/issues/295
-    final String arch = getTizenBuildArch(architecture, Version(5, 5, 0));
-    final String tarName = 'gdbserver_7.8.1_$arch.tar';
+    final String buildArch = getTizenBuildArch(architecture, Version(5, 5, 0));
+    // gdbserver 8.3.1 is unstable. Default to gdbserver 7.8.1.
+    final String tarName = 'gdbserver_7.8.1_$buildArch.tar';
     final File tarArchive =
         _tizenSdk.toolsDirectory.childDirectory('on-demand').childFile(tarName);
     if (!tarArchive.existsSync()) {
@@ -577,7 +576,7 @@ class TizenDevice extends Device {
         '-xf',
         remoteArchivePath,
         '-C',
-        sdkToolsPath
+        sdkToolsPath,
       ]);
       if (extractResult.stdout.isNotEmpty) {
         extractResult.throwException(extractResult.stdout);
