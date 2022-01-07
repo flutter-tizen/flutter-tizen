@@ -106,7 +106,9 @@ class TizenBuilder {
       buildDir: project.dartTool.childDirectory('flutter_build'),
       cacheDir: globals.cache.getRoot(),
       flutterRootDir: _fileSystem.directory(Cache.flutterRoot),
-      engineVersion: globals.flutterVersion.engineRevision,
+      engineVersion: _artifacts.isLocalEngine
+          ? null
+          : globals.flutterVersion.engineRevision,
       defines: <String, String>{
         kTargetFile: targetFile,
         kTargetPlatform: targetPlatform,
