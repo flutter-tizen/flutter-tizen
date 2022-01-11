@@ -49,7 +49,8 @@ class DebugNativeCommand extends FlutterCommand {
   TizenDevice _device;
   FlutterProject _project;
   TizenTpk _package;
-  StreamSubscription<void> _subscription;
+
+  final Completer<void> _finished = Completer<void>();
 
   @override
   Future<void> validateCommand() async {
@@ -86,43 +87,49 @@ class DebugNativeCommand extends FlutterCommand {
     String processId,
   ) async {
     final List<String> command = _device.sdbCommand(<String>[
-      'launch',
-      '-a',
-      '"$applicationId"',
-      '-p',
-      '-e',
-      '-m',
-      'debug',
-      '-P',
-      '$debugPort',
-      '-attach',
-      processId,
+      'shell',
+      'launch_debug',
+      applicationId,
+      '__AUL_SDK__',
+      'ATTACH',
+      '__LAUNCH_APP_MODE__',
+      'SYNC',
+      '__DLP_GDBSERVER_PATH__',
+      '/home/owner/share/tmp/sdk_tools/gdbserver/gdbserver',
+      '__DLP_ATTACH_ARG__',
+      '--attach,:$debugPort,$processId',
     ]);
     final Process process = await globals.processManager.start(command);
 
     final Completer<void> completer = Completer<void>();
-    final StreamSubscription<String> stdoutSubscription = process.stdout
+    process.stdout
         .transform<String>(const Utf8Decoder())
         .transform<String>(const LineSplitter())
         .listen((String line) {
-      if (line.contains("Can't bind address") ||
-          line.contains('Cannot attach to process')) {
-        completer.completeError(line);
-      } else if (line.contains('Listening on port')) {
-        completer.complete();
-      } else {
-        // Remove this line when appropriate in the future.
-        globals.printStatus(line);
+      if (!completer.isCompleted) {
+        if (line.contains("Can't bind address") ||
+            line.contains('Cannot attach to process')) {
+          completer.completeError(line);
+        } else if (line.contains('Listening on port')) {
+          completer.complete();
+        }
       }
-    }, onDone: () {
-      // The process may exit without saying "Listening on port".
-      completer.complete();
+      if (!_finished.isCompleted) {
+        if (line.contains('Detaching from process') ||
+            line.contains('GDBserver exiting')) {
+          _finished.complete();
+        }
+      }
+      globals.printStatus(line);
     });
-    final StreamSubscription<String> stderrSubscription = process.stderr
+    process.stderr
         .transform<String>(const Utf8Decoder())
         .transform<String>(const LineSplitter())
         .listen((String line) {
-      completer.completeError(line);
+      if (!completer.isCompleted) {
+        completer.completeError(line);
+      }
+      globals.printError(line);
     });
 
     try {
@@ -130,8 +137,6 @@ class DebugNativeCommand extends FlutterCommand {
     } on Exception catch (error) {
       throwToolExit('Could not start gdbserver: $error');
     }
-    await stdoutSubscription.cancel();
-    await stderrSubscription.cancel();
   }
 
   @override
@@ -203,19 +208,17 @@ For detailed instructions, see: $kWikiPageUrl
 
     _registerSignalHandlers(_cleanUp);
     globals.terminal.singleCharMode = true;
-
-    final Completer<void> finished = Completer<void>();
-    _subscription = globals.terminal.keystrokes.listen((String key) async {
+    globals.terminal.keystrokes.listen((String key) async {
       switch (key.trim()) {
         case 'q':
         case 'Q':
           globals.printStatus('Quit');
-          await _cleanUp();
-          finished.complete();
+          _finished.complete();
           break;
       }
     });
-    await finished.future;
+    await _finished.future;
+    await _cleanUp();
 
     return FlutterCommandResult.success();
   }
@@ -228,6 +231,5 @@ For detailed instructions, see: $kWikiPageUrl
   Future<void> _cleanUp([ProcessSignal signal]) async {
     globals.terminal.singleCharMode = false;
     await _device?.dispose();
-    await _subscription?.cancel();
   }
 }
