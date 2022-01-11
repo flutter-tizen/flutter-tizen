@@ -94,8 +94,9 @@ abstract class TizenAssetBundle extends Target {
 ///
 /// Source: [AotElfRelease] in `common.dart`
 class TizenAotElf extends AotElfBase {
-  TizenAotElf(this.buildMode);
+  TizenAotElf(this.targetPlatform, this.buildMode);
 
+  final TargetPlatform targetPlatform;
   final BuildMode buildMode;
 
   @override
@@ -106,7 +107,8 @@ class TizenAotElf extends AotElfBase {
         const Source.pattern('{BUILD_DIR}/app.dill'),
         const Source.hostArtifact(HostArtifact.engineDartBinary),
         const Source.artifact(Artifact.skyEnginePath),
-        Source.artifact(Artifact.genSnapshot, mode: buildMode),
+        Source.artifact(Artifact.genSnapshot,
+            platform: targetPlatform, mode: buildMode),
       ];
 
   @override
@@ -165,7 +167,8 @@ class ReleaseTizenApplication extends TizenAssetBundle {
   @override
   List<Target> get dependencies => <Target>[
         ...super.dependencies,
-        TizenAotElf(buildInfo.buildInfo.mode),
+        TizenAotElf(getTargetPlatformForArch(buildInfo.targetArch),
+            buildInfo.buildInfo.mode),
         NativePlugins(buildInfo),
       ];
 }

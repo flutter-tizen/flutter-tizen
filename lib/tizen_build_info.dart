@@ -18,3 +18,26 @@ class TizenBuildInfo {
   final String deviceProfile;
   final String? securityProfile;
 }
+
+/// See: [getNameForTargetPlatform] in `build_info.dart`
+String getArchForTargetPlatform(TargetPlatform platform) {
+  if (platform == TargetPlatform.android_arm64) {
+    return 'arm64';
+  } else if (platform == TargetPlatform.android_x86) {
+    return 'x86';
+  } else {
+    return 'arm';
+  }
+}
+
+/// See: [getTargetPlatformForName] in `build_info.dart`
+TargetPlatform getTargetPlatformForArch(String arch) {
+  switch (arch) {
+    case 'arm64':
+      return TargetPlatform.android_arm64;
+    case 'x86':
+      return TargetPlatform.android_x86;
+    default:
+      return TargetPlatform.android_arm;
+  }
+}

@@ -98,7 +98,7 @@ class TizenBuilder {
     final BuildInfo buildInfo = tizenBuildInfo.buildInfo;
     // Used by AotElfBase to generate an AOT snapshot.
     final String targetPlatform = getNameForTargetPlatform(
-        _getTargetPlatformForArch(tizenBuildInfo.targetArch));
+        getTargetPlatformForArch(tizenBuildInfo.targetArch));
 
     final Environment environment = Environment(
       projectDir: project.directory,
@@ -106,7 +106,9 @@ class TizenBuilder {
       buildDir: project.dartTool.childDirectory('flutter_build'),
       cacheDir: globals.cache.getRoot(),
       flutterRootDir: _fileSystem.directory(Cache.flutterRoot),
-      engineVersion: globals.flutterVersion.engineRevision,
+      engineVersion: _artifacts.isLocalEngine
+          ? null
+          : globals.flutterVersion.engineRevision,
       defines: <String, String>{
         kTargetFile: targetFile,
         kTargetPlatform: targetPlatform,
@@ -227,17 +229,5 @@ class TizenBuilder {
     } else {
       updateManifestFile(project.manifestFile);
     }
-  }
-}
-
-/// See: [getTargetPlatformForName] in `build_info.dart`
-TargetPlatform _getTargetPlatformForArch(String arch) {
-  switch (arch) {
-    case 'arm64':
-      return TargetPlatform.android_arm64;
-    case 'x86':
-      return TargetPlatform.android_x86;
-    default:
-      return TargetPlatform.android_arm;
   }
 }
