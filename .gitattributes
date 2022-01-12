@@ -27,6 +27,9 @@
 *.props.tmpl      text eol=crlf
 *.vcxproj.tmpl    text eol=crlf
 
+# Make sure that these files always have LF line endings in checkout
+gdbserver         text eol=lf
+
 # Never perform LF normalization on these files
 *.ico    binary
 *.jar    binary

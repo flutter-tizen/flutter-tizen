@@ -1,0 +1,25 @@
+#!/usr/bin/bash
+# Copyright 2022 Samsung Electronics Co., Ltd. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+set -e
+
+function kill_gdbserver_if_running() {
+  local current_attr="$(cat /proc/self/attr/current)"
+  if [[ "$current_attr" != "User::Pkg::"* ]]; then
+    return 0
+  fi
+  ps -eZ | grep "$current_attr" | while read -r line; do
+    local pid="$(echo "$line" | awk '{print $2}')"
+    local command="$(echo "$line" | awk '{print $NF}')"
+    if [[ "$command" == "<defunct>" || "$command" == "gdbserver_real" ]]; then
+      kill $pid
+    fi
+  done
+}
+
+kill_gdbserver_if_running
+
+SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"
+"$SCRIPT_DIR/gdbserver_real" "$@"
