@@ -83,7 +83,7 @@ def find_target_device():
     devices = []
     for line in lines[1:]:
         split = re.split(r'\s{2,}|\t', line.strip())
-        if len(split) < 3 or split[1] != 'device':
+        if len(split) < 3:
             continue
         id = split[0]
         state = split[1]
@@ -109,7 +109,7 @@ def locate_tizen_sdk():
     if 'TIZEN_SDK' in os.environ:
         return Path(os.environ['TIZEN_SDK'])
     sdb_path = shutil.which('sdb')
-    if sdb_path and os.path.dirname(sdb_path) == 'tools':
+    if sdb_path and Path(sdb_path).parent.name == 'tools':
         return Path(sdb_path).parent.parent
     if os.name == 'nt':
         sdk_dir = Path(os.environ['SystemDrive']) / 'tizen-studio'
@@ -235,11 +235,14 @@ def start_gdb_server(device: TizenDevice, app_id, debug_port, pid, launched: thr
         with device.sdb_start(args) as proc:
             while not proc.poll():
                 line = readline_from(proc)
+                if not line:
+                    continue
                 print(line)
                 if 'Listening on port' in line:
                     launched.set()
                 elif line.startswith((
-                        'Detaching from process', 'GDBserver exiting')):
+                        'Detaching from process', 'GDBserver exiting',
+                        'No program to debug.')):
                     os.kill(os.getpid(), signal.SIGINT)
                     break
                 elif line.startswith((
@@ -266,11 +269,13 @@ For detailed usage, see: https://github.com/flutter-tizen/flutter-tizen/wiki/Deb
 ''')
 
 
-def launch_gdb(gdb_path: Path, program: Path, args):
+def run_gdb_client(gdb_path: Path, program: Path, args):
     # Temporarily disable the SIGINT handler.
     sigint_handler = signal.signal(signal.SIGINT, signal.SIG_IGN)
 
-    subprocess.run(' '.join([str(gdb_path), str(program)] + args), shell=True)
+    # os.execv() and subprocess.run(list) are not portable.
+    command = [str(gdb_path), str(program)] + args
+    subprocess.run(' '.join([f'"{arg}"' for arg in command]), shell=True)
 
     # Restore the handler.
     signal.signal(signal.SIGINT, sigint_handler)
@@ -352,10 +357,10 @@ def run(device: TizenDevice):
         if choice == 'h' or choice == 'H' or choice == '?':
             print_help()
         elif choice == 'r' or choice == 'R':
-            args = ['-ex "set auto-solib-add off"',
-                    f'-ex "target remote :{debug_port}"',
-                    '-ex "shared /opt/usr/globalapps"']
-            launch_gdb(gdb_path, program, args)
+            args = ['-ex', 'set auto-solib-add off',
+                    '-ex', f'target remote :{debug_port}',
+                    '-ex', 'shared /opt/usr/globalapps']
+            run_gdb_client(gdb_path, program, args)
             break
         elif choice == 'p' or choice == 'P':
             print_launch_json(project_dir, program, gdb_path, debug_port)
