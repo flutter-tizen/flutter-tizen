@@ -162,12 +162,7 @@ Future<void> main(List<String> args) async {
             osUtils: globals.os,
             processManager: globals.processManager,
           ),
-      DeviceManager: () => TizenDeviceManager(
-            fileSystem: globals.fs,
-            logger: globals.logger,
-            platform: globals.platform,
-            processManager: globals.processManager,
-          ),
+      DeviceManager: () => TizenDeviceManager(),
       DoctorValidatorsProvider: () => TizenDoctorValidatorsProvider(),
       EmulatorManager: () => TizenEmulatorManager(
             tizenSdk: tizenSdk,
@@ -197,20 +192,15 @@ Future<void> main(List<String> args) async {
             processManager: globals.processManager,
           ),
       TemplateRenderer: () => const MustacheTemplateRenderer(),
-      TizenBuilder: () => TizenBuilder(
-            logger: globals.logger,
-            processManager: globals.processManager,
-            fileSystem: globals.fs,
-            artifacts: globals.artifacts,
-            usage: globals.flutterUsage,
-            platform: globals.platform,
-          ),
+      TizenBuilder: () => TizenBuilder(),
       TizenSdk: () => TizenSdk.locateSdk(),
       TizenValidator: () => TizenValidator(
             tizenSdk: tizenSdk,
             dotnetCli: dotnetCli,
+            fileSystem: globals.fs,
             logger: globals.logger,
             processManager: globals.processManager,
+            userMessages: globals.userMessages,
           ),
       TizenWorkflow: () => TizenWorkflow(
             tizenSdk: tizenSdk,

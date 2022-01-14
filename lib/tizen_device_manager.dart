@@ -4,11 +4,8 @@
 
 // @dart = 2.8
 
-import 'package:file/file.dart';
 import 'package:flutter_tools/src/android/android_workflow.dart';
 import 'package:flutter_tools/src/base/context.dart';
-import 'package:flutter_tools/src/base/logger.dart';
-import 'package:flutter_tools/src/base/platform.dart';
 import 'package:flutter_tools/src/context_runner.dart';
 import 'package:flutter_tools/src/custom_devices/custom_devices_config.dart';
 import 'package:flutter_tools/src/device.dart';
@@ -19,8 +16,6 @@ import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/macos/macos_workflow.dart';
 import 'package:flutter_tools/src/windows/uwptool.dart';
 import 'package:flutter_tools/src/windows/windows_workflow.dart';
-import 'package:meta/meta.dart';
-import 'package:process/process.dart';
 
 import 'tizen_device_discovery.dart';
 import 'tizen_doctor.dart';
@@ -29,26 +24,22 @@ import 'tizen_sdk.dart';
 /// An extended [FlutterDeviceManager] for managing Tizen devices.
 class TizenDeviceManager extends FlutterDeviceManager {
   /// See: [runInContext] in `context_runner.dart`
-  TizenDeviceManager({
-    @required Logger logger,
-    @required FileSystem fileSystem,
-    @required Platform platform,
-    @required ProcessManager processManager,
-  })  : _tizenDeviceDiscovery = TizenDeviceDiscovery(
+  TizenDeviceManager()
+      : _tizenDeviceDiscovery = TizenDeviceDiscovery(
           tizenSdk: tizenSdk,
           tizenWorkflow: tizenWorkflow,
-          logger: logger,
-          fileSystem: fileSystem,
-          processManager: processManager,
+          logger: globals.logger,
+          fileSystem: globals.fs,
+          processManager: globals.processManager,
         ),
         super(
-          logger: logger,
-          processManager: processManager,
-          platform: platform,
+          logger: globals.logger,
+          processManager: globals.processManager,
+          platform: globals.platform,
           androidSdk: globals.androidSdk,
           iosSimulatorUtils: globals.iosSimulatorUtils,
           featureFlags: featureFlags,
-          fileSystem: fileSystem,
+          fileSystem: globals.fs,
           iosWorkflow: globals.iosWorkflow,
           artifacts: globals.artifacts,
           flutterVersion: globals.flutterVersion,
@@ -61,9 +52,9 @@ class TizenDeviceManager extends FlutterDeviceManager {
           operatingSystemUtils: globals.os,
           terminal: globals.terminal,
           customDevicesConfig: CustomDevicesConfig(
-            fileSystem: fileSystem,
-            logger: logger,
-            platform: platform,
+            fileSystem: globals.fs,
+            logger: globals.logger,
+            platform: globals.platform,
           ),
           uwptool: UwpTool(
             artifacts: globals.artifacts,

@@ -7,13 +7,11 @@ import 'dart:convert';
 
 import 'package:file/file.dart';
 import 'package:flutter_tools/src/android/gradle.dart';
-import 'package:flutter_tools/src/artifacts.dart';
 import 'package:flutter_tools/src/base/analyze_size.dart';
 import 'package:flutter_tools/src/base/common.dart';
 import 'package:flutter_tools/src/base/context.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/base/logger.dart';
-import 'package:flutter_tools/src/base/platform.dart';
 import 'package:flutter_tools/src/base/terminal.dart';
 import 'package:flutter_tools/src/base/utils.dart';
 import 'package:flutter_tools/src/build_info.dart';
@@ -26,8 +24,6 @@ import 'package:flutter_tools/src/commands/build_ios_framework.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/linux/build_linux.dart';
 import 'package:flutter_tools/src/project.dart';
-import 'package:flutter_tools/src/reporting/reporting.dart';
-import 'package:process/process.dart';
 
 import 'build_targets/application.dart';
 import 'build_targets/package.dart';
@@ -47,29 +43,7 @@ TizenBuilder? get tizenBuilder => context.get<TizenBuilder>();
 /// - [AssembleCommand.runCommand] in `assemble.dart` (performance measurement)
 /// - [buildLinux] in `build_linux.dart` (code size)
 class TizenBuilder {
-  TizenBuilder({
-    required Logger logger,
-    required ProcessManager processManager,
-    required FileSystem fileSystem,
-    required Artifacts artifacts,
-    required Usage usage,
-    required Platform platform,
-  })  : _logger = logger,
-        _processManager = processManager,
-        _fileSystem = fileSystem,
-        _artifacts = artifacts,
-        _usage = usage,
-        _platform = platform,
-        _fileSystemUtils =
-            FileSystemUtils(fileSystem: fileSystem, platform: platform);
-
-  final Logger _logger;
-  final ProcessManager _processManager;
-  final FileSystem _fileSystem;
-  final Artifacts _artifacts;
-  final Usage _usage;
-  final Platform _platform;
-  final FileSystemUtils _fileSystemUtils;
+  TizenBuilder();
 
   Future<void> buildTpk({
     required FlutterProject project,
@@ -105,8 +79,8 @@ class TizenBuilder {
       outputDir: outputDir,
       buildDir: project.dartTool.childDirectory('flutter_build'),
       cacheDir: globals.cache.getRoot(),
-      flutterRootDir: _fileSystem.directory(Cache.flutterRoot),
-      engineVersion: _artifacts.isLocalEngine
+      flutterRootDir: globals.fs.directory(Cache.flutterRoot),
+      engineVersion: globals.artifacts!.isLocalEngine
           ? null
           : globals.flutterVersion.engineRevision,
       defines: <String, String>{
@@ -115,11 +89,11 @@ class TizenBuilder {
         ...buildInfo.toBuildSystemEnvironment(),
         kDeviceProfile: tizenBuildInfo.deviceProfile,
       },
-      artifacts: _artifacts,
-      fileSystem: _fileSystem,
-      logger: _logger,
-      processManager: _processManager,
-      platform: _platform,
+      artifacts: globals.artifacts!,
+      fileSystem: globals.fs,
+      logger: globals.logger,
+      processManager: globals.processManager,
+      platform: globals.platform,
       generateDartPluginRegistry: false,
     );
 
@@ -128,7 +102,7 @@ class TizenBuilder {
         : ReleaseTizenApplication(tizenBuildInfo);
 
     final String buildModeName = getNameForBuildMode(buildInfo.mode);
-    final Status status = _logger.startProgress(
+    final Status status = globals.logger.startProgress(
         'Building a Tizen application in $buildModeName mode...');
     try {
       final BuildResult result =
@@ -136,7 +110,7 @@ class TizenBuilder {
       if (!result.success) {
         for (final ExceptionMeasurement measurement
             in result.exceptions.values) {
-          _logger.printError(measurement.exception.toString());
+          globals.printError(measurement.exception.toString());
         }
         throwToolExit('The build failed.');
       }
@@ -149,7 +123,7 @@ class TizenBuilder {
 
       if (buildInfo.performanceMeasurementFile != null) {
         final File outFile =
-            _fileSystem.file(buildInfo.performanceMeasurementFile);
+            globals.fs.file(buildInfo.performanceMeasurementFile);
         // ignore: invalid_use_of_visible_for_testing_member
         writePerformanceData(result.performance.values, outFile);
       }
@@ -162,24 +136,24 @@ class TizenBuilder {
     if (!tpkFile.existsSync()) {
       throwToolExit('The output TPK does not exist.');
     }
-    final String relativeTpkPath = _fileSystem.path.relative(tpkFile.path);
+    final String relativeTpkPath = globals.fs.path.relative(tpkFile.path);
     final String tpkSize = getSizeAsMB(tpkFile.lengthSync());
-    _logger.printStatus(
-      '${_logger.terminal.successMark} Built $relativeTpkPath ($tpkSize).',
+    globals.printStatus(
+      '${globals.logger.terminal.successMark} Built $relativeTpkPath ($tpkSize).',
       color: TerminalColor.green,
     );
 
     final Directory tpkrootDir = tpkDir.childDirectory('tpkroot');
     if (buildInfo.codeSizeDirectory != null && tpkrootDir.existsSync()) {
       sizeAnalyzer ??= SizeAnalyzer(
-        fileSystem: _fileSystem,
-        logger: _logger,
-        flutterUsage: _usage,
+        fileSystem: globals.fs,
+        logger: globals.logger,
+        flutterUsage: globals.flutterUsage,
       );
-      final File codeSizeFile = _fileSystem
+      final File codeSizeFile = globals.fs
           .directory(buildInfo.codeSizeDirectory)
           .childFile('snapshot.$targetPlatform.json');
-      final File precompilerTrace = _fileSystem
+      final File precompilerTrace = globals.fs
           .directory(buildInfo.codeSizeDirectory)
           .childFile('trace.$targetPlatform.json');
       final Map<String, Object?> output = await sizeAnalyzer.analyzeAotSnapshot(
@@ -188,21 +162,21 @@ class TizenBuilder {
         precompilerTrace: precompilerTrace,
         type: 'linux',
       );
-      final File outputFile = _fileSystemUtils.getUniqueFile(
-        _fileSystem
-            .directory(_fileSystemUtils.homeDirPath)
+      final File outputFile = globals.fsUtils.getUniqueFile(
+        globals.fs
+            .directory(globals.fsUtils.homeDirPath)
             .childDirectory('.flutter-devtools'),
         'tpk-code-size-analysis',
         'json',
       )..writeAsStringSync(jsonEncode(output));
-      _logger.printStatus(
+      globals.printStatus(
         'A summary of your TPK analysis can be found at: ${outputFile.path}',
       );
 
       // DevTools expects a file path relative to the .flutter-devtools/ dir.
       final String relativeAppSizePath =
           outputFile.path.split('.flutter-devtools/').last.trim();
-      _logger.printStatus(
+      globals.printStatus(
         '\nTo analyze your app size in Dart DevTools, run the following commands:\n\n'
         '\$ flutter-tizen pub global activate devtools\n'
         '\$ flutter-tizen pub global run devtools --appSizeBase=$relativeAppSizePath\n',

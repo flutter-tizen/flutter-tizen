@@ -9,7 +9,6 @@ import 'package:flutter_tizen/build_targets/package.dart';
 import 'package:flutter_tizen/tizen_build_info.dart';
 import 'package:flutter_tizen/tizen_builder.dart';
 import 'package:flutter_tizen/tizen_sdk.dart';
-import 'package:flutter_tools/src/artifacts.dart';
 import 'package:flutter_tools/src/base/analyze_size.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/base/logger.dart';
@@ -41,7 +40,6 @@ void main() {
   Platform platform;
   FlutterProject project;
   TizenBuildInfo tizenBuildInfo;
-  TizenBuilder tizenBuilder;
 
   setUpAll(() {
     Cache.disableLocking();
@@ -63,19 +61,11 @@ void main() {
       targetArch: 'arm',
       deviceProfile: 'common',
     );
-    tizenBuilder = TizenBuilder(
-      logger: logger,
-      processManager: processManager,
-      fileSystem: fileSystem,
-      artifacts: Artifacts.test(),
-      usage: TestUsage(),
-      platform: platform,
-    );
   });
 
   testUsingContext('Build fails if there is no Tizen project', () async {
     await expectLater(
-      () => tizenBuilder.buildTpk(
+      () => TizenBuilder().buildTpk(
         project: project,
         tizenBuildInfo: tizenBuildInfo,
         targetFile: 'main.dart',
@@ -93,7 +83,7 @@ void main() {
       ..writeAsStringSync(_kTizenManifestContents);
 
     await expectLater(
-      () => tizenBuilder.buildTpk(
+      () => TizenBuilder().buildTpk(
         project: project,
         tizenBuildInfo: tizenBuildInfo,
         targetFile: 'main.dart',
@@ -111,7 +101,7 @@ void main() {
       ..writeAsStringSync(_kTizenManifestContents);
 
     await expectLater(
-      () => tizenBuilder.buildTpk(
+      () => TizenBuilder().buildTpk(
         project: project,
         tizenBuildInfo: tizenBuildInfo,
         targetFile: 'main.dart',
@@ -131,7 +121,7 @@ void main() {
       ..createSync(recursive: true)
       ..writeAsStringSync(_kTizenManifestContents);
 
-    await tizenBuilder.buildTpk(
+    await TizenBuilder().buildTpk(
       project: project,
       tizenBuildInfo: tizenBuildInfo,
       targetFile: 'main.dart',
@@ -161,7 +151,7 @@ void main() {
       treeShakeIcons: false,
       buildName: '9.9.9',
     );
-    await tizenBuilder.buildTpk(
+    await TizenBuilder().buildTpk(
       project: project,
       tizenBuildInfo: const TizenBuildInfo(
         buildInfo,
@@ -195,7 +185,7 @@ void main() {
       treeShakeIcons: false,
       codeSizeDirectory: 'code_size_analysis',
     );
-    await tizenBuilder.buildTpk(
+    await TizenBuilder().buildTpk(
       project: project,
       tizenBuildInfo: const TizenBuildInfo(
         buildInfo,
