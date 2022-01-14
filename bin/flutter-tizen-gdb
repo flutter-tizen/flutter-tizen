@@ -349,6 +349,7 @@ def run(device: TizenDevice):
     server_thread.start()
     launched.wait()
 
+    print(f'gdbserver is listening for debug connection on port {debug_port}.')
     print_help()
 
     while True:
