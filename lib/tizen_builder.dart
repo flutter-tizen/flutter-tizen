@@ -79,10 +79,7 @@ class TizenBuilder {
   }) async {
     final TizenProject tizenProject = TizenProject.fromFlutter(project);
     if (!tizenProject.existsSync()) {
-      throwToolExit(
-        'This project is not configured for Tizen.\n'
-        'To fix this problem, create a new project by running `flutter-tizen create <app-dir>`.',
-      );
+      throwToolExit('This project is not configured for Tizen.');
     }
     if (tizenSdk == null || !tizenSdk!.tizenCli.existsSync()) {
       throwToolExit(

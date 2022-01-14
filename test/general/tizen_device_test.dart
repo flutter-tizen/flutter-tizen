@@ -83,6 +83,7 @@ void main() {
           '/.tmp_rand0/rand0/$appId.rpm',
           '/home/owner/share/tmp/sdk_tools/$appId.rpm',
         ]),
+        stdout: '1 file(s) pushed.',
       ),
       FakeCommand(
         command: _sdbCommand(<String>['shell', 'app_launcher', '-s', appId]),
