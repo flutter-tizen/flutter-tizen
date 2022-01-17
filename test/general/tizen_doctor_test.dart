@@ -16,6 +16,7 @@ import 'package:flutter_tools/src/doctor_validator.dart';
 
 import '../src/common.dart';
 import '../src/context.dart';
+import '../src/fakes.dart';
 
 void main() {
   FileSystem fileSystem;
@@ -90,6 +91,32 @@ void main() {
     final ValidationMessage sdkMessage = result.messages.last;
     expect(sdkMessage.type, equals(ValidationMessageType.error));
     expect(sdkMessage.message, contains('To install missing packages, run:'));
+  });
+
+  testWithoutContext('TizenWorkflow handles null SDK', () {
+    final TizenWorkflow tizenWorkflow = TizenWorkflow(
+      tizenSdk: null, // ignore: avoid_redundant_argument_values
+      operatingSystemUtils: FakeOperatingSystemUtils(),
+    );
+
+    expect(tizenWorkflow.canLaunchDevices, isFalse);
+    expect(tizenWorkflow.canListDevices, isFalse);
+    expect(tizenWorkflow.canListEmulators, isFalse);
+  });
+
+  testWithoutContext('TizenWorkflow can list emulators', () {
+    final _FakeTizenSdk tizenSdk = _FakeTizenSdk(fileSystem);
+    final TizenWorkflow tizenWorkflow = TizenWorkflow(
+      tizenSdk: tizenSdk,
+      operatingSystemUtils: FakeOperatingSystemUtils(),
+    );
+
+    expect(tizenWorkflow.canLaunchDevices, isTrue);
+    expect(tizenWorkflow.canListDevices, isTrue);
+    expect(tizenWorkflow.canListEmulators, isFalse);
+
+    tizenSdk.emCli.createSync(recursive: true);
+    expect(tizenWorkflow.canListEmulators, isTrue);
   });
 }
 
