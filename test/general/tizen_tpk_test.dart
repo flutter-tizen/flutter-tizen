@@ -44,12 +44,12 @@ void main() {
 ''');
 
     final TizenManifest manifest = TizenManifest.parseFromXml(xmlFile);
-    expect(manifest.packageId, 'package_id');
-    expect(manifest.version, '9.9.9');
-    expect(manifest.apiVersion, '4.0');
-    expect(manifest.profile, 'common');
-    expect(manifest.applicationId, 'app_id');
-    expect(manifest.applicationType, 'dotnet');
+    expect(manifest.packageId, equals('package_id'));
+    expect(manifest.version, equals('9.9.9'));
+    expect(manifest.apiVersion, equals('4.0'));
+    expect(manifest.profile, equals('common'));
+    expect(manifest.applicationId, equals('app_id'));
+    expect(manifest.applicationType, equals('dotnet'));
   });
 
   testUsingContext('TizenManifest.parseFromXml can parse multi-app manifest',
@@ -66,7 +66,7 @@ void main() {
 ''');
 
     final TizenManifest manifest = TizenManifest.parseFromXml(xmlFile);
-    expect(manifest.applicationId, 'app_id_1');
+    expect(manifest.applicationId, equals('app_id_1'));
     expect(logger.traceText,
         contains('tizen-manifest.xml: Found 3 application declarations.'));
   }, overrides: <Type, Generator>{
