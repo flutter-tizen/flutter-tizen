@@ -17,8 +17,6 @@ import 'package:flutter_tools/src/doctor_validator.dart';
 import 'package:flutter_tools/src/version.dart';
 import 'package:process/process.dart';
 
-// ignore: import_of_legacy_library_into_null_safe
-import 'executable.dart';
 import 'tizen_sdk.dart';
 
 TizenWorkflow? get tizenWorkflow => context.get<TizenWorkflow>();
@@ -104,7 +102,9 @@ class TizenValidator extends DoctorValidator {
     final List<ValidationMessage> messages = <ValidationMessage>[];
 
     final FlutterVersion version = _FlutterTizenVersion(
-        fileSystem: _fileSystem, processUtils: _processUtils);
+      workingDirectory: _fileSystem.directory(Cache.flutterRoot).parent,
+      processUtils: _processUtils,
+    );
     messages.add(ValidationMessage(_userMessages.flutterRevision(
       version.frameworkRevisionShort,
       version.frameworkAge,
@@ -199,19 +199,18 @@ class TizenWorkflow extends Workflow {
 
 class _FlutterTizenVersion extends FlutterVersion {
   _FlutterTizenVersion({
-    required FileSystem fileSystem,
+    required Directory workingDirectory,
     required ProcessUtils processUtils,
-  })  : _fileSystem = fileSystem,
+  })  : _workingDirectory = workingDirectory,
         _processUtils = processUtils,
-        super(workingDirectory: rootPath);
+        super(workingDirectory: workingDirectory.path);
 
-  final FileSystem _fileSystem;
+  final Directory _workingDirectory;
   final ProcessUtils _processUtils;
 
   /// See: [Cache.getVersionFor] in `cache.dart`
   String? _getVersionFor(String artifactName) {
-    final File versionFile = _fileSystem
-        .directory(rootPath)
+    final File versionFile = _workingDirectory
         .childDirectory('bin')
         .childDirectory('internal')
         .childFile('$artifactName.version');
@@ -232,7 +231,7 @@ class _FlutterTizenVersion extends FlutterVersion {
 
   /// See: [_runGit] in `version.dart`
   String _runGit(String command) => _processUtils
-      .runSync(command.split(' '), workingDirectory: rootPath)
+      .runSync(command.split(' '), workingDirectory: _workingDirectory.path)
       .stdout
       .trim();
 
