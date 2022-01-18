@@ -90,7 +90,7 @@ class _PluginRegistrant {
   }, overrides: <Type, Generator>{
     FileSystem: () => fileSystem,
     ProcessManager: () => FakeProcessManager.any(),
-  });
+  }, testOn: 'posix');
 
   testUsingContext('Generates native plugin registrants', () async {
     final Directory pluginDir = fileSystem.directory('/some_native_plugin');
@@ -160,7 +160,7 @@ namespace Runner
   }, overrides: <Type, Generator>{
     FileSystem: () => fileSystem,
     ProcessManager: () => FakeProcessManager.any(),
-  });
+  }, testOn: 'posix');
 }
 
 class _DummyFlutterCommand extends FlutterCommand with DartPluginRegistry {
