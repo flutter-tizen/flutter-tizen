@@ -20,7 +20,6 @@ import '../src/fakes.dart';
 
 void main() {
   FileSystem fileSystem;
-  ProcessManager processManager;
   BufferLogger logger;
 
   setUpAll(() {
@@ -29,7 +28,6 @@ void main() {
 
   setUp(() {
     fileSystem = MemoryFileSystem.test();
-    processManager = FakeProcessManager.any();
     logger = BufferLogger.test();
 
     fileSystem.file('bin/internal/engine.version').createSync(recursive: true);
@@ -41,7 +39,7 @@ void main() {
       dotnetCli: fileSystem.file('dotnet'),
       fileSystem: fileSystem,
       logger: logger,
-      processManager: processManager,
+      processManager: FakeProcessManager.any(),
       userMessages: UserMessages(),
     );
 
@@ -62,7 +60,7 @@ void main() {
       dotnetCli: fileSystem.file('dotnet'),
       fileSystem: fileSystem,
       logger: logger,
-      processManager: processManager,
+      processManager: FakeProcessManager.any(),
       userMessages: UserMessages(),
     );
 
@@ -81,7 +79,7 @@ void main() {
       dotnetCli: fileSystem.file('dotnet'),
       fileSystem: fileSystem,
       logger: logger,
-      processManager: processManager,
+      processManager: FakeProcessManager.any(),
       userMessages: UserMessages(),
     );
 
