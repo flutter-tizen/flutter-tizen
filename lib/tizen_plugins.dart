@@ -8,6 +8,7 @@ import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
 import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:file/file.dart';
+import 'package:flutter_tools/src/artifacts.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/base/terminal.dart';
 // ignore: import_of_legacy_library_into_null_safe
@@ -115,8 +116,12 @@ mixin DartPluginRegistry on FlutterCommand {
 /// from [dartFile] and returns their names.
 List<String> _findDartEntrypoints(File dartFile) {
   final String path = dartFile.absolute.path;
-  final AnalysisContextCollection collection =
-      AnalysisContextCollection(includedPaths: <String>[path]);
+  final FileSystemEntity dartSdk =
+      globals.artifacts!.getHostArtifact(HostArtifact.engineDartSdkPath);
+  final AnalysisContextCollection collection = AnalysisContextCollection(
+    includedPaths: <String>[path],
+    sdkPath: dartSdk.absolute.path,
+  );
   final AnalysisContext context = collection.contextFor(path);
   final SomeParsedUnitResult parsed =
       context.currentSession.getParsedUnit(path);
@@ -223,12 +228,9 @@ void {{name}}(List<String> args) {
 /// https://github.com/flutter-tizen/plugins
 const List<String> _kKnownPlugins = <String>[
   'audioplayers',
-  'battery',
   'battery_plus',
   'camera',
-  'connectivity',
   'connectivity_plus',
-  'device_info',
   'device_info_plus',
   'flutter_tts',
   'geolocator',
@@ -236,20 +238,17 @@ const List<String> _kKnownPlugins = <String>[
   'image_picker',
   'integration_test',
   'network_info_plus',
-  'package_info',
   'package_info_plus',
   'path_provider',
   'permission_handler',
-  'sensors',
   'sensors_plus',
-  'share',
   'share_plus',
   'shared_preferences',
+  'sqflite',
   'url_launcher',
   'video_player',
   'wakelock',
   'webview_flutter',
-  'wifi_info_flutter',
 ];
 
 /// This function is expected to be called whenever

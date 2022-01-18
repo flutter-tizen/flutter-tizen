@@ -77,7 +77,7 @@ dependencies:
   "configVersion": 2,
   "packages": [
     {
-      "name": "some_dart_plugin",
+      "name": "some_native_plugin",
       "rootUri": "${pluginDir.uri}",
       "packageUri": "lib/",
       "languageVersion": "2.12"
