@@ -13,7 +13,6 @@ import 'package:xml/xml.dart';
 
 import '../src/common.dart';
 import '../src/context.dart';
-import '../src/test_flutter_command_runner.dart';
 
 void main() {
   FileSystem fileSystem;

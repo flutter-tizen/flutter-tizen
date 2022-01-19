@@ -24,7 +24,6 @@ import '../src/common.dart';
 import '../src/context.dart';
 import '../src/fake_tizen_sdk.dart';
 import '../src/test_build_system.dart';
-import '../src/test_flutter_command_runner.dart';
 
 const String _kTizenManifestContents = '''
 <manifest package="package_id" version="1.0.0" api-version="4.0">
