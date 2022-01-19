@@ -305,7 +305,7 @@ def print_launch_json(project_dir: Path, program: Path, debugger: Path, port):
             "MIMode": "gdb",
             "symbolLoadInfo": {
                 "loadAll": false,
-                "exceptionList": "libflutter*.so"
+                "exceptionList": "libc.so;libflutter*"
             },
             "cwd": "CWD",
             "program": "PROGRAM",
@@ -360,7 +360,8 @@ def run(device: TizenDevice):
         elif choice == 'r' or choice == 'R':
             args = ['-ex', 'set auto-solib-add off',
                     '-ex', f'target remote :{debug_port}',
-                    '-ex', 'shared /opt/usr/globalapps']
+                    '-ex', 'share libc.so',
+                    '-ex', 'share libflutter*']
             run_gdb_client(gdb_path, program, args)
             break
         elif choice == 'p' or choice == 'P':
