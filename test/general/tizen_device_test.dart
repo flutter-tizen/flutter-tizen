@@ -85,7 +85,7 @@ void main() {
         ]),
       ),
       FakeCommand(
-        command: _sdbCommand(<String>['shell', 'app_launcher', '-s', appId]),
+        command: _sdbCommand(<String>['shell', 'app_launcher', '-e', appId]),
         stdout: '... successfully launched pid = 123',
       ),
     ]);

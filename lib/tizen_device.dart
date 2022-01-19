@@ -423,7 +423,7 @@ class TizenDevice extends Device {
 
     final List<String> command = usesSecureProtocol
         ? <String>['shell', '0', 'execute', package.applicationId]
-        : <String>['shell', 'app_launcher', '-s', package.applicationId];
+        : <String>['shell', 'app_launcher', '-e', package.applicationId];
     final String stdout = (await runSdbAsync(command)).stdout;
     if (!stdout.contains('successfully launched')) {
       _logger.printError(stdout.trim());
