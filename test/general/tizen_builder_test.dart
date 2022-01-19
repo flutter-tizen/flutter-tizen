@@ -34,7 +34,6 @@ const String _kTizenManifestContents = '''
 
 void main() {
   FileSystem fileSystem;
-  ProcessManager processManager;
   BufferLogger logger;
   Platform platform;
   FlutterProject project;
@@ -50,7 +49,6 @@ void main() {
     fileSystem.file('.dart_tool/package_config.json')
       ..createSync(recursive: true)
       ..writeAsStringSync('{"configVersion": 2, "packages": []}');
-    processManager = FakeProcessManager.any();
     logger = BufferLogger.test();
     platform = FakePlatform(environment: <String, String>{'HOME': '/'});
     project = FlutterProject.fromDirectoryTest(fileSystem.currentDirectory);
@@ -73,7 +71,7 @@ void main() {
     );
   }, overrides: <Type, Generator>{
     FileSystem: () => fileSystem,
-    ProcessManager: () => processManager,
+    ProcessManager: () => FakeProcessManager.any(),
   });
 
   testUsingContext('Build fails if Tizen Studio is not installed', () async {
@@ -91,7 +89,7 @@ void main() {
     );
   }, overrides: <Type, Generator>{
     FileSystem: () => fileSystem,
-    ProcessManager: () => processManager,
+    ProcessManager: () => FakeProcessManager.any(),
   });
 
   testUsingContext('Output TPK is missing', () async {
@@ -109,7 +107,7 @@ void main() {
     );
   }, overrides: <Type, Generator>{
     FileSystem: () => fileSystem,
-    ProcessManager: () => processManager,
+    ProcessManager: () => FakeProcessManager.any(),
     TizenSdk: () => FakeTizenSdk(fileSystem),
     BuildSystem: () => TestBuildSystem.all(BuildResult(success: true)),
     PackageBuilder: () => _FakePackageBuilder(null),
@@ -132,7 +130,7 @@ void main() {
     );
   }, overrides: <Type, Generator>{
     FileSystem: () => fileSystem,
-    ProcessManager: () => processManager,
+    ProcessManager: () => FakeProcessManager.any(),
     Logger: () => logger,
     TizenSdk: () => FakeTizenSdk(fileSystem),
     BuildSystem: () => TestBuildSystem.all(BuildResult(success: true)),
@@ -167,7 +165,7 @@ void main() {
     expect(tizenManifest, contains('wearable'));
   }, overrides: <Type, Generator>{
     FileSystem: () => fileSystem,
-    ProcessManager: () => processManager,
+    ProcessManager: () => FakeProcessManager.any(),
     TizenSdk: () => FakeTizenSdk(fileSystem),
     BuildSystem: () => TestBuildSystem.all(BuildResult(success: true)),
     PackageBuilder: () => _FakePackageBuilder('package_id-9.9.9.tpk'),
@@ -204,7 +202,7 @@ void main() {
     );
   }, overrides: <Type, Generator>{
     FileSystem: () => fileSystem,
-    ProcessManager: () => processManager,
+    ProcessManager: () => FakeProcessManager.any(),
     Logger: () => logger,
     TizenSdk: () => FakeTizenSdk(fileSystem),
     BuildSystem: () => TestBuildSystem.all(BuildResult(success: true)),
