@@ -36,37 +36,31 @@ const String _kEmptyLaunchJson = r'''
 
 void main() {
   FileSystem fileSystem;
+  FlutterProject project;
 
   setUp(() {
     fileSystem = MemoryFileSystem.test();
+    project = FlutterProject.fromDirectoryTest(fileSystem.currentDirectory);
   });
 
   testWithoutContext('Can create launch.json file', () async {
-    final FlutterProject project =
-        FlutterProject.fromDirectoryTest(fileSystem.currentDirectory);
-    final Uri observatoryUri = Uri.parse('http://127.0.0.1:12345');
-
     final File launchJsonFile =
         project.directory.childDirectory('.vscode').childFile('launch.json');
     expect(launchJsonFile, isNot(exists));
 
-    updateLaunchJsonFile(project, observatoryUri);
+    updateLaunchJsonFile(project, Uri.parse('http://127.0.0.1:12345'));
 
     expect(launchJsonFile, exists);
     expect(launchJsonFile.readAsStringSync(), equals(_kLaunchJson));
   });
 
   testWithoutContext('Can update launch.json file', () async {
-    final FlutterProject project =
-        FlutterProject.fromDirectoryTest(fileSystem.currentDirectory);
-    final Uri observatoryUri = Uri.parse('http://127.0.0.1:12345');
-
     final File launchJsonFile =
         project.directory.childDirectory('.vscode').childFile('launch.json');
     launchJsonFile.createSync(recursive: true);
     launchJsonFile.writeAsStringSync(_kEmptyLaunchJson);
 
-    updateLaunchJsonFile(project, observatoryUri);
+    updateLaunchJsonFile(project, Uri.parse('http://127.0.0.1:12345'));
 
     expect(launchJsonFile, exists);
     expect(launchJsonFile.readAsStringSync(), equals(_kLaunchJson));

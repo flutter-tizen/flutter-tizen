@@ -32,9 +32,8 @@ void updateLaunchJsonFile(FlutterProject project, Uri observatoryUri) {
     }
   }
 
-  final Directory vscodeDir = project.directory.childDirectory('.vscode')
-    ..createSync(recursive: true);
-  final File launchJsonFile = vscodeDir.childFile('launch.json');
+  final File launchJsonFile =
+      project.directory.childDirectory('.vscode').childFile('launch.json');
   String jsonString = '';
   if (launchJsonFile.existsSync()) {
     jsonString = _processJson(launchJsonFile.readAsStringSync());
@@ -73,5 +72,7 @@ void updateLaunchJsonFile(FlutterProject project, Uri observatoryUri) {
   }
 
   const JsonEncoder encoder = JsonEncoder.withIndent('    ');
-  launchJsonFile.writeAsStringSync(encoder.convert(decoded));
+  launchJsonFile
+    ..createSync(recursive: true)
+    ..writeAsStringSync(encoder.convert(decoded));
 }

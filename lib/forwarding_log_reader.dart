@@ -136,6 +136,10 @@ class ForwardingLogReader extends DeviceLogReader {
     return socket;
   }
 
+  /// Starts receiving messages from the device logger.
+  ///
+  /// If [retry] is positive and the device logger is not yet ready, the
+  /// connection will be retried [retry] times.
   Future<void> start({int retry = 3}) async {
     if (_socket != null) {
       globals.printTrace('Already connected to the device logger.');

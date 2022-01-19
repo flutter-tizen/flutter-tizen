@@ -53,6 +53,9 @@ class TizenTpk extends ApplicationPackage {
 
   static TizenTpk fromProject(FlutterProject flutterProject) {
     final TizenProject project = TizenProject.fromFlutter(flutterProject);
+    if (!project.existsSync()) {
+      throwToolExit('This project is not configured for Tizen.');
+    }
 
     final File tpkFile = flutterProject.directory
         .childDirectory('build')
