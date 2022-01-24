@@ -257,7 +257,9 @@ class TizenEngineArtifacts extends EngineCachedArtifact {
   }
 
   void _makeFilesExecutable(
-      Directory dir, OperatingSystemUtils operatingSystemUtils) {
+    Directory dir,
+    OperatingSystemUtils operatingSystemUtils,
+  ) {
     operatingSystemUtils.chmod(dir, 'a+r,a+x');
     for (final File file in dir.listSync(recursive: true).whereType<File>()) {
       if (file.basename == 'gen_snapshot') {
