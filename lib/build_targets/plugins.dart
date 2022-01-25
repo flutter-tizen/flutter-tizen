@@ -188,15 +188,20 @@ class NativePlugins extends Target {
       for (final Directory directory
           in pluginLibDirs.where((Directory d) => d.existsSync())) {
         for (final File lib in directory.listSync().whereType<File>()) {
-          final bool isSharedLib = lib.basename.endsWith('.so');
+          final bool isSharedLib =
+              lib.basename.contains(RegExp(r'(\.so)((\..*)|$)'));
           final bool isStaticLib = lib.basename.endsWith('.a');
+
           if (isSharedLib || isStaticLib) {
-            final String libName = getLibNameForFileName(lib.basename);
-            if (userLibs.contains(libName)) {
-              continue;
+            final bool isLinkableSharedLib = lib.basename.endsWith('.so');
+            if (isLinkableSharedLib || isStaticLib) {
+              final String libName = getLibNameForFileName(lib.basename);
+              if (userLibs.contains(libName)) {
+                continue;
+              }
+              lib.copySync(libDir.childFile(lib.basename).path);
+              userLibs.add(libName);
             }
-            lib.copySync(libDir.childFile(lib.basename).path);
-            userLibs.add(libName);
 
             inputs.add(lib);
             if (isSharedLib) {
