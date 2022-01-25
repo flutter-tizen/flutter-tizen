@@ -199,9 +199,9 @@ class NativePlugins extends Target {
               if (userLibs.contains(libName)) {
                 continue;
               }
-              lib.copySync(libDir.childFile(lib.basename).path);
               userLibs.add(libName);
             }
+            lib.copySync(libDir.childFile(lib.basename).path);
 
             inputs.add(lib);
             if (isSharedLib) {
