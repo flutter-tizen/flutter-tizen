@@ -27,7 +27,8 @@ class TizenBuildCommand extends BuildCommand {
 class BuildTpkCommand extends BuildSubCommand
     with DartPluginRegistry, TizenRequiredArtifacts {
   /// See: [BuildApkCommand] in `build_apk.dart`
-  BuildTpkCommand({bool verboseHelp = false}) {
+  BuildTpkCommand({bool verboseHelp = false})
+      : super(verboseHelp: verboseHelp) {
     addCommonDesktopBuildOptions(verboseHelp: verboseHelp);
     usesBuildNameOption();
     argParser.addOption(

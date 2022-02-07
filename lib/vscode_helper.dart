@@ -6,7 +6,7 @@ import 'dart:convert';
 
 import 'package:file/file.dart';
 import 'package:flutter_tools/src/convert.dart';
-import 'package:flutter_tools/src/globals_null_migrated.dart' as globals;
+import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/project.dart';
 
 const String kConfigNameAttach = 'flutter-tizen: Attach';

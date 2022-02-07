@@ -61,6 +61,7 @@ class TizenCreateCommand extends CreateCommand {
     Directory directory,
     Map<String, Object> context, {
     bool overwrite = false,
+    bool printStatusWhenWriting = true,
   }) async {
     // Disables https://github.com/flutter/flutter/pull/59706 by setting
     // templateManifest to null.
@@ -71,7 +72,12 @@ class TizenCreateCommand extends CreateCommand {
       templateRenderer: globals.templateRenderer,
       templateManifest: null,
     );
-    return template.render(directory, context, overwriteExisting: overwrite);
+    return template.render(
+      directory,
+      context,
+      overwriteExisting: overwrite,
+      printStatusWhenWriting: printStatusWhenWriting,
+    );
   }
 
   @override
@@ -80,6 +86,7 @@ class TizenCreateCommand extends CreateCommand {
     Directory directory,
     Map<String, Object> context, {
     bool overwrite = false,
+    bool printStatusWhenWriting = true,
   }) async {
     // Disables https://github.com/flutter/flutter/pull/59706 by setting
     // templateManifest to null.
@@ -91,7 +98,12 @@ class TizenCreateCommand extends CreateCommand {
       templateRenderer: globals.templateRenderer,
       templateManifest: null,
     );
-    return template.render(directory, context, overwriteExisting: overwrite);
+    return template.render(
+      directory,
+      context,
+      overwriteExisting: overwrite,
+      printStatusWhenWriting: printStatusWhenWriting,
+    );
   }
 
   /// See: [CreateCommand._getProjectType] in `create.dart`

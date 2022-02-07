@@ -9,7 +9,7 @@ import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/cache.dart';
 // ignore: import_of_legacy_library_into_null_safe
 import 'package:flutter_tools/src/commands/clean.dart';
-import 'package:flutter_tools/src/globals_null_migrated.dart' as globals;
+import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/project.dart';
 import 'package:xml/xml.dart';
 
