@@ -40,6 +40,7 @@ void main() {
       logger: BufferLogger.test(),
       fileSystem: fileSystem,
       platform: FakePlatform(operatingSystem: 'windows'),
+      osUtils: FakeOperatingSystemUtils(),
       processManager: FakeProcessManager.any(),
     );
 
@@ -72,11 +73,13 @@ void main() {
       logger: BufferLogger.test(),
       fileSystem: fileSystem,
       platform: FakePlatform(),
+      osUtils: FakeOperatingSystemUtils(),
       processManager: FakeProcessManager.any(),
     );
     final _FakeArtifactUpdater artifactUpdater = _FakeArtifactUpdater();
     final FakeOperatingSystemUtils osUtils = FakeOperatingSystemUtils();
 
+    artifacts.artifactUpdater = artifactUpdater;
     artifactUpdater.onDownload = (String message, Uri url, Directory location) {
       location.childFile('gen_snapshot').createSync(recursive: true);
     };
@@ -103,6 +106,7 @@ void main() {
       platform: FakePlatform(
         environment: <String, String>{'TIZEN_ENGINE_GITHUB_RUN_ID': '1234'},
       ),
+      osUtils: FakeOperatingSystemUtils(),
       processManager: FakeProcessManager.any(),
     );
 
