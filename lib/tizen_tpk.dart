@@ -92,9 +92,6 @@ class TizenTpk extends ApplicationPackage {
 
   @override
   String get displayName => id;
-
-  @override
-  File get packagesFile => file;
 }
 
 /// Represents the content of `tizen-manifest.xml` file.
