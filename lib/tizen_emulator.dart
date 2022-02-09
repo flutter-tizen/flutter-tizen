@@ -3,18 +3,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @dart = 2.8
-
 import 'dart:async';
 
 import 'package:file/file.dart';
 import 'package:flutter_tools/src/android/android_emulator.dart';
+import 'package:flutter_tools/src/android/android_workflow.dart';
 import 'package:flutter_tools/src/base/common.dart';
 import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/base/process.dart';
 import 'package:flutter_tools/src/device.dart';
 import 'package:flutter_tools/src/emulator.dart';
-import 'package:meta/meta.dart';
 import 'package:process/process.dart';
 import 'package:xml/xml.dart';
 
@@ -24,11 +22,11 @@ import 'tizen_sdk.dart';
 /// A class to get available Tizen emulators.
 class TizenEmulatorManager extends EmulatorManager {
   TizenEmulatorManager({
-    @required TizenSdk tizenSdk,
-    @required TizenWorkflow tizenWorkflow,
-    @required FileSystem fileSystem,
-    @required Logger logger,
-    @required ProcessManager processManager,
+    required TizenSdk? tizenSdk,
+    required TizenWorkflow tizenWorkflow,
+    required FileSystem fileSystem,
+    required Logger logger,
+    required ProcessManager processManager,
   })  : _processUtils =
             ProcessUtils(logger: logger, processManager: processManager),
         _tizenSdk = tizenSdk,
@@ -40,21 +38,21 @@ class TizenEmulatorManager extends EmulatorManager {
         ),
         super(
           androidSdk: null,
-          androidWorkflow: null,
+          androidWorkflow: androidWorkflow!,
           fileSystem: fileSystem,
           logger: logger,
           processManager: processManager,
         );
 
   final ProcessUtils _processUtils;
-  final TizenSdk _tizenSdk;
+  final TizenSdk? _tizenSdk;
   final TizenEmulators _tizenEmulators;
 
   /// Creates a Tizen emulator.
   ///
   /// Source: [EmulatorManager.createEmulator] in `emulator.dart`
   @override
-  Future<CreateEmulatorResult> createEmulator({String name}) async {
+  Future<CreateEmulatorResult> createEmulator({String? name}) async {
     if (name == null || name.isEmpty) {
       const String autoName = 'flutter_emulator';
       final List<Emulator> all = await getAllAvailableEmulators();
@@ -68,34 +66,33 @@ class TizenEmulatorManager extends EmulatorManager {
         name = '${autoName}_${++suffix}';
       }
     }
+    final String emulatorName = name!;
     if (!_tizenEmulators.canLaunchAnything) {
-      return CreateEmulatorResult(name,
+      return CreateEmulatorResult(emulatorName,
           success: false, error: 'Unable to locate Tizen Emulator Manager.');
     }
 
-    final PlatformImage platformImage = _getPreferredPlatformImage();
+    final PlatformImage? platformImage = _getPreferredPlatformImage();
     if (platformImage == null) {
       return CreateEmulatorResult(
-        name,
+        emulatorName,
         success: false,
         error: 'No suitable Tizen platform images are available.\n'
             'You may need to install these using Tizen Package Manager.',
       );
     }
-
-    assert(_tizenSdk != null);
     final RunResult runResult = await _processUtils.run(
       <String>[
-        _tizenSdk.emCli.path,
+        _tizenSdk!.emCli.path,
         'create',
         '-n',
-        name,
+        emulatorName,
         '-p',
         platformImage.name,
       ],
     );
     return CreateEmulatorResult(
-      name,
+      emulatorName,
       success: runResult.exitCode == 0,
       output: runResult.stdout,
       error: runResult.stderr,
@@ -103,63 +100,59 @@ class TizenEmulatorManager extends EmulatorManager {
   }
 
   List<PlatformImage> _loadAllPlatformImages() {
-    assert(_tizenSdk != null);
-    final Directory platformsDir = _tizenSdk.platformsDirectory;
+    final Directory platformsDir = _tizenSdk!.platformsDirectory;
     if (!platformsDir.existsSync()) {
       return <PlatformImage>[];
     }
 
     final List<PlatformImage> platformImages = <PlatformImage>[];
-    for (final FileSystemEntity entity in platformsDir.listSync()) {
-      if (entity is Directory) {
-        platformImages.addAll(_loadPlatformImagesPerVersion(entity));
-      }
+    for (final Directory platformDir
+        in platformsDir.listSync().whereType<Directory>()) {
+      platformImages.addAll(_loadPlatformImagesPerVersion(platformDir));
     }
     return platformImages;
   }
 
-  List<PlatformImage> _loadPlatformImagesPerVersion(
-      Directory platformDirectory) {
+  List<PlatformImage> _loadPlatformImagesPerVersion(Directory platformDir) {
     final List<PlatformImage> platformImages = <PlatformImage>[];
-    for (final FileSystemEntity entity in platformDirectory.listSync()) {
-      if (entity is Directory) {
-        platformImages.addAll(_loadPlatformImagesPerProfile(entity));
-      }
+    for (final Directory profileDir
+        in platformDir.listSync().whereType<Directory>()) {
+      platformImages.addAll(_loadPlatformImagesPerProfile(profileDir));
     }
     return platformImages;
   }
 
-  List<PlatformImage> _loadPlatformImagesPerProfile(
-      Directory profileDirectory) {
+  List<PlatformImage> _loadPlatformImagesPerProfile(Directory profileDir) {
     final Directory emulatorImagesDir =
-        profileDirectory.childDirectory('emulator-images');
+        profileDir.childDirectory('emulator-images');
     if (!emulatorImagesDir.existsSync()) {
       return <PlatformImage>[];
     }
 
     final List<PlatformImage> platformImages = <PlatformImage>[];
-    for (final FileSystemEntity entity in emulatorImagesDir.listSync()) {
-      if (entity is Directory && entity.basename != 'add-ons') {
-        final File infoFile = entity.childFile('info.ini');
-        if (!infoFile.existsSync()) {
-          continue;
-        }
-        final Map<String, String> info = parseIniFile(infoFile);
-        if (info.containsKey('name') &&
-            info.containsKey('profile') &&
-            info.containsKey('version')) {
-          platformImages.add(PlatformImage(
-            name: info['name'],
-            profile: info['profile'],
-            version: info['version'],
-          ));
-        }
+    for (final Directory emulatorImageDir in emulatorImagesDir
+        .listSync()
+        .whereType<Directory>()
+        .where((Directory dir) => dir.basename != 'add-ons')) {
+      final File infoFile = emulatorImageDir.childFile('info.ini');
+      if (!infoFile.existsSync()) {
+        continue;
+      }
+      final Map<String, String> info = parseIniFile(infoFile);
+      if (info.containsKey('name') &&
+          info.containsKey('profile') &&
+          info.containsKey('version')) {
+        platformImages.add(PlatformImage(
+          name: info['name']!,
+          profile: info['profile']!,
+          version: info['version']!,
+        ));
       }
     }
     return platformImages;
   }
 
-  PlatformImage _getPreferredPlatformImage() {
+  PlatformImage? _getPreferredPlatformImage() {
     final List<PlatformImage> platformImages = _loadAllPlatformImages();
     if (platformImages.isEmpty) {
       return null;
@@ -185,9 +178,9 @@ class TizenEmulatorManager extends EmulatorManager {
 
 class PlatformImage {
   PlatformImage({
-    @required this.name,
-    @required this.profile,
-    @required this.version,
+    required this.name,
+    required this.profile,
+    required this.version,
   });
 
   final String name;
@@ -201,16 +194,16 @@ class PlatformImage {
 /// See: [AndroidEmulators] in `android_emulator.dart`
 class TizenEmulators extends EmulatorDiscovery {
   TizenEmulators({
-    @required TizenSdk tizenSdk,
-    @required TizenWorkflow tizenWorkflow,
-    @required Logger logger,
-    @required ProcessManager processManager,
+    required TizenSdk? tizenSdk,
+    required TizenWorkflow tizenWorkflow,
+    required Logger logger,
+    required ProcessManager processManager,
   })  : _tizenSdk = tizenSdk,
         _tizenWorkflow = tizenWorkflow,
         _logger = logger,
         _processManager = processManager;
 
-  final TizenSdk _tizenSdk;
+  final TizenSdk? _tizenSdk;
   final TizenWorkflow _tizenWorkflow;
   final Logger _logger;
   final ProcessManager _processManager;
@@ -231,15 +224,14 @@ class TizenEmulators extends EmulatorDiscovery {
       return <Emulator>[];
     }
 
-    assert(_tizenSdk != null);
-    final Directory emulatorDir = _tizenSdk.sdkDataDirectory
+    final Directory emulatorDir = _tizenSdk!.sdkDataDirectory
         .childDirectory('emulator')
         .childDirectory('vms');
     if (!emulatorDir.existsSync()) {
       return <Emulator>[];
     }
 
-    TizenEmulator loadEmulatorInfo(Directory directory) {
+    TizenEmulator? loadEmulatorInfo(Directory directory) {
       final String id = directory.basename;
       final File configFile =
           emulatorDir.childDirectory(id).childFile('vm_config.xml');
@@ -260,9 +252,9 @@ class TizenEmulators extends EmulatorDiscovery {
       final Iterable<XmlElement> diskImages =
           document.findAllElements('diskImage');
       if (deviceTemplates.isNotEmpty && diskImages.isNotEmpty) {
-        properties['name'] = deviceTemplates.first.getAttribute('name');
-        properties['profile'] = diskImages.first.getAttribute('profile');
-        properties['version'] = diskImages.first.getAttribute('version');
+        properties['name'] = deviceTemplates.first.getAttribute('name') ?? '';
+        properties['profile'] = diskImages.first.getAttribute('profile') ?? '';
+        properties['version'] = diskImages.first.getAttribute('version') ?? '';
       }
 
       return TizenEmulator(
@@ -276,7 +268,7 @@ class TizenEmulators extends EmulatorDiscovery {
 
     final List<Emulator> emulators = <Emulator>[];
     for (final Directory dir in emulatorDir.listSync().whereType<Directory>()) {
-      final TizenEmulator emulator = loadEmulatorInfo(dir);
+      final TizenEmulator? emulator = loadEmulatorInfo(dir);
       if (emulator != null) {
         emulators.add(emulator);
       }
@@ -289,30 +281,27 @@ class TizenEmulators extends EmulatorDiscovery {
 class TizenEmulator extends Emulator {
   TizenEmulator(
     String id, {
-    Map<String, String> properties,
-    @required Logger logger,
-    @required ProcessManager processManager,
-    @required TizenSdk tizenSdk,
-  })  : assert(tizenSdk != null),
-        _properties = properties,
+    required Map<String, String> properties,
+    required Logger logger,
+    required ProcessManager processManager,
+    required TizenSdk? tizenSdk,
+  })  : _properties = properties,
         _logger = logger,
         _processUtils =
             ProcessUtils(logger: logger, processManager: processManager),
         _tizenSdk = tizenSdk,
-        super(id, properties != null && properties.isNotEmpty);
+        super(id, properties.isNotEmpty);
 
   final Map<String, String> _properties;
   final Logger _logger;
   final ProcessUtils _processUtils;
-  final TizenSdk _tizenSdk;
-
-  String _prop(String name) => _properties != null ? _properties[name] : null;
+  final TizenSdk? _tizenSdk;
 
   @override
-  String get name => _prop('name') ?? id;
+  String get name => _properties['name'] ?? id;
 
   @override
-  String get manufacturer => 'Samsung';
+  String? get manufacturer => 'Samsung';
 
   @override
   Category get category => Category.mobile;
@@ -321,8 +310,8 @@ class TizenEmulator extends Emulator {
   PlatformType get platformType => PlatformType.custom;
 
   @override
-  Future<void> launch({bool coldBoot}) async {
-    final File emCli = _tizenSdk.emCli;
+  Future<void> launch({bool coldBoot = false}) async {
+    final File? emCli = _tizenSdk?.emCli;
     if (emCli == null || !emCli.existsSync()) {
       throwToolExit('Unable to locate Tizen Emulator Manager.');
     }
