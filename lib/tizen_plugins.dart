@@ -10,7 +10,6 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:file/file.dart';
 import 'package:flutter_tools/src/artifacts.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
-import 'package:flutter_tools/src/base/terminal.dart';
 import 'package:flutter_tools/src/build_system/targets/web.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/dart/language_version.dart';
@@ -283,10 +282,8 @@ Future<void> injectTizenPlugins(FlutterProject project) async {
   for (final String plugin in plugins) {
     final String tizenPlugin = '${plugin}_tizen';
     if (_kKnownPlugins.contains(plugin) && !plugins.contains(tizenPlugin)) {
-      globals.printStatus(
-        '$tizenPlugin is available on pub.dev. Did you forget to add to pubspec.yaml?',
-        color: TerminalColor.yellow,
-      );
+      globals.printWarning(
+          '$tizenPlugin is available on pub.dev. Did you forget to add to pubspec.yaml?');
     }
   }
 }
