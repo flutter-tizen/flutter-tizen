@@ -8,7 +8,7 @@ import 'package:file/file.dart';
 import 'package:flutter_tools/src/android/application_package.dart';
 import 'package:flutter_tools/src/application_package.dart';
 import 'package:flutter_tools/src/base/common.dart';
-import 'package:flutter_tools/src/globals_null_migrated.dart' as globals;
+import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/project.dart';
 import 'package:xml/xml.dart';
 
@@ -92,9 +92,6 @@ class TizenTpk extends ApplicationPackage {
 
   @override
   String get displayName => id;
-
-  @override
-  File get packagesFile => file;
 }
 
 /// Represents the content of `tizen-manifest.xml` file.

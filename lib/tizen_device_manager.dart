@@ -49,6 +49,7 @@ class TizenDeviceManager extends FlutterDeviceManager {
           userMessages: globals.userMessages,
           windowsWorkflow: windowsWorkflow,
           macOSWorkflow: context.get<MacOSWorkflow>(),
+          fuchsiaSdk: globals.fuchsiaSdk,
           operatingSystemUtils: globals.os,
           terminal: globals.terminal,
           customDevicesConfig: CustomDevicesConfig(

@@ -10,18 +10,15 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:file/file.dart';
 import 'package:flutter_tools/src/artifacts.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
-import 'package:flutter_tools/src/base/terminal.dart';
-// ignore: import_of_legacy_library_into_null_safe
 import 'package:flutter_tools/src/build_system/targets/web.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/dart/language_version.dart';
 import 'package:flutter_tools/src/dart/package_map.dart';
 import 'package:flutter_tools/src/flutter_plugins.dart';
-import 'package:flutter_tools/src/globals_null_migrated.dart' as globals;
+import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/platform_plugins.dart';
 import 'package:flutter_tools/src/plugins.dart';
 import 'package:flutter_tools/src/project.dart';
-// ignore: import_of_legacy_library_into_null_safe
 import 'package:flutter_tools/src/runner/flutter_command.dart';
 import 'package:package_config/package_config.dart';
 import 'package:yaml/yaml.dart';
@@ -94,7 +91,7 @@ mixin DartPluginRegistry on FlutterCommand {
   bool get _usesTargetOption => argParser.options.containsKey('target');
 
   @override
-  Future<FlutterCommandResult> verifyThenRunCommand(String commandPath) async {
+  Future<FlutterCommandResult> verifyThenRunCommand(String? commandPath) async {
     final FlutterProject project = FlutterProject.current();
     final TizenProject tizenProject = TizenProject.fromFlutter(project);
     if (_usesTargetOption && tizenProject.existsSync()) {
@@ -285,10 +282,8 @@ Future<void> injectTizenPlugins(FlutterProject project) async {
   for (final String plugin in plugins) {
     final String tizenPlugin = '${plugin}_tizen';
     if (_kKnownPlugins.contains(plugin) && !plugins.contains(tizenPlugin)) {
-      globals.printStatus(
-        '$tizenPlugin is available on pub.dev. Did you forget to add to pubspec.yaml?',
-        color: TerminalColor.yellow,
-      );
+      globals.printWarning(
+          '$tizenPlugin is available on pub.dev. Did you forget to add to pubspec.yaml?');
     }
   }
 }

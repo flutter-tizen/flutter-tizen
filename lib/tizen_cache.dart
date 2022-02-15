@@ -4,6 +4,7 @@
 
 import 'package:flutter_tools/src/base/common.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
+import 'package:flutter_tools/src/base/io.dart' show HttpClient;
 import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/base/os.dart' show OperatingSystemUtils;
 import 'package:flutter_tools/src/base/platform.dart';
@@ -11,8 +12,8 @@ import 'package:flutter_tools/src/base/process.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/features.dart';
 import 'package:flutter_tools/src/flutter_cache.dart';
-// ignore: import_of_legacy_library_into_null_safe
 import 'package:flutter_tools/src/runner/flutter_command.dart';
+import 'package:meta/meta.dart';
 import 'package:path/path.dart';
 import 'package:process/process.dart';
 
@@ -57,6 +58,7 @@ class TizenFlutterCache extends FlutterCache {
       logger: logger,
       fileSystem: fileSystem,
       platform: platform,
+      osUtils: osUtils,
       processManager: processManager,
     ));
   }
@@ -68,10 +70,12 @@ class TizenEngineArtifacts extends EngineCachedArtifact {
     required Logger logger,
     required FileSystem fileSystem,
     required Platform platform,
+    required OperatingSystemUtils osUtils,
     required ProcessManager processManager,
   })  : _logger = logger,
         _fileSystem = fileSystem,
         _platform = platform,
+        _osUtils = osUtils,
         _processUtils =
             ProcessUtils(processManager: processManager, logger: logger),
         super('tizen-sdk', cache, TizenDevelopmentArtifact.tizen);
@@ -79,7 +83,27 @@ class TizenEngineArtifacts extends EngineCachedArtifact {
   final Logger _logger;
   final FileSystem _fileSystem;
   final Platform _platform;
+  final OperatingSystemUtils _osUtils;
   final ProcessUtils _processUtils;
+
+  /// A replacement for [Cache._artifactUpdater] to work with
+  /// https://github.com/flutter/flutter/pull/94178.
+  @visibleForTesting
+  late ArtifactUpdater artifactUpdater = () {
+    return ArtifactUpdater(
+      operatingSystemUtils: _osUtils,
+      logger: _logger,
+      fileSystem: _fileSystem,
+      tempStorage: cache.getDownloadDir(),
+      platform: _platform,
+      httpClient: HttpClient(),
+      allowedBaseUrls: <String>[
+        cache.storageBaseUrl,
+        cache.cipdBaseUrl,
+        engineBaseUrl,
+      ],
+    );
+  }();
 
   /// See: [Cache.getVersionFor] in `cache.dart`
   @override
@@ -186,7 +210,6 @@ class TizenEngineArtifacts extends EngineCachedArtifact {
     } else {
       await _downloadArtifactsFromUrl(
         operatingSystemUtils,
-        artifactUpdater,
         '$engineBaseUrl/download/$shortVersion',
       );
     }
@@ -194,7 +217,6 @@ class TizenEngineArtifacts extends EngineCachedArtifact {
 
   Future<void> _downloadArtifactsFromUrl(
     OperatingSystemUtils operatingSystemUtils,
-    ArtifactUpdater artifactUpdater,
     String downloadUrl,
   ) async {
     for (final List<String> toolsDir in getBinaryDirs()) {
