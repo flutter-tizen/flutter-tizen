@@ -85,7 +85,7 @@ namespace Tizen.Flutter.Embedding
             }
             else if (value == 254)
             {
-                return reader.ReadChar();
+                return reader.ReadInt16();
             }
             else
             {
