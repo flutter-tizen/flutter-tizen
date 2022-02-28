@@ -92,7 +92,7 @@ class _PluginRegistrant {
     ProcessManager: () => FakeProcessManager.any(),
   }, testOn: 'posix');
 
-  testUsingContext('Generates native plugin registrants', () async {
+  testUsingContext('Generates native plugin registrants for cpp', () async {
     final Directory pluginDir = fileSystem.directory('/some_native_plugin');
     pluginDir.childFile('pubspec.yaml')
       ..createSync(recursive: true)
@@ -136,6 +136,43 @@ void RegisterPlugins(flutter::PluginRegistry *registry) {
       registry->GetRegistrarForPlugin("SomeNativePlugin"));
 }
 '''));
+  }, overrides: <Type, Generator>{
+    FileSystem: () => fileSystem,
+    ProcessManager: () => FakeProcessManager.any(),
+  }, testOn: 'posix');
+
+  testUsingContext('Generates native plugin registrants for csharp', () async {
+    fileSystem.file('tizen/Runner.csproj').createSync(recursive: true);
+    final Directory pluginDir = fileSystem.directory('/some_native_plugin');
+    pluginDir.childFile('pubspec.yaml')
+      ..createSync(recursive: true)
+      ..writeAsStringSync('''
+flutter:
+  plugin:
+    platforms:
+      tizen:
+        pluginClass: SomeNativePlugin
+        fileName: some_native_plugin.h
+''');
+    pubspecFile.writeAsStringSync('''
+dependencies:
+  some_native_plugin:
+    path: ${pluginDir.path}
+''');
+    packageConfigFile.writeAsStringSync('''
+{
+  "configVersion": 2,
+  "packages": [
+    {
+      "name": "some_native_plugin",
+      "rootUri": "${pluginDir.uri}",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    }
+  ]
+}
+''');
+    await injectTizenPlugins(project);
 
     final File csharpPluginRegistrant =
         fileSystem.file('tizen/flutter/GeneratedPluginRegistrant.cs');
