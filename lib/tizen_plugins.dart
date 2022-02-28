@@ -265,6 +265,7 @@ Future<void> ensureReadyForTizenTooling(FlutterProject project) async {
   await tizenProject.ensureReadyForPlatformSpecificTooling();
 
   await injectTizenPlugins(project);
+  await _noticeAvailableTizenPlugins(project);
 }
 
 /// See: [injectPlugins] in `flutter_plugins.dart`
@@ -273,10 +274,11 @@ Future<void> injectTizenPlugins(FlutterProject project) async {
   if (tizenProject.existsSync()) {
     final List<TizenPlugin> nativePlugins =
         await findTizenPlugins(project, nativeOnly: true);
-    _writeCppPluginRegistrant(tizenProject.managedDirectory, nativePlugins);
-    _writeCsharpPluginRegistrant(tizenProject.managedDirectory, nativePlugins);
+    _writeTizenPluginRegistrant(tizenProject, nativePlugins);
   }
+}
 
+Future<void> _noticeAvailableTizenPlugins(FlutterProject project) async {
   final List<String> plugins =
       (await findPlugins(project)).map((Plugin p) => p.name).toList();
   for (final String plugin in plugins) {
@@ -368,18 +370,7 @@ TizenPlugin? _pluginFromPackage(
   );
 }
 
-/// See: [writeWindowsPluginFiles] in `flutter_plugins.dart`
-void _writeCppPluginRegistrant(
-  Directory registryDirectory,
-  List<TizenPlugin> plugins,
-) {
-  final List<Map<String, Object?>> pluginConfigs =
-      plugins.map((TizenPlugin plugin) => plugin.toMap()).toList();
-  final Map<String, Object> context = <String, Object>{
-    'plugins': pluginConfigs,
-  };
-  renderTemplateToFile(
-    '''
+const String _cppPluginRegistryTemplate = '''
 //
 // Generated file. Do not edit.
 //
@@ -404,23 +395,9 @@ void RegisterPlugins(flutter::PluginRegistry *registry) {
 }
 
 #endif  // GENERATED_PLUGIN_REGISTRANT_
-''',
-    context,
-    registryDirectory.childFile('generated_plugin_registrant.h'),
-  );
-}
+''';
 
-void _writeCsharpPluginRegistrant(
-  Directory registryDirectory,
-  List<TizenPlugin> plugins,
-) {
-  final List<Map<String, Object?>> pluginConfigs =
-      plugins.map((TizenPlugin plugin) => plugin.toMap()).toList();
-  final Map<String, Object> context = <String, Object>{
-    'plugins': pluginConfigs,
-  };
-  renderTemplateToFile(
-    '''
+const String _csharpPluginRegistryTemplate = '''
 //
 // Generated file. Do not edit.
 //
@@ -448,10 +425,29 @@ namespace Runner
         }
     }
 }
-''',
-    context,
-    registryDirectory.childFile('GeneratedPluginRegistrant.cs'),
-  );
+''';
+
+/// See: [writeWindowsPluginFiles] in `flutter_plugins.dart`
+void _writeTizenPluginRegistrant(
+  TizenProject project,
+  List<TizenPlugin> plugins,
+) {
+  final Map<String, Object> context = <String, Object>{
+    'plugins': plugins.map((TizenPlugin plugin) => plugin.toMap()).toList(),
+  };
+  if (project.isDotnet) {
+    renderTemplateToFile(
+      _csharpPluginRegistryTemplate,
+      context,
+      project.managedDirectory.childFile('GeneratedPluginRegistrant.cs'),
+    );
+  } else {
+    renderTemplateToFile(
+      _cppPluginRegistryTemplate,
+      context,
+      project.managedDirectory.childFile('generated_plugin_registrant.h'),
+    );
+  }
 }
 
 /// Source: [_renderTemplateToFile] in `flutter_plugins.dart`
