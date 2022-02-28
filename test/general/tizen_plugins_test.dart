@@ -92,7 +92,7 @@ class _PluginRegistrant {
     ProcessManager: () => FakeProcessManager.any(),
   }, testOn: 'posix');
 
-  testUsingContext('Generates native plugin registrants for cpp', () async {
+  testUsingContext('Generates native plugin registrant for C++', () async {
     final Directory pluginDir = fileSystem.directory('/some_native_plugin');
     pluginDir.childFile('pubspec.yaml')
       ..createSync(recursive: true)
@@ -141,7 +141,7 @@ void RegisterPlugins(flutter::PluginRegistry *registry) {
     ProcessManager: () => FakeProcessManager.any(),
   }, testOn: 'posix');
 
-  testUsingContext('Generates native plugin registrants for csharp', () async {
+  testUsingContext('Generates native plugin registrant for C#', () async {
     fileSystem.file('tizen/Runner.csproj').createSync(recursive: true);
     final Directory pluginDir = fileSystem.directory('/some_native_plugin');
     pluginDir.childFile('pubspec.yaml')

@@ -265,7 +265,7 @@ Future<void> ensureReadyForTizenTooling(FlutterProject project) async {
   await tizenProject.ensureReadyForPlatformSpecificTooling();
 
   await injectTizenPlugins(project);
-  await _noticeAvailableTizenPlugins(project);
+  await _informAvailableTizenPlugins(project);
 }
 
 /// See: [injectPlugins] in `flutter_plugins.dart`
