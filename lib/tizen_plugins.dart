@@ -278,7 +278,7 @@ Future<void> injectTizenPlugins(FlutterProject project) async {
   }
 }
 
-Future<void> _noticeAvailableTizenPlugins(FlutterProject project) async {
+Future<void> _informAvailableTizenPlugins(FlutterProject project) async {
   final List<String> plugins =
       (await findPlugins(project)).map((Plugin p) => p.name).toList();
   for (final String plugin in plugins) {
