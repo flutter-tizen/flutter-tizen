@@ -74,7 +74,6 @@ class TizenProject extends FlutterProjectPlatform {
     const String initialXmlContent = '''
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <PropertyGroup />
 </Project>
 ''';
     if (!userFile.existsSync()) {
@@ -128,7 +127,6 @@ class TizenProject extends FlutterProjectPlatform {
     if (isDotnet) {
       _deleteFile(editableDirectory.childDirectory('bin'));
       _deleteFile(editableDirectory.childDirectory('obj'));
-      _deleteFile(editableDirectory.childFile('Runner.csproj.user'));
     } else {
       if (isMultiApp) {
         _deleteFile(uiAppDirectory.childDirectory('Debug'));

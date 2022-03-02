@@ -79,15 +79,11 @@ void main() {
       ..createSync(recursive: true);
     final Directory objDir = project.editableDirectory.childDirectory('obj')
       ..createSync(recursive: true);
-    final File userFile = project.editableDirectory
-        .childFile('Runner.csproj.user')
-      ..createSync(recursive: true);
 
     project.clean();
 
     expect(binDir, isNot(exists));
     expect(objDir, isNot(exists));
-    expect(userFile, isNot(exists));
   });
 
   testUsingContext('Can clean C++ project', () async {
