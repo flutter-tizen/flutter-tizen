@@ -25,7 +25,6 @@ namespace Tizen.Flutter.Embedding
             return plugin != null && _plugins.ContainsKey(plugin.GetHashCode());
         }
 
-
         public void AddPlugin(FlutterDesktopPluginRegistrar registrar, IFlutterPlugin plugin)
         {
             if (plugin == null || HasPlugin(plugin))
@@ -60,6 +59,5 @@ namespace Tizen.Flutter.Embedding
             }
             _plugins.Clear();
         }
-
     }
 }
