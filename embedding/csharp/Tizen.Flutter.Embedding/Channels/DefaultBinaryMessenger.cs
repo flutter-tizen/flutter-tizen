@@ -13,7 +13,6 @@ namespace Tizen.Flutter.Embedding
 {
     internal class DefaultBinaryMessenger : IBinaryMessenger
     {
-        private static DefaultBinaryMessenger _instance;
         private readonly FlutterDesktopMessenger _messenger;
 
         private readonly Dictionary<string, BinaryMessageHandler> _handlers
@@ -25,7 +24,7 @@ namespace Tizen.Flutter.Embedding
 
         private int _replyCallbackId = 0;
 
-        private DefaultBinaryMessenger(FlutterDesktopMessenger messenger)
+        public DefaultBinaryMessenger(FlutterDesktopMessenger messenger)
         {
             _messenger = messenger;
             _replyCallback = OnReplyMessageReceived;
@@ -36,18 +35,15 @@ namespace Tizen.Flutter.Embedding
         {
             get
             {
-                if (_instance == null)
+                if (Application.Current is FlutterApplication app)
                 {
-                    if (Application.Current is FlutterApplication app)
-                    {
-                        _instance = new DefaultBinaryMessenger(FlutterDesktopEngineGetMessenger(app.Handle));
-                    }
-                    else if (Application.Current is FlutterServiceApplication service)
-                    {
-                        _instance = new DefaultBinaryMessenger(FlutterDesktopEngineGetMessenger(service.Handle));
-                    }
+                    return new DefaultBinaryMessenger(FlutterDesktopEngineGetMessenger(app.Handle));
                 }
-                return _instance;
+                else if (Application.Current is FlutterServiceApplication service)
+                {
+                    return new DefaultBinaryMessenger(FlutterDesktopEngineGetMessenger(service.Handle));
+                }
+                return null;
             }
         }
 

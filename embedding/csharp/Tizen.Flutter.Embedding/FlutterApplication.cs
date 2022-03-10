@@ -154,6 +154,7 @@ namespace Tizen.Flutter.Embedding
 
             Debug.Assert(Handle);
 
+            FlutterDotnetPluginRegistry.Instance.CleanPlugins();
             FlutterDesktopShutdownEngine(Handle);
         }
 
@@ -202,6 +203,19 @@ namespace Tizen.Flutter.Embedding
                 return FlutterDesktopGetPluginRegistrar(Handle, pluginName);
             }
             return new FlutterDesktopPluginRegistrar();
+        }
+
+        /// <summary>
+        /// Registers a dotnet plugin implementing the <see cref="IFlutterPlugin"/> interface.
+        /// When the plugin is registered, the <see cref="IFlutterPlugin.OnAttachedToEngine"/> method is called.
+        /// </summary>
+        public void RegisterPlugin(IFlutterPlugin plugin)
+        {
+            if (plugin != null)
+            {
+                var registrar = GetRegistrarForPlugin(plugin.GetType().FullName);
+                FlutterDotnetPluginRegistry.Instance.AddPlugin(registrar, plugin);
+            }
         }
     }
 }

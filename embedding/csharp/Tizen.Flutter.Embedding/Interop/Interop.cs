@@ -60,6 +60,10 @@ namespace Tizen.Flutter.Embedding
             FlutterDesktopEngine engine);
 
         [DllImport("flutter_tizen.so")]
+        public static extern FlutterDesktopMessenger FlutterDesktopPluginRegistrarGetMessenger(
+            FlutterDesktopPluginRegistrar registrar);
+
+        [DllImport("flutter_tizen.so")]
         public static extern IntPtr FlutterDesktopGetWindow(
             FlutterDesktopPluginRegistrar registrar);
 
