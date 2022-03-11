@@ -27,9 +27,9 @@ namespace Tizen.Flutter.Embedding
 
         public void AddPlugin(FlutterDesktopPluginRegistrar registrar, IFlutterPlugin plugin)
         {
-            if (plugin == null || HasPlugin(plugin))
+            if (plugin == null)
             {
-                return;
+                throw new ArgumentNullException(nameof(plugin));
             }
 
             if (_plugins.TryAdd(plugin.GetHashCode(), plugin))
@@ -40,9 +40,9 @@ namespace Tizen.Flutter.Embedding
 
         public void RemovePlugin(IFlutterPlugin plugin)
         {
-            if (plugin == null || !HasPlugin(plugin))
+            if (plugin == null)
             {
-                return;
+                throw new ArgumentNullException(nameof(plugin));
             }
 
             if (_plugins.TryRemove(plugin.GetHashCode(), out IFlutterPlugin removedPlugin))
@@ -51,7 +51,7 @@ namespace Tizen.Flutter.Embedding
             }
         }
 
-        public void CleanPlugins()
+        public void RemoveAllPlugins()
         {
             foreach (var plugin in _plugins)
             {
