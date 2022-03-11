@@ -10,12 +10,12 @@ namespace Tizen.Flutter.Embedding
     public interface IFlutterPlugin
     {
         /// <summary>
-        /// Called when the plugin is registered with Application.
+        /// Called when the plugin is registered with the Flutter engine.
         /// </summary>
         void OnAttachedToEngine(IFlutterPluginBinding binding);
 
         /// <summary>
-        /// Called when the plugin is unreigstered from Application.
+        /// Called when the plugin is unreigstered from the Flutter engine.
         /// </summary>
         void OnDetachedFromEngine();
     }

@@ -13,10 +13,6 @@ namespace Tizen.Flutter.Embedding
             _registry = registry;
         }
 
-        /// <summary>
-        /// Registers a dotnet plugin implementing the <see cref="IFlutterPlugin"/> interface.
-        /// When the plugin is registered, the <see cref="IFlutterPlugin.OnAttachedToEngine"/> method is called.
-        /// </summary>
         public void RegisterPlugin(IFlutterPlugin plugin)
         {
             if (plugin != null)
