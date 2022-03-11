@@ -37,8 +37,7 @@ class TizenProject extends FlutterProjectPlatform {
   Directory get ephemeralDirectory =>
       managedDirectory.childDirectory('ephemeral');
 
-  bool get isDotnet =>
-      editableDirectory.childFile('Runner.csproj').existsSync();
+  bool get isDotnet => projectFile.path.endsWith('.csproj');
 
   bool get isMultiApp =>
       uiAppDirectory.existsSync() && serviceAppDirectory.existsSync();
@@ -55,6 +54,17 @@ class TizenProject extends FlutterProjectPlatform {
       ? uiManifestFile
       : editableDirectory.childFile('tizen-manifest.xml');
 
+  File get projectFile {
+    for (final File file in editableDirectory.listSync().whereType<File>()) {
+      if (file.path.endsWith('.csproj')) {
+        return file;
+      }
+    }
+    return isMultiApp
+        ? uiAppDirectory.childFile('project_def.prop')
+        : editableDirectory.childFile('project_def.prop');
+  }
+
   @override
   bool existsSync() => isMultiApp
       ? uiManifestFile.existsSync() && serviceManifestFile.existsSync()
@@ -69,8 +79,12 @@ class TizenProject extends FlutterProjectPlatform {
     if (!existsSync() || !isDotnet) {
       return;
     }
+    _updateDotnetUserProjectFile();
+  }
 
-    final File userFile = editableDirectory.childFile('Runner.csproj.user');
+  void _updateDotnetUserProjectFile() {
+    final File userFile =
+        editableDirectory.childFile('${projectFile.basename}.user');
     const String initialXmlContent = '''
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
