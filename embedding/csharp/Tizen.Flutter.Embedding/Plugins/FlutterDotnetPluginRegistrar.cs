@@ -4,7 +4,7 @@
 
 namespace Tizen.Flutter.Embedding
 {
-    public class FlutterDotnetPluginRegistrar
+    internal class FlutterDotnetPluginRegistrar : IFlutterPluginRegistrar
     {
         private IPluginRegistry _registry;
 
@@ -29,7 +29,7 @@ namespace Tizen.Flutter.Embedding
 
     public static class PluginRegistryExtensions
     {
-        public static FlutterDotnetPluginRegistrar GetRegistrarForDotnetPlugin(this IPluginRegistry registry)
+        public static IFlutterPluginRegistrar GetRegistrarForDotnetPlugin(this IPluginRegistry registry)
         {
             return new FlutterDotnetPluginRegistrar(registry);
         }
