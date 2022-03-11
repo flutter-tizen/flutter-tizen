@@ -54,13 +54,16 @@ class TizenProject extends FlutterProjectPlatform {
       ? uiManifestFile
       : editableDirectory.childFile('tizen-manifest.xml');
 
-  File get projectFile => editableDirectory
-      .listSync()
-      .whereType<File>()
-      .firstWhere((File file) => file.path.endsWith('.csproj'),
-          orElse: () => isMultiApp
-              ? uiAppDirectory.childFile('project_def.prop')
-              : editableDirectory.childFile('project_def.prop'));
+  File get projectFile {
+    for (final File file in editableDirectory.listSync().whereType<File>()) {
+      if (file.path.endsWith('.csproj')) {
+        return file;
+      }
+    }
+    return isMultiApp
+        ? uiAppDirectory.childFile('project_def.prop')
+        : editableDirectory.childFile('project_def.prop');
+  }
 
   @override
   bool existsSync() => isMultiApp
@@ -76,10 +79,10 @@ class TizenProject extends FlutterProjectPlatform {
     if (!existsSync() || !isDotnet) {
       return;
     }
-    updateDotnetUserProjectFile();
+    _updateDotnetUserProjectFile();
   }
 
-  void updateDotnetUserProjectFile() {
+  void _updateDotnetUserProjectFile() {
     final File userFile =
         editableDirectory.childFile('${projectFile.basename}.user');
     const String initialXmlContent = '''
