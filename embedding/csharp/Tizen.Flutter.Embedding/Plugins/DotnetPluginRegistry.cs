@@ -7,25 +7,42 @@ using System.Collections.Concurrent;
 
 namespace Tizen.Flutter.Embedding
 {
-    internal class FlutterDotnetPluginRegistry
+    /// <summary>
+    /// A registry for dotnet plugins implementing the <see cref="IFlutterPlugin"/> interface.
+    /// </summary>
+    /// <remarks>
+    /// When the plugin is registered, the <see cref="IFlutterPlugin.OnAttachedToEngine"/> method is called.
+    /// The registered plugin is automatically unregistered with the <see cref="IFlutterPlugin.OnDetachedFromEngine"/>
+    /// method call when the Flutter engine is detached.
+    /// </remarks>
+    public class DotnetPluginRegistry
     {
-        private static readonly Lazy<FlutterDotnetPluginRegistry> _instance
-            = new Lazy<FlutterDotnetPluginRegistry>(() => new FlutterDotnetPluginRegistry());
-
-        public static FlutterDotnetPluginRegistry Instance => _instance.Value;
+        private static readonly Lazy<DotnetPluginRegistry> _instance
+            = new Lazy<DotnetPluginRegistry>(() => new DotnetPluginRegistry());
 
         private readonly ConcurrentDictionary<int, IFlutterPlugin> _plugins = new ConcurrentDictionary<int, IFlutterPlugin>();
 
-        private FlutterDotnetPluginRegistry()
+        private DotnetPluginRegistry()
         {
         }
 
+        /// <summary>
+        /// Gets the singleton instance of the <see cref="DotnetPluginRegistry"/>.
+        /// </summary>
+        public static DotnetPluginRegistry Instance => _instance.Value;
+
+        /// <summary>
+        /// Returns whether the plugin is registered.
+        /// </summary>
         public bool HasPlugin(IFlutterPlugin plugin)
         {
             return plugin != null && _plugins.ContainsKey(plugin.GetHashCode());
         }
 
-        public void AddPlugin(FlutterDesktopPluginRegistrar registrar, IFlutterPlugin plugin)
+        /// <summary>
+        /// Adds a dotnet plugin.
+        /// </summary>
+        public void AddPlugin(IFlutterPlugin plugin)
         {
             if (plugin == null)
             {
@@ -34,10 +51,13 @@ namespace Tizen.Flutter.Embedding
 
             if (_plugins.TryAdd(plugin.GetHashCode(), plugin))
             {
-                plugin.OnAttachedToEngine(new FlutterDotnetPluginBinding(registrar));
+                plugin.OnAttachedToEngine(new FlutterPluginBindingImpl());
             }
         }
 
+        /// <summary>
+        /// Removes an added dotnet plugin.
+        /// </summary>
         public void RemovePlugin(IFlutterPlugin plugin)
         {
             if (plugin == null)
@@ -51,6 +71,9 @@ namespace Tizen.Flutter.Embedding
             }
         }
 
+        /// <summary>
+        /// Removes all added dotnet plugins.
+        /// </summary>
         public void RemoveAllPlugins()
         {
             foreach (var plugin in _plugins)

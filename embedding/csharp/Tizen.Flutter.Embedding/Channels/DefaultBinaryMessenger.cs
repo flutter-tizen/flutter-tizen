@@ -13,8 +13,9 @@ namespace Tizen.Flutter.Embedding
 {
     internal class DefaultBinaryMessenger : IBinaryMessenger
     {
+        private static DefaultBinaryMessenger _instance;
+        private static readonly object _lock = new object();
         private readonly FlutterDesktopMessenger _messenger;
-
         private readonly Dictionary<string, BinaryMessageHandler> _handlers
             = new Dictionary<string, BinaryMessageHandler>();
         private readonly Dictionary<int, TaskCompletionSource<byte[]>> _replyCallbackSources
@@ -24,7 +25,7 @@ namespace Tizen.Flutter.Embedding
 
         private int _replyCallbackId = 0;
 
-        public DefaultBinaryMessenger(FlutterDesktopMessenger messenger)
+        private DefaultBinaryMessenger(FlutterDesktopMessenger messenger)
         {
             _messenger = messenger;
             _replyCallback = OnReplyMessageReceived;
@@ -35,15 +36,21 @@ namespace Tizen.Flutter.Embedding
         {
             get
             {
-                if (Application.Current is FlutterApplication app)
+                lock (_lock)
                 {
-                    return new DefaultBinaryMessenger(FlutterDesktopEngineGetMessenger(app.Handle));
+                    if (_instance == null)
+                    {
+                        if (Application.Current is FlutterApplication app)
+                        {
+                            _instance = new DefaultBinaryMessenger(FlutterDesktopEngineGetMessenger(app.Handle));
+                        }
+                        else if (Application.Current is FlutterServiceApplication service)
+                        {
+                            _instance = new DefaultBinaryMessenger(FlutterDesktopEngineGetMessenger(service.Handle));
+                        }
+                    }
+                    return _instance;
                 }
-                else if (Application.Current is FlutterServiceApplication service)
-                {
-                    return new DefaultBinaryMessenger(FlutterDesktopEngineGetMessenger(service.Handle));
-                }
-                return null;
             }
         }
 
