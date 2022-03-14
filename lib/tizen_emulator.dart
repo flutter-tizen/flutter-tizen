@@ -27,6 +27,7 @@ class TizenEmulatorManager extends EmulatorManager {
     required FileSystem fileSystem,
     required Logger logger,
     required ProcessManager processManager,
+    AndroidWorkflow? dummyAndroidWorkflow,
   })  : _processUtils =
             ProcessUtils(logger: logger, processManager: processManager),
         _tizenSdk = tizenSdk,
@@ -38,7 +39,7 @@ class TizenEmulatorManager extends EmulatorManager {
         ),
         super(
           androidSdk: null,
-          androidWorkflow: androidWorkflow!,
+          androidWorkflow: dummyAndroidWorkflow ?? androidWorkflow!,
           fileSystem: fileSystem,
           logger: logger,
           processManager: processManager,
@@ -281,7 +282,7 @@ class TizenEmulators extends EmulatorDiscovery {
 class TizenEmulator extends Emulator {
   TizenEmulator(
     String id, {
-    required Map<String, String> properties,
+    Map<String, String> properties = const <String, String>{},
     required Logger logger,
     required ProcessManager processManager,
     required TizenSdk? tizenSdk,
