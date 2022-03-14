@@ -73,7 +73,7 @@ class TizenPlugin extends PluginPlatform implements NativeOrDartPlugin {
   @override
   bool isNative() => pluginClass != null;
 
-  bool isDotnet() => isNative() && fileName?.endsWith('.csproj') == true;
+  bool isDotnet() => fileName?.endsWith('.csproj') ?? false;
 
   @override
   Map<String, dynamic> toMap() {
@@ -282,11 +282,13 @@ Future<void> ensureReadyForTizenTooling(FlutterProject project) async {
 Future<void> injectTizenPlugins(FlutterProject project) async {
   final TizenProject tizenProject = TizenProject.fromFlutter(project);
   if (tizenProject.existsSync()) {
-    final List<TizenPlugin> nativePlugins =
-        await findTizenPlugins(project, nativeOnly: true, includeDotnet: true);
-    _writeTizenPluginRegistrant(tizenProject, nativePlugins);
+    final List<TizenPlugin> cppPlugins =
+        await findTizenPlugins(project, cppOnly: true);
+    final List<TizenPlugin> dotnetPlugins =
+        await findTizenPlugins(project, dotnetOnly: true);
+    _writeTizenPluginRegistrant(tizenProject, cppPlugins, dotnetPlugins);
     if (tizenProject.isDotnet) {
-      _writeIntermediateDotnetFiles(tizenProject, nativePlugins);
+      _writeIntermediateDotnetFiles(tizenProject, dotnetPlugins);
     }
   }
 }
@@ -307,8 +309,8 @@ Future<void> _informAvailableTizenPlugins(FlutterProject project) async {
 Future<List<TizenPlugin>> findTizenPlugins(
   FlutterProject project, {
   bool dartOnly = false,
-  bool nativeOnly = false,
-  bool includeDotnet = false,
+  bool cppOnly = false,
+  bool dotnetOnly = false,
   bool throwOnError = true,
 }) async {
   final List<TizenPlugin> plugins = <TizenPlugin>[];
@@ -327,11 +329,11 @@ Future<List<TizenPlugin>> findTizenPlugins(
     );
     if (plugin == null) {
       continue;
-    } else if (nativeOnly && plugin.pluginClass == null) {
-      continue;
     } else if (dartOnly && plugin.dartPluginClass == null) {
       continue;
-    } else if (!includeDotnet && plugin.isDotnet()) {
+    } else if (cppOnly && (!plugin.isNative() || plugin.isDotnet())) {
+      continue;
+    } else if (dotnetOnly && (!plugin.isNative() || !plugin.isDotnet())) {
       continue;
     }
     plugins.add(plugin);
@@ -398,16 +400,16 @@ const String _cppPluginRegistryTemplate = '''
 
 #include <flutter/plugin_registry.h>
 
-{{#nativePlugins}}
+{{#cppPlugins}}
 #include "{{fileName}}"
-{{/nativePlugins}}
+{{/cppPlugins}}
 
 // Registers Flutter plugins.
 void RegisterPlugins(flutter::PluginRegistry *registry) {
-{{#nativePlugins}}
+{{#cppPlugins}}
   {{pluginClass}}RegisterWithRegistrar(
       registry->GetRegistrarForPlugin("{{pluginClass}}"));
-{{/nativePlugins}}
+{{/cppPlugins}}
 }
 
 #endif  // GENERATED_PLUGIN_REGISTRANT_
@@ -426,20 +428,21 @@ namespace Runner
 {
     internal class GeneratedPluginRegistrant
     {
-      {{#nativePlugins}}
+      {{#cppPlugins}}
         [DllImport("flutter_plugins.so")]
         public static extern void {{pluginClass}}RegisterWithRegistrar(
             FlutterDesktopPluginRegistrar registrar);
-      {{/nativePlugins}}
+      {{/cppPlugins}}
 
         public static void RegisterPlugins(IPluginRegistry registry)
         {
-          {{#nativePlugins}}
+          {{#cppPlugins}}
             {{pluginClass}}RegisterWithRegistrar(
                 registry.GetRegistrarForPlugin("{{pluginClass}}"));
-          {{/nativePlugins}}
+          {{/cppPlugins}}
           {{#dotnetPlugins}}
-            DotnetPluginRegistry.Instance.AddPlugin(new global::{{namespace}}.{{pluginClass}}());
+            DotnetPluginRegistry.Instance.AddPlugin(
+                new global::{{namespace}}.{{pluginClass}}());
           {{/dotnetPlugins}}
         }
     }
@@ -449,17 +452,14 @@ namespace Runner
 /// See: [writeWindowsPluginFiles] in `flutter_plugins.dart`
 void _writeTizenPluginRegistrant(
   TizenProject project,
-  List<TizenPlugin> plugins,
+  List<TizenPlugin> cppPlugins,
+  List<TizenPlugin> dotnetPlugins,
 ) {
   final Map<String, Object> context = <String, Object>{
-    'nativePlugins': plugins
-        .where((TizenPlugin plugin) => !plugin.isDotnet())
-        .map((TizenPlugin plugin) => plugin.toMap())
-        .toList(),
-    'dotnetPlugins': plugins
-        .where((TizenPlugin plugin) => plugin.isDotnet())
-        .map((TizenPlugin plugin) => plugin.toMap())
-        .toList(),
+    'cppPlugins':
+        cppPlugins.map((TizenPlugin plugin) => plugin.toMap()).toList(),
+    'dotnetPlugins':
+        dotnetPlugins.map((TizenPlugin plugin) => plugin.toMap()).toList(),
   };
 
   if (project.isDotnet) {
@@ -477,7 +477,7 @@ void _writeTizenPluginRegistrant(
   }
 }
 
-// reserved for future use
+// Reserved for future use.
 const String _intermediateDotnetPropsTemplate = '''
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
@@ -497,14 +497,12 @@ const String _intermediateDotnetTargetsTemplate = '''
 
 void _writeIntermediateDotnetFiles(
   TizenProject project,
-  List<TizenPlugin> plugins,
+  List<TizenPlugin> dotnetPlugins,
 ) {
   final String projectFileName = project.projectFile.basename;
   final Map<String, Object> context = <String, Object>{
-    'dotnetPlugins': plugins
-        .where((TizenPlugin plugin) => plugin.isDotnet())
-        .map((TizenPlugin plugin) => plugin.toMap())
-        .toList(),
+    'dotnetPlugins':
+        dotnetPlugins.map((TizenPlugin plugin) => plugin.toMap()).toList(),
   };
   renderTemplateToFile(
     _intermediateDotnetPropsTemplate,
