@@ -456,10 +456,8 @@ void _writeTizenPluginRegistrant(
   List<TizenPlugin> dotnetPlugins,
 ) {
   final Map<String, Object> context = <String, Object>{
-    'cppPlugins':
-        cppPlugins.map((TizenPlugin plugin) => plugin.toMap()).toList(),
-    'dotnetPlugins':
-        dotnetPlugins.map((TizenPlugin plugin) => plugin.toMap()).toList(),
+    'cppPlugins': cppPlugins.map((TizenPlugin plugin) => plugin.toMap()),
+    'dotnetPlugins': dotnetPlugins.map((TizenPlugin plugin) => plugin.toMap()),
   };
 
   if (project.isDotnet) {
@@ -501,8 +499,7 @@ void _writeIntermediateDotnetFiles(
 ) {
   final String projectFileName = project.projectFile.basename;
   final Map<String, Object> context = <String, Object>{
-    'dotnetPlugins':
-        dotnetPlugins.map((TizenPlugin plugin) => plugin.toMap()).toList(),
+    'dotnetPlugins': dotnetPlugins.map((TizenPlugin plugin) => plugin.toMap()),
   };
   renderTemplateToFile(
     _intermediateDotnetPropsTemplate,
