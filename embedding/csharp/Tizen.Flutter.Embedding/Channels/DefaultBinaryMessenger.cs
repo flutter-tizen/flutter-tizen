@@ -14,8 +14,8 @@ namespace Tizen.Flutter.Embedding
     internal class DefaultBinaryMessenger : IBinaryMessenger
     {
         private static DefaultBinaryMessenger _instance;
+        private static readonly object _lock = new object();
         private readonly FlutterDesktopMessenger _messenger;
-
         private readonly Dictionary<string, BinaryMessageHandler> _handlers
             = new Dictionary<string, BinaryMessageHandler>();
         private readonly Dictionary<int, TaskCompletionSource<byte[]>> _replyCallbackSources
@@ -36,18 +36,21 @@ namespace Tizen.Flutter.Embedding
         {
             get
             {
-                if (_instance == null)
+                lock (_lock)
                 {
-                    if (Application.Current is FlutterApplication app)
+                    if (_instance == null)
                     {
-                        _instance = new DefaultBinaryMessenger(FlutterDesktopEngineGetMessenger(app.Handle));
+                        if (Application.Current is FlutterApplication app)
+                        {
+                            _instance = new DefaultBinaryMessenger(FlutterDesktopEngineGetMessenger(app.Handle));
+                        }
+                        else if (Application.Current is FlutterServiceApplication service)
+                        {
+                            _instance = new DefaultBinaryMessenger(FlutterDesktopEngineGetMessenger(service.Handle));
+                        }
                     }
-                    else if (Application.Current is FlutterServiceApplication service)
-                    {
-                        _instance = new DefaultBinaryMessenger(FlutterDesktopEngineGetMessenger(service.Handle));
-                    }
+                    return _instance;
                 }
-                return _instance;
             }
         }
 

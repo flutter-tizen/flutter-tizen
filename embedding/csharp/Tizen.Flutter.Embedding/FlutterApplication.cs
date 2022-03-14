@@ -154,6 +154,7 @@ namespace Tizen.Flutter.Embedding
 
             Debug.Assert(Handle);
 
+            DotnetPluginRegistry.Instance.RemoveAllPlugins();
             FlutterDesktopShutdownEngine(Handle);
         }
 
