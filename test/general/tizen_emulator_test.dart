@@ -147,4 +147,26 @@ image_name
       expect(logger.statusText, contains('emulator_id is already running.'));
     });
   });
+
+  group('parseEmCliOutput', () {
+    testWithoutContext('Parses multiple entries', () async {
+      final Map<String, Map<String, String>> parsed = parseEmCliOutput('''
+entry_1
+  key_1    : value_1
+  key_2    : value_2
+
+entry_2
+  key_1    : value_3
+  key_2    : value_4
+
+entry_3
+''');
+      expect(parsed.length, equals(3));
+      expect(parsed.keys.first, equals('entry_1'));
+
+      final Map<String, String> first = parsed['entry_1'];
+      expect(first.length, equals(2));
+      expect(first['key_1'], equals('value_1'));
+    });
+  });
 }
