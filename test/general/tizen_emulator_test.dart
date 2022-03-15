@@ -50,6 +50,14 @@ void main() {
     });
 
     testWithoutContext('Cannot create emulator if no image found', () async {
+      processManager.addCommand(const FakeCommand(
+        command: <String>[
+          '/tizen-studio/tools/emulator/bin/em-cli',
+          'list-platform',
+          '-d',
+        ],
+      ));
+
       final CreateEmulatorResult result = await manager.createEmulator();
       expect(result.success, isFalse);
       expect(result.error,
@@ -57,25 +65,31 @@ void main() {
     });
 
     testWithoutContext('Can create emulator without name', () async {
-      final File imageInfo = tizenSdk.platformsDirectory
-          .childFile('tizen-1.0/common/emulator-images/image_name/info.ini');
-      imageInfo
-        ..createSync(recursive: true)
-        ..writeAsStringSync('''
-[Platform]
-profile=common
-version=1.0
-type=default
-name=image_name
-''');
-      processManager.addCommand(const FakeCommand(command: <String>[
-        '/tizen-studio/tools/emulator/bin/em-cli',
-        'create',
-        '-n',
-        'flutter_emulator',
-        '-p',
-        'image_name',
-      ]));
+      processManager.addCommand(const FakeCommand(
+        command: <String>[
+          '/tizen-studio/tools/emulator/bin/em-cli',
+          'list-platform',
+          '-d',
+        ],
+        stdout: '''
+image_name
+  Profile           : wearable
+  Version           : 6.0
+  CPU Arch          : x86
+  Skin shape        : circle
+''',
+      ));
+      processManager.addCommand(const FakeCommand(
+        command: <String>[
+          '/tizen-studio/tools/emulator/bin/em-cli',
+          'create',
+          '-n',
+          'flutter_emulator',
+          '-p',
+          'image_name',
+        ],
+        stdout: 'New virtual machine is created',
+      ));
 
       final CreateEmulatorResult result = await manager.createEmulator();
       expect(result.success, isTrue);
