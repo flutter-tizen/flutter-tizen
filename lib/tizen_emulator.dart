@@ -16,7 +16,6 @@ import 'package:flutter_tools/src/device.dart';
 import 'package:flutter_tools/src/emulator.dart';
 import 'package:meta/meta.dart';
 import 'package:process/process.dart';
-import 'package:xml/xml.dart';
 
 import 'tizen_doctor.dart';
 import 'tizen_sdk.dart';
@@ -168,12 +167,15 @@ class TizenEmulators extends EmulatorDiscovery {
   })  : _tizenSdk = tizenSdk,
         _tizenWorkflow = tizenWorkflow,
         _logger = logger,
-        _processManager = processManager;
+        _processManager = processManager,
+        _processUtils =
+            ProcessUtils(logger: logger, processManager: processManager);
 
   final TizenSdk? _tizenSdk;
   final TizenWorkflow _tizenWorkflow;
   final Logger _logger;
   final ProcessManager _processManager;
+  final ProcessUtils _processUtils;
 
   @override
   bool get canListAnything => _tizenWorkflow.canListEmulators;
@@ -191,55 +193,23 @@ class TizenEmulators extends EmulatorDiscovery {
       return <Emulator>[];
     }
 
-    final Directory emulatorDir = _tizenSdk!.sdkDataDirectory
-        .childDirectory('emulator')
-        .childDirectory('vms');
-    if (!emulatorDir.existsSync()) {
-      return <Emulator>[];
-    }
+    final RunResult result = _processUtils.runSync(
+      <String>[_tizenSdk!.emCli.path, 'list-vm', '-d'],
+      throwOnError: true,
+    );
+    final Map<String, Map<String, String>> parsed =
+        parseEmCliOutput(result.stdout);
 
-    TizenEmulator? loadEmulatorInfo(Directory directory) {
-      final String id = directory.basename;
-      final File configFile =
-          emulatorDir.childDirectory(id).childFile('vm_config.xml');
-      if (!configFile.existsSync()) {
-        return null;
-      }
-
-      XmlDocument document;
-      try {
-        document = XmlDocument.parse(configFile.readAsStringSync().trim());
-      } on XmlException {
-        return null;
-      }
-
-      final Map<String, String> properties = <String, String>{};
-      final Iterable<XmlElement> deviceTemplates =
-          document.findAllElements('deviceTemplate');
-      final Iterable<XmlElement> diskImages =
-          document.findAllElements('diskImage');
-      if (deviceTemplates.isNotEmpty && diskImages.isNotEmpty) {
-        properties['name'] = deviceTemplates.first.getAttribute('name') ?? '';
-        properties['profile'] = diskImages.first.getAttribute('profile') ?? '';
-        properties['version'] = diskImages.first.getAttribute('version') ?? '';
-      }
-
-      return TizenEmulator(
+    final List<Emulator> emulators = <Emulator>[];
+    parsed.forEach((String id, Map<String, String> properties) {
+      emulators.add(TizenEmulator(
         id,
         properties: properties,
         logger: _logger,
         processManager: _processManager,
         tizenSdk: _tizenSdk,
-      );
-    }
-
-    final List<Emulator> emulators = <Emulator>[];
-    for (final Directory dir in emulatorDir.listSync().whereType<Directory>()) {
-      final TizenEmulator? emulator = loadEmulatorInfo(dir);
-      if (emulator != null) {
-        emulators.add(emulator);
-      }
-    }
+      ));
+    });
     return emulators;
   }
 }
@@ -265,7 +235,7 @@ class TizenEmulator extends Emulator {
   final TizenSdk? _tizenSdk;
 
   @override
-  String get name => _properties['name'] ?? id;
+  String get name => _properties['Template'] ?? id;
 
   @override
   String? get manufacturer => 'Samsung';
