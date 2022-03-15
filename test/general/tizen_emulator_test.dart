@@ -53,6 +53,13 @@ void main() {
       processManager.addCommand(const FakeCommand(
         command: <String>[
           '/tizen-studio/tools/emulator/bin/em-cli',
+          'list-vm',
+          '-d',
+        ],
+      ));
+      processManager.addCommand(const FakeCommand(
+        command: <String>[
+          '/tizen-studio/tools/emulator/bin/em-cli',
           'list-platform',
           '-d',
         ],
@@ -65,6 +72,13 @@ void main() {
     });
 
     testWithoutContext('Can create emulator without name', () async {
+      processManager.addCommand(const FakeCommand(
+        command: <String>[
+          '/tizen-studio/tools/emulator/bin/em-cli',
+          'list-vm',
+          '-d',
+        ],
+      ));
       processManager.addCommand(const FakeCommand(
         command: <String>[
           '/tizen-studio/tools/emulator/bin/em-cli',
@@ -97,19 +111,20 @@ image_name
     });
 
     testWithoutContext('Can list emulators', () async {
-      final File vmConfig = tizenSdk.sdkDataDirectory
-          .childFile('emulator/vms/emulator_id/vm_config.xml');
-      vmConfig
-        ..createSync(recursive: true)
-        ..writeAsStringSync('''
-<?xml version="1.0" encoding="utf-8"?>
-<EmulatorConfiguration xmlns="http://www.tizen.org/em">
-    <baseInformation>
-        <deviceTemplate name="emulator_name" version="1.0"/>
-        <diskImage profile="common" type="standard" version="9.9"/>
-    </baseInformation>
-</EmulatorConfiguration>
-''');
+      processManager.addCommand(const FakeCommand(
+        command: <String>[
+          '/tizen-studio/tools/emulator/bin/em-cli',
+          'list-vm',
+          '-d',
+        ],
+        stdout: '''
+emulator_id
+  Platform          : image_name
+  Template          : emulator_name
+  Type              : standard
+  CPU Arch          : x86
+''',
+      ));
 
       final List<Emulator> emulators = await manager.getAllAvailableEmulators();
       expect(emulators, isNotEmpty);
