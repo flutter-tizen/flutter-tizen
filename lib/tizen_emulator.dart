@@ -4,6 +4,7 @@
 // found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:file/file.dart';
 import 'package:flutter_tools/src/android/android_emulator.dart';
@@ -13,6 +14,7 @@ import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/base/process.dart';
 import 'package:flutter_tools/src/device.dart';
 import 'package:flutter_tools/src/emulator.dart';
+import 'package:meta/meta.dart';
 import 'package:process/process.dart';
 import 'package:xml/xml.dart';
 
@@ -100,61 +102,25 @@ class TizenEmulatorManager extends EmulatorManager {
     );
   }
 
-  List<PlatformImage> _loadAllPlatformImages() {
-    final Directory platformsDir = _tizenSdk!.platformsDirectory;
-    if (!platformsDir.existsSync()) {
-      return <PlatformImage>[];
-    }
+  PlatformImage? _getPreferredPlatformImage() {
+    final RunResult result = _processUtils.runSync(
+      <String>[_tizenSdk!.emCli.path, 'list-platform', '-d'],
+      throwOnError: true,
+    );
+    final Map<String, Map<String, String>> parsed =
+        parseEmCliOutput(result.stdout);
 
     final List<PlatformImage> platformImages = <PlatformImage>[];
-    for (final Directory platformDir
-        in platformsDir.listSync().whereType<Directory>()) {
-      platformImages.addAll(_loadPlatformImagesPerVersion(platformDir));
-    }
-    return platformImages;
-  }
-
-  List<PlatformImage> _loadPlatformImagesPerVersion(Directory platformDir) {
-    final List<PlatformImage> platformImages = <PlatformImage>[];
-    for (final Directory profileDir
-        in platformDir.listSync().whereType<Directory>()) {
-      platformImages.addAll(_loadPlatformImagesPerProfile(profileDir));
-    }
-    return platformImages;
-  }
-
-  List<PlatformImage> _loadPlatformImagesPerProfile(Directory profileDir) {
-    final Directory emulatorImagesDir =
-        profileDir.childDirectory('emulator-images');
-    if (!emulatorImagesDir.existsSync()) {
-      return <PlatformImage>[];
-    }
-
-    final List<PlatformImage> platformImages = <PlatformImage>[];
-    for (final Directory emulatorImageDir in emulatorImagesDir
-        .listSync()
-        .whereType<Directory>()
-        .where((Directory dir) => dir.basename != 'add-ons')) {
-      final File infoFile = emulatorImageDir.childFile('info.ini');
-      if (!infoFile.existsSync()) {
-        continue;
-      }
-      final Map<String, String> info = parseIniFile(infoFile);
-      if (info.containsKey('name') &&
-          info.containsKey('profile') &&
-          info.containsKey('version')) {
+    parsed.forEach((String name, Map<String, String> properties) {
+      if (properties.containsKey('Profile') &&
+          properties.containsKey('Version')) {
         platformImages.add(PlatformImage(
-          name: info['name']!,
-          profile: info['profile']!,
-          version: info['version']!,
+          name: name,
+          profile: properties['Profile']!,
+          version: properties['Version']!,
         ));
       }
-    }
-    return platformImages;
-  }
-
-  PlatformImage? _getPreferredPlatformImage() {
-    final List<PlatformImage> platformImages = _loadAllPlatformImages();
+    });
     if (platformImages.isEmpty) {
       return null;
     }
@@ -328,4 +294,24 @@ class TizenEmulator extends Emulator {
       _logger.printError('Could not launch Tizen emulator $id.');
     }
   }
+}
+
+@visibleForTesting
+Map<String, Map<String, String>> parseEmCliOutput(String output) {
+  final Map<String, Map<String, String>> result =
+      <String, Map<String, String>>{};
+  String? lastId;
+  for (final String line in LineSplitter.split(output)) {
+    if (line.trim().isEmpty) {
+      continue;
+    } else if (!line.startsWith('  ')) {
+      lastId = line.trim();
+      result[lastId] = <String, String>{};
+    } else if (lastId != null && line.contains(':')) {
+      final String key = line.split(':')[0].trim();
+      final String value = line.split(':')[1].trim();
+      result[lastId]![key] = value;
+    }
+  }
+  return result;
 }
