@@ -36,9 +36,6 @@ class FakeTizenSdk extends TizenSdk {
   final String _securityProfile;
 
   @override
-  Directory get sdkDataDirectory => _fileSystem.directory('/tizen-studio-data');
-
-  @override
   File get sdb => super.sdb..createSync(recursive: true);
 
   @override

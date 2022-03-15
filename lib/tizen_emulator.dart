@@ -267,11 +267,11 @@ class TizenEmulator extends Emulator {
 }
 
 @visibleForTesting
-Map<String, Map<String, String>> parseEmCliOutput(String output) {
+Map<String, Map<String, String>> parseEmCliOutput(String lines) {
   final Map<String, Map<String, String>> result =
       <String, Map<String, String>>{};
   String? lastId;
-  for (final String line in LineSplitter.split(output)) {
+  for (final String line in LineSplitter.split(lines)) {
     if (line.trim().isEmpty) {
       continue;
     } else if (!line.startsWith('  ')) {

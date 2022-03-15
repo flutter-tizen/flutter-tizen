@@ -50,20 +50,16 @@ void main() {
     });
 
     testWithoutContext('Cannot create emulator if no image found', () async {
-      processManager.addCommand(const FakeCommand(
-        command: <String>[
-          '/tizen-studio/tools/emulator/bin/em-cli',
-          'list-vm',
-          '-d',
-        ],
-      ));
-      processManager.addCommand(const FakeCommand(
-        command: <String>[
-          '/tizen-studio/tools/emulator/bin/em-cli',
-          'list-platform',
-          '-d',
-        ],
-      ));
+      processManager.addCommand(const FakeCommand(command: <String>[
+        '/tizen-studio/tools/emulator/bin/em-cli',
+        'list-vm',
+        '-d',
+      ]));
+      processManager.addCommand(const FakeCommand(command: <String>[
+        '/tizen-studio/tools/emulator/bin/em-cli',
+        'list-platform',
+        '-d',
+      ]));
 
       final CreateEmulatorResult result = await manager.createEmulator();
       expect(result.success, isFalse);
@@ -72,13 +68,11 @@ void main() {
     });
 
     testWithoutContext('Can create emulator without name', () async {
-      processManager.addCommand(const FakeCommand(
-        command: <String>[
-          '/tizen-studio/tools/emulator/bin/em-cli',
-          'list-vm',
-          '-d',
-        ],
-      ));
+      processManager.addCommand(const FakeCommand(command: <String>[
+        '/tizen-studio/tools/emulator/bin/em-cli',
+        'list-vm',
+        '-d',
+      ]));
       processManager.addCommand(const FakeCommand(
         command: <String>[
           '/tizen-studio/tools/emulator/bin/em-cli',
@@ -86,7 +80,7 @@ void main() {
           '-d',
         ],
         stdout: '''
-image_name
+platform_name
   Profile           : wearable
   Version           : 6.0
   CPU Arch          : x86
@@ -100,7 +94,7 @@ image_name
           '-n',
           'flutter_emulator',
           '-p',
-          'image_name',
+          'platform_name',
         ],
         stdout: 'New virtual machine is created',
       ));
@@ -120,7 +114,7 @@ image_name
         stdout: '''
 emulator_id
   Platform          : image_name
-  Template          : emulator_name
+  Template          : template_name
   Type              : standard
   CPU Arch          : x86
 ''',
@@ -129,7 +123,7 @@ emulator_id
       final List<Emulator> emulators = await manager.getAllAvailableEmulators();
       expect(emulators, isNotEmpty);
       expect(emulators.first.id, equals('emulator_id'));
-      expect(emulators.first.name, equals('emulator_name'));
+      expect(emulators.first.name, equals('template_name'));
     });
   });
 
@@ -182,6 +176,14 @@ entry_3
       final Map<String, String> first = parsed['entry_1'];
       expect(first.length, equals(2));
       expect(first['key_1'], equals('value_1'));
+    });
+
+    testWithoutContext('Does not throw on corrupted input', () async {
+      final Map<String, Map<String, String>> parsed = parseEmCliOutput('''
+  key_1    : value_1
+  key_2    : value_2
+''');
+      expect(parsed, isEmpty);
     });
   });
 }
