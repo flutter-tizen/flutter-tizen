@@ -103,7 +103,7 @@ mixin DartPluginRegistry on FlutterCommand {
   Future<FlutterCommandResult> verifyThenRunCommand(String? commandPath) async {
     final FlutterProject project = FlutterProject.current();
     final TizenProject tizenProject = TizenProject.fromFlutter(project);
-    if (_usesTargetOption && tizenProject.manifestFile.existsSync()) {
+    if (_usesTargetOption && tizenProject.isApplication) {
       final File mainDart = globals.fs.file(super.targetFile);
       final File generatedMainDart =
           tizenProject.managedDirectory.childFile('generated_main.dart');
@@ -264,18 +264,34 @@ const List<String> _kKnownPlugins = <String>[
 ///
 /// See: [FlutterProject.ensureReadyForPlatformSpecificTooling] in `project.dart`
 Future<void> ensureReadyForTizenTooling(FlutterProject project) async {
+  if (!project.directory.existsSync() ||
+      project.hasExampleApp ||
+      project.isPlugin) {
+    return;
+  }
   final TizenProject tizenProject = TizenProject.fromFlutter(project);
   if (!tizenProject.existsSync()) {
     return;
   }
   await tizenProject.ensureReadyForPlatformSpecificTooling();
-
-  if (project.hasExampleApp || project.isPlugin) {
-    return;
-  }
+  await _ensurePluginsReadyForTizenTooling(project);
 
   await injectTizenPlugins(project);
   await _informAvailableTizenPlugins(project);
+}
+
+Future<void> _ensurePluginsReadyForTizenTooling(
+  FlutterProject project,
+) async {
+  final List<TizenPlugin> dotnetPlugins =
+      await findTizenPlugins(project, dotnetOnly: true);
+  for (final TizenPlugin plugin in dotnetPlugins) {
+    final TizenProject pluginProject =
+        TizenProject.fromFlutter(FlutterProject.fromDirectory(
+      plugin.directory.parent,
+    ));
+    await pluginProject.ensureReadyForPlatformSpecificTooling();
+  }
 }
 
 /// See: [injectPlugins] in `flutter_plugins.dart`
