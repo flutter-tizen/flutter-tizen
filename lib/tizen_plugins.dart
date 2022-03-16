@@ -448,8 +448,8 @@ namespace Runner
         [DllImport("flutter_plugins.so")]
         public static extern void {{pluginClass}}RegisterWithRegistrar(
             FlutterDesktopPluginRegistrar registrar);
-      {{/cppPlugins}}
 
+      {{/cppPlugins}}
         public static void RegisterPlugins(IPluginRegistry registry)
         {
           {{#cppPlugins}}

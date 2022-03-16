@@ -198,6 +198,73 @@ namespace Runner
     FileSystem: () => fileSystem,
     ProcessManager: () => FakeProcessManager.any(),
   }, testOn: 'posix');
+
+  testUsingContext('Generates dotnet plugin registrant for C#', () async {
+    fileSystem.file('tizen/Runner.csproj').createSync(recursive: true);
+    final Directory pluginDir = fileSystem.directory('/some_dotnet_plugin');
+    pluginDir.childFile('pubspec.yaml')
+      ..createSync(recursive: true)
+      ..writeAsStringSync('''
+flutter:
+  plugin:
+    platforms:
+      tizen:
+        namespace: Some.Plugin.Namespace
+        pluginClass: SomeDotnetPlugin
+        fileName: SomeDotnetPlugin.csproj
+''');
+    pubspecFile.writeAsStringSync('''
+dependencies:
+  some_dotnet_plugin:
+    path: ${pluginDir.path}
+''');
+    packageConfigFile.writeAsStringSync('''
+{
+  "configVersion": 2,
+  "packages": [
+    {
+      "name": "some_dotnet_plugin",
+      "rootUri": "${pluginDir.uri}",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    }
+  ]
+}
+''');
+    await injectTizenPlugins(project);
+
+    final File csharpPluginRegistrant =
+        fileSystem.file('tizen/flutter/GeneratedPluginRegistrant.cs');
+    expect(csharpPluginRegistrant, exists);
+    expect(csharpPluginRegistrant.readAsStringSync(), contains('''
+namespace Runner
+{
+    internal class GeneratedPluginRegistrant
+    {
+        public static void RegisterPlugins(IPluginRegistry registry)
+        {
+            DotnetPluginRegistry.Instance.AddPlugin(
+                new global::Some.Plugin.Namespace.SomeDotnetPlugin());
+        }
+    }
+}
+'''));
+
+    final File dotnetIntermediateTarget =
+        fileSystem.file('tizen/obj/Runner.csproj.flutter.targets');
+    expect(dotnetIntermediateTarget, exists);
+    expect(dotnetIntermediateTarget.readAsStringSync(), contains('''
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ProjectReference Include="${pluginDir.path}/tizen/SomeDotnetPlugin.csproj" />
+  </ItemGroup>
+</Project>
+'''));
+  }, overrides: <Type, Generator>{
+    FileSystem: () => fileSystem,
+    ProcessManager: () => FakeProcessManager.any(),
+  }, testOn: 'posix');
 }
 
 class _DummyFlutterCommand extends FlutterCommand with DartPluginRegistry {
