@@ -7,8 +7,8 @@ index b8c0d2d2ee..a19e36199b 100644
    cupertino_icons: ^1.0.2
  
 +  # Tizen-specific dependencies.
-+  messageport_tizen: ^0.1.0
-+  tizen_app_control: ^0.1.0
++  messageport_tizen: ^0.2.0
++  tizen_app_control: ^0.1.1
 +
  dev_dependencies:
    flutter_test:

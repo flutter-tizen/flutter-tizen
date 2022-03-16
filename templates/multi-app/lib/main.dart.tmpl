@@ -32,7 +32,7 @@ void serviceMain() {
   // In this example, we use Tizen's Message Port API (messageport_tizen) to
   // send serialized messages from the service application to the UI
   // application. Modify this with your own logic.
-  TizenMessagePort.connectToRemotePort(_kAppId, _kPortName)
+  RemotePort.connect(_kAppId, _kPortName)
       .then((RemotePort remotePort) async {
     while (true) {
       if (await remotePort.check()) {
@@ -66,7 +66,7 @@ class _MyAppState extends State<MyApp> {
 
     // The UI application receives messages from the service application
     // through this local message port.
-    TizenMessagePort.createLocalPort(_kPortName).then((LocalPort value) {
+    LocalPort.create(_kPortName).then((LocalPort value) {
       _localPort = value;
       _localPort?.register((dynamic message, [RemotePort? remotePort]) {
         setState(() {
