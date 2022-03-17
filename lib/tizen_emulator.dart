@@ -4,6 +4,7 @@
 // found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:file/file.dart';
 import 'package:flutter_tools/src/android/android_emulator.dart';
@@ -13,8 +14,8 @@ import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/base/process.dart';
 import 'package:flutter_tools/src/device.dart';
 import 'package:flutter_tools/src/emulator.dart';
+import 'package:meta/meta.dart';
 import 'package:process/process.dart';
-import 'package:xml/xml.dart';
 
 import 'tizen_doctor.dart';
 import 'tizen_sdk.dart';
@@ -27,6 +28,7 @@ class TizenEmulatorManager extends EmulatorManager {
     required FileSystem fileSystem,
     required Logger logger,
     required ProcessManager processManager,
+    AndroidWorkflow? dummyAndroidWorkflow,
   })  : _processUtils =
             ProcessUtils(logger: logger, processManager: processManager),
         _tizenSdk = tizenSdk,
@@ -38,7 +40,7 @@ class TizenEmulatorManager extends EmulatorManager {
         ),
         super(
           androidSdk: null,
-          androidWorkflow: androidWorkflow!,
+          androidWorkflow: dummyAndroidWorkflow ?? androidWorkflow!,
           fileSystem: fileSystem,
           logger: logger,
           processManager: processManager,
@@ -99,61 +101,25 @@ class TizenEmulatorManager extends EmulatorManager {
     );
   }
 
-  List<PlatformImage> _loadAllPlatformImages() {
-    final Directory platformsDir = _tizenSdk!.platformsDirectory;
-    if (!platformsDir.existsSync()) {
-      return <PlatformImage>[];
-    }
+  PlatformImage? _getPreferredPlatformImage() {
+    final RunResult result = _processUtils.runSync(
+      <String>[_tizenSdk!.emCli.path, 'list-platform', '-d'],
+      throwOnError: true,
+    );
+    final Map<String, Map<String, String>> parsed =
+        parseEmCliOutput(result.stdout);
 
     final List<PlatformImage> platformImages = <PlatformImage>[];
-    for (final Directory platformDir
-        in platformsDir.listSync().whereType<Directory>()) {
-      platformImages.addAll(_loadPlatformImagesPerVersion(platformDir));
-    }
-    return platformImages;
-  }
-
-  List<PlatformImage> _loadPlatformImagesPerVersion(Directory platformDir) {
-    final List<PlatformImage> platformImages = <PlatformImage>[];
-    for (final Directory profileDir
-        in platformDir.listSync().whereType<Directory>()) {
-      platformImages.addAll(_loadPlatformImagesPerProfile(profileDir));
-    }
-    return platformImages;
-  }
-
-  List<PlatformImage> _loadPlatformImagesPerProfile(Directory profileDir) {
-    final Directory emulatorImagesDir =
-        profileDir.childDirectory('emulator-images');
-    if (!emulatorImagesDir.existsSync()) {
-      return <PlatformImage>[];
-    }
-
-    final List<PlatformImage> platformImages = <PlatformImage>[];
-    for (final Directory emulatorImageDir in emulatorImagesDir
-        .listSync()
-        .whereType<Directory>()
-        .where((Directory dir) => dir.basename != 'add-ons')) {
-      final File infoFile = emulatorImageDir.childFile('info.ini');
-      if (!infoFile.existsSync()) {
-        continue;
-      }
-      final Map<String, String> info = parseIniFile(infoFile);
-      if (info.containsKey('name') &&
-          info.containsKey('profile') &&
-          info.containsKey('version')) {
+    parsed.forEach((String name, Map<String, String> properties) {
+      if (properties.containsKey('Profile') &&
+          properties.containsKey('Version')) {
         platformImages.add(PlatformImage(
-          name: info['name']!,
-          profile: info['profile']!,
-          version: info['version']!,
+          name: name,
+          profile: properties['Profile']!,
+          version: properties['Version']!,
         ));
       }
-    }
-    return platformImages;
-  }
-
-  PlatformImage? _getPreferredPlatformImage() {
-    final List<PlatformImage> platformImages = _loadAllPlatformImages();
+    });
     if (platformImages.isEmpty) {
       return null;
     }
@@ -201,12 +167,15 @@ class TizenEmulators extends EmulatorDiscovery {
   })  : _tizenSdk = tizenSdk,
         _tizenWorkflow = tizenWorkflow,
         _logger = logger,
-        _processManager = processManager;
+        _processManager = processManager,
+        _processUtils =
+            ProcessUtils(logger: logger, processManager: processManager);
 
   final TizenSdk? _tizenSdk;
   final TizenWorkflow _tizenWorkflow;
   final Logger _logger;
   final ProcessManager _processManager;
+  final ProcessUtils _processUtils;
 
   @override
   bool get canListAnything => _tizenWorkflow.canListEmulators;
@@ -224,55 +193,23 @@ class TizenEmulators extends EmulatorDiscovery {
       return <Emulator>[];
     }
 
-    final Directory emulatorDir = _tizenSdk!.sdkDataDirectory
-        .childDirectory('emulator')
-        .childDirectory('vms');
-    if (!emulatorDir.existsSync()) {
-      return <Emulator>[];
-    }
+    final RunResult result = _processUtils.runSync(
+      <String>[_tizenSdk!.emCli.path, 'list-vm', '-d'],
+      throwOnError: true,
+    );
+    final Map<String, Map<String, String>> parsed =
+        parseEmCliOutput(result.stdout);
 
-    TizenEmulator? loadEmulatorInfo(Directory directory) {
-      final String id = directory.basename;
-      final File configFile =
-          emulatorDir.childDirectory(id).childFile('vm_config.xml');
-      if (!configFile.existsSync()) {
-        return null;
-      }
-
-      XmlDocument document;
-      try {
-        document = XmlDocument.parse(configFile.readAsStringSync().trim());
-      } on XmlException {
-        return null;
-      }
-
-      final Map<String, String> properties = <String, String>{};
-      final Iterable<XmlElement> deviceTemplates =
-          document.findAllElements('deviceTemplate');
-      final Iterable<XmlElement> diskImages =
-          document.findAllElements('diskImage');
-      if (deviceTemplates.isNotEmpty && diskImages.isNotEmpty) {
-        properties['name'] = deviceTemplates.first.getAttribute('name') ?? '';
-        properties['profile'] = diskImages.first.getAttribute('profile') ?? '';
-        properties['version'] = diskImages.first.getAttribute('version') ?? '';
-      }
-
-      return TizenEmulator(
+    final List<Emulator> emulators = <Emulator>[];
+    parsed.forEach((String id, Map<String, String> properties) {
+      emulators.add(TizenEmulator(
         id,
         properties: properties,
         logger: _logger,
         processManager: _processManager,
         tizenSdk: _tizenSdk,
-      );
-    }
-
-    final List<Emulator> emulators = <Emulator>[];
-    for (final Directory dir in emulatorDir.listSync().whereType<Directory>()) {
-      final TizenEmulator? emulator = loadEmulatorInfo(dir);
-      if (emulator != null) {
-        emulators.add(emulator);
-      }
-    }
+      ));
+    });
     return emulators;
   }
 }
@@ -281,7 +218,7 @@ class TizenEmulators extends EmulatorDiscovery {
 class TizenEmulator extends Emulator {
   TizenEmulator(
     String id, {
-    required Map<String, String> properties,
+    Map<String, String> properties = const <String, String>{},
     required Logger logger,
     required ProcessManager processManager,
     required TizenSdk? tizenSdk,
@@ -298,7 +235,7 @@ class TizenEmulator extends Emulator {
   final TizenSdk? _tizenSdk;
 
   @override
-  String get name => _properties['name'] ?? id;
+  String get name => _properties['Template'] ?? id;
 
   @override
   String? get manufacturer => 'Samsung';
@@ -327,4 +264,24 @@ class TizenEmulator extends Emulator {
       _logger.printError('Could not launch Tizen emulator $id.');
     }
   }
+}
+
+@visibleForTesting
+Map<String, Map<String, String>> parseEmCliOutput(String lines) {
+  final Map<String, Map<String, String>> result =
+      <String, Map<String, String>>{};
+  String? lastId;
+  for (final String line in LineSplitter.split(lines)) {
+    if (line.trim().isEmpty) {
+      continue;
+    } else if (!line.startsWith('  ')) {
+      lastId = line.trim();
+      result[lastId] = <String, String>{};
+    } else if (lastId != null && line.contains(':')) {
+      final String key = line.split(':')[0].trim();
+      final String value = line.split(':')[1].trim();
+      result[lastId]![key] = value;
+    }
+  }
+  return result;
 }

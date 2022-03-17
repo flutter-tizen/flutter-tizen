@@ -42,6 +42,9 @@ class FakeTizenSdk extends TizenSdk {
   File get tizenCli => super.tizenCli..createSync(recursive: true);
 
   @override
+  File get emCli => super.emCli..createSync(recursive: true);
+
+  @override
   Future<RunResult> buildApp(
     String workingDirectory, {
     Map<String, Object> build = const <String, Object>{},
