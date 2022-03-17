@@ -56,23 +56,16 @@ class TizenProject extends FlutterProjectPlatform {
       ? uiManifestFile
       : editableDirectory.childFile('tizen-manifest.xml');
 
-  File get projectFile {
-    for (final File file in editableDirectory.listSync().whereType<File>()) {
-      if (file.path.endsWith('.csproj')) {
-        return file;
-      }
-    }
-    return isMultiApp
-        ? uiAppDirectory.childFile('project_def.prop')
-        : editableDirectory.childFile('project_def.prop');
-  }
+  File get projectFile =>
+      findDotnetProjectFile(editableDirectory) ??
+      (isMultiApp
+          ? uiAppDirectory.childFile('project_def.prop')
+          : editableDirectory.childFile('project_def.prop'));
 
   @override
   bool existsSync() => editableDirectory.existsSync();
 
   bool get isDotnet => projectFile.path.endsWith('.csproj');
-
-  bool get isApplication => manifestFile.existsSync();
 
   String get outputTpkName {
     final TizenManifest manifest = TizenManifest.parseFromXml(manifestFile);
@@ -83,57 +76,7 @@ class TizenProject extends FlutterProjectPlatform {
     if (!existsSync() || !isDotnet) {
       return;
     }
-    _updateDotnetUserProjectFile();
-  }
-
-  void _updateDotnetUserProjectFile() {
-    final File userFile =
-        editableDirectory.childFile('${projectFile.basename}.user');
-    const String initialXmlContent = '''
-<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-</Project>
-''';
-    if (!userFile.existsSync()) {
-      userFile.writeAsStringSync(initialXmlContent);
-    }
-
-    XmlDocument document;
-    try {
-      document = XmlDocument.parse(userFile.readAsStringSync().trim());
-    } on XmlException {
-      globals.printStatus('Overwriting ${userFile.basename}...');
-      document = XmlDocument.parse(initialXmlContent);
-    }
-
-    final File embeddingProjectFile = editableDirectory.fileSystem
-        .directory(Cache.flutterRoot)
-        .parent
-        .childDirectory('embedding')
-        .childDirectory('csharp')
-        .childDirectory('Tizen.Flutter.Embedding')
-        .childFile('Tizen.Flutter.Embedding.csproj');
-    final Iterable<XmlElement> elements =
-        document.findAllElements('FlutterEmbeddingPath');
-    if (elements.isEmpty) {
-      // Create an element if not exists.
-      final XmlBuilder builder = XmlBuilder();
-      builder.element('PropertyGroup', nest: () {
-        builder.element(
-          'FlutterEmbeddingPath',
-          nest: embeddingProjectFile.absolute.path,
-        );
-      });
-      document.rootElement.children.add(builder.buildFragment());
-    } else {
-      // Update existing element(s).
-      for (final XmlElement element in elements) {
-        element.innerText = embeddingProjectFile.absolute.path;
-      }
-    }
-    userFile.writeAsStringSync(
-      document.toXmlString(pretty: true, indent: '  '),
-    );
+    updateDotnetUserProjectFile(projectFile);
   }
 
   void clean() {
@@ -175,4 +118,63 @@ class TizenProject extends FlutterProjectPlatform {
       status.stop();
     }
   }
+}
+
+File? findDotnetProjectFile(Directory directory) {
+  for (final File file in directory.listSync().whereType<File>()) {
+    if (file.path.endsWith('.csproj')) {
+      return file;
+    }
+  }
+  return null;
+}
+
+void updateDotnetUserProjectFile(File projectFile) {
+  final File userFile =
+      projectFile.parent.childFile('${projectFile.basename}.user');
+  const String initialXmlContent = '''
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+</Project>
+''';
+  if (!userFile.existsSync()) {
+    userFile.writeAsStringSync(initialXmlContent);
+  }
+
+  XmlDocument document;
+  try {
+    document = XmlDocument.parse(userFile.readAsStringSync().trim());
+  } on XmlException {
+    globals.printStatus('Overwriting ${userFile.basename}...');
+    document = XmlDocument.parse(initialXmlContent);
+  }
+
+  final File embeddingProjectFile = globals.fs
+      .directory(Cache.flutterRoot)
+      .parent
+      .childDirectory('embedding')
+      .childDirectory('csharp')
+      .childDirectory('Tizen.Flutter.Embedding')
+      .childFile('Tizen.Flutter.Embedding.csproj');
+  final Iterable<XmlElement> elements =
+      document.findAllElements('FlutterEmbeddingPath');
+  if (elements.isEmpty) {
+    // Create an element if not exists.
+    final XmlBuilder builder = XmlBuilder();
+    builder.element('PropertyGroup', nest: () {
+      builder.element(
+        'FlutterEmbeddingPath',
+        nest: embeddingProjectFile.absolute.path,
+      );
+    });
+    document.rootElement.children.add(builder.buildFragment());
+  } else {
+    // Update existing element(s).
+    for (final XmlElement element in elements) {
+      element.innerText = embeddingProjectFile.absolute.path;
+    }
+  }
+  userFile.writeAsStringSync(
+    document.toXmlString(pretty: true, indent: '  '),
+  );
 }

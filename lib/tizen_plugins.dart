@@ -103,7 +103,7 @@ mixin DartPluginRegistry on FlutterCommand {
   Future<FlutterCommandResult> verifyThenRunCommand(String? commandPath) async {
     final FlutterProject project = FlutterProject.current();
     final TizenProject tizenProject = TizenProject.fromFlutter(project);
-    if (_usesTargetOption && tizenProject.isApplication) {
+    if (_usesTargetOption && tizenProject.existsSync() && !project.isPlugin) {
       final File mainDart = globals.fs.file(super.targetFile);
       final File generatedMainDart =
           tizenProject.managedDirectory.childFile('generated_main.dart');
@@ -286,11 +286,10 @@ Future<void> _ensurePluginsReadyForTizenTooling(
   final List<TizenPlugin> dotnetPlugins =
       await findTizenPlugins(project, dotnetOnly: true);
   for (final TizenPlugin plugin in dotnetPlugins) {
-    final TizenProject pluginProject =
-        TizenProject.fromFlutter(FlutterProject.fromDirectory(
-      plugin.directory.parent,
-    ));
-    await pluginProject.ensureReadyForPlatformSpecificTooling();
+    final File? projectFile = findDotnetProjectFile(plugin.directory);
+    if (projectFile != null) {
+      updateDotnetUserProjectFile(projectFile);
+    }
   }
 }
 
