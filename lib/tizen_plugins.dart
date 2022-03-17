@@ -280,9 +280,7 @@ Future<void> ensureReadyForTizenTooling(FlutterProject project) async {
   await _informAvailableTizenPlugins(project);
 }
 
-Future<void> _ensurePluginsReadyForTizenTooling(
-  FlutterProject project,
-) async {
+Future<void> _ensurePluginsReadyForTizenTooling(FlutterProject project) async {
   final List<TizenPlugin> dotnetPlugins =
       await findTizenPlugins(project, dotnetOnly: true);
   for (final TizenPlugin plugin in dotnetPlugins) {
