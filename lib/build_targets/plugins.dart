@@ -74,7 +74,7 @@ class NativePlugins extends Target {
 
     // Check if there's anything to build.
     final List<TizenPlugin> nativePlugins =
-        await findTizenPlugins(project, nativeOnly: true);
+        await findTizenPlugins(project, cppOnly: true);
     if (nativePlugins.isEmpty) {
       depfileService.writeToFile(
         Depfile(inputs, outputs),
