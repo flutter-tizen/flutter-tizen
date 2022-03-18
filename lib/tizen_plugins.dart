@@ -264,16 +264,16 @@ const List<String> _kKnownPlugins = <String>[
 ///
 /// See: [FlutterProject.ensureReadyForPlatformSpecificTooling] in `project.dart`
 Future<void> ensureReadyForTizenTooling(FlutterProject project) async {
+  if (!project.directory.existsSync() ||
+      project.hasExampleApp ||
+      project.isPlugin) {
+    return;
+  }
   final TizenProject tizenProject = TizenProject.fromFlutter(project);
   if (!tizenProject.existsSync()) {
     return;
   }
-
   await tizenProject.ensureReadyForPlatformSpecificTooling();
-
-  if (project.hasExampleApp || project.isPlugin) {
-    return;
-  }
 
   await _ensurePluginsReadyForTizenTooling(project);
   await injectTizenPlugins(project);
