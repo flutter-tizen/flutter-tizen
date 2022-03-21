@@ -207,6 +207,8 @@ void main() {
     expect(projectDir.childFile('example/tizen/Runner.csproj'), exists);
     expect(projectDir.childFile('tizen/.gitignore'), exists);
     expect(projectDir.childFile('tizen/FlutterProjectPlugin.csproj'), exists);
+    expect(
+        projectDir.childFile('tizen/FlutterProjectPlugin.csproj.user'), exists);
     expect(logger.errorText, contains(_kNoPlatformsMessage));
   }, overrides: <Type, Generator>{
     Logger: () => logger,
