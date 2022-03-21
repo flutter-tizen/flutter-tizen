@@ -34,10 +34,7 @@ namespace {{tizenNamespace}}
                     return Task.FromResult<object>("Unknown");
                 }
             }
-            else
-            {
-                return Task.FromResult<object>(null);
-            }
+            throw new MissingPluginException();
         }
     }
 }
