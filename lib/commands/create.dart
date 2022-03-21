@@ -48,10 +48,11 @@ class TizenCreateCommand extends CreateCommand {
       allowedHelp: <String, String>{
         'ui':
             '(default) Generate an application with a graphical user interface '
-                'that runs on the foreground.',
+                'that runs in the foreground.',
         'service':
             'Generate a service application that runs in the background.',
-        'multi': 'Generate applications with both a UI and service.',
+        'multi':
+            'Generate a multi-project application that consists of both UI and service parts.',
       },
       help: 'Select a type of application template.',
     );
@@ -336,7 +337,8 @@ class TizenCreateCommand extends CreateCommand {
 
   Future<void> _copyTizenTemplatesToFlutter() async {
     // Copy application template to the flutter_tools/templates directory.
-    // Even if the template is a plugin, it is required for example app.
+    // Even if the requested template type is plugin, an app template is
+    // required for generating the example app.
     final Directory appTemplate =
         _tizenTemplates.childDirectory('$appType-app');
     _copyDirectoryIfExists(

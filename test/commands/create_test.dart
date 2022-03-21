@@ -184,7 +184,7 @@ void main() {
     Logger: () => logger,
   });
 
-  testUsingContext('Can create a c# plugin project', () async {
+  testUsingContext('Can create a C# plugin project', () async {
     final TizenCreateCommand command = TizenCreateCommand();
     final CommandRunner<void> runner = createTestCommandRunner(command);
     await runner.run(<String>[
