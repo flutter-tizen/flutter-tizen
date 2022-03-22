@@ -8,28 +8,12 @@ import 'package:flutter_tools/src/base/platform.dart';
 import 'package:flutter_tools/src/build_system/build_system.dart';
 import 'package:flutter_tools/src/build_system/targets/dart_plugin_registrant.dart';
 
-class TizenBuildSystem extends BuildSystem {
+class TizenBuildSystem extends FlutterBuildSystem {
   TizenBuildSystem({
     required FileSystem fileSystem,
     required Platform platform,
     required Logger logger,
-  }) : _buildSystem = FlutterBuildSystem(
-            fileSystem: fileSystem, platform: platform, logger: logger);
-
-  final FlutterBuildSystem _buildSystem;
-
-  @override
-  Future<BuildResult> build(
-    Target target,
-    Environment environment, {
-    BuildSystemConfig buildSystemConfig = const BuildSystemConfig(),
-  }) {
-    return _buildSystem.build(
-      target,
-      environment,
-      buildSystemConfig: buildSystemConfig,
-    );
-  }
+  }) : super(fileSystem: fileSystem, platform: platform, logger: logger);
 
   @override
   Future<BuildResult> buildIncremental(
@@ -46,6 +30,6 @@ class TizenBuildSystem extends BuildSystem {
           .where((Target target) => target is! DartPluginRegistrantTarget)
           .toList());
     }
-    return _buildSystem.buildIncremental(target, environment, previousBuild);
+    return super.buildIncremental(target, environment, previousBuild);
   }
 }
