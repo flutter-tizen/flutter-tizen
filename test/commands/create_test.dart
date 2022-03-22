@@ -154,7 +154,7 @@ void main() {
     expect(result.stdout, isEmpty);
   }, overrides: <Type, Generator>{});
 
-  testUsingContext('Can create a plugin project', () async {
+  testUsingContext('Can create a C++ plugin project', () async {
     final TizenCreateCommand command = TizenCreateCommand();
     final CommandRunner<void> runner = createTestCommandRunner(command);
     await runner.run(<String>[
@@ -162,6 +162,7 @@ void main() {
       '--no-pub',
       '--platforms=tizen',
       '--template=plugin',
+      '--tizen-language=cpp',
       projectDir.path,
     ]);
 
@@ -173,11 +174,41 @@ void main() {
     );
 
     expect(projectDir.childFile('example/lib/main.dart'), exists);
-    expect(projectDir.childDirectory('example/tizen').listSync(), isNotEmpty);
+    expect(projectDir.childFile('example/tizen/Runner.csproj'), exists);
     expect(projectDir.childDirectory('tizen/inc').listSync(), isNotEmpty);
     expect(projectDir.childDirectory('tizen/src').listSync(), isNotEmpty);
     expect(projectDir.childFile('tizen/.gitignore'), exists);
     expect(projectDir.childFile('tizen/project_def.prop'), exists);
+    expect(logger.errorText, contains(_kNoPlatformsMessage));
+  }, overrides: <Type, Generator>{
+    Logger: () => logger,
+  });
+
+  testUsingContext('Can create a C# plugin project', () async {
+    final TizenCreateCommand command = TizenCreateCommand();
+    final CommandRunner<void> runner = createTestCommandRunner(command);
+    await runner.run(<String>[
+      'create',
+      '--no-pub',
+      '--platforms=tizen',
+      '--template=plugin',
+      '--tizen-language=csharp',
+      projectDir.path,
+    ]);
+
+    validatePubspecForPlugin(
+      projectDir: projectDir.path,
+      expectedPlatforms: <String>['some_platform'],
+      pluginClass: 'somePluginClass',
+      unexpectedPlatforms: <String>['tizen'],
+    );
+
+    expect(projectDir.childFile('example/lib/main.dart'), exists);
+    expect(projectDir.childFile('example/tizen/Runner.csproj'), exists);
+    expect(projectDir.childFile('tizen/.gitignore'), exists);
+    expect(projectDir.childFile('tizen/FlutterProjectPlugin.csproj'), exists);
+    expect(
+        projectDir.childFile('tizen/FlutterProjectPlugin.csproj.user'), exists);
     expect(logger.errorText, contains(_kNoPlatformsMessage));
   }, overrides: <Type, Generator>{
     Logger: () => logger,

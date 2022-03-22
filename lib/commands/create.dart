@@ -10,12 +10,16 @@ import 'package:file/file.dart';
 import 'package:flutter_tools/src/base/common.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/base/terminal.dart';
+import 'package:flutter_tools/src/base/utils.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/commands/create.dart';
 import 'package:flutter_tools/src/flutter_project_metadata.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
+import 'package:flutter_tools/src/project.dart';
 import 'package:flutter_tools/src/runner/flutter_command.dart';
 import 'package:flutter_tools/src/template.dart';
+
+import '../tizen_project.dart';
 
 const List<String> _kAvailablePlatforms = <String>[
   'tizen',
@@ -32,17 +36,56 @@ class TizenCreateCommand extends CreateCommand {
       : super(verboseHelp: verboseHelp) {
     argParser.addOption(
       'tizen-language',
-      defaultsTo: 'csharp',
       allowed: <String>['cpp', 'csharp'],
       help: 'The language to use for Tizen-specific code, either C++ '
-          '(performant, but unsupported by TV devices) or C# (universal).',
+          '(performant, but unsupported by TV devices) or C# (universal). '
+          'If not specfied, "cpp" is used by default if the project type is '
+          '"plugin", otherwise "csharp" is used by default.',
     );
     argParser.addOption(
       'app-type',
-      defaultsTo: 'ui',
       allowed: <String>['ui', 'service', 'multi'],
+      allowedHelp: <String, String>{
+        'ui':
+            '(default) Generate an application with a graphical user interface '
+                'that runs in the foreground.',
+        'service':
+            'Generate a service application that runs in the background.',
+        'multi':
+            'Generate a multi-project application that consists of both UI and service parts.',
+      },
       help: 'Select a type of application template.',
     );
+  }
+
+  String get appType => stringArg('app-type') ?? 'ui';
+
+  String get tizenLanguage {
+    if (argResults.wasParsed('tizen-language')) {
+      return stringArg('tizen-language');
+    }
+    return stringArg('template') == 'plugin' ? 'cpp' : 'csharp';
+  }
+
+  Directory get _tizenTemplates => globals.fs
+      .directory(Cache.flutterRoot)
+      .parent
+      .childDirectory('templates');
+
+  Directory get _flutterTemplates => globals.fs
+      .directory(Cache.flutterRoot)
+      .childDirectory('packages')
+      .childDirectory('flutter_tools')
+      .childDirectory('templates');
+
+  /// See: [CreateCommand._getProjectType] in `create.dart`
+  bool get _shouldGeneratePlugin {
+    if (argResults['template'] != null) {
+      return stringArg('template') == 'plugin';
+    } else if (projectDir.existsSync() && projectDir.listSync().isNotEmpty) {
+      return determineTemplateType() == FlutterProjectType.plugin;
+    }
+    return false;
   }
 
   @override
@@ -106,14 +149,106 @@ class TizenCreateCommand extends CreateCommand {
     );
   }
 
-  /// See: [CreateCommand._getProjectType] in `create.dart`
-  bool get _shouldGeneratePlugin {
-    if (argResults['template'] != null) {
-      return stringArg('template') == 'plugin';
-    } else if (projectDir.existsSync() && projectDir.listSync().isNotEmpty) {
-      return determineTemplateType() == FlutterProjectType.plugin;
+  /// See: [CreateCommand._generatePlugin] in `create.dart`
+  @override
+  Future<int> generateApp(
+    String templateName,
+    Directory directory,
+    Map<String, Object> templateContext, {
+    bool overwrite = false,
+    bool pluginExampleApp = false,
+    bool printStatusWhenWriting = true,
+  }) async {
+    if (pluginExampleApp) {
+      // Reset to the updated identifier for the example app.
+      templateContext['tizenIdentifier'] = templateContext['androidIdentifier'];
+      // Example app is always generated in C#.
+      templateContext['tizenLanguage'] = 'csharp';
     }
-    return false;
+
+    return super.generateApp(
+      templateName,
+      directory,
+      templateContext,
+      overwrite: overwrite,
+      pluginExampleApp: pluginExampleApp,
+      printStatusWhenWriting: printStatusWhenWriting,
+    );
+  }
+
+  @override
+  Map<String, Object> createTemplateContext({
+    String organization,
+    String projectName,
+    String titleCaseProjectName,
+    String projectDescription,
+    String androidLanguage,
+    String iosDevelopmentTeam,
+    String iosLanguage,
+    String flutterRoot,
+    String dartSdkVersionBounds,
+    String agpVersion,
+    String kotlinVersion,
+    String gradleVersion,
+    bool withPluginHook = false,
+    bool ios = false,
+    bool android = false,
+    bool web = false,
+    bool linux = false,
+    bool macos = false,
+    bool windows = false,
+    bool windowsUwp = false,
+    bool implementationTests = false,
+  }) {
+    final Map<String, Object> context = super.createTemplateContext(
+      organization: organization,
+      projectName: projectName,
+      titleCaseProjectName: titleCaseProjectName,
+      projectDescription: projectDescription,
+      androidLanguage: androidLanguage,
+      iosDevelopmentTeam: iosDevelopmentTeam,
+      iosLanguage: iosLanguage,
+      flutterRoot: flutterRoot,
+      dartSdkVersionBounds: dartSdkVersionBounds,
+      agpVersion: agpVersion,
+      kotlinVersion: kotlinVersion,
+      gradleVersion: gradleVersion,
+      withPluginHook: withPluginHook,
+      ios: ios,
+      android: android,
+      web: web,
+      linux: linux,
+      macos: macos,
+      windows: windows,
+      windowsUwp: windowsUwp,
+      implementationTests: implementationTests,
+    );
+    context['tizen'] = true;
+    context['tizenIdentifier'] = context['androidIdentifier'];
+    context['tizenLanguage'] = tizenLanguage;
+    context['tizenNamespace'] = _createNamespaceName(projectName);
+    return context;
+  }
+
+  @override
+  Future<void> validateCommand() async {
+    await super.validateCommand();
+
+    final String template = stringArg('template') ?? 'app';
+
+    if (template != 'app' && argResults.wasParsed('app-type')) {
+      throwToolExit(
+          '--app-type=$appType and --template=$template cannot be provided at the same time.');
+    }
+
+    final String templateName = template == 'app' ? '$appType-app' : template;
+    if (!_tizenTemplates
+        .childDirectory(templateName)
+        .childDirectory(tizenLanguage)
+        .existsSync()) {
+      throwToolExit(
+          'Could not locate a template: $templateName/$tizenLanguage');
+    }
   }
 
   /// See: [CreateCommand.runCommand] in `create.dart`
@@ -124,6 +259,13 @@ class TizenCreateCommand extends CreateCommand {
     }
 
     if (_shouldGeneratePlugin) {
+      // Generate .csproj.user file if the plugin is a dotnet project.
+      final FlutterProject project = FlutterProject.fromDirectory(projectDir);
+      final TizenProject tizenProject = TizenProject.fromFlutter(project);
+      if (tizenProject.existsSync() && tizenProject.isDotnet) {
+        updateDotnetUserProjectFile(tizenProject.projectFile);
+      }
+
       final String relativePluginPath =
           globals.fs.path.normalize(globals.fs.path.relative(projectDirPath));
       globals.printStatus(
@@ -135,15 +277,28 @@ class TizenCreateCommand extends CreateCommand {
         projectName: projectName,
         flutterRoot: '',
       );
-      globals.printStatus(
-        '\nflutter:\n'
-        '  plugin:\n'
-        '    platforms:\n'
-        '      tizen:\n'
-        '        pluginClass: ${templateContext['pluginClass'] as String}\n'
-        '        fileName: ${projectName}_plugin.h',
-        color: TerminalColor.blue,
-      );
+      if (templateContext['tizenLanguage'] == 'csharp') {
+        globals.printStatus(
+          '\nflutter:\n'
+          '  plugin:\n'
+          '    platforms:\n'
+          '      tizen:\n'
+          '        namespace: ${templateContext['tizenNamespace'] as String}\n'
+          '        pluginClass: ${templateContext['pluginClass'] as String}\n'
+          '        fileName: ${templateContext['pluginClass'] as String}.csproj',
+          color: TerminalColor.blue,
+        );
+      } else if (templateContext['tizenLanguage'] == 'cpp') {
+        globals.printStatus(
+          '\nflutter:\n'
+          '  plugin:\n'
+          '    platforms:\n'
+          '      tizen:\n'
+          '        pluginClass: ${templateContext['pluginClass'] as String}\n'
+          '        fileName: ${projectName}_plugin.h',
+          color: TerminalColor.blue,
+        );
+      }
       globals.printStatus('');
     }
 
@@ -167,70 +322,68 @@ class TizenCreateCommand extends CreateCommand {
       return super.runCommand();
     }
 
-    // The template directory that the flutter tools search for available
-    // templates cannot be overriden because the implementation is private.
-    // So we have to copy Tizen templates into the directory manually.
-    final Directory tizenTemplates = globals.fs
-        .directory(Cache.flutterRoot)
-        .parent
-        .childDirectory('templates');
-    if (!tizenTemplates.existsSync()) {
-      throwToolExit('Could not locate Tizen templates.');
-    }
-    final Directory templates = globals.fs
-        .directory(Cache.flutterRoot)
-        .childDirectory('packages')
-        .childDirectory('flutter_tools')
-        .childDirectory('templates');
-    _runGitClean(templates);
-
-    final String appLanguage = stringArg('tizen-language');
-    final String appType = stringArg('app-type');
-    final String template = stringArg('template');
-    if (appType == 'multi' && template != null && template != 'app') {
-      throwToolExit(
-          '--app-type=$appType and --template=$template cannot be provided at the same time.');
-    }
-
+    _runGitClean(_flutterTemplates);
     try {
-      // Copy (appType)-app/(appLanguage) to app_shared/tizen.tmpl.
-      final Directory appTemplate =
-          tizenTemplates.childDirectory('$appType-app');
-      final Directory projectTemplate = appTemplate.childDirectory(appLanguage);
-      if (!projectTemplate.existsSync()) {
-        throwToolExit('Could not locate a template: $appType-app/$appLanguage');
-      }
-      copyDirectory(
-        projectTemplate,
-        templates.childDirectory('app_shared').childDirectory('tizen.tmpl'),
-      );
-
-      // Copy (appType)-app/lib to app/lib (if exists).
-      final Directory libTemplate = appTemplate.childDirectory('lib');
-      if (libTemplate.existsSync()) {
-        copyDirectory(
-          libTemplate,
-          templates.childDirectory('app').childDirectory('lib'),
-        );
-      }
-
-      // Apply patch files in (appType)-app.
-      for (final File file in appTemplate.listSync().whereType<File>()) {
-        if (file.basename.endsWith('.patch')) {
-          _runGitApply(templates, file);
-        }
-      }
-
-      // Copy plugin/cpp to plugin/tizen.tmpl.
-      final Directory pluginTemplate = tizenTemplates.childDirectory('plugin');
-      copyDirectory(
-        pluginTemplate.childDirectory('cpp'),
-        templates.childDirectory('plugin').childDirectory('tizen.tmpl'),
-      );
+      // The template directory that the flutter tools search for available
+      // templates cannot be overriden because the implementation is private.
+      // So we have to copy Tizen templates into the directory manually.
+      await _copyTizenTemplatesToFlutter();
 
       return await _runCommand();
     } finally {
-      _runGitClean(templates);
+      _runGitClean(_flutterTemplates);
+    }
+  }
+
+  Future<void> _copyTizenTemplatesToFlutter() async {
+    // Copy application template to the flutter_tools/templates directory.
+    // Even if the requested template type is plugin, an app template is
+    // required for generating the example app.
+    final Directory appTemplate =
+        _tizenTemplates.childDirectory('$appType-app');
+    _copyDirectoryIfExists(
+      appTemplate.childDirectory('cpp'),
+      _flutterTemplates
+          .childDirectory('app_shared')
+          .childDirectory('tizen-cpp.tmpl'),
+    );
+    _copyDirectoryIfExists(
+      appTemplate.childDirectory('csharp'),
+      _flutterTemplates
+          .childDirectory('app_shared')
+          .childDirectory('tizen-csharp.tmpl'),
+    );
+    _copyDirectoryIfExists(
+      appTemplate.childDirectory('lib'),
+      _flutterTemplates.childDirectory('app').childDirectory('lib'),
+    );
+
+    // Apply patch files in the application template.
+    for (final File file in appTemplate.listSync().whereType<File>()) {
+      if (file.basename.endsWith('.patch')) {
+        _runGitApply(_flutterTemplates, file);
+      }
+    }
+
+    // Copy plugin template to the flutter_tools/templates directory.
+    final Directory pluginTemplate = _tizenTemplates.childDirectory('plugin');
+    _copyDirectoryIfExists(
+      pluginTemplate.childDirectory('cpp'),
+      _flutterTemplates
+          .childDirectory('plugin')
+          .childDirectory('tizen-cpp.tmpl'),
+    );
+    _copyDirectoryIfExists(
+      pluginTemplate.childDirectory('csharp'),
+      _flutterTemplates
+          .childDirectory('plugin')
+          .childDirectory('tizen-csharp.tmpl'),
+    );
+  }
+
+  void _copyDirectoryIfExists(Directory source, Directory target) {
+    if (source.existsSync()) {
+      copyDirectory(source, target);
     }
   }
 
@@ -260,4 +413,9 @@ class TizenCreateCommand extends CreateCommand {
       throwToolExit('Failed to run git apply: ${result.stderr}');
     }
   }
+}
+
+String _createNamespaceName(String name) {
+  final String camelizedName = camelCase(name);
+  return camelizedName[0].toUpperCase() + camelizedName.substring(1);
 }
