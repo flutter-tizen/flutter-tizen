@@ -16,6 +16,7 @@ import 'package:flutter_tools/src/base/context.dart';
 import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/base/os.dart';
 import 'package:flutter_tools/src/base/template.dart';
+import 'package:flutter_tools/src/build_system/build_system.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/commands/analyze.dart';
 import 'package:flutter_tools/src/commands/config.dart';
@@ -49,6 +50,7 @@ import 'commands/run.dart';
 import 'commands/test.dart';
 import 'tizen_application_package.dart';
 import 'tizen_artifacts.dart';
+import 'tizen_build_system.dart';
 import 'tizen_builder.dart';
 import 'tizen_cache.dart';
 import 'tizen_device_manager.dart';
@@ -154,6 +156,11 @@ Future<void> main(List<String> args) async {
             cache: globals.cache,
             platform: globals.platform,
             operatingSystemUtils: globals.os,
+          ),
+      BuildSystem: () => TizenBuildSystem(
+            fileSystem: globals.fs,
+            platform: globals.platform,
+            logger: globals.logger,
           ),
       Cache: () => TizenFlutterCache(
             fileSystem: globals.fs,
