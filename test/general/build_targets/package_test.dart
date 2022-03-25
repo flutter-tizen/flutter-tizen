@@ -73,7 +73,9 @@ void main() {
         artifacts: artifacts,
         processManager: processManager,
       );
-      outputDir.childDirectory('flutter_assets').createSync(recursive: true);
+      environment.buildDir
+          .childDirectory('flutter_assets')
+          .createSync(recursive: true);
       environment.buildDir.childFile('app.so').createSync(recursive: true);
       environment.buildDir
           .childFile('tizen_plugins/libflutter_plugins.so')
@@ -148,7 +150,9 @@ void main() {
         artifacts: artifacts,
         processManager: processManager,
       );
-      outputDir.childDirectory('flutter_assets').createSync(recursive: true);
+      environment.buildDir
+          .childDirectory('flutter_assets')
+          .createSync(recursive: true);
 
       processManager.addCommand(FakeCommand(
         command: <String>[
@@ -213,7 +217,9 @@ type = app
         artifacts: artifacts,
         processManager: processManager,
       );
-      outputDir.childDirectory('flutter_assets').createSync(recursive: true);
+      environment.buildDir
+          .childDirectory('flutter_assets')
+          .createSync(recursive: true);
       environment.buildDir.childFile('app.so').createSync(recursive: true);
       environment.buildDir
           .childFile('tizen_plugins/libflutter_plugins.so')
@@ -267,7 +273,9 @@ type = app
         artifacts: artifacts,
         processManager: processManager,
       );
-      outputDir.childDirectory('flutter_assets').createSync(recursive: true);
+      environment.buildDir
+          .childDirectory('flutter_assets')
+          .createSync(recursive: true);
 
       await expectLater(
         () => NativeTpk(const TizenBuildInfo(

@@ -5,6 +5,7 @@
 // @dart = 2.8
 
 import 'package:file/memory.dart';
+import 'package:file_testing/file_testing.dart';
 import 'package:flutter_tizen/build_targets/package.dart';
 import 'package:flutter_tizen/tizen_build_info.dart';
 import 'package:flutter_tizen/tizen_builder.dart';
@@ -110,7 +111,6 @@ void main() {
     ProcessManager: () => FakeProcessManager.any(),
     TizenSdk: () => FakeTizenSdk(fileSystem),
     BuildSystem: () => TestBuildSystem.all(BuildResult(success: true)),
-    PackageBuilder: () => _FakePackageBuilder(null),
   });
 
   testUsingContext('Indicates that TPK has been built successfully', () async {
@@ -133,8 +133,14 @@ void main() {
     ProcessManager: () => FakeProcessManager.any(),
     Logger: () => logger,
     TizenSdk: () => FakeTizenSdk(fileSystem),
-    BuildSystem: () => TestBuildSystem.all(BuildResult(success: true)),
-    PackageBuilder: () => _FakePackageBuilder('package_id-1.0.0.tpk'),
+    BuildSystem: () => TestBuildSystem.all(
+          BuildResult(success: true),
+          (Target target, Environment environment) {
+            environment.outputDir
+                .childFile('tpk/package_id-1.0.0.tpk')
+                .createSync(recursive: true);
+          },
+        ),
   });
 
   testUsingContext('Can update tizen-manifest.xml', () async {
@@ -167,8 +173,14 @@ void main() {
     FileSystem: () => fileSystem,
     ProcessManager: () => FakeProcessManager.any(),
     TizenSdk: () => FakeTizenSdk(fileSystem),
-    BuildSystem: () => TestBuildSystem.all(BuildResult(success: true)),
-    PackageBuilder: () => _FakePackageBuilder('package_id-9.9.9.tpk'),
+    BuildSystem: () => TestBuildSystem.all(
+          BuildResult(success: true),
+          (Target target, Environment environment) {
+            environment.outputDir
+                .childFile('tpk/package_id-9.9.9.tpk')
+                .createSync(recursive: true);
+          },
+        ),
   });
 
   testUsingContext('Performs code size analysis', () async {
@@ -193,9 +205,9 @@ void main() {
       sizeAnalyzer: _FakeSizeAnalyzer(fileSystem: fileSystem, logger: logger),
     );
 
-    final File outputFile =
+    final File codeSizeFile =
         fileSystem.file('.flutter-devtools/tpk-code-size-analysis_01.json');
-    expect(outputFile.existsSync(), isTrue);
+    expect(codeSizeFile, exists);
     expect(
       logger.statusText,
       contains('A summary of your TPK analysis can be found at'),
@@ -205,26 +217,20 @@ void main() {
     ProcessManager: () => FakeProcessManager.any(),
     Logger: () => logger,
     TizenSdk: () => FakeTizenSdk(fileSystem),
-    BuildSystem: () => TestBuildSystem.all(BuildResult(success: true)),
-    PackageBuilder: () => _FakePackageBuilder('package_id-1.0.0.tpk'),
+    BuildSystem: () => TestBuildSystem.all(
+          BuildResult(success: true),
+          (Target target, Environment environment) {
+            environment.outputDir
+                .childDirectory('tpk/tpkroot')
+                .createSync(recursive: true);
+            environment.outputDir
+                .childFile('tpk/package_id-1.0.0.tpk')
+                .createSync(recursive: true);
+          },
+        ),
     FileSystemUtils: () =>
         FileSystemUtils(fileSystem: fileSystem, platform: platform),
   });
-}
-
-class _FakePackageBuilder extends PackageBuilder {
-  _FakePackageBuilder(this._outputTpkName);
-
-  final String _outputTpkName;
-
-  @override
-  Future<void> build(Target target, Environment environment) async {
-    if (_outputTpkName != null) {
-      final Directory tpkDir = environment.outputDir.childDirectory('tpk');
-      tpkDir.childDirectory('tpkroot').createSync(recursive: true);
-      tpkDir.childFile(_outputTpkName).createSync(recursive: true);
-    }
-  }
 }
 
 class _FakeSizeAnalyzer extends SizeAnalyzer {
