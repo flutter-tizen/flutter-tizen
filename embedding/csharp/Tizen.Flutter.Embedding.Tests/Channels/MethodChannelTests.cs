@@ -147,10 +147,7 @@ namespace Tizen.Flutter.Embedding.Tests.Channels
             {
                 var messenger = Substitute.For<IBinaryMessenger>();
                 var channel = new MethodChannel(TEST_CHANNEL_NAME, StandardMethodCodec.Instance, messenger);
-                channel.SetMethodCallHandler((call) =>
-                {
-                    return string.Empty;
-                });
+                channel.SetMethodCallHandler((call) => string.Empty);
 
                 messenger.Received().SetMessageHandler(Arg.Is<string>(x => x == TEST_CHANNEL_NAME),
                                                        Arg.Any<BinaryMessageHandler>());
@@ -161,10 +158,7 @@ namespace Tizen.Flutter.Embedding.Tests.Channels
             {
                 var messenger = Substitute.For<IBinaryMessenger>();
                 var channel = new MethodChannel(TEST_CHANNEL_NAME, StandardMethodCodec.Instance, messenger);
-                channel.SetMethodCallHandler((call) =>
-                {
-                    return Task.FromResult<object>(string.Empty);
-                });
+                channel.SetMethodCallHandler((call) => Task.FromResult<object>(string.Empty));
 
                 messenger.Received().SetMessageHandler(Arg.Is<string>(x => x == TEST_CHANNEL_NAME),
                                                        Arg.Any<BinaryMessageHandler>());
