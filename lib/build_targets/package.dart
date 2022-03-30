@@ -4,7 +4,6 @@
 
 import 'package:file/file.dart';
 import 'package:flutter_tools/src/base/common.dart';
-import 'package:flutter_tools/src/base/context.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/base/process.dart';
 import 'package:flutter_tools/src/build_info.dart';
@@ -18,26 +17,18 @@ import '../tizen_build_info.dart';
 import '../tizen_project.dart';
 import '../tizen_sdk.dart';
 import '../tizen_tpk.dart';
+import 'application.dart';
 import 'utils.dart';
 
-PackageBuilder? get packageBuilder => context.get<PackageBuilder>();
+/// This target doesn't specify any input or output but the build system always
+/// triggers [build] without skipping.
+/// This doesn't affect subsequent builds of [dependencies].
+///
+/// See: [Node.missingDepfile] in `build_system.dart`
+abstract class TizenPackage extends Target {
+  const TizenPackage(this.buildInfo);
 
-/// A pseudo [BuildSystem] that performs a non-incremental build of [Package]
-/// without skipping.
-class PackageBuilder {
-  const PackageBuilder();
-
-  Future<void> build(Package target, Environment environment) async {
-    environment.buildDir.createSync(recursive: true);
-    environment.outputDir.createSync(recursive: true);
-
-    environment.logger.printTrace('Building target: ${target.name}');
-    await target.build(environment);
-  }
-}
-
-abstract class Package extends Target {
-  const Package();
+  final TizenBuildInfo buildInfo;
 
   @nonVirtual
   @override
@@ -49,13 +40,22 @@ abstract class Package extends Target {
 
   @nonVirtual
   @override
-  List<Target> get dependencies => const <Target>[];
+  List<String> get depfiles => const <String>[
+        // This makes this target unskippable.
+        'non_existent_file',
+      ];
+
+  @override
+  List<Target> get dependencies => <Target>[
+        if (buildInfo.buildInfo.isDebug)
+          DebugTizenApplication(buildInfo)
+        else
+          ReleaseTizenApplication(buildInfo),
+      ];
 }
 
-class DotnetTpk extends Package {
-  DotnetTpk(this.buildInfo);
-
-  final TizenBuildInfo buildInfo;
+class DotnetTpk extends TizenPackage {
+  DotnetTpk(TizenBuildInfo tizenBuildInfo) : super(tizenBuildInfo);
 
   final ProcessUtils _processUtils = ProcessUtils(
       logger: globals.logger, processManager: globals.processManager);
@@ -88,7 +88,7 @@ class DotnetTpk extends Package {
     // Copy necessary files.
     final Directory flutterAssetsDir = resDir.childDirectory('flutter_assets');
     copyDirectory(
-      environment.outputDir.childDirectory('flutter_assets'),
+      environment.buildDir.childDirectory('flutter_assets'),
       flutterAssetsDir,
     );
 
@@ -183,10 +183,8 @@ class DotnetTpk extends Package {
   }
 }
 
-class NativeTpk extends Package {
-  NativeTpk(this.buildInfo);
-
-  final TizenBuildInfo buildInfo;
+class NativeTpk extends TizenPackage {
+  NativeTpk(TizenBuildInfo tizenBuildInfo) : super(tizenBuildInfo);
 
   @override
   String get name => 'native_tpk';
@@ -221,7 +219,7 @@ class NativeTpk extends Package {
     // Copy necessary files.
     final Directory flutterAssetsDir = resDir.childDirectory('flutter_assets');
     copyDirectory(
-      environment.outputDir.childDirectory('flutter_assets'),
+      environment.buildDir.childDirectory('flutter_assets'),
       flutterAssetsDir,
     );
 

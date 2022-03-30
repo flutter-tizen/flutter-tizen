@@ -5,6 +5,7 @@
 // @dart = 2.8
 
 import 'package:file/memory.dart';
+import 'package:file_testing/file_testing.dart';
 import 'package:flutter_tizen/build_targets/application.dart';
 import 'package:flutter_tizen/tizen_build_info.dart';
 import 'package:flutter_tools/src/artifacts.dart';
@@ -54,10 +55,11 @@ void main() {
       deviceProfile: 'wearable',
     )).build(environment);
 
-    final Directory bundleDir = fileSystem.directory('flutter_assets');
-    expect(bundleDir.childFile('vm_snapshot_data').existsSync(), isTrue);
-    expect(bundleDir.childFile('isolate_snapshot_data').existsSync(), isTrue);
-    expect(bundleDir.childFile('kernel_blob.bin').existsSync(), isTrue);
+    final Directory bundleDir =
+        environment.buildDir.childDirectory('flutter_assets');
+    expect(bundleDir.childFile('vm_snapshot_data'), exists);
+    expect(bundleDir.childFile('isolate_snapshot_data'), exists);
+    expect(bundleDir.childFile('kernel_blob.bin'), exists);
   }, overrides: <Type, Generator>{
     FileSystem: () => fileSystem,
     ProcessManager: () => processManager,

@@ -25,7 +25,6 @@ import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/linux/build_linux.dart';
 import 'package:flutter_tools/src/project.dart';
 
-import 'build_targets/application.dart';
 import 'build_targets/package.dart';
 import 'tizen_build_info.dart';
 import 'tizen_project.dart';
@@ -94,9 +93,9 @@ class TizenBuilder {
       generateDartPluginRegistry: false,
     );
 
-    final Target target = buildInfo.isDebug
-        ? DebugTizenApplication(tizenBuildInfo)
-        : ReleaseTizenApplication(tizenBuildInfo);
+    final Target target = tizenProject.isDotnet
+        ? DotnetTpk(tizenBuildInfo)
+        : NativeTpk(tizenBuildInfo);
 
     final String buildModeName = getNameForBuildMode(buildInfo.mode);
     final Status status = globals.logger.startProgress(
@@ -111,12 +110,6 @@ class TizenBuilder {
         }
         throwToolExit('The build failed.');
       }
-
-      // The packaging step must not be skipped even if there's no code change.
-      final Package package = tizenProject.isDotnet
-          ? DotnetTpk(tizenBuildInfo)
-          : NativeTpk(tizenBuildInfo);
-      await packageBuilder!.build(package, environment);
 
       if (buildInfo.performanceMeasurementFile != null) {
         final File outFile =
