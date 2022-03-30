@@ -8,13 +8,6 @@ using System.Threading.Tasks;
 namespace Tizen.Flutter.Embedding
 {
     /// <summary>
-    /// A handler of incoming method calls.
-    /// </summary>
-    /// <param name="call">A <see cref="MethodCall"/>.</param>
-    /// <returns>A result used for submitting the result of the call.</returns>
-    public delegate Task<object> MethodCallHandler(MethodCall call);
-
-    /// <summary>
     /// A named channel for communicating with the Flutter application using asynchronous method calls.
     /// </summary>
     public class MethodChannel
@@ -131,10 +124,14 @@ namespace Tizen.Flutter.Embedding
         /// <summary>
         /// Registers a method call handler on this channel.
         /// </summary>
-        /// <param name="handler">A <see cref="MethodCallHandler"/>, or null to deregister.</param>
-        public void SetMethodCallHandler(MethodCallHandler handler)
+        /// <param name="handler">An asynchronous callback function to handle the <see cref="MethodCall">.</param>
+        public void SetMethodCallHandler(Func<MethodCall, Task<object>> handler)
         {
-            async Task<byte[]> binaryHandler(byte[] bytes)
+            if (handler == null)
+            {
+                throw new ArgumentNullException(nameof(handler));
+            }
+            BinaryMessenger.SetMessageHandler(Name, async (byte[] bytes) =>
             {
                 MethodCall call = Codec.DecodeMethodCall(bytes);
                 try
@@ -153,8 +150,28 @@ namespace Tizen.Flutter.Embedding
                 {
                     return Codec.EncodeErrorEnvelope("error", e.Message, null, e.StackTrace);
                 }
+            });
+        }
+
+        /// <summary>
+        /// Registers a method call handler on this channel.
+        /// </summary>
+        /// <param name="handler">A callback function to handle the <see cref="MethodCall">.</param>
+        public void SetMethodCallHandler(Func<MethodCall, object> handler)
+        {
+            if (handler == null)
+            {
+                throw new ArgumentNullException(nameof(handler));
             }
-            BinaryMessenger.SetMessageHandler(Name, handler == null ? null : (BinaryMessageHandler)binaryHandler);
+            SetMethodCallHandler(call => Task.FromResult(handler(call)));
+        }
+
+        /// <summary>
+        /// De-registers the method call handler on this channel.
+        /// </summary>
+        public void UnsetMethodCallHandler()
+        {
+            BinaryMessenger.SetMessageHandler(Name, null);
         }
     }
 }

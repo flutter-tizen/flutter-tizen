@@ -4,6 +4,7 @@
 
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using NSubstitute;
 using Xunit;
 
@@ -132,25 +133,43 @@ namespace Tizen.Flutter.Embedding.Tests.Channels
         public class TheSetMethodCallHandlerMethod
         {
             [Fact]
-            public void Registers_Message_Handler()
+            public void Ensure_Handler_Is_Not_Null()
             {
                 var messenger = Substitute.For<IBinaryMessenger>();
                 var channel = new MethodChannel(TEST_CHANNEL_NAME, StandardMethodCodec.Instance, messenger);
-                channel.SetMethodCallHandler((call) =>
-                {
-                    return null;
-                });
+
+                Assert.Throws<ArgumentNullException>(() => channel.SetMethodCallHandler(null as Func<MethodCall, Task<object>>));
+                Assert.Throws<ArgumentNullException>(() => channel.SetMethodCallHandler(null as Func<MethodCall, object>));
+            }
+
+            [Fact]
+            public void Registers_MethodCallHandler()
+            {
+                var messenger = Substitute.For<IBinaryMessenger>();
+                var channel = new MethodChannel(TEST_CHANNEL_NAME, StandardMethodCodec.Instance, messenger);
+                channel.SetMethodCallHandler((call) => string.Empty);
 
                 messenger.Received().SetMessageHandler(Arg.Is<string>(x => x == TEST_CHANNEL_NAME),
                                                        Arg.Any<BinaryMessageHandler>());
             }
 
             [Fact]
-            public void Unregisters_Message_Handler()
+            public void Registers_Async_MethodCallHandler()
             {
                 var messenger = Substitute.For<IBinaryMessenger>();
                 var channel = new MethodChannel(TEST_CHANNEL_NAME, StandardMethodCodec.Instance, messenger);
-                channel.SetMethodCallHandler(null);
+                channel.SetMethodCallHandler((call) => Task.FromResult<object>(string.Empty));
+
+                messenger.Received().SetMessageHandler(Arg.Is<string>(x => x == TEST_CHANNEL_NAME),
+                                                       Arg.Any<BinaryMessageHandler>());
+            }
+
+            [Fact]
+            public void Unregisters_MethodCallHandler()
+            {
+                var messenger = Substitute.For<IBinaryMessenger>();
+                var channel = new MethodChannel(TEST_CHANNEL_NAME, StandardMethodCodec.Instance, messenger);
+                channel.UnsetMethodCallHandler();
 
                 messenger.Received().SetMessageHandler(Arg.Is<string>(x => x == TEST_CHANNEL_NAME), null);
             }

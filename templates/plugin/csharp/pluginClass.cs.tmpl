@@ -1,5 +1,4 @@
 using System;
-using System.Threading.Tasks;
 using Tizen.Flutter.Embedding;
 using Tizen.System;
 
@@ -17,11 +16,11 @@ namespace {{tizenNamespace}}
 
         public void OnDetachedFromEngine()
         {
-            _channel.SetMethodCallHandler(null);
+            _channel.UnsetMethodCallHandler();
             _channel = null;
         }
 
-        public async Task<object> HandleMethodCall(MethodCall call)
+        public object HandleMethodCall(MethodCall call)
         {
             if (call.Method == "getPlatformVersion")
             {
