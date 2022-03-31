@@ -9,11 +9,13 @@ Here are a few things you might consider when developing Flutter plugins for Tiz
 ### Implementation language
 
 - C/C++ (based on platform channels)
+- C# (based on platform channels)
 - Dart (based on Dart FFI)
 
 Typical Flutter plugins are written in their platform native languages, such as Java on Android and C/C++ on Tizen. However, some Windows plugins such as [`path_provider_windows`](https://github.com/flutter/plugins/tree/master/packages/path_provider/path_provider_windows) and Tizen plugins such as [`url_launcher_tizen`](https://github.com/flutter-tizen/plugins/tree/master/packages/url_launcher) are written in pure Dart using [Dart FFI](https://dart.dev/guides/libraries/c-interop) without any native code. To learn more about FFI-based plugins, you might read [Flutter Docs: Binding to native code using dart:ffi](https://flutter.dev/docs/development/platform-integration/c-interop).
 
-This document only covers native Tizen plugins written in C/C++.
+This document only covers native Tizen plugins written in C/C++. <br/>
+If you want to learn how to write a native plugin in C#, you might read [Writing a plugin in C#](./develop-plugin-csharp.md).
 
 ### Targeting multiple platforms vs. Tizen only
 
