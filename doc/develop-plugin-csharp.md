@@ -45,23 +45,23 @@ The implementation of the plugin can be found in the `tizen/PluginNamePlugin.cs`
 
 - `OnAttachedToEngine(IFlutterPluginBinding binding)`: This method is called when the plugin is registered to the `DotnetPluginRegistry` by the flutter application. In this method, you can create and initialize the platform channel.
 
-```c#
-public void OnAttachedToEngine(IFlutterPluginBinding binding)
-{
-    _channel = new MethodChannel("plugin_name", StandardMethodCodec.Instance, binding.BinaryMessenger);
-    _channel.SetMethodCallHandler(HandleMethodCall);
-}
-```
+  ```c#
+  public void OnAttachedToEngine(IFlutterPluginBinding binding)
+  {
+      _channel = new MethodChannel("plugin_name", StandardMethodCodec.Instance, binding.BinaryMessenger);
+      _channel.SetMethodCallHandler(HandleMethodCall);
+  }
+  ```
 
 - `OnDetachedFromEngine()`: This method is called when the plugin is unregistered from the `DotnetPluginRegistry` by the flutter application. You can release the resources allocated by the platform channel in this method.
 
-```c#
-public void OnDetachedFromEngine()
-{
-    _channel.UnsetMethodCallHandler();
-    _channel = null;
-}
-```
+  ```c#
+  public void OnDetachedFromEngine()
+  {
+      _channel.UnsetMethodCallHandler();
+      _channel = null;
+  }
+  ```
 
 In case of using `MethodChannel` to communicate with the application, you can set a callback method to handle the method call using `SetMethodCallHandler` method. The callback method can be synchronous or asynchronous.
 
