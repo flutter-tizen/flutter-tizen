@@ -83,7 +83,7 @@ private async Task<object> HandleMethodCallAsync(MethodCall call) {
 }
 ```
 
-In the callback method, you can use the `MethodCall` object to get the method name and arguments. If the method is completed successfully, just return any value to the application. If the method failed, throw an exception to the application. Any exception type can be thrown, but `FlutterException` must be used to specify the code and details of the error. The exception will be caught by the `MethodChannel` and the error message will be returned to the application. If the method is not implemented, throw a `MissingPluginException` to the application.
+In the callback method, you can use the `MethodCall` object to get the method name and arguments. If the method is completed successfully, just return any value to the application. if the method failed, throw an exception to the application. Any exception type can be thrown. However, if you want to specify the error code and details, use `FlutterException`. The exception will be caught by the `MethodChannel` and the error message will be returned to the application. If the method is not implemented, throw a `MissingPluginException` to the application.
 
 
 ### Available APIs
