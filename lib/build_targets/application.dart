@@ -142,10 +142,10 @@ class DebugTizenApplication extends TizenAssetBundle {
   @override
   List<Source> get outputs => <Source>[
         ...super.outputs,
-        const Source.pattern('{OUTPUT_DIR}/flutter_assets/vm_snapshot_data'),
+        const Source.pattern('{BUILD_DIR}/flutter_assets/vm_snapshot_data'),
         const Source.pattern(
-            '{OUTPUT_DIR}/flutter_assets/isolate_snapshot_data'),
-        const Source.pattern('{OUTPUT_DIR}/flutter_assets/kernel_blob.bin'),
+            '{BUILD_DIR}/flutter_assets/isolate_snapshot_data'),
+        const Source.pattern('{BUILD_DIR}/flutter_assets/kernel_blob.bin'),
       ];
 
   @override
