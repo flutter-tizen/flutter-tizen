@@ -42,16 +42,16 @@ namespace Tizen.Flutter.Embedding
         }
 
         [DllImport("flutter_tizen.so")]
-        public static extern FlutterDesktopEngine FlutterDesktopRunEngine(
+        public static extern FlutterDesktopEngine FlutterDesktopEngineRun(
             ref FlutterDesktopWindowProperties window_properties,
             ref FlutterDesktopEngineProperties engine_properties);
 
         [DllImport("flutter_tizen.so")]
-        public static extern void FlutterDesktopShutdownEngine(
+        public static extern void FlutterDesktopEngineShutdown(
             FlutterDesktopEngine engine);
 
         [DllImport("flutter_tizen.so")]
-        public static extern FlutterDesktopPluginRegistrar FlutterDesktopGetPluginRegistrar(
+        public static extern FlutterDesktopPluginRegistrar FlutterDesktopEngineGetPluginRegistrar(
             FlutterDesktopEngine engine,
             string plugin_name);
 
@@ -60,28 +60,28 @@ namespace Tizen.Flutter.Embedding
             FlutterDesktopEngine engine);
 
         [DllImport("flutter_tizen.so")]
-        public static extern IntPtr FlutterDesktopGetWindow(
+        public static extern IntPtr FlutterDesktopPluginRegistrarGetNativeWindow(
             FlutterDesktopPluginRegistrar registrar);
 
         [DllImport("flutter_tizen.so")]
-        public static extern void FlutterDesktopNotifyAppControl(
+        public static extern void FlutterDesktopEngineNotifyAppControl(
             FlutterDesktopEngine engine,
             SafeAppControlHandle handle);
 
         [DllImport("flutter_tizen.so")]
-        public static extern void FlutterDesktopNotifyLocaleChange(
+        public static extern void FlutterDesktopEngineNotifyLocaleChange(
             FlutterDesktopEngine engine);
 
         [DllImport("flutter_tizen.so")]
-        public static extern void FlutterDesktopNotifyLowMemoryWarning(
+        public static extern void FlutterDesktopEngineNotifyLowMemoryWarning(
             FlutterDesktopEngine engine);
 
         [DllImport("flutter_tizen.so")]
-        public static extern void FlutterDesktopNotifyAppIsResumed(
+        public static extern void FlutterDesktopEngineNotifyAppIsResumed(
             FlutterDesktopEngine engine);
 
         [DllImport("flutter_tizen.so")]
-        public static extern void FlutterDesktopNotifyAppIsPaused(
+        public static extern void FlutterDesktopEngineNotifyAppIsPaused(
             FlutterDesktopEngine engine);
         #endregion
 

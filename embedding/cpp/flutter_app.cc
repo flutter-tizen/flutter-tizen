@@ -45,7 +45,7 @@ bool FlutterApp::OnCreate() {
   engine_prop.dart_entrypoint_argc = entrypoint_args.size();
   engine_prop.dart_entrypoint_argv = entrypoint_args.data();
 
-  handle_ = FlutterDesktopRunEngine(window_prop, engine_prop);
+  handle_ = FlutterDesktopEngineRun(window_prop, engine_prop);
   if (!handle_) {
     TizenLog::Error("Could not launch a Flutter application.");
     return false;
@@ -57,13 +57,13 @@ bool FlutterApp::OnCreate() {
 void FlutterApp::OnResume() {
   assert(IsRunning());
 
-  FlutterDesktopNotifyAppIsResumed(handle_);
+  FlutterDesktopEngineNotifyAppIsResumed(handle_);
 }
 
 void FlutterApp::OnPause() {
   assert(IsRunning());
 
-  FlutterDesktopNotifyAppIsPaused(handle_);
+  FlutterDesktopEngineNotifyAppIsPaused(handle_);
 }
 
 void FlutterApp::OnTerminate() {
@@ -71,32 +71,32 @@ void FlutterApp::OnTerminate() {
 
   TizenLog::Debug("Shutting down the application...");
 
-  FlutterDesktopShutdownEngine(handle_);
+  FlutterDesktopEngineShutdown(handle_);
   handle_ = nullptr;
 }
 
 void FlutterApp::OnAppControlReceived(app_control_h app_control) {
   assert(IsRunning());
 
-  FlutterDesktopNotifyAppControl(handle_, app_control);
+  FlutterDesktopEngineNotifyAppControl(handle_, app_control);
 }
 
 void FlutterApp::OnLowMemory(app_event_info_h event_info) {
   assert(IsRunning());
 
-  FlutterDesktopNotifyLowMemoryWarning(handle_);
+  FlutterDesktopEngineNotifyLowMemoryWarning(handle_);
 }
 
 void FlutterApp::OnLanguageChanged(app_event_info_h event_info) {
   assert(IsRunning());
 
-  FlutterDesktopNotifyLocaleChange(handle_);
+  FlutterDesktopEngineNotifyLocaleChange(handle_);
 }
 
 void FlutterApp::OnRegionFormatChanged(app_event_info_h event_info) {
   assert(IsRunning());
 
-  FlutterDesktopNotifyLocaleChange(handle_);
+  FlutterDesktopEngineNotifyLocaleChange(handle_);
 }
 
 int FlutterApp::Run(int argc, char **argv) {
@@ -169,7 +169,7 @@ int FlutterApp::Run(int argc, char **argv) {
 FlutterDesktopPluginRegistrarRef FlutterApp::GetRegistrarForPlugin(
     const std::string &plugin_name) {
   if (handle_) {
-    return FlutterDesktopGetPluginRegistrar(handle_, plugin_name.c_str());
+    return FlutterDesktopEngineGetPluginRegistrar(handle_, plugin_name.c_str());
   }
   return nullptr;
 }

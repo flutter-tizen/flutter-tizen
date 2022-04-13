@@ -74,7 +74,7 @@ namespace Tizen.Flutter.Embedding
                     dart_entrypoint_argv = entrypointArgs.Handle,
                 };
 
-                Handle = FlutterDesktopRunEngine(ref windowProperties, ref engineProperties);
+                Handle = FlutterDesktopEngineRun(ref windowProperties, ref engineProperties);
                 if (Handle.IsInvalid)
                 {
                     throw new Exception("Could not launch a service application.");
@@ -89,14 +89,14 @@ namespace Tizen.Flutter.Embedding
             Debug.Assert(Handle);
 
             DotnetPluginRegistry.Instance.RemoveAllPlugins();
-            FlutterDesktopShutdownEngine(Handle);
+            FlutterDesktopEngineShutdown(Handle);
         }
 
         protected override void OnAppControlReceived(AppControlReceivedEventArgs e)
         {
             Debug.Assert(Handle);
 
-            FlutterDesktopNotifyAppControl(Handle, e.ReceivedAppControl.SafeAppControlHandle);
+            FlutterDesktopEngineNotifyAppControl(Handle, e.ReceivedAppControl.SafeAppControlHandle);
         }
 
         protected override void OnLowMemory(LowMemoryEventArgs e)
@@ -105,7 +105,7 @@ namespace Tizen.Flutter.Embedding
 
             Debug.Assert(Handle);
 
-            FlutterDesktopNotifyLowMemoryWarning(Handle);
+            FlutterDesktopEngineNotifyLowMemoryWarning(Handle);
         }
 
         protected override void OnLocaleChanged(LocaleChangedEventArgs e)
@@ -114,7 +114,7 @@ namespace Tizen.Flutter.Embedding
 
             Debug.Assert(Handle);
 
-            FlutterDesktopNotifyLocaleChange(Handle);
+            FlutterDesktopEngineNotifyLocaleChange(Handle);
         }
 
         protected override void OnRegionFormatChanged(RegionFormatChangedEventArgs e)
@@ -123,7 +123,7 @@ namespace Tizen.Flutter.Embedding
 
             Debug.Assert(Handle);
 
-            FlutterDesktopNotifyLocaleChange(Handle);
+            FlutterDesktopEngineNotifyLocaleChange(Handle);
         }
 
         /// <summary>
@@ -134,7 +134,7 @@ namespace Tizen.Flutter.Embedding
         {
             if (Handle)
             {
-                return FlutterDesktopGetPluginRegistrar(Handle, pluginName);
+                return FlutterDesktopEngineGetPluginRegistrar(Handle, pluginName);
             }
             return new FlutterDesktopPluginRegistrar();
         }
