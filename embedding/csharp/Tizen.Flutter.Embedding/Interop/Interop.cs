@@ -14,8 +14,6 @@ namespace Tizen.Flutter.Embedding
         [StructLayout(LayoutKind.Sequential)]
         public struct FlutterDesktopWindowProperties
         {
-            [MarshalAs(UnmanagedType.U1)]
-            public bool headed;
             public int x;
             public int y;
             public int width;
@@ -42,9 +40,12 @@ namespace Tizen.Flutter.Embedding
         }
 
         [DllImport("flutter_tizen.so")]
-        public static extern FlutterDesktopEngine FlutterDesktopEngineRun(
-            ref FlutterDesktopWindowProperties window_properties,
+        public static extern FlutterDesktopEngine FlutterDesktopEngineCreate(
             ref FlutterDesktopEngineProperties engine_properties);
+
+        [DllImport("flutter_tizen.so")]
+        public static extern bool FlutterDesktopEngineRun(
+            FlutterDesktopEngine engine);
 
         [DllImport("flutter_tizen.so")]
         public static extern void FlutterDesktopEngineShutdown(
@@ -82,6 +83,11 @@ namespace Tizen.Flutter.Embedding
 
         [DllImport("flutter_tizen.so")]
         public static extern void FlutterDesktopEngineNotifyAppIsPaused(
+            FlutterDesktopEngine engine);
+
+        [DllImport("flutter_tizen.so")]
+        public static extern FlutterDesktopView FlutterDesktopViewCreateFromNewWindow(
+            ref FlutterDesktopWindowProperties window_properties,
             FlutterDesktopEngine engine);
         #endregion
 

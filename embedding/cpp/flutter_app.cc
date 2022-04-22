@@ -14,7 +14,6 @@ bool FlutterApp::OnCreate() {
   TizenLog::Debug("Launching a Flutter application...");
 
   FlutterDesktopWindowProperties window_prop = {};
-  window_prop.headed = is_headed_;
   window_prop.x = window_offset_x_;
   window_prop.y = window_offset_y_;
   window_prop.width = window_width_;
@@ -45,25 +44,29 @@ bool FlutterApp::OnCreate() {
   engine_prop.dart_entrypoint_argc = entrypoint_args.size();
   engine_prop.dart_entrypoint_argv = entrypoint_args.data();
 
-  handle_ = FlutterDesktopEngineRun(window_prop, engine_prop);
-  if (!handle_) {
+  engine_ = FlutterDesktopEngineCreate(engine_prop);
+  if (!engine_) {
+    TizenLog::Error("Could not create a Flutter engine.");
+    return false;
+  }
+  view_ = FlutterDesktopViewCreateFromNewWindow(window_prop, engine_);
+  if (!view_) {
     TizenLog::Error("Could not launch a Flutter application.");
     return false;
   }
-
   return true;
 }
 
 void FlutterApp::OnResume() {
   assert(IsRunning());
 
-  FlutterDesktopEngineNotifyAppIsResumed(handle_);
+  FlutterDesktopEngineNotifyAppIsResumed(engine_);
 }
 
 void FlutterApp::OnPause() {
   assert(IsRunning());
 
-  FlutterDesktopEngineNotifyAppIsPaused(handle_);
+  FlutterDesktopEngineNotifyAppIsPaused(engine_);
 }
 
 void FlutterApp::OnTerminate() {
@@ -71,32 +74,32 @@ void FlutterApp::OnTerminate() {
 
   TizenLog::Debug("Shutting down the application...");
 
-  FlutterDesktopEngineShutdown(handle_);
-  handle_ = nullptr;
+  FlutterDesktopEngineShutdown(engine_);
+  engine_ = nullptr;
 }
 
 void FlutterApp::OnAppControlReceived(app_control_h app_control) {
   assert(IsRunning());
 
-  FlutterDesktopEngineNotifyAppControl(handle_, app_control);
+  FlutterDesktopEngineNotifyAppControl(engine_, app_control);
 }
 
 void FlutterApp::OnLowMemory(app_event_info_h event_info) {
   assert(IsRunning());
 
-  FlutterDesktopEngineNotifyLowMemoryWarning(handle_);
+  FlutterDesktopEngineNotifyLowMemoryWarning(engine_);
 }
 
 void FlutterApp::OnLanguageChanged(app_event_info_h event_info) {
   assert(IsRunning());
 
-  FlutterDesktopEngineNotifyLocaleChange(handle_);
+  FlutterDesktopEngineNotifyLocaleChange(engine_);
 }
 
 void FlutterApp::OnRegionFormatChanged(app_event_info_h event_info) {
   assert(IsRunning());
 
-  FlutterDesktopEngineNotifyLocaleChange(handle_);
+  FlutterDesktopEngineNotifyLocaleChange(engine_);
 }
 
 int FlutterApp::Run(int argc, char **argv) {
@@ -168,8 +171,8 @@ int FlutterApp::Run(int argc, char **argv) {
 
 FlutterDesktopPluginRegistrarRef FlutterApp::GetRegistrarForPlugin(
     const std::string &plugin_name) {
-  if (handle_) {
-    return FlutterDesktopEngineGetPluginRegistrar(handle_, plugin_name.c_str());
+  if (engine_) {
+    return FlutterDesktopEngineGetPluginRegistrar(engine_, plugin_name.c_str());
   }
   return nullptr;
 }

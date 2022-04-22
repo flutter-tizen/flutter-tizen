@@ -12,8 +12,10 @@
 // The app base class for headless execution.
 class FlutterServiceApp : public FlutterApp {
  public:
-  explicit FlutterServiceApp();
+  explicit FlutterServiceApp() {}
   virtual ~FlutterServiceApp() {}
+
+  virtual bool OnCreate() override;
 
   virtual int Run(int argc, char **argv) override;
 };

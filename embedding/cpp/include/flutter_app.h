@@ -43,7 +43,7 @@ class FlutterApp : public flutter::PluginRegistry {
   FlutterDesktopPluginRegistrarRef GetRegistrarForPlugin(
       const std::string &plugin_name) override;
 
-  bool IsRunning() { return handle_ != nullptr; }
+  bool IsRunning() { return engine_ != nullptr; }
 
   void SetDartEntrypoint(const std::string &entrypoint) {
     dart_entrypoint_ = entrypoint;
@@ -51,9 +51,6 @@ class FlutterApp : public flutter::PluginRegistry {
 
  protected:
   void ParseEngineArgs();
-
-  // Whether the app is headed or headless.
-  bool is_headed_ = true;
 
   // The x-coordinate of the top left corner of the window.
   int32_t window_offset_x_ = 0;
@@ -90,7 +87,10 @@ class FlutterApp : public flutter::PluginRegistry {
   std::vector<std::string> dart_entrypoint_args_;
 
   // The Flutter engine instance handle.
-  FlutterDesktopEngineRef handle_ = nullptr;
+  FlutterDesktopEngineRef engine_ = nullptr;
+
+  // The Flutter engine instance handle.
+  FlutterDesktopViewRef view_ = nullptr;
 };
 
 #endif /* FLUTTER_TIZEN_EMBEDDING_CPP_INCLUDE_FLUTTER_APP_H_ */
