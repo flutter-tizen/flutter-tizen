@@ -291,40 +291,36 @@ def find_parent_project(project_dir: Path):
     return None
 
 
-def print_launch_json(project_dir: Path, program: Path, debugger: Path, port):
+def print_launch_json(project_dir: Path, program: Path, debugger: Path, port, load_all_symbols):
     if find_parent_project(project_dir):
         project_dir = find_parent_project(project_dir)
 
-    launch_json = '''
-{
+    launch_json = f'''
+{{
     "version": "0.2.0",
     "configurations": [
-        {
+        {{
             "name": "flutter-tizen: gdb",
             "request": "launch",
             "type": "cppdbg",
             "externalConsole": false,
             "MIMode": "gdb",
-            "symbolLoadInfo": {
-                "loadAll": false,
-                "exceptionList": "libc.so;libflutter*"
-            },
-            "cwd": "CWD",
-            "program": "PROGRAM",
-            "miDebuggerPath": "DEBUGGER",
-            "miDebuggerServerAddress": ":PORT"
-        }
+            "symbolLoadInfo": {{
+                "loadAll": {'true' if load_all_symbols else 'false'},
+                "exceptionList": "{'' if load_all_symbols else 'libc.so;libflutter*'}"
+            }},
+            "cwd": "{project_dir.as_posix()}",
+            "program": "{program.as_posix()}",
+            "miDebuggerPath": "{debugger.as_posix()}",
+            "miDebuggerServerAddress": ":{str(port)}"
+        }}
     ]
-}
+}}
 '''
-    print(launch_json
-          .replace('CWD', project_dir.as_posix())
-          .replace('PROGRAM', program.as_posix())
-          .replace('DEBUGGER', debugger.as_posix())
-          .replace('PORT', str(port)))
+    print(launch_json)
 
 
-def run(device: TizenDevice):
+def run(device: TizenDevice, debug_port=None):
     tizen_sdk_dir = locate_tizen_sdk()
     gdb_path = get_gdb_path(tizen_sdk_dir, device.get_architecture())
 
@@ -334,22 +330,24 @@ def run(device: TizenDevice):
         sys.exit('Could not find the runner executable.\n'
                  'Make sure the app has been built and installed to your device.')
 
-    debug_port = find_free_port()
-    device.forward_port(debug_port, debug_port)
+    already_running = debug_port is not None
+    if not already_running:
+        debug_port = find_free_port()
+        device.forward_port(debug_port, debug_port)
 
-    app_id = find_app_id(project_dir)
-    pid = find_pid(device, app_id)
-    if not pid:
-        sys.exit('The app is not running.')
+        app_id = find_app_id(project_dir)
+        pid = find_pid(device, app_id)
+        if not pid:
+            sys.exit('The app is not running.')
 
-    install_gdb_server(device, tizen_sdk_dir)
+        install_gdb_server(device, tizen_sdk_dir)
 
-    launched = threading.Event()
-    server_thread = threading.Thread(
-        target=start_gdb_server,
-        args=[device, app_id, debug_port, pid, launched], daemon=True)
-    server_thread.start()
-    launched.wait()
+        launched = threading.Event()
+        server_thread = threading.Thread(
+            target=start_gdb_server,
+            args=[device, app_id, debug_port, pid, launched], daemon=True)
+        server_thread.start()
+        launched.wait()
 
     print(f'gdbserver is listening for debug connection on port {debug_port}.')
     print_help()
@@ -360,14 +358,18 @@ def run(device: TizenDevice):
         if choice == 'h' or choice == 'H' or choice == '?':
             print_help()
         elif choice == 'r' or choice == 'R':
-            args = ['-ex', 'set auto-solib-add off',
-                    '-ex', f'target remote :{debug_port}',
-                    '-ex', 'share libc.so',
-                    '-ex', 'share libflutter*']
+            if already_running:
+                args = ['-ex', f'target remote :{debug_port}']
+            else:
+                args = ['-ex', 'set auto-solib-add off',
+                        '-ex', f'target remote :{debug_port}',
+                        '-ex', 'share libc.so',
+                        '-ex', 'share libflutter*']
             run_gdb_client(gdb_path, program, args)
             break
         elif choice == 'p' or choice == 'P':
-            print_launch_json(project_dir, program, gdb_path, debug_port)
+            print_launch_json(project_dir, program, gdb_path,
+                              debug_port, already_running)
         elif choice == 'v' or choice == 'V':
             if find_parent_project(project_dir):
                 subprocess.run(['code', '..'])
@@ -418,8 +420,8 @@ def download_symbols(device: TizenDevice):
         location = Path('symbols') / f'tizen-{device_arch}-{mode}'
         location.mkdir(parents=True, exist_ok=True)
 
-        basename = f'tizen-{device_arch}-{mode}_symbols.zip'
-        url = f'{base_url}/download/{short_version}/{basename}'
+        basename = f'tizen-{device_arch}-{mode}_symbols'
+        url = f'{base_url}/download/{short_version}/{basename}.zip'
 
         try:
             download_archive(f'Downloading {basename}...', url, location)
@@ -433,9 +435,11 @@ def main():
     parser = argparse.ArgumentParser(
         description='Tool for starting GDB server and client to debug a native app on a Tizen device.')
     parser.add_argument('-d', '--device-id', metavar='SERIAL', type=str,
-                        help='Target device ID')
+                        help='Target device ID.')
+    parser.add_argument('-p', '--debug-port', metavar='PORT', type=int,
+                        help='Connects to an already running gdbserver on the specified port.')
     parser.add_argument('--download-symbols', action='store_true',
-                        help='Downloads engine and embedder debug symbols')
+                        help='Downloads engine and embedder debug symbols.')
     args = parser.parse_args()
 
     try:
@@ -453,7 +457,7 @@ def main():
             if args.download_symbols:
                 download_symbols(device)
             else:
-                run(device)
+                run(device, args.debug_port)
     except (ProcessLookupError, KeyboardInterrupt):
         print()
 
