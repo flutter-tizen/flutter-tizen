@@ -34,7 +34,7 @@ namespace Tizen.Flutter.Embedding
         /// <summary>
         /// The Flutter engine instance handle.
         /// </summary>
-        protected internal FlutterDesktopEngine FlutterEngine { get; private set; } = new FlutterDesktopEngine();
+        protected internal FlutterDesktopEngine Engine { get; private set; } = new FlutterDesktopEngine();
         public override void Run(string[] args)
         {
             // Log any unhandled exception.
@@ -68,9 +68,9 @@ namespace Tizen.Flutter.Embedding
                     dart_entrypoint_argv = entrypointArgs.Handle,
                 };
 
-                FlutterEngine = FlutterDesktopEngineCreate(ref engineProperties);
+                Engine = FlutterDesktopEngineCreate(ref engineProperties);
 
-                if (!FlutterDesktopEngineRun(FlutterEngine))
+                if (!FlutterDesktopEngineRun(Engine))
                 {
                     throw new Exception("Could not launch a service application.");
                 }
@@ -81,44 +81,44 @@ namespace Tizen.Flutter.Embedding
         {
             base.OnTerminate();
 
-            Debug.Assert(FlutterEngine);
+            Debug.Assert(Engine);
 
             DotnetPluginRegistry.Instance.RemoveAllPlugins();
-            FlutterDesktopEngineShutdown(FlutterEngine);
+            FlutterDesktopEngineShutdown(Engine);
         }
 
         protected override void OnAppControlReceived(AppControlReceivedEventArgs e)
         {
-            Debug.Assert(FlutterEngine);
+            Debug.Assert(Engine);
 
-            FlutterDesktopEngineNotifyAppControl(FlutterEngine, e.ReceivedAppControl.SafeAppControlHandle);
+            FlutterDesktopEngineNotifyAppControl(Engine, e.ReceivedAppControl.SafeAppControlHandle);
         }
 
         protected override void OnLowMemory(LowMemoryEventArgs e)
         {
             base.OnLowMemory(e);
 
-            Debug.Assert(FlutterEngine);
+            Debug.Assert(Engine);
 
-            FlutterDesktopEngineNotifyLowMemoryWarning(FlutterEngine);
+            FlutterDesktopEngineNotifyLowMemoryWarning(Engine);
         }
 
         protected override void OnLocaleChanged(LocaleChangedEventArgs e)
         {
             base.OnLocaleChanged(e);
 
-            Debug.Assert(FlutterEngine);
+            Debug.Assert(Engine);
 
-            FlutterDesktopEngineNotifyLocaleChange(FlutterEngine);
+            FlutterDesktopEngineNotifyLocaleChange(Engine);
         }
 
         protected override void OnRegionFormatChanged(RegionFormatChangedEventArgs e)
         {
             base.OnRegionFormatChanged(e);
 
-            Debug.Assert(FlutterEngine);
+            Debug.Assert(Engine);
 
-            FlutterDesktopEngineNotifyLocaleChange(FlutterEngine);
+            FlutterDesktopEngineNotifyLocaleChange(Engine);
         }
 
         /// <summary>
@@ -127,9 +127,9 @@ namespace Tizen.Flutter.Embedding
         /// </summary>
         public FlutterDesktopPluginRegistrar GetRegistrarForPlugin(string pluginName)
         {
-            if (FlutterEngine)
+            if (Engine)
             {
-                return FlutterDesktopEngineGetPluginRegistrar(FlutterEngine, pluginName);
+                return FlutterDesktopEngineGetPluginRegistrar(Engine, pluginName);
             }
             return new FlutterDesktopPluginRegistrar();
         }

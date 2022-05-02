@@ -15,11 +15,6 @@ namespace Tizen.Flutter.Embedding
 
         public override bool IsInvalid => handle == IntPtr.Zero;
 
-        public static implicit operator bool(FlutterDesktopView view)
-        {
-            return !view.IsInvalid;
-        }
-
         protected override bool ReleaseHandle()
         {
             SetHandle(IntPtr.Zero);

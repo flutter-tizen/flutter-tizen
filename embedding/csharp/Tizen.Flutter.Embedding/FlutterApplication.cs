@@ -70,8 +70,12 @@ namespace Tizen.Flutter.Embedding
         /// <summary>
         /// The Flutter engine instance handle.
         /// </summary>
-        protected internal FlutterDesktopEngine FlutterEngine { get; private set; } = new FlutterDesktopEngine();
-        protected internal FlutterDesktopView FlutterView { get; private set; } = new FlutterDesktopView();
+        protected internal FlutterDesktopEngine Engine { get; private set; } = new FlutterDesktopEngine();
+
+        /// <summary>
+        /// The Flutter view instance handle.
+        /// </summary>
+        protected internal FlutterDesktopView View { get; private set; } = new FlutterDesktopView();
 
         public override void Run(string[] args)
         {
@@ -116,9 +120,16 @@ namespace Tizen.Flutter.Embedding
                     dart_entrypoint_argc = entrypointArgs.Length,
                     dart_entrypoint_argv = entrypointArgs.Handle,
                 };
-
-                FlutterEngine = FlutterDesktopEngineCreate(ref engineProperties);
-                FlutterView = FlutterDesktopViewCreateFromNewWindow(ref windowProperties, FlutterEngine);
+                Engine = FlutterDesktopEngineCreate(ref engineProperties);
+                if (Engine.IsInvalid)
+                {
+                    throw new Exception("Could not create a Flutter engine.");
+                }
+                View = FlutterDesktopViewCreateFromNewWindow(ref windowProperties, Engine);
+                if (View.IsInvalid)
+                {
+                    throw new Exception("Could not launch a Flutter application.");
+                }
             }
         }
 
@@ -126,62 +137,62 @@ namespace Tizen.Flutter.Embedding
         {
             base.OnResume();
 
-            Debug.Assert(FlutterEngine);
+            Debug.Assert(Engine);
 
-            FlutterDesktopEngineNotifyAppIsResumed(FlutterEngine);
+            FlutterDesktopEngineNotifyAppIsResumed(Engine);
         }
 
         protected override void OnPause()
         {
             base.OnPause();
 
-            Debug.Assert(FlutterEngine);
+            Debug.Assert(Engine);
 
-            FlutterDesktopEngineNotifyAppIsPaused(FlutterEngine);
+            FlutterDesktopEngineNotifyAppIsPaused(Engine);
         }
 
         protected override void OnTerminate()
         {
             base.OnTerminate();
 
-            Debug.Assert(FlutterEngine);
+            Debug.Assert(Engine);
 
             DotnetPluginRegistry.Instance.RemoveAllPlugins();
-            FlutterDesktopEngineShutdown(FlutterEngine);
+            FlutterDesktopEngineShutdown(Engine);
         }
 
         protected override void OnAppControlReceived(AppControlReceivedEventArgs e)
         {
-            Debug.Assert(FlutterEngine);
+            Debug.Assert(Engine);
 
-            FlutterDesktopEngineNotifyAppControl(FlutterEngine, e.ReceivedAppControl.SafeAppControlHandle);
+            FlutterDesktopEngineNotifyAppControl(Engine, e.ReceivedAppControl.SafeAppControlHandle);
         }
 
         protected override void OnLowMemory(LowMemoryEventArgs e)
         {
             base.OnLowMemory(e);
 
-            Debug.Assert(FlutterEngine);
+            Debug.Assert(Engine);
 
-            FlutterDesktopEngineNotifyLowMemoryWarning(FlutterEngine);
+            FlutterDesktopEngineNotifyLowMemoryWarning(Engine);
         }
 
         protected override void OnLocaleChanged(LocaleChangedEventArgs e)
         {
             base.OnLocaleChanged(e);
 
-            Debug.Assert(FlutterEngine);
+            Debug.Assert(Engine);
 
-            FlutterDesktopEngineNotifyLocaleChange(FlutterEngine);
+            FlutterDesktopEngineNotifyLocaleChange(Engine);
         }
 
         protected override void OnRegionFormatChanged(RegionFormatChangedEventArgs e)
         {
             base.OnRegionFormatChanged(e);
 
-            Debug.Assert(FlutterEngine);
+            Debug.Assert(Engine);
 
-            FlutterDesktopEngineNotifyLocaleChange(FlutterEngine);
+            FlutterDesktopEngineNotifyLocaleChange(Engine);
         }
 
         /// <summary>
@@ -190,9 +201,9 @@ namespace Tizen.Flutter.Embedding
         /// </summary>
         public FlutterDesktopPluginRegistrar GetRegistrarForPlugin(string pluginName)
         {
-            if (FlutterEngine)
+            if (Engine)
             {
-                return FlutterDesktopEngineGetPluginRegistrar(FlutterEngine, pluginName);
+                return FlutterDesktopEngineGetPluginRegistrar(Engine, pluginName);
             }
             return new FlutterDesktopPluginRegistrar();
         }

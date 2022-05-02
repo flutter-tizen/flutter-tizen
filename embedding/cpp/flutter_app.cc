@@ -9,6 +9,7 @@
 #include <fstream>
 
 #include "tizen_log.h"
+#include "utils.h"
 
 bool FlutterApp::OnCreate() {
   TizenLog::Debug("Launching a Flutter application...");
@@ -23,7 +24,7 @@ bool FlutterApp::OnCreate() {
   window_prop.top_level = is_top_level_;
 
   // Read engine arguments passed from the tool.
-  ParseEngineArgs();
+  Utils::ParseEngineArgs(&engine_args_);
 
   std::vector<const char *> switches;
   for (auto &arg : engine_args_) {
@@ -105,23 +106,23 @@ void FlutterApp::OnRegionFormatChanged(app_event_info_h event_info) {
 int FlutterApp::Run(int argc, char **argv) {
   ui_app_lifecycle_callback_s lifecycle_cb = {};
   lifecycle_cb.create = [](void *data) -> bool {
-    FlutterApp *app = (FlutterApp *)data;
+    auto *app = reinterpret_cast<FlutterApp *>(data);
     return app->OnCreate();
   };
   lifecycle_cb.resume = [](void *data) {
-    FlutterApp *app = (FlutterApp *)data;
+    auto *app = reinterpret_cast<FlutterApp *>(data);
     app->OnResume();
   };
   lifecycle_cb.pause = [](void *data) {
-    FlutterApp *app = (FlutterApp *)data;
+    auto *app = reinterpret_cast<FlutterApp *>(data);
     app->OnPause();
   };
   lifecycle_cb.terminate = [](void *data) {
-    FlutterApp *app = (FlutterApp *)data;
+    auto *app = reinterpret_cast<FlutterApp *>(data);
     app->OnTerminate();
   };
   lifecycle_cb.app_control = [](app_control_h a, void *data) {
-    FlutterApp *app = (FlutterApp *)data;
+    auto *app = reinterpret_cast<FlutterApp *>(data);
     app->OnAppControlReceived(a);
   };
 
@@ -129,35 +130,35 @@ int FlutterApp::Run(int argc, char **argv) {
   ui_app_add_event_handler(
       &handler, APP_EVENT_LOW_MEMORY,
       [](app_event_info_h e, void *data) {
-        FlutterApp *app = (FlutterApp *)data;
+        auto *app = reinterpret_cast<FlutterApp *>(data);
         app->OnLowMemory(e);
       },
       this);
   ui_app_add_event_handler(
       &handler, APP_EVENT_LOW_BATTERY,
       [](app_event_info_h e, void *data) {
-        FlutterApp *app = (FlutterApp *)data;
+        auto *app = reinterpret_cast<FlutterApp *>(data);
         app->OnLowBattery(e);
       },
       this);
   ui_app_add_event_handler(
       &handler, APP_EVENT_LANGUAGE_CHANGED,
       [](app_event_info_h e, void *data) {
-        FlutterApp *app = (FlutterApp *)data;
+        auto *app = reinterpret_cast<FlutterApp *>(data);
         app->OnLanguageChanged(e);
       },
       this);
   ui_app_add_event_handler(
       &handler, APP_EVENT_REGION_FORMAT_CHANGED,
       [](app_event_info_h e, void *data) {
-        FlutterApp *app = (FlutterApp *)data;
+        auto *app = reinterpret_cast<FlutterApp *>(data);
         app->OnRegionFormatChanged(e);
       },
       this);
   ui_app_add_event_handler(
       &handler, APP_EVENT_DEVICE_ORIENTATION_CHANGED,
       [](app_event_info_h e, void *data) {
-        FlutterApp *app = (FlutterApp *)data;
+        auto *app = reinterpret_cast<FlutterApp *>(data);
         app->OnDeviceOrientationChanged(e);
       },
       this);
@@ -175,36 +176,4 @@ FlutterDesktopPluginRegistrarRef FlutterApp::GetRegistrarForPlugin(
     return FlutterDesktopEngineGetPluginRegistrar(engine_, plugin_name.c_str());
   }
   return nullptr;
-}
-
-void FlutterApp::ParseEngineArgs() {
-  char *app_id;
-  if (app_get_id(&app_id) != 0) {
-    TizenLog::Warn("App id is not found.");
-    return;
-  }
-  std::string temp_path("/home/owner/share/tmp/sdk_tools/" +
-                        std::string(app_id) + ".rpm");
-  free(app_id);
-
-  auto file = fopen(temp_path.c_str(), "r");
-  if (!file) {
-    return;
-  }
-  char *line = nullptr;
-  size_t len = 0;
-
-  while (getline(&line, &len, file) > 0) {
-    if (line[strlen(line) - 1] == '\n') {
-      line[strlen(line) - 1] = 0;
-    }
-    TizenLog::Info("Enabled: %s", line);
-    engine_args_.push_back(line);
-  }
-  free(line);
-  fclose(file);
-
-  if (remove(temp_path.c_str()) != 0) {
-    TizenLog::Warn("Error removing file: %s", strerror(errno));
-  }
 }

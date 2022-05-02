@@ -4,13 +4,17 @@
 
 #include "include/flutter_service_app.h"
 
+#include <cassert>
+#include <cerrno>
+
 #include "tizen_log.h"
+#include "utils.h"
 
 bool FlutterServiceApp::OnCreate() {
   TizenLog::Debug("Launching a Flutter service application...");
 
   // Read engine arguments passed from the tool.
-  ParseEngineArgs();
+  Utils::ParseEngineArgs(&engine_args_);
 
   std::vector<const char *> switches;
   for (auto &arg : engine_args_) {
@@ -43,48 +47,81 @@ bool FlutterServiceApp::OnCreate() {
   return true;
 }
 
+void FlutterServiceApp::OnTerminate() {
+  assert(IsRunning());
+
+  TizenLog::Debug("Shutting down the service application...");
+
+  FlutterDesktopEngineShutdown(engine_);
+  engine_ = nullptr;
+}
+
+void FlutterServiceApp::OnAppControlReceived(app_control_h app_control) {
+  assert(IsRunning());
+
+  FlutterDesktopEngineNotifyAppControl(engine_, app_control);
+}
+
+void FlutterServiceApp::OnLowMemory(app_event_info_h event_info) {
+  assert(IsRunning());
+
+  FlutterDesktopEngineNotifyLowMemoryWarning(engine_);
+}
+
+void FlutterServiceApp::OnLanguageChanged(app_event_info_h event_info) {
+  assert(IsRunning());
+
+  FlutterDesktopEngineNotifyLocaleChange(engine_);
+}
+
+void FlutterServiceApp::OnRegionFormatChanged(app_event_info_h event_info) {
+  assert(IsRunning());
+
+  FlutterDesktopEngineNotifyLocaleChange(engine_);
+}
+
 int FlutterServiceApp::Run(int argc, char **argv) {
   service_app_lifecycle_callback_s lifecycle_cb = {};
   lifecycle_cb.create = [](void *data) -> bool {
-    FlutterApp *app = (FlutterApp *)data;
-    return app->OnCreate();
+    auto *service_app = reinterpret_cast<FlutterServiceApp *>(data);
+    return service_app->OnCreate();
   };
   lifecycle_cb.terminate = [](void *data) {
-    FlutterApp *app = (FlutterApp *)data;
-    app->OnTerminate();
+    auto *service_app = reinterpret_cast<FlutterServiceApp *>(data);
+    service_app->OnTerminate();
   };
   lifecycle_cb.app_control = [](app_control_h a, void *data) {
-    FlutterApp *app = (FlutterApp *)data;
-    app->OnAppControlReceived(a);
+    auto *service_app = reinterpret_cast<FlutterServiceApp *>(data);
+    service_app->OnAppControlReceived(a);
   };
 
   app_event_handler_h handler;
   service_app_add_event_handler(
       &handler, APP_EVENT_LOW_MEMORY,
       [](app_event_info_h e, void *data) {
-        FlutterApp *app = (FlutterApp *)data;
-        app->OnLowMemory(e);
+        auto *service_app = reinterpret_cast<FlutterServiceApp *>(data);
+        service_app->OnLowMemory(e);
       },
       this);
   service_app_add_event_handler(
       &handler, APP_EVENT_LOW_BATTERY,
       [](app_event_info_h e, void *data) {
-        FlutterApp *app = (FlutterApp *)data;
-        app->OnLowBattery(e);
+        auto *service_app = reinterpret_cast<FlutterServiceApp *>(data);
+        service_app->OnLowBattery(e);
       },
       this);
   service_app_add_event_handler(
       &handler, APP_EVENT_LANGUAGE_CHANGED,
       [](app_event_info_h e, void *data) {
-        FlutterApp *app = (FlutterApp *)data;
-        app->OnLanguageChanged(e);
+        auto *service_app = reinterpret_cast<FlutterServiceApp *>(data);
+        service_app->OnLanguageChanged(e);
       },
       this);
   service_app_add_event_handler(
       &handler, APP_EVENT_REGION_FORMAT_CHANGED,
       [](app_event_info_h e, void *data) {
-        FlutterApp *app = (FlutterApp *)data;
-        app->OnRegionFormatChanged(e);
+        auto *service_app = reinterpret_cast<FlutterServiceApp *>(data);
+        service_app->OnRegionFormatChanged(e);
       },
       this);
 
@@ -93,4 +130,12 @@ int FlutterServiceApp::Run(int argc, char **argv) {
     TizenLog::Error("Could not launch a service application. (%d)", ret);
   }
   return ret;
+}
+
+FlutterDesktopPluginRegistrarRef FlutterServiceApp::GetRegistrarForPlugin(
+    const std::string &plugin_name) {
+  if (engine_) {
+    return FlutterDesktopEngineGetPluginRegistrar(engine_, plugin_name.c_str());
+  }
+  return nullptr;
 }
