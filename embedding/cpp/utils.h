@@ -14,4 +14,4 @@ class Utils {
   static void ParseEngineArgs(std::vector<std::string>* list);
 };
 
-#endif
+#endif /* FLUTTER_TIZEN_EMBEDDING_CPP_UTILS_H_ */
