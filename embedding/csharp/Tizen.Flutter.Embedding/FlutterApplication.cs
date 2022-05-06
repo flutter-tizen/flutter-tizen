@@ -93,17 +93,6 @@ namespace Tizen.Flutter.Embedding
         {
             base.OnCreate();
 
-            var windowProperties = new FlutterDesktopWindowProperties
-            {
-                x = WindowOffsetX,
-                y = WindowOffsetY,
-                width = WindowWidth,
-                height = WindowHeight,
-                transparent = IsWindowTransparent,
-                focusable = IsWindowFocusable,
-                top_level = IsTopLevel,
-            };
-
             Utils.ParseEngineArgs(EngineArgs);
 
             using (var switches = new StringArray(EngineArgs))
@@ -120,16 +109,29 @@ namespace Tizen.Flutter.Embedding
                     dart_entrypoint_argc = entrypointArgs.Length,
                     dart_entrypoint_argv = entrypointArgs.Handle,
                 };
+
                 Engine = FlutterDesktopEngineCreate(ref engineProperties);
                 if (Engine.IsInvalid)
                 {
                     throw new Exception("Could not create a Flutter engine.");
                 }
-                View = FlutterDesktopViewCreateFromNewWindow(ref windowProperties, Engine);
-                if (View.IsInvalid)
-                {
-                    throw new Exception("Could not launch a Flutter application.");
-                }
+            }
+
+            var windowProperties = new FlutterDesktopWindowProperties
+            {
+                x = WindowOffsetX,
+                y = WindowOffsetY,
+                width = WindowWidth,
+                height = WindowHeight,
+                transparent = IsWindowTransparent,
+                focusable = IsWindowFocusable,
+                top_level = IsTopLevel,
+            };
+
+            View = FlutterDesktopViewCreateFromNewWindow(ref windowProperties, Engine);
+            if (View.IsInvalid)
+            {
+                throw new Exception("Could not launch a Flutter application.");
             }
         }
 

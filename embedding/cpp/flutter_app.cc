@@ -5,23 +5,12 @@
 #include "include/flutter_app.h"
 
 #include <cassert>
-#include <cerrno>
-#include <fstream>
 
 #include "tizen_log.h"
 #include "utils.h"
 
 bool FlutterApp::OnCreate() {
   TizenLog::Debug("Launching a Flutter application...");
-
-  FlutterDesktopWindowProperties window_prop = {};
-  window_prop.x = window_offset_x_;
-  window_prop.y = window_offset_y_;
-  window_prop.width = window_width_;
-  window_prop.height = window_height_;
-  window_prop.transparent = is_window_transparent_;
-  window_prop.focusable = is_window_focusable_;
-  window_prop.top_level = is_top_level_;
 
   // Read engine arguments passed from the tool.
   Utils::ParseEngineArgs(&engine_args_);
@@ -50,6 +39,16 @@ bool FlutterApp::OnCreate() {
     TizenLog::Error("Could not create a Flutter engine.");
     return false;
   }
+
+  FlutterDesktopWindowProperties window_prop = {};
+  window_prop.x = window_offset_x_;
+  window_prop.y = window_offset_y_;
+  window_prop.width = window_width_;
+  window_prop.height = window_height_;
+  window_prop.transparent = is_window_transparent_;
+  window_prop.focusable = is_window_focusable_;
+  window_prop.top_level = is_top_level_;
+
   view_ = FlutterDesktopViewCreateFromNewWindow(window_prop, engine_);
   if (!view_) {
     TizenLog::Error("Could not launch a Flutter application.");

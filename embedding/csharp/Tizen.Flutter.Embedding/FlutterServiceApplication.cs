@@ -69,6 +69,10 @@ namespace Tizen.Flutter.Embedding
                 };
 
                 Engine = FlutterDesktopEngineCreate(ref engineProperties);
+                if (Engine.IsInvalid)
+                {
+                    throw new Exception("Could not create a Flutter engine.");
+                }
 
                 if (!FlutterDesktopEngineRun(Engine))
                 {

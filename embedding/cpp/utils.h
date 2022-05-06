@@ -10,7 +10,8 @@
 
 class Utils {
  public:
-  // Reads engine arguments passed from the flutter-tizen tool and adds to list.
+  // Reads engine arguments passed from the flutter-tizen tool and adds to
+  // |list|.
   static void ParseEngineArgs(std::vector<std::string>* list);
 };
 

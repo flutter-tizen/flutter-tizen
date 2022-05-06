@@ -6,12 +6,14 @@
 
 #include <app.h>
 
+#include <cerrno>
+
 #include "tizen_log.h"
 
 void Utils::ParseEngineArgs(std::vector<std::string> *list) {
   char *app_id;
   if (app_get_id(&app_id) != 0) {
-    TizenLog::Warn("App id is not found.");
+    TizenLog::Warn("The app ID is not found.");
     return;
   }
   std::string temp_path("/home/owner/share/tmp/sdk_tools/" +

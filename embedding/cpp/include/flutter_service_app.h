@@ -5,10 +5,9 @@
 #ifndef FLUTTER_TIZEN_EMBEDDING_CPP_INCLUDE_FLUTTER_SERVICE_APP_H_
 #define FLUTTER_TIZEN_EMBEDDING_CPP_INCLUDE_FLUTTER_SERVICE_APP_H_
 
-#include <service_app.h>
-
 #include <flutter/plugin_registry.h>
 #include <flutter_tizen.h>
+#include <service_app.h>
 
 #include <string>
 #include <vector>

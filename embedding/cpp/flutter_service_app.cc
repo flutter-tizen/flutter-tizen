@@ -5,7 +5,6 @@
 #include "include/flutter_service_app.h"
 
 #include <cassert>
-#include <cerrno>
 
 #include "tizen_log.h"
 #include "utils.h"
@@ -83,45 +82,45 @@ void FlutterServiceApp::OnRegionFormatChanged(app_event_info_h event_info) {
 int FlutterServiceApp::Run(int argc, char **argv) {
   service_app_lifecycle_callback_s lifecycle_cb = {};
   lifecycle_cb.create = [](void *data) -> bool {
-    auto *service_app = reinterpret_cast<FlutterServiceApp *>(data);
-    return service_app->OnCreate();
+    auto *app = reinterpret_cast<FlutterServiceApp *>(data);
+    return app->OnCreate();
   };
   lifecycle_cb.terminate = [](void *data) {
-    auto *service_app = reinterpret_cast<FlutterServiceApp *>(data);
-    service_app->OnTerminate();
+    auto *app = reinterpret_cast<FlutterServiceApp *>(data);
+    app->OnTerminate();
   };
   lifecycle_cb.app_control = [](app_control_h a, void *data) {
-    auto *service_app = reinterpret_cast<FlutterServiceApp *>(data);
-    service_app->OnAppControlReceived(a);
+    auto *app = reinterpret_cast<FlutterServiceApp *>(data);
+    app->OnAppControlReceived(a);
   };
 
   app_event_handler_h handler;
   service_app_add_event_handler(
       &handler, APP_EVENT_LOW_MEMORY,
       [](app_event_info_h e, void *data) {
-        auto *service_app = reinterpret_cast<FlutterServiceApp *>(data);
-        service_app->OnLowMemory(e);
+        auto *app = reinterpret_cast<FlutterServiceApp *>(data);
+        app->OnLowMemory(e);
       },
       this);
   service_app_add_event_handler(
       &handler, APP_EVENT_LOW_BATTERY,
       [](app_event_info_h e, void *data) {
-        auto *service_app = reinterpret_cast<FlutterServiceApp *>(data);
-        service_app->OnLowBattery(e);
+        auto *app = reinterpret_cast<FlutterServiceApp *>(data);
+        app->OnLowBattery(e);
       },
       this);
   service_app_add_event_handler(
       &handler, APP_EVENT_LANGUAGE_CHANGED,
       [](app_event_info_h e, void *data) {
-        auto *service_app = reinterpret_cast<FlutterServiceApp *>(data);
-        service_app->OnLanguageChanged(e);
+        auto *app = reinterpret_cast<FlutterServiceApp *>(data);
+        app->OnLanguageChanged(e);
       },
       this);
   service_app_add_event_handler(
       &handler, APP_EVENT_REGION_FORMAT_CHANGED,
       [](app_event_info_h e, void *data) {
-        auto *service_app = reinterpret_cast<FlutterServiceApp *>(data);
-        service_app->OnRegionFormatChanged(e);
+        auto *app = reinterpret_cast<FlutterServiceApp *>(data);
+        app->OnRegionFormatChanged(e);
       },
       this);
 
