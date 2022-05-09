@@ -34,8 +34,7 @@ namespace Tizen.Flutter.Embedding
         /// <summary>
         /// The Flutter engine instance handle.
         /// </summary>
-        protected internal FlutterDesktopEngine Handle { get; private set; } = new FlutterDesktopEngine();
-
+        protected internal FlutterDesktopEngine Engine { get; private set; } = new FlutterDesktopEngine();
         public override void Run(string[] args)
         {
             // Log any unhandled exception.
@@ -51,11 +50,6 @@ namespace Tizen.Flutter.Embedding
         protected override void OnCreate()
         {
             base.OnCreate();
-
-            var windowProperties = new FlutterDesktopWindowProperties
-            {
-                headed = false,
-            };
 
             Utils.ParseEngineArgs(EngineArgs);
 
@@ -74,8 +68,13 @@ namespace Tizen.Flutter.Embedding
                     dart_entrypoint_argv = entrypointArgs.Handle,
                 };
 
-                Handle = FlutterDesktopRunEngine(ref windowProperties, ref engineProperties);
-                if (Handle.IsInvalid)
+                Engine = FlutterDesktopEngineCreate(ref engineProperties);
+                if (Engine.IsInvalid)
+                {
+                    throw new Exception("Could not create a Flutter engine.");
+                }
+
+                if (!FlutterDesktopEngineRun(Engine))
                 {
                     throw new Exception("Could not launch a service application.");
                 }
@@ -86,44 +85,44 @@ namespace Tizen.Flutter.Embedding
         {
             base.OnTerminate();
 
-            Debug.Assert(Handle);
+            Debug.Assert(Engine);
 
             DotnetPluginRegistry.Instance.RemoveAllPlugins();
-            FlutterDesktopShutdownEngine(Handle);
+            FlutterDesktopEngineShutdown(Engine);
         }
 
         protected override void OnAppControlReceived(AppControlReceivedEventArgs e)
         {
-            Debug.Assert(Handle);
+            Debug.Assert(Engine);
 
-            FlutterDesktopNotifyAppControl(Handle, e.ReceivedAppControl.SafeAppControlHandle);
+            FlutterDesktopEngineNotifyAppControl(Engine, e.ReceivedAppControl.SafeAppControlHandle);
         }
 
         protected override void OnLowMemory(LowMemoryEventArgs e)
         {
             base.OnLowMemory(e);
 
-            Debug.Assert(Handle);
+            Debug.Assert(Engine);
 
-            FlutterDesktopNotifyLowMemoryWarning(Handle);
+            FlutterDesktopEngineNotifyLowMemoryWarning(Engine);
         }
 
         protected override void OnLocaleChanged(LocaleChangedEventArgs e)
         {
             base.OnLocaleChanged(e);
 
-            Debug.Assert(Handle);
+            Debug.Assert(Engine);
 
-            FlutterDesktopNotifyLocaleChange(Handle);
+            FlutterDesktopEngineNotifyLocaleChange(Engine);
         }
 
         protected override void OnRegionFormatChanged(RegionFormatChangedEventArgs e)
         {
             base.OnRegionFormatChanged(e);
 
-            Debug.Assert(Handle);
+            Debug.Assert(Engine);
 
-            FlutterDesktopNotifyLocaleChange(Handle);
+            FlutterDesktopEngineNotifyLocaleChange(Engine);
         }
 
         /// <summary>
@@ -132,9 +131,9 @@ namespace Tizen.Flutter.Embedding
         /// </summary>
         public FlutterDesktopPluginRegistrar GetRegistrarForPlugin(string pluginName)
         {
-            if (Handle)
+            if (Engine)
             {
-                return FlutterDesktopGetPluginRegistrar(Handle, pluginName);
+                return FlutterDesktopEngineGetPluginRegistrar(Engine, pluginName);
             }
             return new FlutterDesktopPluginRegistrar();
         }

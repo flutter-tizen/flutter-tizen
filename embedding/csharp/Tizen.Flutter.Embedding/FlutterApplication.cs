@@ -16,11 +16,6 @@ namespace Tizen.Flutter.Embedding
     public class FlutterApplication : CoreUIApplication, IPluginRegistry
     {
         /// <summary>
-        /// Whether the app is headed or headless.
-        /// </summary>
-        protected bool IsHeaded { get; set; } = true;
-
-        /// <summary>
         /// The x-coordinate of the top left corner of the window.
         /// </summary>
         protected int WindowOffsetX { get; set; } = 0;
@@ -75,7 +70,12 @@ namespace Tizen.Flutter.Embedding
         /// <summary>
         /// The Flutter engine instance handle.
         /// </summary>
-        protected internal FlutterDesktopEngine Handle { get; private set; } = new FlutterDesktopEngine();
+        protected internal FlutterDesktopEngine Engine { get; private set; } = new FlutterDesktopEngine();
+
+        /// <summary>
+        /// The Flutter view instance handle.
+        /// </summary>
+        protected internal FlutterDesktopView View { get; private set; } = new FlutterDesktopView();
 
         public override void Run(string[] args)
         {
@@ -92,18 +92,6 @@ namespace Tizen.Flutter.Embedding
         protected override void OnCreate()
         {
             base.OnCreate();
-
-            var windowProperties = new FlutterDesktopWindowProperties
-            {
-                headed = IsHeaded,
-                x = WindowOffsetX,
-                y = WindowOffsetY,
-                width = WindowWidth,
-                height = WindowHeight,
-                transparent = IsWindowTransparent,
-                focusable = IsWindowFocusable,
-                top_level = IsTopLevel,
-            };
 
             Utils.ParseEngineArgs(EngineArgs);
 
@@ -122,11 +110,28 @@ namespace Tizen.Flutter.Embedding
                     dart_entrypoint_argv = entrypointArgs.Handle,
                 };
 
-                Handle = FlutterDesktopRunEngine(ref windowProperties, ref engineProperties);
-                if (Handle.IsInvalid)
+                Engine = FlutterDesktopEngineCreate(ref engineProperties);
+                if (Engine.IsInvalid)
                 {
-                    throw new Exception("Could not launch a Flutter application.");
+                    throw new Exception("Could not create a Flutter engine.");
                 }
+            }
+
+            var windowProperties = new FlutterDesktopWindowProperties
+            {
+                x = WindowOffsetX,
+                y = WindowOffsetY,
+                width = WindowWidth,
+                height = WindowHeight,
+                transparent = IsWindowTransparent,
+                focusable = IsWindowFocusable,
+                top_level = IsTopLevel,
+            };
+
+            View = FlutterDesktopViewCreateFromNewWindow(ref windowProperties, Engine);
+            if (View.IsInvalid)
+            {
+                throw new Exception("Could not launch a Flutter application.");
             }
         }
 
@@ -134,62 +139,62 @@ namespace Tizen.Flutter.Embedding
         {
             base.OnResume();
 
-            Debug.Assert(Handle);
+            Debug.Assert(Engine);
 
-            FlutterDesktopNotifyAppIsResumed(Handle);
+            FlutterDesktopEngineNotifyAppIsResumed(Engine);
         }
 
         protected override void OnPause()
         {
             base.OnPause();
 
-            Debug.Assert(Handle);
+            Debug.Assert(Engine);
 
-            FlutterDesktopNotifyAppIsPaused(Handle);
+            FlutterDesktopEngineNotifyAppIsPaused(Engine);
         }
 
         protected override void OnTerminate()
         {
             base.OnTerminate();
 
-            Debug.Assert(Handle);
+            Debug.Assert(Engine);
 
             DotnetPluginRegistry.Instance.RemoveAllPlugins();
-            FlutterDesktopShutdownEngine(Handle);
+            FlutterDesktopEngineShutdown(Engine);
         }
 
         protected override void OnAppControlReceived(AppControlReceivedEventArgs e)
         {
-            Debug.Assert(Handle);
+            Debug.Assert(Engine);
 
-            FlutterDesktopNotifyAppControl(Handle, e.ReceivedAppControl.SafeAppControlHandle);
+            FlutterDesktopEngineNotifyAppControl(Engine, e.ReceivedAppControl.SafeAppControlHandle);
         }
 
         protected override void OnLowMemory(LowMemoryEventArgs e)
         {
             base.OnLowMemory(e);
 
-            Debug.Assert(Handle);
+            Debug.Assert(Engine);
 
-            FlutterDesktopNotifyLowMemoryWarning(Handle);
+            FlutterDesktopEngineNotifyLowMemoryWarning(Engine);
         }
 
         protected override void OnLocaleChanged(LocaleChangedEventArgs e)
         {
             base.OnLocaleChanged(e);
 
-            Debug.Assert(Handle);
+            Debug.Assert(Engine);
 
-            FlutterDesktopNotifyLocaleChange(Handle);
+            FlutterDesktopEngineNotifyLocaleChange(Engine);
         }
 
         protected override void OnRegionFormatChanged(RegionFormatChangedEventArgs e)
         {
             base.OnRegionFormatChanged(e);
 
-            Debug.Assert(Handle);
+            Debug.Assert(Engine);
 
-            FlutterDesktopNotifyLocaleChange(Handle);
+            FlutterDesktopEngineNotifyLocaleChange(Engine);
         }
 
         /// <summary>
@@ -198,9 +203,9 @@ namespace Tizen.Flutter.Embedding
         /// </summary>
         public FlutterDesktopPluginRegistrar GetRegistrarForPlugin(string pluginName)
         {
-            if (Handle)
+            if (Engine)
             {
-                return FlutterDesktopGetPluginRegistrar(Handle, pluginName);
+                return FlutterDesktopEngineGetPluginRegistrar(Engine, pluginName);
             }
             return new FlutterDesktopPluginRegistrar();
         }
