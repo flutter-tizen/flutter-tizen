@@ -25,6 +25,12 @@ import 'package:yaml/yaml.dart';
 
 import 'tizen_project.dart';
 
+/// Constant for 'namespace' key in plugin maps.
+const String kNamespace = 'namespace';
+
+/// Constant for 'namespace' key in plugin maps.
+const String kFileName = 'fileName';
+
 /// Contains the parameters to template a Tizen plugin.
 ///
 /// The [name] of the plugin is required. Either [dartPluginClass] or
@@ -50,10 +56,10 @@ class TizenPlugin extends PluginPlatform implements NativeOrDartPlugin {
     return TizenPlugin(
       name: name,
       directory: directory,
-      namespace: yaml['namespace'] as String?,
+      namespace: yaml[kNamespace] as String?,
       pluginClass: yaml[kPluginClass] as String?,
       dartPluginClass: yaml[kDartPluginClass] as String?,
-      fileName: yaml['fileName'] as String?,
+      fileName: yaml[kFileName] as String?,
     );
   }
 
@@ -71,7 +77,13 @@ class TizenPlugin extends PluginPlatform implements NativeOrDartPlugin {
   final String? fileName;
 
   @override
-  bool isNative() => pluginClass != null;
+  bool hasMethodChannel() => pluginClass != null;
+
+  @override
+  bool hasFfi() => hasDart();
+
+  @override
+  bool hasDart() => dartPluginClass != null;
 
   bool isDotnet() => fileName?.endsWith('.csproj') ?? false;
 
@@ -79,10 +91,10 @@ class TizenPlugin extends PluginPlatform implements NativeOrDartPlugin {
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
       'name': name,
-      if (namespace != null) 'namespace': namespace,
-      if (pluginClass != null) 'pluginClass': pluginClass,
-      if (dartPluginClass != null) 'dartPluginClass': dartPluginClass,
-      if (fileName != null) 'fileName': fileName,
+      if (namespace != null) kNamespace: namespace,
+      if (pluginClass != null) kPluginClass: pluginClass,
+      if (dartPluginClass != null) kDartPluginClass: dartPluginClass,
+      if (fileName != null) kFileName: fileName,
       if (fileName != null) 'filePath': directory.childFile(fileName!).path,
     };
   }
@@ -349,11 +361,12 @@ Future<List<TizenPlugin>> findTizenPlugins(
     );
     if (plugin == null) {
       continue;
-    } else if (dartOnly && plugin.dartPluginClass == null) {
+    } else if (dartOnly && !plugin.hasDart()) {
       continue;
-    } else if (cppOnly && (!plugin.isNative() || plugin.isDotnet())) {
+    } else if (cppOnly && (!plugin.hasMethodChannel() || plugin.isDotnet())) {
       continue;
-    } else if (dotnetOnly && (!plugin.isNative() || !plugin.isDotnet())) {
+    } else if (dotnetOnly &&
+        (!plugin.hasMethodChannel() || !plugin.isDotnet())) {
       continue;
     }
     plugins.add(plugin);

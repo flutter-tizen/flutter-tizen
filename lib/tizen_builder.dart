@@ -102,7 +102,7 @@ class TizenBuilder {
         'Building a Tizen application in $buildModeName mode...');
     try {
       final BuildResult result =
-          await globals.buildSystem!.build(target, environment);
+          await globals.buildSystem.build(target, environment);
       if (!result.success) {
         for (final ExceptionMeasurement measurement
             in result.exceptions.values) {
