@@ -28,8 +28,11 @@ import 'tizen_project.dart';
 /// Constant for 'namespace' key in plugin maps.
 const String kNamespace = 'namespace';
 
-/// Constant for 'namespace' key in plugin maps.
+/// Constant for 'fileName' key in plugin maps.
 const String kFileName = 'fileName';
+
+/// Constant for 'filePath' key in plugin maps.
+const String kFilePath = 'filePath';
 
 /// Contains the parameters to template a Tizen plugin.
 ///
@@ -95,7 +98,7 @@ class TizenPlugin extends PluginPlatform implements NativeOrDartPlugin {
       if (pluginClass != null) kPluginClass: pluginClass,
       if (dartPluginClass != null) kDartPluginClass: dartPluginClass,
       if (fileName != null) kFileName: fileName,
-      if (fileName != null) 'filePath': directory.childFile(fileName!).path,
+      if (fileName != null) kFilePath: directory.childFile(fileName!).path,
     };
   }
 
@@ -283,9 +286,7 @@ const List<String> _kKnownPlugins = <String>[
 ///
 /// See: [FlutterProject.ensureReadyForPlatformSpecificTooling] in `project.dart`
 Future<void> ensureReadyForTizenTooling(FlutterProject project) async {
-  if (!project.directory.existsSync() ||
-      project.hasExampleApp ||
-      project.isPlugin) {
+  if (!project.directory.existsSync() || project.isPlugin) {
     return;
   }
   final TizenProject tizenProject = TizenProject.fromFlutter(project);
