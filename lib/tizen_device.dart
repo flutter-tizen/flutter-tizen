@@ -21,7 +21,6 @@ import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/project.dart';
 import 'package:flutter_tools/src/protocol_discovery.dart';
 import 'package:meta/meta.dart';
-import 'package:path/path.dart';
 import 'package:process/process.dart';
 
 import 'forwarding_log_reader.dart';
@@ -249,8 +248,10 @@ class TizenDevice extends Device {
   ///
   /// See: [AndroidDevice._installApp] in `android_device.dart`
   Future<bool> _installApp(TizenTpk app, {bool installTwice = false}) async {
-    if (!app.file.existsSync()) {
-      _logger.printError('"${relative(app.file.path)}" does not exist.');
+    final FileSystemEntity package = app.applicationPackage;
+    if (!package.existsSync()) {
+      _logger.printError(
+          '"${_fileSystem.path.relative(package.path)}" does not exist.');
       return false;
     }
 
@@ -265,10 +266,10 @@ class TizenDevice extends Device {
       );
     }
 
-    final Status status =
-        _logger.startProgress('Installing ${relative(app.file.path)}...');
+    final Status status = _logger.startProgress(
+        'Installing ${_fileSystem.path.relative(package.path)}...');
     final RunResult result =
-        await runSdbAsync(<String>['install', app.file.path], checked: false);
+        await runSdbAsync(<String>['install', package.path], checked: false);
     if (result.exitCode != 0 ||
         result.stdout.contains('val[fail]') ||
         result.stdout.contains('install failed')) {
@@ -277,7 +278,7 @@ class TizenDevice extends Device {
       return false;
     }
     if (installTwice) {
-      await runSdbAsync(<String>['install', app.file.path], checked: false);
+      await runSdbAsync(<String>['install', package.path], checked: false);
     }
     status.stop();
 

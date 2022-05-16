@@ -6,7 +6,6 @@
 
 import 'package:file/memory.dart';
 import 'package:file_testing/file_testing.dart';
-import 'package:flutter_tizen/build_targets/package.dart';
 import 'package:flutter_tizen/tizen_build_info.dart';
 import 'package:flutter_tizen/tizen_builder.dart';
 import 'package:flutter_tizen/tizen_sdk.dart';
