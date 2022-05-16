@@ -149,7 +149,7 @@ class TizenCreateCommand extends CreateCommand {
     );
   }
 
-  /// See: [CreateCommand._generatePlugin] in `create.dart`
+  /// See: [CreateCommand._generateMethodChannelPlugin] in `create.dart`
   @override
   Future<int> generateApp(
     List<String> templateNames,
@@ -246,6 +246,10 @@ class TizenCreateCommand extends CreateCommand {
       throwToolExit(
           '--app-type=$appType and --template=$template cannot be provided at the same time.');
     }
+    if (template == 'plugin_ffi') {
+      // TODO(swift-kim): Support this or provide a better message.
+      throwToolExit('The FFI plugin template is not currently supported.');
+    }
 
     final String templateName = template == 'app' ? '$appType-app' : template;
     if (!_tizenTemplates
@@ -312,7 +316,7 @@ class TizenCreateCommand extends CreateCommand {
   }
 
   /// See:
-  /// - [CreateCommand._generatePlugin] in `create.dart`
+  /// - [CreateCommand._generateMethodChannelPlugin] in `create.dart`
   /// - [Template.render] in `template.dart`
   @override
   Future<FlutterCommandResult> runCommand() async {
