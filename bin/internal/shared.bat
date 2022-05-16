@@ -70,7 +70,7 @@ GOTO :EOF
 
     EXIT /B
     :do_flutter_version
-      CALL "%flutter_exe%" --version || EXIT /B
+      CALL "%flutter_exe%" >NUL || EXIT /B
   ENDLOCAL  
   EXIT /B
 
