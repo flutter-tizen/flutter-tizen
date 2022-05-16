@@ -28,7 +28,7 @@ mixin TizenRequiredArtifacts on FlutterCommand {
 
 /// See: [DevelopmentArtifact] in `cache.dart`
 class TizenDevelopmentArtifact implements DevelopmentArtifact {
-  const TizenDevelopmentArtifact._(this.name, {this.feature});
+  const TizenDevelopmentArtifact(this.name, {this.feature});
 
   @override
   final String name;
@@ -36,7 +36,7 @@ class TizenDevelopmentArtifact implements DevelopmentArtifact {
   @override
   final Feature? feature;
 
-  static const DevelopmentArtifact tizen = TizenDevelopmentArtifact._('tizen');
+  static const DevelopmentArtifact tizen = TizenDevelopmentArtifact('tizen');
 }
 
 /// Extends [FlutterCache] to register [TizenEngineArtifacts].
