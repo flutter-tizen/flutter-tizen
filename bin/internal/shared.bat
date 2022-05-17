@@ -32,7 +32,7 @@ GOTO :EOF
 
   REM Clone flutter repo if not installed.
   IF NOT EXIST "%flutter_dir%" (
-    git clone --depth=1 "%flutter_repo%" "%flutter_dir%" || (
+    git clone "%flutter_repo%" "%flutter_dir%" || (
       ECHO Error: Failed to download the flutter repo from %flutter_repo%.
       EXIT /B
     )
@@ -47,7 +47,7 @@ GOTO :EOF
       IF !version! NEQ !revision! (
         git reset --hard
         git clean -xdf
-        git fetch --depth=1 "%flutter_repo%" "!version!"
+        git fetch "%flutter_repo%" "!version!"
         git checkout FETCH_HEAD
 
         REM Invalidate the cache.

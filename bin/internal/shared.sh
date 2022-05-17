@@ -37,7 +37,7 @@ function update_flutter() {
 
   # Clone flutter repo if not installed.
   if [[ ! -d "$FLUTTER_DIR" ]]; then
-    git clone --depth=1 "$FLUTTER_REPO" "$FLUTTER_DIR"
+    git clone "$FLUTTER_REPO" "$FLUTTER_DIR"
   fi
 
   # GIT_DIR and GIT_WORK_TREE are used in the git command.
@@ -49,7 +49,7 @@ function update_flutter() {
   if [[ "$version" != "$(git rev-parse HEAD)" ]]; then
     git reset --hard
     git clean -xdf
-    git fetch --depth=1 "$FLUTTER_REPO" "$version"
+    git fetch "$FLUTTER_REPO" "$version"
     git checkout FETCH_HEAD
 
     # Invalidate the cache.
