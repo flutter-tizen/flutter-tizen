@@ -3,32 +3,22 @@
 // found in the LICENSE file.
 
 import 'package:file/file.dart';
-import 'package:flutter_tools/src/android/android_sdk.dart';
 import 'package:flutter_tools/src/application_package.dart';
-import 'package:flutter_tools/src/base/logger.dart';
-import 'package:flutter_tools/src/base/user_messages.dart';
 import 'package:flutter_tools/src/build_info.dart';
 import 'package:flutter_tools/src/flutter_application_package.dart';
 import 'package:flutter_tools/src/project.dart';
-import 'package:process/process.dart';
 
 import 'tizen_tpk.dart';
 
 /// [FlutterApplicationPackageFactory] extended for Tizen.
 class TizenApplicationPackageFactory extends FlutterApplicationPackageFactory {
   TizenApplicationPackageFactory({
-    required AndroidSdk androidSdk,
-    required ProcessManager processManager,
-    required Logger logger,
-    required UserMessages userMessages,
-    required FileSystem fileSystem,
-  }) : super(
-          androidSdk: androidSdk,
-          processManager: processManager,
-          logger: logger,
-          userMessages: userMessages,
-          fileSystem: fileSystem,
-        );
+    required super.androidSdk,
+    required super.processManager,
+    required super.logger,
+    required super.userMessages,
+    required super.fileSystem,
+  });
 
   @override
   Future<ApplicationPackage?> getPackageForPlatform(

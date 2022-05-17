@@ -55,7 +55,7 @@ abstract class TizenPackage extends Target {
 }
 
 class DotnetTpk extends TizenPackage {
-  DotnetTpk(TizenBuildInfo tizenBuildInfo) : super(tizenBuildInfo);
+  DotnetTpk(super.tizenBuildInfo);
 
   final ProcessUtils _processUtils = ProcessUtils(
       logger: globals.logger, processManager: globals.processManager);
@@ -184,7 +184,7 @@ class DotnetTpk extends TizenPackage {
 }
 
 class NativeTpk extends TizenPackage {
-  NativeTpk(TizenBuildInfo tizenBuildInfo) : super(tizenBuildInfo);
+  NativeTpk(super.tizenBuildInfo);
 
   @override
   String get name => 'native_tpk';
