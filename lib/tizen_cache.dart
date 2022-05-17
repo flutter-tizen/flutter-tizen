@@ -119,13 +119,6 @@ class TizenEngineArtifacts extends EngineCachedArtifact {
         : null;
   }
 
-  String get shortVersion {
-    if (version == null) {
-      throwToolExit('Could not determine Tizen engine revision.');
-    }
-    return version!.length > 7 ? version!.substring(0, 7) : version!;
-  }
-
   /// Source: [Cache.storageBaseUrl] in `cache.dart`
   String get engineBaseUrl {
     final String? overrideUrl = _platform.environment['TIZEN_ENGINE_BASE_URL'];
@@ -208,10 +201,11 @@ class TizenEngineArtifacts extends EngineCachedArtifact {
     if (githubRunId != null) {
       await _downloadArtifactsFromGithub(operatingSystemUtils, githubRunId);
     } else {
+      if (version == null) {
+        throwToolExit('Could not determine Tizen engine revision.');
+      }
       await _downloadArtifactsFromUrl(
-        operatingSystemUtils,
-        '$engineBaseUrl/download/$shortVersion',
-      );
+          operatingSystemUtils, '$engineBaseUrl/download/$version');
     }
   }
 
