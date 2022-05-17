@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @dart = 2.8
-
 import 'package:flutter_tools/src/android/build_validation.dart';
 import 'package:flutter_tools/src/base/common.dart';
 import 'package:flutter_tools/src/build_info.dart';
@@ -27,7 +25,7 @@ class TizenBuildCommand extends BuildCommand {
 class BuildTpkCommand extends BuildSubCommand
     with DartPluginRegistry, TizenRequiredArtifacts {
   /// See: [BuildApkCommand] in `build_apk.dart`
-  BuildTpkCommand({bool verboseHelp = false})
+  BuildTpkCommand({required bool verboseHelp})
       : super(verboseHelp: verboseHelp) {
     addCommonDesktopBuildOptions(verboseHelp: verboseHelp);
     usesBuildNameOption();
@@ -69,7 +67,7 @@ class BuildTpkCommand extends BuildSubCommand
   /// See: [BuildApkCommand.runCommand] in `build_apk.dart`
   @override
   Future<FlutterCommandResult> runCommand() async {
-    final String deviceProfile = stringArg('device-profile');
+    final String? deviceProfile = stringArg('device-profile');
     if (deviceProfile == null) {
       throwToolExit(
           'The --device-profile (-p) option is mandatory. e.g. -pwearable, -ptv');
@@ -77,14 +75,14 @@ class BuildTpkCommand extends BuildSubCommand
     final BuildInfo buildInfo = await getBuildInfo();
     final TizenBuildInfo tizenBuildInfo = TizenBuildInfo(
       buildInfo,
-      targetArch: stringArg('target-arch'),
+      targetArch: stringArg('target-arch')!,
       deviceProfile: deviceProfile,
       securityProfile: stringArg('security-profile'),
     );
     _validateBuild(tizenBuildInfo);
     displayNullSafetyMode(buildInfo);
 
-    await tizenBuilder.buildTpk(
+    await tizenBuilder?.buildTpk(
       project: FlutterProject.current(),
       targetFile: targetFile,
       tizenBuildInfo: tizenBuildInfo,
