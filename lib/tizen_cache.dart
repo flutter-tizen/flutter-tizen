@@ -28,7 +28,7 @@ mixin TizenRequiredArtifacts on FlutterCommand {
 
 /// See: [DevelopmentArtifact] in `cache.dart`
 class TizenDevelopmentArtifact implements DevelopmentArtifact {
-  const TizenDevelopmentArtifact._(this.name, {this.feature});
+  const TizenDevelopmentArtifact(this.name, {this.feature});
 
   @override
   final String name;
@@ -36,7 +36,7 @@ class TizenDevelopmentArtifact implements DevelopmentArtifact {
   @override
   final Feature? feature;
 
-  static const DevelopmentArtifact tizen = TizenDevelopmentArtifact._('tizen');
+  static const DevelopmentArtifact tizen = TizenDevelopmentArtifact('tizen');
 }
 
 /// Extends [FlutterCache] to register [TizenEngineArtifacts].
@@ -117,13 +117,6 @@ class TizenEngineArtifacts extends EngineCachedArtifact {
     return versionFile.existsSync()
         ? versionFile.readAsStringSync().trim()
         : null;
-  }
-
-  String get shortVersion {
-    if (version == null) {
-      throwToolExit('Could not determine Tizen engine revision.');
-    }
-    return version!.length > 7 ? version!.substring(0, 7) : version!;
   }
 
   /// Source: [Cache.storageBaseUrl] in `cache.dart`
@@ -208,10 +201,11 @@ class TizenEngineArtifacts extends EngineCachedArtifact {
     if (githubRunId != null) {
       await _downloadArtifactsFromGithub(operatingSystemUtils, githubRunId);
     } else {
+      if (version == null) {
+        throwToolExit('Could not determine Tizen engine revision.');
+      }
       await _downloadArtifactsFromUrl(
-        operatingSystemUtils,
-        '$engineBaseUrl/download/$shortVersion',
-      );
+          operatingSystemUtils, '$engineBaseUrl/download/$version');
     }
   }
 

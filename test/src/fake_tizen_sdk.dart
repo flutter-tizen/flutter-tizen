@@ -89,7 +89,7 @@ class FakeTizenSdk extends TizenSdk {
     } else if (libType == 'sharedLib') {
       outPath += '.so';
     } else {
-      throw 'The project type $libType is not supported.';
+      throw Exception('The project type $libType is not supported.');
     }
     projectDir.childFile(outPath).createSync(recursive: true);
 

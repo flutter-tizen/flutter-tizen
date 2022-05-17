@@ -111,7 +111,7 @@ class TizenValidator extends DoctorValidator {
       version.frameworkCommitDate,
     )));
     messages.add(ValidationMessage(
-        _userMessages.engineRevision(version.engineRevisionShort)));
+        _userMessages.engineRevision(version.engineRevision)));
 
     if (_tizenSdk == null) {
       messages.add(const ValidationMessage.error(

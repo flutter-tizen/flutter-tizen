@@ -191,7 +191,7 @@ namespace Tizen.Flutter.Embedding
             }
             else
             {
-                throw new ArgumentException($"Unsupported value: '{ value }' of type '{ value.GetType().Name }'");
+                throw new ArgumentException($"Unsupported value: '{value}' of type '{value.GetType().Name}'");
             }
         }
 

@@ -15,9 +15,10 @@ import 'package:xml/xml.dart';
 import 'tizen_project.dart';
 
 /// See: [AndroidApk] in `application_package.dart`
-class TizenTpk extends ApplicationPackage {
+class TizenTpk extends ApplicationPackage
+    implements PrebuiltApplicationPackage {
   TizenTpk({
-    required this.file,
+    required this.applicationPackage,
     required this.manifest,
     this.signature,
   }) : super(id: manifest.packageId);
@@ -45,7 +46,7 @@ class TizenTpk extends ApplicationPackage {
     final File signatureFile = tempDir.childFile('author-signature.xml');
 
     return TizenTpk(
-      file: tpkFile,
+      applicationPackage: tpkFile,
       manifest: TizenManifest.parseFromXml(manifestFile),
       signature: Signature.parseFromXml(signatureFile),
     );
@@ -67,13 +68,13 @@ class TizenTpk extends ApplicationPackage {
     }
 
     return TizenTpk(
-      file: tpkFile,
+      applicationPackage: tpkFile,
       manifest: TizenManifest.parseFromXml(project.manifestFile),
     );
   }
 
-  /// The path to the TPK file.
-  final File file;
+  @override
+  final FileSystemEntity applicationPackage;
 
   /// The manifest information.
   final TizenManifest manifest;
@@ -84,11 +85,8 @@ class TizenTpk extends ApplicationPackage {
   /// The application ID.
   String get applicationId => manifest.applicationId;
 
-  /// Whether the application is a .NET application.
-  bool get isDotnet => manifest.applicationType == 'dotnet';
-
   @override
-  String get name => file.basename;
+  String get name => applicationPackage.basename;
 
   @override
   String get displayName => id;

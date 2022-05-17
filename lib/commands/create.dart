@@ -149,15 +149,17 @@ class TizenCreateCommand extends CreateCommand {
     );
   }
 
-  /// See: [CreateCommand._generatePlugin] in `create.dart`
+  /// See: [CreateCommand._generateMethodChannelPlugin] in `create.dart`
   @override
   Future<int> generateApp(
-    String templateName,
+    List<String> templateNames,
     Directory directory,
     Map<String, Object> templateContext, {
     bool overwrite = false,
     bool pluginExampleApp = false,
     bool printStatusWhenWriting = true,
+    bool generateMetadata = true,
+    FlutterProjectType projectType,
   }) async {
     if (pluginExampleApp) {
       // Reset to the updated identifier for the example app.
@@ -167,12 +169,14 @@ class TizenCreateCommand extends CreateCommand {
     }
 
     return super.generateApp(
-      templateName,
+      templateNames,
       directory,
       templateContext,
       overwrite: overwrite,
       pluginExampleApp: pluginExampleApp,
       printStatusWhenWriting: printStatusWhenWriting,
+      generateMetadata: generateMetadata,
+      projectType: projectType,
     );
   }
 
@@ -190,7 +194,8 @@ class TizenCreateCommand extends CreateCommand {
     String agpVersion,
     String kotlinVersion,
     String gradleVersion,
-    bool withPluginHook = false,
+    bool withPlatformChannelPluginHook = false,
+    bool withFfiPluginHook = false,
     bool ios = false,
     bool android = false,
     bool web = false,
@@ -213,7 +218,8 @@ class TizenCreateCommand extends CreateCommand {
       agpVersion: agpVersion,
       kotlinVersion: kotlinVersion,
       gradleVersion: gradleVersion,
-      withPluginHook: withPluginHook,
+      withPlatformChannelPluginHook: withPlatformChannelPluginHook,
+      withFfiPluginHook: withFfiPluginHook,
       ios: ios,
       android: android,
       web: web,
@@ -239,6 +245,10 @@ class TizenCreateCommand extends CreateCommand {
     if (template != 'app' && argResults.wasParsed('app-type')) {
       throwToolExit(
           '--app-type=$appType and --template=$template cannot be provided at the same time.');
+    }
+
+    if (template == 'plugin_ffi') {
+      throwToolExit('Creating an FFI plugin project is not yet supported.');
     }
 
     final String templateName = template == 'app' ? '$appType-app' : template;
@@ -306,7 +316,7 @@ class TizenCreateCommand extends CreateCommand {
   }
 
   /// See:
-  /// - [CreateCommand._generatePlugin] in `create.dart`
+  /// - [CreateCommand._generateMethodChannelPlugin] in `create.dart`
   /// - [Template.render] in `template.dart`
   @override
   Future<FlutterCommandResult> runCommand() async {

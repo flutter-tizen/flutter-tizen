@@ -56,7 +56,7 @@ void main() {
     );
     final TizenManifest tizenManifest = _FakeTizenManifest();
     final TizenTpk tpk = TizenTpk(
-      file: fileSystem.file('app.tpk')..createSync(),
+      applicationPackage: fileSystem.file('app.tpk')..createSync(),
       manifest: tizenManifest,
     );
     final String appId = tizenManifest.applicationId;
@@ -115,7 +115,7 @@ void main() {
       fileSystem: fileSystem,
     );
     final TizenTpk tpk = TizenTpk(
-      file: fileSystem.file('app.tpk')..createSync(),
+      applicationPackage: fileSystem.file('app.tpk')..createSync(),
       manifest: _FakeTizenManifest(),
     );
 

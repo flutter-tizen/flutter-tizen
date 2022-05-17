@@ -17,9 +17,7 @@ import 'package:flutter_tools/src/base/utils.dart';
 import 'package:flutter_tools/src/build_info.dart';
 import 'package:flutter_tools/src/build_system/build_system.dart';
 import 'package:flutter_tools/src/cache.dart';
-// ignore: import_of_legacy_library_into_null_safe
 import 'package:flutter_tools/src/commands/assemble.dart';
-// ignore: import_of_legacy_library_into_null_safe
 import 'package:flutter_tools/src/commands/build_ios_framework.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/linux/build_linux.dart';
@@ -102,7 +100,7 @@ class TizenBuilder {
         'Building a Tizen application in $buildModeName mode...');
     try {
       final BuildResult result =
-          await globals.buildSystem!.build(target, environment);
+          await globals.buildSystem.build(target, environment);
       if (!result.success) {
         for (final ExceptionMeasurement measurement
             in result.exceptions.values) {
