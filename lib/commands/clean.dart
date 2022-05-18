@@ -9,7 +9,7 @@ import 'package:flutter_tools/src/runner/flutter_command.dart';
 import '../tizen_project.dart';
 
 class TizenCleanCommand extends CleanCommand {
-  TizenCleanCommand({bool verbose = false}) : super(verbose: verbose);
+  TizenCleanCommand({super.verbose});
 
   @override
   Future<FlutterCommandResult> runCommand() async {

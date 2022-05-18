@@ -5,7 +5,6 @@
 import 'package:file/file.dart';
 import 'package:flutter_tools/src/artifacts.dart';
 import 'package:flutter_tools/src/base/os.dart';
-import 'package:flutter_tools/src/base/platform.dart';
 import 'package:flutter_tools/src/build_info.dart';
 import 'package:flutter_tools/src/cache.dart';
 
@@ -13,17 +12,11 @@ import 'tizen_build_info.dart';
 
 class TizenArtifacts extends CachedArtifacts {
   TizenArtifacts({
-    required FileSystem fileSystem,
-    required Platform platform,
-    required Cache cache,
-    required OperatingSystemUtils operatingSystemUtils,
-  })  : _cache = cache,
-        super(
-          fileSystem: fileSystem,
-          platform: platform,
-          cache: cache,
-          operatingSystemUtils: operatingSystemUtils,
-        );
+    required super.fileSystem,
+    required super.platform,
+    required super.cache,
+    required super.operatingSystemUtils,
+  }) : _cache = cache;
 
   final Cache _cache;
 

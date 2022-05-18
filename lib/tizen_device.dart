@@ -35,7 +35,7 @@ import 'vscode_helper.dart';
 /// See: [AndroidDevice] in `android_device.dart`
 class TizenDevice extends Device {
   TizenDevice(
-    String id, {
+    super.id, {
     required String modelId,
     required Logger logger,
     required ProcessManager processManager,
@@ -47,10 +47,11 @@ class TizenDevice extends Device {
         _fileSystem = fileSystem,
         _processUtils =
             ProcessUtils(logger: logger, processManager: processManager),
-        super(id,
-            category: Category.mobile,
-            platformType: PlatformType.custom,
-            ephemeral: true);
+        super(
+          category: Category.mobile,
+          platformType: PlatformType.custom,
+          ephemeral: true,
+        );
 
   final String _modelId;
   final Logger _logger;
