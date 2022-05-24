@@ -401,8 +401,8 @@ def download_archive(message: str, url: str, location: Path):
 def download_symbols(device: TizenDevice):
     version_file = Path(__file__).parent / 'internal' / 'engine.version'
     with version_file.open() as file:
-        short_version = file.readline()[:7]
-    if len(short_version) != 7:
+        version = file.readline().strip()
+    if not version:
         sys.exit('The engine version file is invalid.')
 
     base_url = os.getenv('TIZEN_ENGINE_BASE_URL')
@@ -421,7 +421,7 @@ def download_symbols(device: TizenDevice):
         location.mkdir(parents=True, exist_ok=True)
 
         basename = f'tizen-{device_arch}-{mode}_symbols'
-        url = f'{base_url}/download/{short_version}/{basename}.zip'
+        url = f'{base_url}/download/{version}/{basename}.zip'
 
         try:
             download_archive(f'Downloading {basename}...', url, location)
