@@ -7,12 +7,23 @@
 #include "tizen_log.h"
 #include "utils.h"
 
-bool ElmFlutterView::OnCreate() {
-  TizenLog::Debug("Launching a Flutter application...");
+bool ElmFlutterView::RunFlutterEngine(void *elm_parent) {
+  return RunFlutterEngine(elm_parent, width_, height_);
+}
+
+bool ElmFlutterView::RunFlutterEngine(void *elm_parent, int32_t width,
+                                      int32_t height) {
+  if (!elm_parent) {
+    TizenLog::Error("Parent object is invailid.");
+    return false;
+  }
+  elm_parent_ = elm_parent;
+  width_ = width;
+  height_ = height;
 
   FlutterDesktopViewProperties view_prop = {};
-  view_prop.width = window_width_;
-  view_prop.height = window_height_;
+  view_prop.width = width_;
+  view_prop.height = height_;
   view_prop.elm_parent = elm_parent_;
 
   // Read engine arguments passed from the tool.
@@ -56,6 +67,14 @@ bool ElmFlutterView::OnCreate() {
   }
 
   return true;
+}
+
+void ElmFlutterView::Resize(int32_t width, int32_t height) {
+  if (width_ != width || height_ != height) {
+    width_ = width;
+    height_ = height;
+    FlutterDesktopViewResizeView(engine_, width_, height_);
+  }
 }
 
 FlutterDesktopPluginRegistrarRef ElmFlutterView::GetRegistrarForPlugin(

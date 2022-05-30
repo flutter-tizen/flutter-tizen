@@ -14,25 +14,26 @@
 // The app base class which creates and manages the Flutter engine instance.
 class ElmFlutterView : public flutter::PluginRegistry {
  public:
-  ElmFlutterView(void *elm_parent) : elm_parent_(elm_parent) {}
   virtual ~ElmFlutterView() {}
-
-  virtual bool OnCreate();
 
   FlutterDesktopPluginRegistrarRef GetRegistrarForPlugin(
       const std::string &plugin_name) override;
+
+  bool RunFlutterEngine(void *elm_parent);
+
+  bool RunFlutterEngine(void *elm_parent, int32_t width, int32_t height);
 
   bool IsRunning() { return engine_ != nullptr; }
 
   void *GetEvasImageHandle() { return evas_image_; };
 
-  // The width of the view, or the maximum width if the value is zero.
-  int32_t window_width_ = 0;
+  void Resize(int32_t width, int32_t height);
 
-  // The height of the view, or the maximum height if the value is zero.
-  int32_t window_height_ = 0;
+  int32_t GetWidth() { return width_; };
 
- protected:
+  int32_t GetHeight() { return height_; };
+
+ private:
   // The switches to pass to the Flutter engine.
   // Custom switches may be added before `OnCreate` is called.
   std::vector<std::string> engine_args_;
@@ -55,6 +56,12 @@ class ElmFlutterView : public flutter::PluginRegistry {
 
   // The evas image's parent instance handle.
   void *elm_parent_ = nullptr;
+
+  // The width of the view, or the maximum width if the value is zero.
+  int32_t width_ = 0;
+
+  // The height of the view, or the maximum height if the value is zero.
+  int32_t height_ = 0;
 };
 
 #endif /* FLUTTER_TIZEN_EMBEDDING_CPP_INCLUDE_FLUTTER_VIEW_H_ */
