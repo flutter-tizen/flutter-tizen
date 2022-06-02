@@ -1,4 +1,4 @@
-// Copyright 2021 Samsung Electronics Co., Ltd. All rights reserved.
+// Copyright 2022 Samsung Electronics Co., Ltd. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,24 +7,23 @@
 #include "tizen_log.h"
 #include "utils.h"
 
-bool ElmFlutterView::RunFlutterEngine(void *elm_parent) {
-  return RunFlutterEngine(elm_parent, width_, height_);
+bool ElmFlutterView::RunFlutterEngine(Evas_Object *parent) {
+  return RunFlutterEngine(parent, width_, height_);
 }
 
-bool ElmFlutterView::RunFlutterEngine(void *elm_parent, int32_t width,
+bool ElmFlutterView::RunFlutterEngine(Evas_Object *parent, int32_t width,
                                       int32_t height) {
-  if (!elm_parent) {
-    TizenLog::Error("Parent object is invailid.");
+  if (!parent) {
+    TizenLog::Error("The parent object is invalid.");
     return false;
   }
-  elm_parent_ = elm_parent;
+  parent_ = parent;
   width_ = width;
   height_ = height;
 
   FlutterDesktopViewProperties view_prop = {};
   view_prop.width = width_;
   view_prop.height = height_;
-  view_prop.elm_parent = elm_parent_;
 
   // Read engine arguments passed from the tool.
   Utils::ParseEngineArgs(&engine_args_);
@@ -54,14 +53,15 @@ bool ElmFlutterView::RunFlutterEngine(void *elm_parent, int32_t width,
     return false;
   }
 
-  view_ = FlutterDesktopViewCreateFromNewView(view_prop, engine_, elm_parent_);
+  view_ = FlutterDesktopViewCreateFromElmParent(view_prop, engine_,
+                                                (void *)parent_);
   if (!view_) {
     TizenLog::Error("Could not launch a Flutter application.");
     return false;
   }
 
-  evas_image_ = FlutterDesktopViewGetEvasImageHandle(engine_);
-  if (!evas_image_) {
+  evas_object_ = (Evas_Object *)FlutterDesktopViewGetEvasObject(view_);
+  if (!evas_object_) {
     TizenLog::Error("Could not get a image handle.");
     return false;
   }
@@ -70,10 +70,10 @@ bool ElmFlutterView::RunFlutterEngine(void *elm_parent, int32_t width,
 }
 
 void ElmFlutterView::Resize(int32_t width, int32_t height) {
-  if (width_ != width || height_ != height) {
+  if (view_ && (width_ != width || height_ != height)) {
     width_ = width;
     height_ = height;
-    FlutterDesktopViewResizeView(engine_, width_, height_);
+    FlutterDesktopViewResize(view_, width_, height_);
   }
 }
 

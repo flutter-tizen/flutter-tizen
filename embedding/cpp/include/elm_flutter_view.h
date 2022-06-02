@@ -5,6 +5,7 @@
 #ifndef FLUTTER_TIZEN_EMBEDDING_CPP_INCLUDE_FLUTTER_VIEW_H_
 #define FLUTTER_TIZEN_EMBEDDING_CPP_INCLUDE_FLUTTER_VIEW_H_
 
+#include <Elementary.h>
 #include <flutter/plugin_registry.h>
 #include <flutter_tizen.h>
 
@@ -19,19 +20,19 @@ class ElmFlutterView : public flutter::PluginRegistry {
   FlutterDesktopPluginRegistrarRef GetRegistrarForPlugin(
       const std::string &plugin_name) override;
 
-  bool RunFlutterEngine(void *elm_parent);
+  bool RunFlutterEngine(Evas_Object *parent);
 
-  bool RunFlutterEngine(void *elm_parent, int32_t width, int32_t height);
+  bool RunFlutterEngine(Evas_Object *parent, int32_t width, int32_t height);
 
   bool IsRunning() { return engine_ != nullptr; }
 
-  void *GetEvasImageHandle() { return evas_image_; };
+  Evas_Object *evas_object() { return evas_object_; };
 
   void Resize(int32_t width, int32_t height);
 
-  int32_t GetWidth() { return width_; };
+  int32_t width() { return width_; };
 
-  int32_t GetHeight() { return height_; };
+  int32_t height() { return height_; };
 
  private:
   // The switches to pass to the Flutter engine.
@@ -51,11 +52,11 @@ class ElmFlutterView : public flutter::PluginRegistry {
   // The Flutter view instance handle.
   FlutterDesktopViewRef view_ = nullptr;
 
-  // The evas image instance handle.
-  void *evas_image_ = nullptr;
+  // The Evas object.
+  Evas_Object *evas_object_ = nullptr;
 
-  // The evas image's parent instance handle.
-  void *elm_parent_ = nullptr;
+  // The Evas object's parent instance handle.
+  Evas_Object *parent_ = nullptr;
 
   // The width of the view, or the maximum width if the value is zero.
   int32_t width_ = 0;
