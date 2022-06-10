@@ -71,13 +71,15 @@ The following commands from the [Flutter CLI](https://flutter.dev/docs/reference
   # If a project already exists in the directory, only missing files are added.
   flutter-tizen create app_name
 
-  # Create a Tizen native app project in "app_name" directory.
-  # Native apps typically have lower memory footprints than .NET (default) apps,
-  # but are not compatible with TV devices.
+  # Create a new C++ app project in "app_name" directory.
+  # Typically C++ apps consume less memory than C# (default) apps, but are not compatible with TV devices.
   flutter-tizen create --tizen-language cpp app_name
 
   # Create a new plugin project in "plugin_name" directory.
   flutter-tizen create --platforms tizen --template plugin plugin_name
+
+  # Create a new C# plugin project in "plugin_name" directory.
+  flutter-tizen create --platforms tizen --template plugin --tizen-language csharp plugin_name
   ```
 
 - ### `devices`
@@ -197,6 +199,8 @@ The following commands from the [Flutter CLI](https://flutter.dev/docs/reference
 
   You have to specify both `--type` and `--observatory-uri` values because the default (`device`) screenshot type is not supported by Tizen devices. The observatory URI value can be found in the device log output (`flutter-tizen run` or `flutter-tizen logs`) after you start an app in debug or profile mode.
 
+  If you're using a watch device, you can also take a screenshot by swiping the screen from left to right while pressing the Home button.
+
 - ### `symbolize`
 
   Symbolize a stack trace from a Flutter app which has been built with the `--split-debug-info` option.
@@ -207,7 +211,7 @@ The following commands from the [Flutter CLI](https://flutter.dev/docs/reference
 
 - ### `test`
 
-  Run Flutter unit tests or integration tests for the current project. See [Flutter Docs: Testing Flutter apps](https://flutter.dev/docs/testing) for details. Consider using the [`drive`](#drive) command if you want to run integration tests on a web browser.
+  Run Flutter unit tests or integration tests for the current project. See [Flutter Docs: Testing Flutter apps](https://flutter.dev/docs/testing) for details. Also check out the [`drive`](#drive) command if you want to run an integration test with a custom driver script.
 
   ```sh
   # Run all tests in "test" directory.

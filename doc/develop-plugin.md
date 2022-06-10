@@ -8,14 +8,12 @@ Here are a few things you might consider when developing Flutter plugins for Tiz
 
 ### Implementation language
 
-- C/C++ (based on platform channels)
-- C# (based on platform channels)
+- C++ or C# (based on platform channels)
 - Dart (based on Dart FFI)
 
-Typical Flutter plugins are written in their platform native languages, such as Java on Android and C/C++ on Tizen. However, some Windows plugins such as [`path_provider_windows`](https://github.com/flutter/plugins/tree/master/packages/path_provider/path_provider_windows) and Tizen plugins such as [`url_launcher_tizen`](https://github.com/flutter-tizen/plugins/tree/master/packages/url_launcher) are written in pure Dart using [Dart FFI](https://dart.dev/guides/libraries/c-interop) without any native code. To learn more about FFI-based plugins, you might read [Flutter Docs: Binding to native code using dart:ffi](https://flutter.dev/docs/development/platform-integration/c-interop).
+Typical Flutter plugins are written in their platform native languages, such as Java on Android and C++ on Tizen. However, some Windows plugins such as [`path_provider_windows`](https://github.com/flutter/plugins/tree/master/packages/path_provider/path_provider_windows) and Tizen plugins such as [`path_provider_tizen`](https://github.com/flutter-tizen/plugins/tree/master/packages/path_provider) are written in pure Dart using [Dart FFI](https://dart.dev/guides/libraries/c-interop) without any native code. To learn more about FFI-based plugins, you might read [Flutter Docs: Binding to native code using dart:ffi](https://flutter.dev/docs/development/platform-integration/c-interop).
 
-This document only covers native Tizen plugins written in C/C++.
-If you want to learn how to write a native plugin in C#, you might read [Writing a plugin in C#](./develop-plugin-csharp.md).
+This document only covers native Tizen plugins written in C++. If you want to learn how to write a native plugin in C#, you might read [Writing a plugin in C#](develop-plugin-csharp.md).
 
 ### Targeting multiple platforms vs. Tizen only
 
@@ -71,9 +69,9 @@ $ flutter-tizen run
 
 ### 1. Define the package API (`.dart`)
 
-The API of the plugin package is defined in Dart code. Locate the file `lib/plugin_name.dart` in VS Code, and then you will see the `platformVersion` property defined in the plugin main class. Invoking this property will invoke the `getPlatformVersion` method through a method channel named `plugin_name`. You have to replace this template code with the actual implementation for your plugin.
+The API of the plugin package is defined in Dart code. Open the `lib/plugin_name.dart` file in VS Code, and then you will see the `getPlatformVersion` method defined in the plugin's main class. Invoking this method will eventually invoke the method channel method `getPlatformVersion` defined in the `plugin_name_method_channel.dart` file. You have to replace this template code with the actual implementation for your plugin.
 
-Note: This file is not necessary if you're extending an existing plugin for Tizen, so you can safely remove it.
+Note: You don't need these Dart files if you're extending an existing plugin for Tizen, so you can safely remove them.
 
 ### 2. Add Tizen platform code (`.cc`)
 
@@ -99,7 +97,7 @@ await _channel.invokeMethod<void>(
 );
 ```
 
-then it can be parsed as a `flutter::EncodableMap` in C/C++ code like:
+then it can be parsed as a `flutter::EncodableMap` in C++ code as follows:
 
 ```cpp
 template <typename T>
@@ -141,11 +139,11 @@ void HandleMethodCall(
 
 Make sure either `Success`, `Error`, or `NotImplemented` is called on `result` after the method call is handled (otherwise, the `Future` returned by `MethodChannel.invokeMethod` will remain uncompleted forever). Note that the result can be passed either synchronously or asynchronously (e.g. from a callback) as long as the ownership of `result` is retained properly.
 
-#### Supported data types
+### Supported data types
 
 The standard platform channels use a standard message codec that supports efficient binary serialization of simple JSON-like values, such as booleans, numbers, Strings, byte buffers, and Lists and Maps of these (see [`StandardMessageCodec`](https://api.flutter.dev/flutter/services/StandardMessageCodec-class.html) for details). The following table shows how Dart types are mapped with `flutter::EncodableValue` variant types on the platform side.
 
-| Dart | C/C++ |
+| Dart | C++ |
 |-|-|
 | `null` | `std::monostate` |
 | `bool` | `bool` |
@@ -159,31 +157,31 @@ The standard platform channels use a standard message codec that supports effici
 | `List` | `flutter::EncodableList` |
 | `Map` | `flutter::EncodableMap` |
 
-#### Available APIs
+### Available APIs
 
-Types such as `flutter::MethodCall` and `flutter::EncodableValue` in the template code are defined in `cpp_client_wrapper` headers. APIs that you can use in your plugin code include:
+Types such as `flutter::MethodCall` and `flutter::EncodableValue` in the template code are defined in [cpp_client_wrapper](https://github.com/flutter-tizen/engine/tree/HEAD/shell/platform/common/client_wrapper/include/flutter) headers. APIs that you can use in your plugin code include:
 
 - C++17 standards
-- `cpp_client_wrapper` (in `flutter-tizen/flutter/bin/cache/artifacts/engine/tizen-common/cpp_client_wrapper`)
-- Tizen native APIs (see [Wearable API references](https://docs.tizen.org/application/native/api/wearable/latest/index.html))
+- [cpp_client_wrapper](https://github.com/flutter-tizen/engine/tree/HEAD/shell/platform/common/client_wrapper/include/flutter)
+- [Tizen native APIs](https://docs.tizen.org/application/native/api/wearable/latest/index.html)
 - External native libraries, if any (static/shared)
 
 Note: The API references for Tizen TV are not publicly available. However, most of the Tizen core APIs are common to both wearable and TV profiles, so you may refer to the wearable API references when developing plugins for TV devices.
 
-#### Channel types
+### Channel types
 
 Besides the above mentioned [MethodChannel](https://api.flutter.dev/flutter/services/MethodChannel-class.html), you can also use other types of platform channels to transfer data between Dart and native code:
 
 - [BasicMessageChannel](https://api.flutter.dev/flutter/services/BasicMessageChannel-class.html): For basic asynchronous message passing.
 - [EventChannel](https://api.flutter.dev/flutter/services/EventChannel-class.html): For asynchronous event streaming.
 
-#### Tizen privileges
+### Tizen privileges
 
 If some privileges are required to run your plugin code, you have to list them in the plugin's README so that app developers can properly add them to their `tizen-manifest.xml`.
 
-If one or more privileges are [privacy-related privileges](https://docs.tizen.org/application/dotnet/tutorials/sec-privileges), permissions must be granted by user at runtime. To request permissions at runtime, use the [Privacy Privilege Manager API](https://docs.tizen.org/application/native/guides/security/privacy-related-permissions) ([example](https://github.com/flutter-tizen/plugins/blob/master/packages/camera/tizen/src/permission_manager.cc)).
+If one or more privileges are [privacy-related privileges](https://docs.tizen.org/application/dotnet/tutorials/sec-privileges), permissions must be granted by user at runtime. To request permissions at runtime, use the [Privacy Privilege Manager API](https://docs.tizen.org/application/native/guides/security/privacy-related-permissions) ([example](https://github.com/flutter-tizen/plugins/blob/master/packages/image_picker/tizen/src/permission_manager.cc)).
 
-On TV devices, permissions are already granted to apps by default. Invoking permission-related APIs will result in a library loading error on TV devices. If you want to run your plugin on different types of devices using a single codebase, consider using the `TV_PROFILE` macro to separate the TV-specific code ([example](https://github.com/flutter-tizen/plugins/blob/master/packages/image_picker/tizen/src/image_picker_tizen_plugin.cc)).
+On TV devices, permissions are already granted to apps by default. Invoking permission-related APIs will result in a library loading error on TV devices. If you want to run your plugin on different types of devices using a single codebase, consider using the `TV_PROFILE` macro to separate the TV-specific code ([example](https://github.com/flutter-tizen/plugins/blob/master/packages/image_picker/tizen/src/permission_manager.cc)).
 
 ## Publish the plugin
 
