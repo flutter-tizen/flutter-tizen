@@ -53,19 +53,18 @@ bool ElmFlutterView::RunFlutterEngine(Evas_Object *parent, int32_t width,
     return false;
   }
 
-  view_ = FlutterDesktopViewCreateFromElmParent(view_prop, engine_,
-                                                (void *)parent_);
+  view_ = FlutterDesktopViewCreateFromElmParent(view_prop, engine_, parent_);
   if (!view_) {
     TizenLog::Error("Could not launch a Flutter application.");
     return false;
   }
 
-  evas_object_ = (Evas_Object *)FlutterDesktopViewGetEvasObject(view_);
+  evas_object_ =
+      static_cast<Evas_Object *>(FlutterDesktopViewGetEvasObject(view_));
   if (!evas_object_) {
-    TizenLog::Error("Could not get a image handle.");
+    TizenLog::Error("Could not get an image handle.");
     return false;
   }
-
   return true;
 }
 

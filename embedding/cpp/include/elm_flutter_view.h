@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FLUTTER_TIZEN_EMBEDDING_CPP_INCLUDE_FLUTTER_VIEW_H_
-#define FLUTTER_TIZEN_EMBEDDING_CPP_INCLUDE_FLUTTER_VIEW_H_
+#ifndef FLUTTER_TIZEN_EMBEDDING_CPP_INCLUDE_ELM_FLUTTER_VIEW_H_
+#define FLUTTER_TIZEN_EMBEDDING_CPP_INCLUDE_ELM_FLUTTER_VIEW_H_
 
 #include <Elementary.h>
 #include <flutter/plugin_registry.h>
@@ -15,6 +15,7 @@
 // The app base class which creates and manages the Flutter engine instance.
 class ElmFlutterView : public flutter::PluginRegistry {
  public:
+  explicit ElmFlutterView() {}
   virtual ~ElmFlutterView() {}
 
   FlutterDesktopPluginRegistrarRef GetRegistrarForPlugin(
@@ -29,10 +30,6 @@ class ElmFlutterView : public flutter::PluginRegistry {
   Evas_Object *evas_object() { return evas_object_; };
 
   void Resize(int32_t width, int32_t height);
-
-  int32_t width() { return width_; };
-
-  int32_t height() { return height_; };
 
  private:
   // The switches to pass to the Flutter engine.
@@ -65,4 +62,4 @@ class ElmFlutterView : public flutter::PluginRegistry {
   int32_t height_ = 0;
 };
 
-#endif /* FLUTTER_TIZEN_EMBEDDING_CPP_INCLUDE_FLUTTER_VIEW_H_ */
+#endif /* FLUTTER_TIZEN_EMBEDDING_CPP_INCLUDE_ELM_FLUTTER_VIEW_H_ */
