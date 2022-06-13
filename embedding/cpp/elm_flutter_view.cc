@@ -7,19 +7,11 @@
 #include "tizen_log.h"
 #include "utils.h"
 
-bool ElmFlutterView::RunFlutterEngine(Evas_Object *parent) {
-  return RunFlutterEngine(parent, width_, height_);
-}
-
-bool ElmFlutterView::RunFlutterEngine(Evas_Object *parent, int32_t width,
-                                      int32_t height) {
-  if (!parent) {
+bool ElmFlutterView::RunEngine() {
+  if (!parent_) {
     TizenLog::Error("The parent object is invalid.");
     return false;
   }
-  parent_ = parent;
-  width_ = width;
-  height_ = height;
 
   FlutterDesktopViewProperties view_prop = {};
   view_prop.width = width_;
@@ -36,7 +28,6 @@ bool ElmFlutterView::RunFlutterEngine(Evas_Object *parent, int32_t width,
   for (auto &arg : dart_entrypoint_args_) {
     entrypoint_args.push_back(arg.c_str());
   }
-
   FlutterDesktopEngineProperties engine_prop = {};
   engine_prop.assets_path = "../res/flutter_assets";
   engine_prop.icu_data_path = "../res/icudtl.dat";
