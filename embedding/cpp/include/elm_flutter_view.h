@@ -33,7 +33,6 @@ class ElmFlutterView : public flutter::PluginRegistry {
 
  private:
   // The switches to pass to the Flutter engine.
-  // Custom switches may be added before `OnCreate` is called.
   std::vector<std::string> engine_args_;
 
   // The optional entrypoint in the Dart project. If the value is empty,
