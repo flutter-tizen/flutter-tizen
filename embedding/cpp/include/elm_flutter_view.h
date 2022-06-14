@@ -15,7 +15,7 @@
 // The app base class which creates and manages the Flutter engine instance.
 class ElmFlutterView : public flutter::PluginRegistry {
  public:
- explicit ElmFlutterView() {}
+  explicit ElmFlutterView() {}
   explicit ElmFlutterView(Evas_Object *parent, int32_t width, int32_t height)
       : parent_(parent), width_(width), height_(height) {}
   virtual ~ElmFlutterView() {}
