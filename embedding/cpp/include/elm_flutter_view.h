@@ -12,10 +12,10 @@
 #include <string>
 #include <vector>
 
-// The app base class which creates and manages the Flutter engine instance.
+// The class which creates and manages the Flutter engine instance.
 class ElmFlutterView : public flutter::PluginRegistry {
  public:
-  explicit ElmFlutterView() {}
+  explicit ElmFlutterView(Evas_Object *parent) : parent_(parent) {}
   explicit ElmFlutterView(Evas_Object *parent, int32_t width, int32_t height)
       : parent_(parent), width_(width), height_(height) {}
   virtual ~ElmFlutterView() {}
@@ -35,20 +35,13 @@ class ElmFlutterView : public flutter::PluginRegistry {
   // The switches to pass to the Flutter engine.
   std::vector<std::string> engine_args_;
 
-  // The optional entrypoint in the Dart project. If the value is empty,
-  // defaults to main().
-  std::string dart_entrypoint_;
-
-  // The list of Dart entrypoint arguments.
-  std::vector<std::string> dart_entrypoint_args_;
-
   // The Flutter engine instance handle.
   FlutterDesktopEngineRef engine_ = nullptr;
 
   // The Flutter view instance handle.
   FlutterDesktopViewRef view_ = nullptr;
 
-  // The Evas object.
+  // The Evas object instance handle.
   Evas_Object *evas_object_ = nullptr;
 
   // The Evas object's parent instance handle.

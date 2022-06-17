@@ -24,19 +24,13 @@ bool ElmFlutterView::RunEngine() {
   for (auto &arg : engine_args_) {
     switches.push_back(arg.c_str());
   }
-  std::vector<const char *> entrypoint_args;
-  for (auto &arg : dart_entrypoint_args_) {
-    entrypoint_args.push_back(arg.c_str());
-  }
+
   FlutterDesktopEngineProperties engine_prop = {};
   engine_prop.assets_path = "../res/flutter_assets";
   engine_prop.icu_data_path = "../res/icudtl.dat";
   engine_prop.aot_library_path = "../lib/libapp.so";
   engine_prop.switches = switches.data();
   engine_prop.switches_count = switches.size();
-  engine_prop.entrypoint = dart_entrypoint_.c_str();
-  engine_prop.dart_entrypoint_argc = entrypoint_args.size();
-  engine_prop.dart_entrypoint_argv = entrypoint_args.data();
 
   engine_ = FlutterDesktopEngineCreate(engine_prop);
   if (!engine_) {
@@ -46,7 +40,7 @@ bool ElmFlutterView::RunEngine() {
 
   view_ = FlutterDesktopViewCreateFromElmParent(view_prop, engine_, parent_);
   if (!view_) {
-    TizenLog::Error("Could not launch a Flutter application.");
+    TizenLog::Error("Could not launch a Flutter view.");
     return false;
   }
 
