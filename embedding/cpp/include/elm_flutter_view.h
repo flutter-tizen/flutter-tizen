@@ -12,7 +12,7 @@
 #include <string>
 #include <vector>
 
-// The class which creates and manages the Flutter engine instance.
+// The view class which creates and manages the Flutter engine instance.
 class ElmFlutterView : public flutter::PluginRegistry {
  public:
   explicit ElmFlutterView(Evas_Object *parent) : parent_(parent) {}
