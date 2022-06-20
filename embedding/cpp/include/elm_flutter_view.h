@@ -20,8 +20,8 @@ class ElmFlutterView : public flutter::PluginRegistry {
                           int32_t initial_height)
       : parent_(parent),
         initial_width_(initial_width),
-        initial_height_(initial_height){}
-  virtual ~ElmFlutterView(){}
+        initial_height_(initial_height) {}
+  virtual ~ElmFlutterView() {}
 
   FlutterDesktopPluginRegistrarRef GetRegistrarForPlugin(
       const std::string &plugin_name) override;
@@ -34,9 +34,9 @@ class ElmFlutterView : public flutter::PluginRegistry {
 
   bool RunEngine();
 
-  int32_t width() { return view_ ? FlutterDesktopViewGetWidth(view_) : 0; }
+  int32_t width();
 
-  int32_t height() { return view_ ? FlutterDesktopViewGetHeight(view_) : 0; }
+  int32_t height();
 
  private:
   // The switches to pass to the Flutter engine.

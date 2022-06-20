@@ -4,6 +4,8 @@
 
 #include "include/elm_flutter_view.h"
 
+#include <cassert>
+
 #include "tizen_log.h"
 #include "utils.h"
 
@@ -54,12 +56,30 @@ bool ElmFlutterView::RunEngine() {
 }
 
 void ElmFlutterView::Resize(int32_t width, int32_t height) {
-  uint32_t view_width = FlutterDesktopViewGetWidth(view_);
-  uint32_t view_height = FlutterDesktopViewGetHeight(view_);
+  assert(IsRunning());
 
-  if (view_ && (view_width != width || view_height != height)) {
+  int32_t view_width, view_height;
+  evas_object_geometry_get(evas_object_, nullptr, nullptr, &view_width,
+                           &view_height);
+  if (view_width != width || view_height != height) {
     FlutterDesktopViewResize(view_, width, height);
   }
+}
+
+int32_t ElmFlutterView::width() {
+  assert(IsRunning());
+
+  int32_t width;
+  evas_object_geometry_get(evas_object_, nullptr, nullptr, &width, nullptr);
+  return width;
+}
+
+int32_t ElmFlutterView::height() {
+  assert(IsRunning());
+
+  int32_t height;
+  evas_object_geometry_get(evas_object_, nullptr, nullptr, nullptr, &height);
+  return height;
 }
 
 FlutterDesktopPluginRegistrarRef ElmFlutterView::GetRegistrarForPlugin(
