@@ -13,10 +13,6 @@ bool ElmFlutterView::RunEngine() {
     return false;
   }
 
-  FlutterDesktopViewProperties view_prop = {};
-  view_prop.width = width_;
-  view_prop.height = height_;
-
   // Read engine arguments passed from the tool.
   Utils::ParseEngineArgs(&engine_args_);
 
@@ -37,6 +33,10 @@ bool ElmFlutterView::RunEngine() {
     TizenLog::Error("Could not create a Flutter engine.");
     return false;
   }
+
+  FlutterDesktopViewProperties view_prop = {};
+  view_prop.width = width_;
+  view_prop.height = height_;
 
   view_ = FlutterDesktopViewCreateFromElmParent(view_prop, engine_, parent_);
   if (!view_) {
