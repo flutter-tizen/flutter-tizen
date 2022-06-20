@@ -35,8 +35,8 @@ bool ElmFlutterView::RunEngine() {
   }
 
   FlutterDesktopViewProperties view_prop = {};
-  view_prop.width = width_;
-  view_prop.height = height_;
+  view_prop.width = initial_width_;
+  view_prop.height = initial_height_;
 
   view_ = FlutterDesktopViewCreateFromElmParent(view_prop, engine_, parent_);
   if (!view_) {
@@ -54,10 +54,11 @@ bool ElmFlutterView::RunEngine() {
 }
 
 void ElmFlutterView::Resize(int32_t width, int32_t height) {
-  if (view_ && (width_ != width || height_ != height)) {
-    width_ = width;
-    height_ = height;
-    FlutterDesktopViewResize(view_, width_, height_);
+  uint32_t view_width = FlutterDesktopViewGetWidth(view_);
+  uint32_t view_height = FlutterDesktopViewGetHeight(view_);
+
+  if (view_ && (view_width != width || view_height != height)) {
+    FlutterDesktopViewResize(view_, width, height);
   }
 }
 
