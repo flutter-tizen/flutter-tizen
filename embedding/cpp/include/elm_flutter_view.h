@@ -31,6 +31,10 @@ class ElmFlutterView : public flutter::PluginRegistry {
 
   bool RunEngine();
 
+  void Pause();
+
+  void Resume();
+
  private:
   // The switches to pass to the Flutter engine.
   std::vector<std::string> engine_args_;

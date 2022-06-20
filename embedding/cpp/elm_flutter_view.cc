@@ -4,6 +4,8 @@
 
 #include "include/elm_flutter_view.h"
 
+#include <cassert>
+
 #include "tizen_log.h"
 #include "utils.h"
 
@@ -59,6 +61,16 @@ void ElmFlutterView::Resize(int32_t width, int32_t height) {
     height_ = height;
     FlutterDesktopViewResize(view_, width_, height_);
   }
+}
+
+void ElmFlutterView::Pause() {
+  assert(IsRunning());
+  FlutterDesktopEngineNotifyAppIsPaused(engine_);
+}
+
+void ElmFlutterView::Resume() {
+  assert(IsRunning());
+  FlutterDesktopEngineNotifyAppIsResumed(engine_);
 }
 
 FlutterDesktopPluginRegistrarRef ElmFlutterView::GetRegistrarForPlugin(
