@@ -34,9 +34,9 @@ class ElmFlutterView : public flutter::PluginRegistry {
 
   bool RunEngine();
 
-  int32_t width();
+  int32_t GetWidth();
 
-  int32_t height();
+  int32_t GetHeight();
 
  private:
   // The switches to pass to the Flutter engine.

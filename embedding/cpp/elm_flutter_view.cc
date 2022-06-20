@@ -66,7 +66,7 @@ void ElmFlutterView::Resize(int32_t width, int32_t height) {
   }
 }
 
-int32_t ElmFlutterView::width() {
+int32_t ElmFlutterView::GetWidth() {
   assert(IsRunning());
 
   int32_t width;
@@ -74,7 +74,7 @@ int32_t ElmFlutterView::width() {
   return width;
 }
 
-int32_t ElmFlutterView::height() {
+int32_t ElmFlutterView::GetHeight() {
   assert(IsRunning());
 
   int32_t height;
