@@ -7,6 +7,7 @@
 
 #include "elm_flutter_view.h"
 #include "flutter_app.h"
+#include "flutter_engine.h"
 #include "flutter_service_app.h"
 
 #endif /* FLUTTER_TIZEN_EMBEDDING_CPP_INCLUDE_FLUTTER_H_ */
