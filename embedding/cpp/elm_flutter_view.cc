@@ -9,6 +9,12 @@
 #include "include/flutter_engine.h"
 #include "tizen_log.h"
 
+ElmFlutterView::~ElmFlutterView() {
+  if (view_) {
+    FlutterDesktopViewDestroy(view_);
+  }
+}
+
 bool ElmFlutterView::RunEngine() {
   if (!parent_) {
     TizenLog::Error("The parent object is invalid.");
@@ -38,9 +44,10 @@ bool ElmFlutterView::RunEngine() {
   evas_object_ =
       static_cast<Evas_Object *>(FlutterDesktopViewGetEvasObject(view_));
   if (!evas_object_) {
-    TizenLog::Error("Could not get an Evas object");
+    TizenLog::Error("Could not get an Evas object.");
     return false;
   }
+
   return true;
 }
 

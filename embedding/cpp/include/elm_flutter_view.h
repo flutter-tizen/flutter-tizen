@@ -24,7 +24,7 @@ class ElmFlutterView : public flutter::PluginRegistry {
       : parent_(parent),
         initial_width_(initial_width),
         initial_height_(initial_height) {}
-  virtual ~ElmFlutterView() {}
+  virtual ~ElmFlutterView();
 
   FlutterDesktopPluginRegistrarRef GetRegistrarForPlugin(
       const std::string &plugin_name) override;
