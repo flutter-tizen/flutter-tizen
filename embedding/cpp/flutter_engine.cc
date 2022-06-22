@@ -40,17 +40,49 @@ FlutterEngine::FlutterEngine(
   engine_ = FlutterDesktopEngineCreate(engine_prop);
 }
 
-FlutterEngine::~FlutterEngine() {
+FlutterEngine::~FlutterEngine() { Shutdown(); }
+
+bool FlutterEngine::Run() {
+  if (engine_) {
+    is_running_ = FlutterDesktopEngineRun(engine_);
+  }
+  return is_running_;
+}
+
+void FlutterEngine::Shutdown() {
   if (engine_) {
     FlutterDesktopEngineShutdown(engine_);
   }
 }
 
-bool FlutterEngine::Run() {
+void FlutterEngine::Resume() {
   if (engine_) {
-    return FlutterDesktopEngineRun(engine_);
+    FlutterDesktopEngineNotifyAppIsResumed(engine_);
   }
-  return false;
+}
+
+void FlutterEngine::Pause() {
+  if (engine_) {
+    FlutterDesktopEngineNotifyAppIsInactive(engine_);
+  }
+}
+
+void FlutterEngine::Stop() {
+  if (engine_) {
+    FlutterDesktopEngineNotifyAppIsPaused(engine_);
+  }
+}
+
+void FlutterEngine::NotifyAppControl(void* app_control) {
+  FlutterDesktopEngineNotifyAppControl(engine_, app_control);
+}
+
+void FlutterEngine::NotifyLowMemoryWarning() {
+  FlutterDesktopEngineNotifyLowMemoryWarning(engine_);
+}
+
+void FlutterEngine::NotifyLocaleChange() {
+  FlutterDesktopEngineNotifyLocaleChange(engine_);
 }
 
 FlutterDesktopPluginRegistrarRef FlutterEngine::GetRegistrarForPlugin(
