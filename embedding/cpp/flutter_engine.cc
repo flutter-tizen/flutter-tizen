@@ -4,16 +4,24 @@
 
 #include "include/flutter_engine.h"
 
+#include "utils.h"
+
+std::unique_ptr<FlutterEngine> FlutterEngine::Create(
+    const std::string& assets_path, const std::string& icu_data_path,
+    const std::string& aot_library_path, const std::string& dart_entrypoint,
+    const std::vector<std::string>& dart_entrypoint_arguments) {
+  return std::unique_ptr<FlutterEngine>(
+      new FlutterEngine(assets_path, icu_data_path, aot_library_path,
+                        dart_entrypoint, dart_entrypoint_arguments));
+}
+
 FlutterEngine::FlutterEngine(
     const std::string& assets_path, const std::string& icu_data_path,
-    const std::string& aot_library_path,
-    const std::vector<std::string>& engine_arguments,
-    const std::string& dart_entrypoint,
+    const std::string& aot_library_path, const std::string& dart_entrypoint,
     const std::vector<std::string>& dart_entrypoint_arguments)
     : assets_path_(assets_path),
       icu_data_path_(icu_data_path),
       aot_library_path_(aot_library_path),
-      engine_arguments_(engine_arguments),
       dart_entrypoint_(dart_entrypoint),
       dart_entrypoint_arguments_(dart_entrypoint_arguments) {
   FlutterDesktopEngineProperties engine_prop = {};
@@ -21,6 +29,8 @@ FlutterEngine::FlutterEngine(
   engine_prop.icu_data_path = icu_data_path_.c_str();
   engine_prop.aot_library_path = aot_library_path_.c_str();
 
+  // Read engine arguments passed from the tool.
+  Utils::ParseEngineArgs(&engine_arguments_);
   std::vector<const char*> switches;
   for (auto& arg : engine_arguments_) {
     switches.push_back(arg.c_str());
@@ -40,7 +50,11 @@ FlutterEngine::FlutterEngine(
   engine_ = FlutterDesktopEngineCreate(engine_prop);
 }
 
-FlutterEngine::~FlutterEngine() { Shutdown(); }
+FlutterEngine::~FlutterEngine() {
+  if (owns_engine_) {
+    Shutdown();
+  }
+}
 
 bool FlutterEngine::Run() {
   if (engine_) {
@@ -83,6 +97,11 @@ void FlutterEngine::NotifyLowMemoryWarning() {
 
 void FlutterEngine::NotifyLocaleChange() {
   FlutterDesktopEngineNotifyLocaleChange(engine_);
+}
+
+FlutterDesktopEngineRef FlutterEngine::RelinquishEngine() {
+  owns_engine_ = false;
+  return engine_;
 }
 
 FlutterDesktopPluginRegistrarRef FlutterEngine::GetRegistrarForPlugin(

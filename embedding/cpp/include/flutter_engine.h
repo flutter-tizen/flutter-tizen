@@ -8,19 +8,19 @@
 #include <flutter/plugin_registry.h>
 #include <flutter_tizen.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 // The engine for flutter execution
 class FlutterEngine : public flutter::PluginRegistry {
  public:
-  FlutterEngine(const std::string& assets_path,
-                const std::string& icu_data_path,
-                const std::string& aot_library_path,
-                const std::vector<std::string>& engine_arguments,
-                const std::string& dart_entrypoint,
-                const std::vector<std::string>& dart_entrypoint_arguments);
   virtual ~FlutterEngine();
+
+  static std::unique_ptr<FlutterEngine> Create(
+      const std::string& assets_path, const std::string& icu_data_path,
+      const std::string& aot_library_path, const std::string& dart_entrypoint,
+      const std::vector<std::string>& dart_entrypoint_arguments);
 
   // Prevent copying.
   FlutterEngine(FlutterEngine const&) = delete;
@@ -76,20 +76,37 @@ class FlutterEngine : public flutter::PluginRegistry {
   // This method sends a "memory pressure warning" message to Flutter
   void NotifyLocaleChange();
 
+  // Gives up ownership of |engine_|, but keeps a weak reference to it.
+  FlutterDesktopEngineRef RelinquishEngine();
+
   FlutterDesktopPluginRegistrarRef GetRegistrarForPlugin(
       const std::string& plugin_name) override;
 
  private:
+  FlutterEngine(const std::string& assets_path,
+                const std::string& icu_data_path,
+                const std::string& aot_library_path,
+                const std::string& dart_entrypoint,
+                const std::vector<std::string>& dart_entrypoint_arguments);
+
   std::string assets_path_;
   std::string icu_data_path_;
   std::string aot_library_path_;
-  std::vector<std::string> engine_arguments_;
+
   std::string dart_entrypoint_;
   std::vector<std::string> dart_entrypoint_arguments_;
 
+  // The switches to pass to the Flutter engine.
+  std::vector<std::string> engine_arguments_;
+
   // Handle for interacting with the C API's engine reference.
   FlutterDesktopEngineRef engine_ = nullptr;
+
+  // Whether the engine has been run.
   bool is_running_ = false;
+
+  // Whether or not this wrapper owns |engine_|.
+  bool owns_engine_ = true;
 };
 
 #endif /* FLUTTER_TIZEN_EMBEDDING_CPP_INCLUDE_FLUTTER_ENGINE_H_ */
