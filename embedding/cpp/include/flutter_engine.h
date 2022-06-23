@@ -20,7 +20,7 @@ class FlutterEngine : public flutter::PluginRegistry {
   static std::unique_ptr<FlutterEngine> Create(
       const std::string& assets_path, const std::string& icu_data_path,
       const std::string& aot_library_path, const std::string& dart_entrypoint,
-      const std::vector<std::string>& dart_entrypoint_arguments);
+      const std::vector<std::string>& dart_entrypoint_args);
 
   // Prevent copying.
   FlutterEngine(FlutterEngine const&) = delete;
@@ -39,41 +39,41 @@ class FlutterEngine : public flutter::PluginRegistry {
   //
   // This method notifies the running Flutter app that it is "resumed" as per
   // the Flutter app lifecycle.
-  void Resume();
+  void NotifyAppIsResumed();
 
   // Pauses the engine.
   //
   // This method notifies the running Flutter app that it is "inactive" as per
   // the Flutter app lifecycle.
-  void Pause();
+  void NotifyAppIsInactive();
 
   // Stops the engine.
   //
   // This method notifies the running Flutter app that it is "paused" as per
   // the Flutter app lifecycle.
-  void Stop();
+  void NotifyAppIsPaused();
 
   // Detaches the engine.
   //
   // This method notifies the running Flutter app that it is "detached" as per
   // the Flutter app lifecycle.
-  void Detache();
+  void NotifyAppIsDetached();
 
   // Notifies that the host app received an app control.
   //
   // This method sends the app control to Flutter over the "app control event
-  // channel"
+  // channel".
   void NotifyAppControl(void* app_control);
 
   // Notifies that low memory warning.
   //
   // This method sends a "memory pressure warning" message to Flutter over the
-  // "system channel"
+  // "system channel".
   void NotifyLowMemoryWarning();
 
   // Notifies that the locale has changed.
   //
-  // This method sends a "memory pressure warning" message to Flutter
+  // This method sends a "memory pressure warning" message to Flutter.
   void NotifyLocaleChange();
 
   // Gives up ownership of |engine_|, but keeps a weak reference to it.
@@ -88,13 +88,6 @@ class FlutterEngine : public flutter::PluginRegistry {
                 const std::string& aot_library_path,
                 const std::string& dart_entrypoint,
                 const std::vector<std::string>& dart_entrypoint_arguments);
-
-  std::string assets_path_;
-  std::string icu_data_path_;
-  std::string aot_library_path_;
-
-  std::string dart_entrypoint_;
-  std::vector<std::string> dart_entrypoint_arguments_;
 
   // The switches to pass to the Flutter engine.
   std::vector<std::string> engine_arguments_;
