@@ -58,7 +58,7 @@ bool ElmFlutterView::RunEngine() {
 void ElmFlutterView::Resize(int32_t width, int32_t height) {
   assert(IsRunning());
 
-  int32_t view_width, view_height;
+  int32_t view_width = width, view_height = height;
   evas_object_geometry_get(evas_object_, nullptr, nullptr, &view_width,
                            &view_height);
   if (view_width != width || view_height != height) {
@@ -69,7 +69,7 @@ void ElmFlutterView::Resize(int32_t width, int32_t height) {
 int32_t ElmFlutterView::GetWidth() {
   assert(IsRunning());
 
-  int32_t width;
+  int32_t width = 0;
   evas_object_geometry_get(evas_object_, nullptr, nullptr, &width, nullptr);
   return width;
 }
@@ -77,7 +77,7 @@ int32_t ElmFlutterView::GetWidth() {
 int32_t ElmFlutterView::GetHeight() {
   assert(IsRunning());
 
-  int32_t height;
+  int32_t height = 0;
   evas_object_geometry_get(evas_object_, nullptr, nullptr, nullptr, &height);
   return height;
 }
