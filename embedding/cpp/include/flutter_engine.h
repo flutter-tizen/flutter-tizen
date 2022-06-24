@@ -73,7 +73,7 @@ class FlutterEngine : public flutter::PluginRegistry {
 
   // Notifies that the locale has changed.
   //
-  // This method sends a "memory pressure warning" message to Flutter.
+  // This method sends a "locale change" message to Flutter
   void NotifyLocaleChange();
 
   // Gives up ownership of |engine_|, but keeps a weak reference to it.
