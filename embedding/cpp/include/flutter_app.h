@@ -12,6 +12,8 @@
 #include <string>
 #include <vector>
 
+#include "flutter_engine.h"
+
 // The app base class which creates and manages the Flutter engine instance.
 class FlutterApp : public flutter::PluginRegistry {
  public:
@@ -73,10 +75,6 @@ class FlutterApp : public flutter::PluginRegistry {
   // must be added to tizen-manifest.xml file.
   bool is_top_level_ = false;
 
-  // The switches to pass to the Flutter engine.
-  // Custom switches may be added before `OnCreate` is called.
-  std::vector<std::string> engine_args_;
-
   // The optional entrypoint in the Dart project. If the value is empty,
   // defaults to main().
   std::string dart_entrypoint_;
@@ -84,8 +82,8 @@ class FlutterApp : public flutter::PluginRegistry {
   // The list of Dart entrypoint arguments.
   std::vector<std::string> dart_entrypoint_args_;
 
-  // The Flutter engine instance handle.
-  FlutterDesktopEngineRef engine_ = nullptr;
+  // The Flutter engine instance.
+  std::unique_ptr<FlutterEngine> engine_;
 
   // The Flutter view instance handle.
   FlutterDesktopViewRef view_ = nullptr;

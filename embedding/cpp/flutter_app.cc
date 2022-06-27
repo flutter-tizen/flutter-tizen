@@ -11,30 +11,9 @@
 
 bool FlutterApp::OnCreate() {
   TizenLog::Debug("Launching a Flutter application...");
-
-  // Read engine arguments passed from the tool.
-  Utils::ParseEngineArgs(&engine_args_);
-
-  std::vector<const char *> switches;
-  for (auto &arg : engine_args_) {
-    switches.push_back(arg.c_str());
-  }
-  std::vector<const char *> entrypoint_args;
-  for (auto &arg : dart_entrypoint_args_) {
-    entrypoint_args.push_back(arg.c_str());
-  }
-
-  FlutterDesktopEngineProperties engine_prop = {};
-  engine_prop.assets_path = "../res/flutter_assets";
-  engine_prop.icu_data_path = "../res/icudtl.dat";
-  engine_prop.aot_library_path = "../lib/libapp.so";
-  engine_prop.switches = switches.data();
-  engine_prop.switches_count = switches.size();
-  engine_prop.entrypoint = dart_entrypoint_.c_str();
-  engine_prop.dart_entrypoint_argc = entrypoint_args.size();
-  engine_prop.dart_entrypoint_argv = entrypoint_args.data();
-
-  engine_ = FlutterDesktopEngineCreate(engine_prop);
+  engine_ = FlutterEngine::Create("../res/flutter_assets", "../res/icudtl.dat",
+                                  "../lib/libapp.so", dart_entrypoint_,
+                                  dart_entrypoint_args_);
   if (!engine_) {
     TizenLog::Error("Could not create a Flutter engine.");
     return false;
@@ -49,7 +28,8 @@ bool FlutterApp::OnCreate() {
   window_prop.focusable = is_window_focusable_;
   window_prop.top_level = is_top_level_;
 
-  view_ = FlutterDesktopViewCreateFromNewWindow(window_prop, engine_);
+  view_ = FlutterDesktopViewCreateFromNewWindow(window_prop,
+                                                engine_->RelinquishEngine());
   if (!view_) {
     TizenLog::Error("Could not launch a Flutter application.");
     return false;
@@ -59,47 +39,38 @@ bool FlutterApp::OnCreate() {
 
 void FlutterApp::OnResume() {
   assert(IsRunning());
-
-  FlutterDesktopEngineNotifyAppIsResumed(engine_);
+  engine_->NotifyAppIsResumed();
 }
 
 void FlutterApp::OnPause() {
   assert(IsRunning());
-
-  FlutterDesktopEngineNotifyAppIsPaused(engine_);
+  engine_->NotifyAppIsPaused();
 }
 
 void FlutterApp::OnTerminate() {
   assert(IsRunning());
-
   TizenLog::Debug("Shutting down the application...");
-
-  FlutterDesktopEngineShutdown(engine_);
   engine_ = nullptr;
 }
 
 void FlutterApp::OnAppControlReceived(app_control_h app_control) {
   assert(IsRunning());
-
-  FlutterDesktopEngineNotifyAppControl(engine_, app_control);
+  engine_->NotifyAppControl(app_control);
 }
 
 void FlutterApp::OnLowMemory(app_event_info_h event_info) {
   assert(IsRunning());
-
-  FlutterDesktopEngineNotifyLowMemoryWarning(engine_);
+  engine_->NotifyLowMemoryWarning();
 }
 
 void FlutterApp::OnLanguageChanged(app_event_info_h event_info) {
   assert(IsRunning());
-
-  FlutterDesktopEngineNotifyLocaleChange(engine_);
+  engine_->NotifyLocaleChange();
 }
 
 void FlutterApp::OnRegionFormatChanged(app_event_info_h event_info) {
   assert(IsRunning());
-
-  FlutterDesktopEngineNotifyLocaleChange(engine_);
+  engine_->NotifyLocaleChange();
 }
 
 int FlutterApp::Run(int argc, char **argv) {
@@ -172,7 +143,7 @@ int FlutterApp::Run(int argc, char **argv) {
 FlutterDesktopPluginRegistrarRef FlutterApp::GetRegistrarForPlugin(
     const std::string &plugin_name) {
   if (engine_) {
-    return FlutterDesktopEngineGetPluginRegistrar(engine_, plugin_name.c_str());
+    return engine_->GetRegistrarForPlugin(plugin_name);
   }
   return nullptr;
 }

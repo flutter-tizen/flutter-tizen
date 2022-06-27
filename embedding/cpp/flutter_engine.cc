@@ -88,7 +88,7 @@ void FlutterEngine::NotifyAppIsDetached() {
   }
 }
 
-void FlutterEngine::NotifyAppControl(void* app_control) {
+void FlutterEngine::NotifyAppControl(app_control_h app_control) {
   FlutterDesktopEngineNotifyAppControl(engine_, app_control);
 }
 

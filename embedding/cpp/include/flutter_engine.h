@@ -5,6 +5,7 @@
 #ifndef FLUTTER_TIZEN_EMBEDDING_CPP_INCLUDE_FLUTTER_ENGINE_H_
 #define FLUTTER_TIZEN_EMBEDDING_CPP_INCLUDE_FLUTTER_ENGINE_H_
 
+#include <app_control.h>
 #include <flutter/plugin_registry.h>
 #include <flutter_tizen.h>
 
@@ -63,7 +64,7 @@ class FlutterEngine : public flutter::PluginRegistry {
   //
   // This method sends the app control to Flutter over the "app control event
   // channel".
-  void NotifyAppControl(void* app_control);
+  void NotifyAppControl(app_control_h app_control);
 
   // Notifies that low memory warning.
   //
