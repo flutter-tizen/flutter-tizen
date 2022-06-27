@@ -10,6 +10,7 @@
 #include <flutter_tizen.h>
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -20,8 +21,10 @@ class FlutterEngine : public flutter::PluginRegistry {
 
   static std::unique_ptr<FlutterEngine> Create(
       const std::string& assets_path, const std::string& icu_data_path,
-      const std::string& aot_library_path, const std::string& dart_entrypoint,
-      const std::vector<std::string>& dart_entrypoint_args);
+      const std::string& aot_library_path,
+      const std::optional<std::string>& dart_entrypoint = std::nullopt,
+      const std::optional<std::vector<std::string>>& dart_entrypoint_args =
+          std::nullopt);
 
   // Prevent copying.
   FlutterEngine(FlutterEngine const&) = delete;
@@ -84,11 +87,11 @@ class FlutterEngine : public flutter::PluginRegistry {
       const std::string& plugin_name) override;
 
  private:
-  FlutterEngine(const std::string& assets_path,
-                const std::string& icu_data_path,
-                const std::string& aot_library_path,
-                const std::string& dart_entrypoint,
-                const std::vector<std::string>& dart_entrypoint_arguments);
+  FlutterEngine(
+      const std::string& assets_path, const std::string& icu_data_path,
+      const std::string& aot_library_path,
+      const std::optional<std::string>& dart_entrypoint,
+      const std::optional<std::vector<std::string>>& dart_entrypoint_args);
 
   // The switches to pass to the Flutter engine.
   std::vector<std::string> engine_arguments_;

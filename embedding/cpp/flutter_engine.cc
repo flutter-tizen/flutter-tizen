@@ -8,8 +8,9 @@
 
 std::unique_ptr<FlutterEngine> FlutterEngine::Create(
     const std::string& assets_path, const std::string& icu_data_path,
-    const std::string& aot_library_path, const std::string& dart_entrypoint,
-    const std::vector<std::string>& dart_entrypoint_args) {
+    const std::string& aot_library_path,
+    const std::optional<std::string>& dart_entrypoint,
+    const std::optional<std::vector<std::string>>& dart_entrypoint_args) {
   return std::unique_ptr<FlutterEngine>(
       new FlutterEngine(assets_path, icu_data_path, aot_library_path,
                         dart_entrypoint, dart_entrypoint_args));
@@ -17,8 +18,9 @@ std::unique_ptr<FlutterEngine> FlutterEngine::Create(
 
 FlutterEngine::FlutterEngine(
     const std::string& assets_path, const std::string& icu_data_path,
-    const std::string& aot_library_path, const std::string& dart_entrypoint,
-    const std::vector<std::string>& dart_entrypoint_args) {
+    const std::string& aot_library_path,
+    const std::optional<std::string>& dart_entrypoint,
+    const std::optional<std::vector<std::string>>& dart_entrypoint_args) {
   FlutterDesktopEngineProperties engine_prop = {};
   engine_prop.assets_path = assets_path.c_str();
   engine_prop.icu_data_path = icu_data_path.c_str();
@@ -33,11 +35,14 @@ FlutterEngine::FlutterEngine(
   engine_prop.switches = switches.data();
   engine_prop.switches_count = switches.size();
 
-  engine_prop.entrypoint = dart_entrypoint.c_str();
+  engine_prop.entrypoint =
+      dart_entrypoint.has_value() ? dart_entrypoint.value().c_str() : nullptr;
 
   std::vector<const char*> entrypoint_args;
-  for (auto& arg : dart_entrypoint_args) {
-    entrypoint_args.push_back(arg.c_str());
+  if (dart_entrypoint_args.has_value()) {
+    for (const std::string& arg : dart_entrypoint_args.value()) {
+      entrypoint_args.push_back(arg.c_str());
+    }
   }
   engine_prop.dart_entrypoint_argc = entrypoint_args.size();
   engine_prop.dart_entrypoint_argv = entrypoint_args.data();

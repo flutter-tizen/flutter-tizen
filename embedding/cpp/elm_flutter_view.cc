@@ -18,8 +18,7 @@ bool ElmFlutterView::RunEngine() {
 
   if (!engine_) {
     engine_ = FlutterEngine::Create("../res/flutter_assets",
-                                    "../res/icudtl.dat", "../lib/libapp.so", "",
-                                    std::vector<std::string>());
+                                    "../res/icudtl.dat", "../lib/libapp.so");
   }
 
   FlutterDesktopViewProperties view_prop = {};
