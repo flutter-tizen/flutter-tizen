@@ -9,6 +9,7 @@
 #include <flutter/plugin_registry.h>
 #include <flutter_tizen.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
