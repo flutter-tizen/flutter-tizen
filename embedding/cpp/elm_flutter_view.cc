@@ -4,6 +4,8 @@
 
 #include "include/elm_flutter_view.h"
 
+#include <cassert>
+
 #include "tizen_log.h"
 #include "utils.h"
 
@@ -35,8 +37,8 @@ bool ElmFlutterView::RunEngine() {
   }
 
   FlutterDesktopViewProperties view_prop = {};
-  view_prop.width = width_;
-  view_prop.height = height_;
+  view_prop.width = initial_width_;
+  view_prop.height = initial_height_;
 
   view_ = FlutterDesktopViewCreateFromElmParent(view_prop, engine_, parent_);
   if (!view_) {
@@ -54,11 +56,30 @@ bool ElmFlutterView::RunEngine() {
 }
 
 void ElmFlutterView::Resize(int32_t width, int32_t height) {
-  if (view_ && (width_ != width || height_ != height)) {
-    width_ = width;
-    height_ = height;
-    FlutterDesktopViewResize(view_, width_, height_);
+  assert(IsRunning());
+
+  int32_t view_width = width, view_height = height;
+  evas_object_geometry_get(evas_object_, nullptr, nullptr, &view_width,
+                           &view_height);
+  if (view_width != width || view_height != height) {
+    FlutterDesktopViewResize(view_, width, height);
   }
+}
+
+int32_t ElmFlutterView::GetWidth() {
+  assert(IsRunning());
+
+  int32_t width = 0;
+  evas_object_geometry_get(evas_object_, nullptr, nullptr, &width, nullptr);
+  return width;
+}
+
+int32_t ElmFlutterView::GetHeight() {
+  assert(IsRunning());
+
+  int32_t height = 0;
+  evas_object_geometry_get(evas_object_, nullptr, nullptr, nullptr, &height);
+  return height;
 }
 
 FlutterDesktopPluginRegistrarRef ElmFlutterView::GetRegistrarForPlugin(
