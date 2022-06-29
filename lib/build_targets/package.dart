@@ -295,6 +295,8 @@ class NativeTpk extends TizenPackage {
       'capi-appfw-app-common',
       'capi-appfw-application',
       'dlog',
+      'elementary',
+      'evas',
     ];
 
     final Directory buildDir = projectDir.childDirectory(buildConfig);
