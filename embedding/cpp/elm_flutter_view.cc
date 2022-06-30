@@ -17,8 +17,7 @@ bool ElmFlutterView::RunEngine() {
   }
 
   if (!engine_) {
-    engine_ = FlutterEngine::Create("../res/flutter_assets",
-                                    "../res/icudtl.dat", "../lib/libapp.so");
+    engine_ = FlutterEngine::Create();
   }
 
   if (!engine_) {

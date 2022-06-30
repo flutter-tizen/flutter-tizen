@@ -19,6 +19,7 @@ bool FlutterServiceApp::OnCreate() {
     TizenLog::Error("Could not create a Flutter engine.");
     return false;
   }
+
   if (!engine_->Run()) {
     TizenLog::Error("Could not run a Flutter engine.");
     return false;

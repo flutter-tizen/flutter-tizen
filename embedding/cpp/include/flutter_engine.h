@@ -18,7 +18,10 @@
 class FlutterEngine : public flutter::PluginRegistry {
  public:
   virtual ~FlutterEngine();
-
+  static std::unique_ptr<FlutterEngine> Create(
+      const std::optional<std::string>& dart_entrypoint = std::nullopt,
+      const std::optional<std::vector<std::string>>& dart_entrypoint_args =
+          std::nullopt);
   static std::unique_ptr<FlutterEngine> Create(
       const std::string& assets_path, const std::string& icu_data_path,
       const std::string& aot_library_path,

@@ -8,6 +8,14 @@
 #include "utils.h"
 
 std::unique_ptr<FlutterEngine> FlutterEngine::Create(
+    const std::optional<std::string>& dart_entrypoint,
+    const std::optional<std::vector<std::string>>& dart_entrypoint_args) {
+  return std::move(FlutterEngine::Create(
+      "../res/flutter_assets", "../res/icudtl.dat", "../lib/libapp.so",
+      dart_entrypoint, dart_entrypoint_args));
+}
+
+std::unique_ptr<FlutterEngine> FlutterEngine::Create(
     const std::string& assets_path, const std::string& icu_data_path,
     const std::string& aot_library_path,
     const std::optional<std::string>& dart_entrypoint,
