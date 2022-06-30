@@ -4,6 +4,7 @@
 
 #include "include/flutter_engine.h"
 
+#include "tizen_log.h"
 #include "utils.h"
 
 std::unique_ptr<FlutterEngine> FlutterEngine::Create(
@@ -11,9 +12,15 @@ std::unique_ptr<FlutterEngine> FlutterEngine::Create(
     const std::string& aot_library_path,
     const std::optional<std::string>& dart_entrypoint,
     const std::optional<std::vector<std::string>>& dart_entrypoint_args) {
-  return std::unique_ptr<FlutterEngine>(
+  FlutterEngine* engine =
       new FlutterEngine(assets_path, icu_data_path, aot_library_path,
-                        dart_entrypoint, dart_entrypoint_args));
+                        dart_entrypoint, dart_entrypoint_args);
+  if (engine->engine_) {
+    return std::unique_ptr<FlutterEngine>(engine);
+  } else {
+    delete engine;
+    return nullptr;
+  }
 }
 
 FlutterEngine::FlutterEngine(

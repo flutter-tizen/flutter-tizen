@@ -21,6 +21,11 @@ bool ElmFlutterView::RunEngine() {
                                     "../res/icudtl.dat", "../lib/libapp.so");
   }
 
+  if (!engine_) {
+    TizenLog::Error("Could not create a Flutter engine.");
+    return false;
+  }
+
   FlutterDesktopViewProperties view_prop = {};
   view_prop.width = initial_width_;
   view_prop.height = initial_height_;
