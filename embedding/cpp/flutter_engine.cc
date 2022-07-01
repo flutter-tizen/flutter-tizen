@@ -13,11 +13,11 @@
 namespace {
 
 std::vector<std::string> ParseEngineArgs() {
-  std::vector<std::string> engine_arguments;
+  std::vector<std::string> engine_args;
   char* app_id;
   if (app_get_id(&app_id) != 0) {
     TizenLog::Warn("The app ID is not found.");
-    return engine_arguments;
+    return engine_args;
   }
   std::string temp_path("/home/owner/share/tmp/sdk_tools/" +
                         std::string(app_id) + ".rpm");
@@ -25,7 +25,7 @@ std::vector<std::string> ParseEngineArgs() {
 
   auto file = fopen(temp_path.c_str(), "r");
   if (!file) {
-    return engine_arguments;
+    return engine_args;
   }
   char* line = nullptr;
   size_t len = 0;
@@ -35,7 +35,7 @@ std::vector<std::string> ParseEngineArgs() {
       line[strlen(line) - 1] = 0;
     }
     TizenLog::Info("Enabled: %s", line);
-    engine_arguments.push_back(line);
+    engine_args.push_back(line);
   }
   free(line);
   fclose(file);
@@ -43,7 +43,7 @@ std::vector<std::string> ParseEngineArgs() {
   if (remove(temp_path.c_str()) != 0) {
     TizenLog::Warn("Error removing file: %s", strerror(errno));
   }
-  return engine_arguments;
+  return engine_args;
 }
 
 }  // namespace
@@ -51,9 +51,9 @@ std::vector<std::string> ParseEngineArgs() {
 std::unique_ptr<FlutterEngine> FlutterEngine::Create(
     const std::string& dart_entrypoint,
     const std::vector<std::string>& dart_entrypoint_args) {
-  return std::move(FlutterEngine::Create(
-      "../res/flutter_assets", "../res/icudtl.dat", "../lib/libapp.so",
-      dart_entrypoint, dart_entrypoint_args));
+  return FlutterEngine::Create("../res/flutter_assets", "../res/icudtl.dat",
+                               "../lib/libapp.so", dart_entrypoint,
+                               dart_entrypoint_args);
 }
 
 std::unique_ptr<FlutterEngine> FlutterEngine::Create(
@@ -81,9 +81,9 @@ FlutterEngine::FlutterEngine(
   engine_prop.aot_library_path = aot_library_path.c_str();
 
   // Read engine arguments passed from the tool.
-  std::vector<std::string> engine_arguments = ParseEngineArgs();
+  std::vector<std::string> engine_args = ParseEngineArgs();
   std::vector<const char*> switches;
-  for (const std::string& arg : engine_arguments) {
+  for (const std::string& arg : engine_args) {
     switches.push_back(arg.c_str());
   }
   engine_prop.switches = switches.data();
