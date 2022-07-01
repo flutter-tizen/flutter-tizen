@@ -332,6 +332,7 @@ class NativeTpk extends TizenPackage {
       // The extra quotation marks ("") for linker flags are required due to
       // https://github.com/flutter-tizen/flutter-tizen/issues/218.
       '"-Wl,--unresolved-symbols=ignore-in-shared-libs"',
+      '"-Wl,--start-group"',
       '-lflutter_tizen_${buildInfo.deviceProfile}',
       '-L${libDir.path.toPosixPath()}',
       '-I${clientWrapperDir.childDirectory('include').path.toPosixPath()}',
@@ -340,6 +341,7 @@ class NativeTpk extends TizenPackage {
       '"-Wl,--whole-archive"',
       embeddingLib.path.toPosixPath(),
       '"-Wl,--no-whole-archive"',
+      '"-Wl,--end-group"',
       for (String lib in embeddingDependencies) '-l$lib',
       '-I${pluginsDir.childDirectory('include').path.toPosixPath()}',
       if (pluginsLib.existsSync()) '-lflutter_plugins',
