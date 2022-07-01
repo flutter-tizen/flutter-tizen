@@ -12,11 +12,12 @@
 
 namespace {
 
-void ParseEngineArgs(std::vector<std::string>* list) {
+std::vector<std::string> ParseEngineArgs() {
+  std::vector<std::string> engine_arguments;
   char* app_id;
   if (app_get_id(&app_id) != 0) {
     TizenLog::Warn("The app ID is not found.");
-    return;
+    return engine_arguments;
   }
   std::string temp_path("/home/owner/share/tmp/sdk_tools/" +
                         std::string(app_id) + ".rpm");
@@ -24,7 +25,7 @@ void ParseEngineArgs(std::vector<std::string>* list) {
 
   auto file = fopen(temp_path.c_str(), "r");
   if (!file) {
-    return;
+    return engine_arguments;
   }
   char* line = nullptr;
   size_t len = 0;
@@ -34,7 +35,7 @@ void ParseEngineArgs(std::vector<std::string>* list) {
       line[strlen(line) - 1] = 0;
     }
     TizenLog::Info("Enabled: %s", line);
-    list->push_back(line);
+    engine_arguments.push_back(line);
   }
   free(line);
   fclose(file);
@@ -42,13 +43,14 @@ void ParseEngineArgs(std::vector<std::string>* list) {
   if (remove(temp_path.c_str()) != 0) {
     TizenLog::Warn("Error removing file: %s", strerror(errno));
   }
+  return engine_arguments;
 }
 
 }  // namespace
 
 std::unique_ptr<FlutterEngine> FlutterEngine::Create(
-    const std::optional<std::string>& dart_entrypoint,
-    const std::optional<std::vector<std::string>>& dart_entrypoint_args) {
+    const std::string& dart_entrypoint,
+    const std::vector<std::string>& dart_entrypoint_args) {
   return std::move(FlutterEngine::Create(
       "../res/flutter_assets", "../res/icudtl.dat", "../lib/libapp.so",
       dart_entrypoint, dart_entrypoint_args));
@@ -56,9 +58,8 @@ std::unique_ptr<FlutterEngine> FlutterEngine::Create(
 
 std::unique_ptr<FlutterEngine> FlutterEngine::Create(
     const std::string& assets_path, const std::string& icu_data_path,
-    const std::string& aot_library_path,
-    const std::optional<std::string>& dart_entrypoint,
-    const std::optional<std::vector<std::string>>& dart_entrypoint_args) {
+    const std::string& aot_library_path, const std::string& dart_entrypoint,
+    const std::vector<std::string>& dart_entrypoint_args) {
   FlutterEngine* engine =
       new FlutterEngine(assets_path, icu_data_path, aot_library_path,
                         dart_entrypoint, dart_entrypoint_args);
@@ -72,32 +73,30 @@ std::unique_ptr<FlutterEngine> FlutterEngine::Create(
 
 FlutterEngine::FlutterEngine(
     const std::string& assets_path, const std::string& icu_data_path,
-    const std::string& aot_library_path,
-    const std::optional<std::string>& dart_entrypoint,
-    const std::optional<std::vector<std::string>>& dart_entrypoint_args) {
+    const std::string& aot_library_path, const std::string& dart_entrypoint,
+    const std::vector<std::string>& dart_entrypoint_args) {
   FlutterDesktopEngineProperties engine_prop = {};
   engine_prop.assets_path = assets_path.c_str();
   engine_prop.icu_data_path = icu_data_path.c_str();
   engine_prop.aot_library_path = aot_library_path.c_str();
 
   // Read engine arguments passed from the tool.
-  ParseEngineArgs(&engine_arguments_);
+  std::vector<std::string> engine_arguments = ParseEngineArgs();
   std::vector<const char*> switches;
-  for (const std::string& arg : engine_arguments_) {
+  for (const std::string& arg : engine_arguments) {
     switches.push_back(arg.c_str());
   }
   engine_prop.switches = switches.data();
   engine_prop.switches_count = switches.size();
 
   engine_prop.entrypoint =
-      dart_entrypoint.has_value() ? dart_entrypoint.value().c_str() : nullptr;
+      dart_entrypoint.empty() ? nullptr : dart_entrypoint.c_str();
 
   std::vector<const char*> entrypoint_args;
-  if (dart_entrypoint_args.has_value()) {
-    for (const std::string& arg : dart_entrypoint_args.value()) {
-      entrypoint_args.push_back(arg.c_str());
-    }
+  for (const std::string& arg : dart_entrypoint_args) {
+    entrypoint_args.push_back(arg.c_str());
   }
+
   engine_prop.dart_entrypoint_argc = entrypoint_args.size();
   engine_prop.dart_entrypoint_argv = entrypoint_args.data();
 
@@ -150,15 +149,21 @@ void FlutterEngine::NotifyAppIsDetached() {
 }
 
 void FlutterEngine::NotifyAppControl(app_control_h app_control) {
-  FlutterDesktopEngineNotifyAppControl(engine_, app_control);
+  if (engine_) {
+    FlutterDesktopEngineNotifyAppControl(engine_, app_control);
+  }
 }
 
 void FlutterEngine::NotifyLowMemoryWarning() {
-  FlutterDesktopEngineNotifyLowMemoryWarning(engine_);
+  if (engine_) {
+    FlutterDesktopEngineNotifyLowMemoryWarning(engine_);
+  }
 }
 
 void FlutterEngine::NotifyLocaleChange() {
-  FlutterDesktopEngineNotifyLocaleChange(engine_);
+  if (engine_) {
+    FlutterDesktopEngineNotifyLocaleChange(engine_);
+  }
 }
 
 FlutterDesktopEngineRef FlutterEngine::RelinquishEngine() {

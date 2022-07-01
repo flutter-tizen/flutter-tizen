@@ -20,15 +20,13 @@ class FlutterEngine : public flutter::PluginRegistry {
   virtual ~FlutterEngine();
 
   static std::unique_ptr<FlutterEngine> Create(
-      const std::optional<std::string>& dart_entrypoint = std::nullopt,
-      const std::optional<std::vector<std::string>>& dart_entrypoint_args =
-          std::nullopt);
+      const std::string& dart_entrypoint = "",
+      const std::vector<std::string>& dart_entrypoint_args = {});
   static std::unique_ptr<FlutterEngine> Create(
       const std::string& assets_path, const std::string& icu_data_path,
       const std::string& aot_library_path,
-      const std::optional<std::string>& dart_entrypoint = std::nullopt,
-      const std::optional<std::vector<std::string>>& dart_entrypoint_args =
-          std::nullopt);
+      const std::string& dart_entrypoint = "",
+      const std::vector<std::string>& dart_entrypoint_args = {});
 
   // Prevent copying.
   FlutterEngine(FlutterEngine const&) = delete;
@@ -91,14 +89,11 @@ class FlutterEngine : public flutter::PluginRegistry {
       const std::string& plugin_name) override;
 
  private:
-  FlutterEngine(
-      const std::string& assets_path, const std::string& icu_data_path,
-      const std::string& aot_library_path,
-      const std::optional<std::string>& dart_entrypoint,
-      const std::optional<std::vector<std::string>>& dart_entrypoint_args);
-
-  // The switches to pass to the Flutter engine.
-  std::vector<std::string> engine_arguments_;
+  FlutterEngine(const std::string& assets_path,
+                const std::string& icu_data_path,
+                const std::string& aot_library_path,
+                const std::string& dart_entrypoint,
+                const std::vector<std::string>& dart_entrypoint_args);
 
   // Handle for interacting with the C API's engine reference.
   FlutterDesktopEngineRef engine_ = nullptr;
