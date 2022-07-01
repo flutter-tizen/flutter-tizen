@@ -120,7 +120,9 @@ bool FlutterEngine::Run() {
 void FlutterEngine::Shutdown() {
   if (engine_) {
     FlutterDesktopEngineShutdown(engine_);
+    engine_ = nullptr;
   }
+  is_running_ = false;
 }
 
 void FlutterEngine::NotifyAppIsResumed() {
