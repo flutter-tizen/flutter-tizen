@@ -18,6 +18,7 @@
 class FlutterEngine : public flutter::PluginRegistry {
  public:
   virtual ~FlutterEngine();
+
   static std::unique_ptr<FlutterEngine> Create(
       const std::optional<std::string>& dart_entrypoint = std::nullopt,
       const std::optional<std::vector<std::string>>& dart_entrypoint_args =
@@ -72,7 +73,7 @@ class FlutterEngine : public flutter::PluginRegistry {
   // channel".
   void NotifyAppControl(app_control_h app_control);
 
-  // Notifies that low memory warning.
+  // Notifies that a low memory warning has been received.
   //
   // This method sends a "memory pressure warning" message to Flutter over the
   // "system channel".

@@ -7,7 +7,6 @@
 #include <cassert>
 
 #include "tizen_log.h"
-#include "utils.h"
 
 bool FlutterApp::OnCreate() {
   TizenLog::Debug("Launching a Flutter application...");

@@ -44,9 +44,6 @@ class ElmFlutterView : public flutter::PluginRegistry {
   void SetEngine(std::unique_ptr<FlutterEngine> engine);
 
  private:
-  // The switches to pass to the Flutter engine.
-  std::vector<std::string> engine_args_;
-
   // The Flutter engine instance.
   std::unique_ptr<FlutterEngine> engine_;
 

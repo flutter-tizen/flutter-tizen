@@ -4,8 +4,47 @@
 
 #include "include/flutter_engine.h"
 
+#include <app.h>
+
+#include <cerrno>
+
 #include "tizen_log.h"
-#include "utils.h"
+
+namespace {
+
+void ParseEngineArgs(std::vector<std::string>* list) {
+  char* app_id;
+  if (app_get_id(&app_id) != 0) {
+    TizenLog::Warn("The app ID is not found.");
+    return;
+  }
+  std::string temp_path("/home/owner/share/tmp/sdk_tools/" +
+                        std::string(app_id) + ".rpm");
+  free(app_id);
+
+  auto file = fopen(temp_path.c_str(), "r");
+  if (!file) {
+    return;
+  }
+  char* line = nullptr;
+  size_t len = 0;
+
+  while (getline(&line, &len, file) > 0) {
+    if (line[strlen(line) - 1] == '\n') {
+      line[strlen(line) - 1] = 0;
+    }
+    TizenLog::Info("Enabled: %s", line);
+    list->push_back(line);
+  }
+  free(line);
+  fclose(file);
+
+  if (remove(temp_path.c_str()) != 0) {
+    TizenLog::Warn("Error removing file: %s", strerror(errno));
+  }
+}
+
+}  // namespace
 
 std::unique_ptr<FlutterEngine> FlutterEngine::Create(
     const std::optional<std::string>& dart_entrypoint,
@@ -42,9 +81,9 @@ FlutterEngine::FlutterEngine(
   engine_prop.aot_library_path = aot_library_path.c_str();
 
   // Read engine arguments passed from the tool.
-  Utils::ParseEngineArgs(&engine_arguments_);
+  ParseEngineArgs(&engine_arguments_);
   std::vector<const char*> switches;
-  for (auto& arg : engine_arguments_) {
+  for (const std::string& arg : engine_arguments_) {
     switches.push_back(arg.c_str());
   }
   engine_prop.switches = switches.data();

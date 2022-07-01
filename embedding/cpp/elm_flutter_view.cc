@@ -8,7 +8,6 @@
 
 #include "include/flutter_engine.h"
 #include "tizen_log.h"
-#include "utils.h"
 
 bool ElmFlutterView::RunEngine() {
   if (!parent_) {
