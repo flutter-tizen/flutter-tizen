@@ -15,7 +15,7 @@
 
 #include "flutter_engine.h"
 
-// The view class which creates and manages the Flutter engine instance.
+// Displays a Flutter screen in a Tizen application.
 class ElmFlutterView : public flutter::PluginRegistry {
  public:
   explicit ElmFlutterView(Evas_Object *parent) : parent_(parent) {}
@@ -56,10 +56,14 @@ class ElmFlutterView : public flutter::PluginRegistry {
   // The Evas object's parent instance handle.
   Evas_Object *parent_ = nullptr;
 
-  // The initial width of the view, or the maximum width if the value is zero.
+  // The initial width of the view.
+  //
+  // Defaults to the parent width if the value is zero.
   int32_t initial_width_ = 0;
 
-  // The initial height of the view, or the maximum height if the value is zero.
+  // The initial height of the view.
+  //
+  // Defaults to the parent height if the value is zero.
   int32_t initial_height_ = 0;
 };
 

@@ -14,7 +14,7 @@
 #include <string>
 #include <vector>
 
-// The engine for flutter execution.
+// The engine for Flutter execution.
 class FlutterEngine : public flutter::PluginRegistry {
  public:
   virtual ~FlutterEngine();

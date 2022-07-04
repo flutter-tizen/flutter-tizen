@@ -14,6 +14,7 @@ namespace {
 
 std::vector<std::string> ParseEngineArgs() {
   std::vector<std::string> engine_args;
+
   char* app_id;
   if (app_get_id(&app_id) != 0) {
     TizenLog::Warn("The app ID is not found.");

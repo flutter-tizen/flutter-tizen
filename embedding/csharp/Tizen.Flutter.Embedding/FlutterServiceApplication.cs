@@ -11,7 +11,7 @@ using static Tizen.Flutter.Embedding.Interop;
 namespace Tizen.Flutter.Embedding
 {
     /// <summary>
-    /// The <see cref="ServiceApplication"/> variant of <see cref="FlutterApplication"/>.
+    /// The app base class for headless Flutter execution.
     /// </summary>
     public class FlutterServiceApplication : ServiceApplication, IPluginRegistry
     {
@@ -22,19 +22,20 @@ namespace Tizen.Flutter.Embedding
         protected List<string> EngineArgs { get; } = new List<string>();
 
         /// <summary>
-        /// The optional entrypoint in the Dart project. If the value is empty, defaults to main().
+        /// The optional entrypoint in the Dart project. Defaults to main() if the value is empty.
         /// </summary>
         public string DartEntrypoint { get; set; } = string.Empty;
 
         /// <summary>
         /// The list of Dart entrypoint arguments.
         /// </summary>
-        protected List<string> DartEntrypointArgs { get; } = new List<string>();
+        private List<string> DartEntrypointArgs { get; } = new List<string>();
 
         /// <summary>
         /// The Flutter engine instance handle.
         /// </summary>
-        protected internal FlutterDesktopEngine Engine { get; private set; } = new FlutterDesktopEngine();
+        internal FlutterDesktopEngine Engine { get; private set; } = new FlutterDesktopEngine();
+
         public override void Run(string[] args)
         {
             // Log any unhandled exception.
