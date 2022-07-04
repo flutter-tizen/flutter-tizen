@@ -72,6 +72,10 @@ void FlutterApp::OnRegionFormatChanged(app_event_info_h event_info) {
 }
 
 int FlutterApp::Run(int argc, char **argv) {
+  for (int i = 0; i < argc; i++) {
+    dart_entrypoint_args_.push_back(argv[i]);
+  }
+
   ui_app_lifecycle_callback_s lifecycle_cb = {};
   lifecycle_cb.create = [](void *data) -> bool {
     auto *app = reinterpret_cast<FlutterApp *>(data);

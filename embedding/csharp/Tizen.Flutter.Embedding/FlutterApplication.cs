@@ -79,6 +79,8 @@ namespace Tizen.Flutter.Embedding
 
         public override void Run(string[] args)
         {
+            DartEntrypointArgs.AddRange(args);
+
             // Log any unhandled exception.
             AppDomain.CurrentDomain.UnhandledException += (s, e) =>
             {

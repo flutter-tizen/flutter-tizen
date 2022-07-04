@@ -96,7 +96,6 @@ FlutterEngine::FlutterEngine(
   for (const std::string& arg : dart_entrypoint_args) {
     entrypoint_args.push_back(arg.c_str());
   }
-
   engine_prop.dart_entrypoint_argc = entrypoint_args.size();
   engine_prop.dart_entrypoint_argv = entrypoint_args.data();
 
