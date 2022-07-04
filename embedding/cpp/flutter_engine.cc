@@ -131,21 +131,9 @@ void FlutterEngine::NotifyAppIsResumed() {
   }
 }
 
-void FlutterEngine::NotifyAppIsInactive() {
-  if (engine_) {
-    FlutterDesktopEngineNotifyAppIsInactive(engine_);
-  }
-}
-
 void FlutterEngine::NotifyAppIsPaused() {
   if (engine_) {
     FlutterDesktopEngineNotifyAppIsPaused(engine_);
-  }
-}
-
-void FlutterEngine::NotifyAppIsDetached() {
-  if (engine_) {
-    FlutterDesktopEngineNotifyAppIsDetached(engine_);
   }
 }
 

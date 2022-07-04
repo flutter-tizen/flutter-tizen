@@ -42,29 +42,17 @@ class FlutterEngine : public flutter::PluginRegistry {
   // Whether the engine is running.
   bool IsRunning() { return is_running_; }
 
-  // Resumes the engine.
+  // Notifies that the host app is visible and responding to user input.
   //
   // This method notifies the running Flutter app that it is "resumed" as per
   // the Flutter app lifecycle.
   void NotifyAppIsResumed();
 
-  // Pauses the engine.
-  //
-  // This method notifies the running Flutter app that it is "inactive" as per
-  // the Flutter app lifecycle.
-  void NotifyAppIsInactive();
-
-  // Stops the engine.
+  // Notifies that the host app is invisible and not responding to user input.
   //
   // This method notifies the running Flutter app that it is "paused" as per
   // the Flutter app lifecycle.
   void NotifyAppIsPaused();
-
-  // Detaches the engine.
-  //
-  // This method notifies the running Flutter app that it is "detached" as per
-  // the Flutter app lifecycle.
-  void NotifyAppIsDetached();
 
   // Notifies that the host app received an app control.
   //
