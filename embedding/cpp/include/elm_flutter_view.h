@@ -9,8 +9,11 @@
 #include <flutter/plugin_registry.h>
 #include <flutter_tizen.h>
 
+#include <memory>
 #include <string>
 #include <vector>
+
+#include "flutter_engine.h"
 
 // The view class which creates and manages the Flutter engine instance.
 class ElmFlutterView : public flutter::PluginRegistry {
@@ -38,12 +41,11 @@ class ElmFlutterView : public flutter::PluginRegistry {
 
   int32_t GetHeight();
 
- private:
-  // The switches to pass to the Flutter engine.
-  std::vector<std::string> engine_args_;
+  void SetEngine(std::unique_ptr<FlutterEngine> engine);
 
-  // The Flutter engine instance handle.
-  FlutterDesktopEngineRef engine_ = nullptr;
+ private:
+  // The Flutter engine instance.
+  std::unique_ptr<FlutterEngine> engine_;
 
   // The Flutter view instance handle.
   FlutterDesktopViewRef view_ = nullptr;

@@ -6,8 +6,8 @@
 
 #include <cassert>
 
+#include "include/flutter_engine.h"
 #include "tizen_log.h"
-#include "utils.h"
 
 bool ElmFlutterView::RunEngine() {
   if (!parent_) {
@@ -15,22 +15,10 @@ bool ElmFlutterView::RunEngine() {
     return false;
   }
 
-  // Read engine arguments passed from the tool.
-  Utils::ParseEngineArgs(&engine_args_);
-
-  std::vector<const char *> switches;
-  for (auto &arg : engine_args_) {
-    switches.push_back(arg.c_str());
+  if (!engine_) {
+    engine_ = FlutterEngine::Create();
   }
 
-  FlutterDesktopEngineProperties engine_prop = {};
-  engine_prop.assets_path = "../res/flutter_assets";
-  engine_prop.icu_data_path = "../res/icudtl.dat";
-  engine_prop.aot_library_path = "../lib/libapp.so";
-  engine_prop.switches = switches.data();
-  engine_prop.switches_count = switches.size();
-
-  engine_ = FlutterDesktopEngineCreate(engine_prop);
   if (!engine_) {
     TizenLog::Error("Could not create a Flutter engine.");
     return false;
@@ -40,7 +28,8 @@ bool ElmFlutterView::RunEngine() {
   view_prop.width = initial_width_;
   view_prop.height = initial_height_;
 
-  view_ = FlutterDesktopViewCreateFromElmParent(view_prop, engine_, parent_);
+  view_ = FlutterDesktopViewCreateFromElmParent(
+      view_prop, engine_->RelinquishEngine(), parent_);
   if (!view_) {
     TizenLog::Error("Could not launch a Flutter view.");
     return false;
@@ -53,6 +42,10 @@ bool ElmFlutterView::RunEngine() {
     return false;
   }
   return true;
+}
+
+void ElmFlutterView::SetEngine(std::unique_ptr<FlutterEngine> engine) {
+  engine_ = std::move(engine);
 }
 
 void ElmFlutterView::Resize(int32_t width, int32_t height) {
@@ -85,7 +78,7 @@ int32_t ElmFlutterView::GetHeight() {
 FlutterDesktopPluginRegistrarRef ElmFlutterView::GetRegistrarForPlugin(
     const std::string &plugin_name) {
   if (engine_) {
-    return FlutterDesktopEngineGetPluginRegistrar(engine_, plugin_name.c_str());
+    return engine_->GetRegistrarForPlugin(plugin_name.c_str());
   }
   return nullptr;
 }

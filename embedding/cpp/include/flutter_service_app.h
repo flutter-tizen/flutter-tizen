@@ -9,8 +9,11 @@
 #include <flutter_tizen.h>
 #include <service_app.h>
 
+#include <memory>
 #include <string>
 #include <vector>
+
+#include "flutter_engine.h"
 
 // The app base class for headless execution.
 class FlutterServiceApp : public flutter::PluginRegistry {
@@ -46,10 +49,6 @@ class FlutterServiceApp : public flutter::PluginRegistry {
   }
 
  protected:
-  // The switches to pass to the Flutter engine.
-  // Custom switches may be added before `OnCreate` is called.
-  std::vector<std::string> engine_args_;
-
   // The optional entrypoint in the Dart project. If the value is empty,
   // defaults to main().
   std::string dart_entrypoint_;
@@ -57,8 +56,8 @@ class FlutterServiceApp : public flutter::PluginRegistry {
   // The list of Dart entrypoint arguments.
   std::vector<std::string> dart_entrypoint_args_;
 
-  // The Flutter engine instance handle.
-  FlutterDesktopEngineRef engine_ = nullptr;
+  // The Flutter engine instance.
+  std::unique_ptr<FlutterEngine> engine_;
 };
 
 #endif /* FLUTTER_TIZEN_EMBEDDING_CPP_INCLUDE_FLUTTER_SERVICE_APP_H_ */
