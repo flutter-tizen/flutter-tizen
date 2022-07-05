@@ -12,6 +12,7 @@
 
 namespace {
 
+// Reads engine arguments passed from the flutter-tizen tool.
 std::vector<std::string> ParseEngineArgs() {
   std::vector<std::string> engine_args;
 
@@ -81,7 +82,6 @@ FlutterEngine::FlutterEngine(
   engine_prop.icu_data_path = icu_data_path.c_str();
   engine_prop.aot_library_path = aot_library_path.c_str();
 
-  // Read engine arguments passed from the tool.
   std::vector<std::string> engine_args = ParseEngineArgs();
   std::vector<const char*> switches;
   for (const std::string& arg : engine_args) {
@@ -112,9 +112,9 @@ FlutterEngine::~FlutterEngine() {
 
 bool FlutterEngine::Run() {
   if (engine_) {
-    is_running_ = FlutterDesktopEngineRun(engine_);
+    return FlutterDesktopEngineRun(engine_);
   }
-  return is_running_;
+  return false;
 }
 
 void FlutterEngine::Shutdown() {
@@ -122,7 +122,6 @@ void FlutterEngine::Shutdown() {
     FlutterDesktopEngineShutdown(engine_);
     engine_ = nullptr;
   }
-  is_running_ = false;
 }
 
 void FlutterEngine::NotifyAppIsResumed() {
