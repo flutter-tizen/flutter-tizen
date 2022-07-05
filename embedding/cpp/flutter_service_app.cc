@@ -51,7 +51,8 @@ void FlutterServiceApp::OnRegionFormatChanged(app_event_info_h event_info) {
 }
 
 int FlutterServiceApp::Run(int argc, char **argv) {
-  for (int i = 0; i < argc; i++) {
+  // Skip the first argument as it's the binary name.
+  for (int i = 1; i < argc; i++) {
     dart_entrypoint_args_.push_back(argv[i]);
   }
 
