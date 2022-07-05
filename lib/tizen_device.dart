@@ -411,6 +411,10 @@ class TizenDevice extends Device {
         if (debuggingOptions.useTestFonts) '--use-test-fonts',
         if (debuggingOptions.verboseSystemLogs) '--verbose-logging',
       ],
+      if (debuggingOptions.dartEntrypointArgs.isNotEmpty) ...<String>[
+        '--dart-entrypoint-args',
+        ...debuggingOptions.dartEntrypointArgs,
+      ],
       if (logReader is ForwardingLogReader) ...<String>[
         '--tizen-logging-port',
         logReader.hostPort.toString(),
