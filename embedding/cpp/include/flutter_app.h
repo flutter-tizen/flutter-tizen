@@ -15,7 +15,7 @@
 
 #include "flutter_engine.h"
 
-// The app base class which creates and manages the Flutter engine instance.
+// The app base class for headed Flutter execution.
 class FlutterApp : public flutter::PluginRegistry {
  public:
   explicit FlutterApp() {}
@@ -59,10 +59,14 @@ class FlutterApp : public flutter::PluginRegistry {
   // The y-coordinate of the top left corner of the window.
   int32_t window_offset_y_ = 0;
 
-  // The width of the window, or the maximum width if the value is zero.
+  // The width of the window.
+  //
+  // Defaults to the screen width if the value is zero.
   int32_t window_width_ = 0;
 
-  // The height of the window, or the maximum height if the value is zero.
+  // The height of the window.
+  //
+  // Defaults to the screen height if the value is zero.
   int32_t window_height_ = 0;
 
   // Whether the window should have a transparent background or not.
@@ -72,12 +76,15 @@ class FlutterApp : public flutter::PluginRegistry {
   bool is_window_focusable_ = true;
 
   // Whether the app should be displayed over other apps.
+  //
   // If true, the "http://tizen.org/privilege/window.priority.set" privilege
   // must be added to tizen-manifest.xml file.
   bool is_top_level_ = false;
 
-  // The optional entrypoint in the Dart project. If the value is empty,
-  // defaults to main().
+ private:
+  // The optional entrypoint in the Dart project.
+  //
+  // Defaults to main() if the value is empty.
   std::string dart_entrypoint_;
 
   // The list of Dart entrypoint arguments.

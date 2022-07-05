@@ -11,7 +11,7 @@ using static Tizen.Flutter.Embedding.Interop;
 namespace Tizen.Flutter.Embedding
 {
     /// <summary>
-    /// The application base class which creates and manages the Flutter engine instance.
+    /// The app base class for headed Flutter execution.
     /// </summary>
     public class FlutterApplication : CoreUIApplication, IPluginRegistry
     {
@@ -26,12 +26,12 @@ namespace Tizen.Flutter.Embedding
         protected int WindowOffsetY { get; set; } = 0;
 
         /// <summary>
-        /// The width of the window, or the maximum width if the value is zero.
+        /// The width of the window. Defaults to the screen width if the value is zero.
         /// </summary>
         protected int WindowWidth { get; set; } = 0;
 
         /// <summary>
-        /// The height of the window, or the maximum height if the value is zero.
+        /// The height of the window. Defaults to the screen height if the value is zero.
         /// </summary>
         protected int WindowHeight { get; set; } = 0;
 
@@ -58,19 +58,19 @@ namespace Tizen.Flutter.Embedding
         protected List<string> EngineArgs { get; } = new List<string>();
 
         /// <summary>
-        /// The optional entrypoint in the Dart project. If the value is empty, defaults to main().
+        /// The optional entrypoint in the Dart project. Defaults to main() if the value is empty.
         /// </summary>
         public string DartEntrypoint { get; set; } = string.Empty;
 
         /// <summary>
         /// The list of Dart entrypoint arguments.
         /// </summary>
-        protected List<string> DartEntrypointArgs { get; } = new List<string>();
+        private List<string> DartEntrypointArgs { get; } = new List<string>();
 
         /// <summary>
         /// The Flutter engine instance handle.
         /// </summary>
-        protected internal FlutterDesktopEngine Engine { get; private set; } = new FlutterDesktopEngine();
+        internal FlutterDesktopEngine Engine { get; private set; } = new FlutterDesktopEngine();
 
         /// <summary>
         /// The Flutter view instance handle.

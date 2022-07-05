@@ -15,7 +15,7 @@
 
 #include "flutter_engine.h"
 
-// The app base class for headless execution.
+// The app base class for headless Flutter execution.
 class FlutterServiceApp : public flutter::PluginRegistry {
  public:
   explicit FlutterServiceApp() {}
@@ -48,9 +48,10 @@ class FlutterServiceApp : public flutter::PluginRegistry {
     dart_entrypoint_ = entrypoint;
   }
 
- protected:
-  // The optional entrypoint in the Dart project. If the value is empty,
-  // defaults to main().
+ private:
+  // The optional entrypoint in the Dart project.
+  //
+  // Defaults to main() if the value is empty.
   std::string dart_entrypoint_;
 
   // The list of Dart entrypoint arguments.
