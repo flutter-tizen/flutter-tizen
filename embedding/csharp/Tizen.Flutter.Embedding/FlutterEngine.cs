@@ -21,7 +21,7 @@ namespace Tizen.Flutter.Embedding
         protected internal FlutterDesktopEngine Engine { get; private set; } = new FlutterDesktopEngine();
 
         /// <summary>
-        /// Whether the engine is valid.
+        /// Whether the engine is valid or not.
         /// </summary>
         public bool IsValid => !Engine.IsInvalid;
 
@@ -49,10 +49,6 @@ namespace Tizen.Flutter.Embedding
                 };
 
                 Engine = FlutterDesktopEngineCreate(ref engineProperties);
-                if (Engine.IsInvalid)
-                {
-                    throw new Exception("Could not create a Flutter engine.");
-                }
             }
         }
 
