@@ -39,9 +39,6 @@ class FlutterEngine : public flutter::PluginRegistry {
   // Terminates the running engine.
   void Shutdown();
 
-  // Whether the engine is running.
-  bool IsRunning() { return is_running_; }
-
   // Notifies that the host app is visible and responding to user input.
   //
   // This method notifies the running Flutter app that it is "resumed" as per
@@ -86,9 +83,6 @@ class FlutterEngine : public flutter::PluginRegistry {
 
   // Handle for interacting with the C API's engine reference.
   FlutterDesktopEngineRef engine_ = nullptr;
-
-  // Whether the engine has been run.
-  bool is_running_ = false;
 
   // Whether or not this wrapper owns |engine_|.
   bool owns_engine_ = true;

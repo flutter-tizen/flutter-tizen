@@ -42,11 +42,11 @@ namespace Tizen.Flutter.Embedding
                     {
                         if (Application.Current is FlutterApplication app)
                         {
-                            _instance = new DefaultBinaryMessenger(FlutterDesktopEngineGetMessenger(app.Engine));
+                            _instance = new DefaultBinaryMessenger(app.Engine.GetMessenger());
                         }
                         else if (Application.Current is FlutterServiceApplication service)
                         {
-                            _instance = new DefaultBinaryMessenger(FlutterDesktopEngineGetMessenger(service.Engine));
+                            _instance = new DefaultBinaryMessenger(service.Engine.GetMessenger());
                         }
                     }
                     return _instance;
