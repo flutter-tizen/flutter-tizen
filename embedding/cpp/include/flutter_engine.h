@@ -20,13 +20,17 @@ class FlutterEngine : public flutter::PluginRegistry {
 
   static std::unique_ptr<FlutterEngine> Create(
       const std::string& dart_entrypoint = "",
-      const std::vector<std::string>& dart_entrypoint_args = {});
+      const std::vector<std::string>& dart_entrypoint_args = {},
+      FlutterDesktopRendererType renderer_type =
+          FlutterDesktopRendererType::kEGL);
 
   static std::unique_ptr<FlutterEngine> Create(
       const std::string& assets_path, const std::string& icu_data_path,
       const std::string& aot_library_path,
       const std::string& dart_entrypoint = "",
-      const std::vector<std::string>& dart_entrypoint_args = {});
+      const std::vector<std::string>& dart_entrypoint_args = {},
+      FlutterDesktopRendererType renderer_type =
+          FlutterDesktopRendererType::kEGL);
 
   // Prevent copying.
   FlutterEngine(FlutterEngine const&) = delete;
@@ -78,7 +82,8 @@ class FlutterEngine : public flutter::PluginRegistry {
                 const std::string& icu_data_path,
                 const std::string& aot_library_path,
                 const std::string& dart_entrypoint,
-                const std::vector<std::string>& dart_entrypoint_args);
+                const std::vector<std::string>& dart_entrypoint_args,
+                FlutterDesktopRendererType renderer_type);
 
   // Handle for interacting with the C API's engine reference.
   FlutterDesktopEngineRef engine_ = nullptr;

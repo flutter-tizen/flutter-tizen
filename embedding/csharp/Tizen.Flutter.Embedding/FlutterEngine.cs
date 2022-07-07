@@ -25,13 +25,13 @@ namespace Tizen.Flutter.Embedding
         /// </summary>
         public bool IsValid => !Engine.IsInvalid;
 
-        public FlutterEngine(string dartEntrypoint, List<string> dartEntrypointArgs) : this(
-            "../res/flutter_assets", "../res/icudtl.dat", "../lib/libapp.so", dartEntrypoint, dartEntrypointArgs)
+        public FlutterEngine(string dartEntrypoint, List<string> dartEntrypointArgs, FlutterDesktopEngineRendererType rendererType) : this(
+            "../res/flutter_assets", "../res/icudtl.dat", "../lib/libapp.so", dartEntrypoint, dartEntrypointArgs, rendererType)
         {
         }
 
         public FlutterEngine(string assetsPath, string icuDataPath, string aotLibraryPath,
-            string dartEntrypoint, List<string> dartEntrypointArgs)
+            string dartEntrypoint, List<string> dartEntrypointArgs, FlutterDesktopEngineRendererType rendererType)
         {
             using (var switches = new StringArray(ParseEngineArgs()))
             using (var entrypointArgs = new StringArray(dartEntrypointArgs))
@@ -46,8 +46,8 @@ namespace Tizen.Flutter.Embedding
                     entrypoint = dartEntrypoint,
                     dart_entrypoint_argc = entrypointArgs.Length,
                     dart_entrypoint_argv = entrypointArgs.Handle,
+                    renderer_type = (int)rendererType,
                 };
-
                 Engine = FlutterDesktopEngineCreate(ref engineProperties);
             }
         }

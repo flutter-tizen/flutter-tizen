@@ -81,6 +81,9 @@ class FlutterApp : public flutter::PluginRegistry {
   // must be added to tizen-manifest.xml file.
   bool is_top_level_ = false;
 
+  // The renderer type of the engine.
+  FlutterDesktopRendererType renderer_type_ = FlutterDesktopRendererType::kEGL;
+
  private:
   // The optional entrypoint in the Dart project.
   //

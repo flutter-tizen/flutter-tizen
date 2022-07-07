@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Tizen.Applications;
+using static Tizen.Flutter.Embedding.Interop;
 
 namespace Tizen.Flutter.Embedding
 {
@@ -45,7 +46,7 @@ namespace Tizen.Flutter.Embedding
         {
             base.OnCreate();
 
-            Engine = new FlutterEngine(DartEntrypoint, DartEntrypointArgs);
+            Engine = new FlutterEngine(DartEntrypoint, DartEntrypointArgs, FlutterDesktopEngineRendererType.kEGLRenderer);
             if (!Engine.IsValid)
             {
                 throw new Exception("Could not create a Flutter engine.");

@@ -11,6 +11,12 @@ namespace Tizen.Flutter.Embedding
     public static class Interop
     {
         #region flutter_tizen.h
+        public enum FlutterDesktopRendererType
+        {
+            kEvasGL,
+            kEGL,
+        };
+
         [StructLayout(LayoutKind.Sequential)]
         public struct FlutterDesktopWindowProperties
         {
@@ -37,6 +43,7 @@ namespace Tizen.Flutter.Embedding
             public string entrypoint;
             public int dart_entrypoint_argc;
             public IntPtr dart_entrypoint_argv;
+            public int renderer_type;
         }
 
         [DllImport("flutter_tizen.so")]

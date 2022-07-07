@@ -11,7 +11,8 @@
 bool FlutterApp::OnCreate() {
   TizenLog::Debug("Launching a Flutter application...");
 
-  engine_ = FlutterEngine::Create(dart_entrypoint_, dart_entrypoint_args_);
+  engine_ = FlutterEngine::Create(dart_entrypoint_, dart_entrypoint_args_,
+                                  renderer_type_);
   if (!engine_) {
     TizenLog::Error("Could not create a Flutter engine.");
     return false;
