@@ -135,6 +135,32 @@ dependencies:
     TizenSdk: () => FakeTizenSdk(fileSystem),
   });
 
+  testUsingContext('Copies resource files recursively', () async {
+    final Environment environment = Environment.test(
+      projectDir,
+      fileSystem: fileSystem,
+      logger: logger,
+      artifacts: artifacts,
+      processManager: processManager,
+    );
+    pluginDir.childFile('tizen/res/a/b.txt').createSync(recursive: true);
+
+    await NativePlugins(const TizenBuildInfo(
+      BuildInfo.release,
+      targetArch: 'arm',
+      deviceProfile: 'common',
+    )).build(environment);
+
+    final Directory outputResDir = environment.buildDir
+        .childDirectory('tizen_plugins/res/some_native_plugin');
+    expect(outputResDir.childFile('a/b.txt'), exists);
+  }, overrides: <Type, Generator>{
+    FileSystem: () => fileSystem,
+    ProcessManager: () => processManager,
+    Cache: () => cache,
+    TizenSdk: () => FakeTizenSdk(fileSystem),
+  });
+
   testUsingContext('Can link to user libraries', () async {
     final Environment environment = Environment.test(
       projectDir,
