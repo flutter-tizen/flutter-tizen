@@ -179,16 +179,18 @@ class NativePlugins extends Target {
             .whereType<File>()
             .forEach(inputs.add);
       }
+
+      // Copy resource files.
       final Directory pluginResDir = plugin.directory.childDirectory('res');
       if (pluginResDir.existsSync()) {
-        copyDirectory(pluginResDir, resDir.childDirectory(plugin.name));
-        pluginResDir
-            .listSync(recursive: true)
-            .whereType<File>()
-            .forEach((File file) {
-          inputs.add(file);
-          outputs.add(file);
-        });
+        copyDirectory(
+          pluginResDir,
+          resDir.childDirectory(plugin.name),
+          onFileCopied: (File srcFile, File destFile) {
+            inputs.add(srcFile);
+            outputs.add(destFile);
+          },
+        );
       }
 
       // Copy user libs for later linking.
