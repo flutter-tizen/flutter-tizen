@@ -89,6 +89,8 @@ class NativePlugins extends Target {
       ..createSync(recursive: true);
     final Directory includeDir = rootDir.childDirectory('include')
       ..createSync(recursive: true);
+    final Directory resDir = rootDir.childDirectory('res')
+      ..createSync(recursive: true);
     final Directory libDir = rootDir.childDirectory('lib')
       ..createSync(recursive: true);
 
@@ -176,6 +178,19 @@ class NativePlugins extends Target {
             .listSync(recursive: true)
             .whereType<File>()
             .forEach(inputs.add);
+      }
+
+      // Copy resource files.
+      final Directory pluginResDir = plugin.directory.childDirectory('res');
+      if (pluginResDir.existsSync()) {
+        copyDirectory(
+          pluginResDir,
+          resDir.childDirectory(plugin.name),
+          onFileCopied: (File srcFile, File destFile) {
+            inputs.add(srcFile);
+            outputs.add(destFile);
+          },
+        );
       }
 
       // Copy user libs for later linking.

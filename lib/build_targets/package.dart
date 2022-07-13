@@ -120,6 +120,10 @@ class DotnetTpk extends TizenPackage {
     if (pluginsLib.existsSync()) {
       pluginsLib.copySync(libDir.childFile(pluginsLib.basename).path);
     }
+    final Directory pluginsResDir = pluginsDir.childDirectory('res');
+    if (pluginsResDir.existsSync()) {
+      copyDirectory(pluginsResDir, resDir);
+    }
     final Directory pluginsUserLibDir = pluginsDir.childDirectory('lib');
     if (pluginsUserLibDir.existsSync()) {
       pluginsUserLibDir.listSync().whereType<File>().forEach(
