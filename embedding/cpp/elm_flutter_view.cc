@@ -51,12 +51,7 @@ void ElmFlutterView::SetEngine(std::unique_ptr<FlutterEngine> engine) {
 void ElmFlutterView::Resize(int32_t width, int32_t height) {
   assert(IsRunning());
 
-  int32_t view_width = width, view_height = height;
-  evas_object_geometry_get(evas_object_, nullptr, nullptr, &view_width,
-                           &view_height);
-  if (view_width != width || view_height != height) {
-    FlutterDesktopViewResize(view_, width, height);
-  }
+  evas_object_resize(evas_object_, width, height);
 }
 
 int32_t ElmFlutterView::GetWidth() {
