@@ -22,8 +22,7 @@ bool ElmFlutterView::RunEngine() {
   }
 
   if (!engine_) {
-    engine_ = FlutterEngine::Create("", std::vector<std::string>(),
-                                    FlutterDesktopRendererType::kEvasGL);
+    engine_ = FlutterEngine::Create();
   }
 
   if (!engine_) {

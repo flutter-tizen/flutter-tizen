@@ -30,6 +30,7 @@ namespace Tizen.Flutter.Embedding
             public bool focusable;
             [MarshalAs(UnmanagedType.U1)]
             public bool top_level;
+            public FlutterDesktopRendererType renderer_type;
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -43,7 +44,6 @@ namespace Tizen.Flutter.Embedding
             public string entrypoint;
             public int dart_entrypoint_argc;
             public IntPtr dart_entrypoint_argv;
-            public int renderer_type;
         }
 
         [DllImport("flutter_tizen.so")]

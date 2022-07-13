@@ -52,21 +52,19 @@ std::vector<std::string> ParseEngineArgs() {
 
 std::unique_ptr<FlutterEngine> FlutterEngine::Create(
     const std::string& dart_entrypoint,
-    const std::vector<std::string>& dart_entrypoint_args,
-    FlutterDesktopRendererType renderer_type) {
+    const std::vector<std::string>& dart_entrypoint_args) {
   return FlutterEngine::Create("../res/flutter_assets", "../res/icudtl.dat",
                                "../lib/libapp.so", dart_entrypoint,
-                               dart_entrypoint_args, renderer_type);
+                               dart_entrypoint_args);
 }
 
 std::unique_ptr<FlutterEngine> FlutterEngine::Create(
     const std::string& assets_path, const std::string& icu_data_path,
     const std::string& aot_library_path, const std::string& dart_entrypoint,
-    const std::vector<std::string>& dart_entrypoint_args,
-    FlutterDesktopRendererType renderer_type) {
+    const std::vector<std::string>& dart_entrypoint_args) {
   FlutterEngine* engine =
       new FlutterEngine(assets_path, icu_data_path, aot_library_path,
-                        dart_entrypoint, dart_entrypoint_args, renderer_type);
+                        dart_entrypoint, dart_entrypoint_args);
   if (engine->engine_) {
     return std::unique_ptr<FlutterEngine>(engine);
   } else {
@@ -78,8 +76,7 @@ std::unique_ptr<FlutterEngine> FlutterEngine::Create(
 FlutterEngine::FlutterEngine(
     const std::string& assets_path, const std::string& icu_data_path,
     const std::string& aot_library_path, const std::string& dart_entrypoint,
-    const std::vector<std::string>& dart_entrypoint_args,
-    FlutterDesktopRendererType renderer_type) {
+    const std::vector<std::string>& dart_entrypoint_args) {
   FlutterDesktopEngineProperties engine_prop = {};
   engine_prop.assets_path = assets_path.c_str();
   engine_prop.icu_data_path = icu_data_path.c_str();
@@ -103,8 +100,6 @@ FlutterEngine::FlutterEngine(
 
   engine_prop.dart_entrypoint_argc = entrypoint_args.size();
   engine_prop.dart_entrypoint_argv = entrypoint_args.data();
-
-  engine_prop.renderer_type = renderer_type;
 
   engine_ = FlutterDesktopEngineCreate(engine_prop);
 }

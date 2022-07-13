@@ -52,7 +52,7 @@ namespace Tizen.Flutter.Embedding
         protected bool IsTopLevel { get; set; } = false;
 
         /// <summary>
-        /// The renderer type of Flutter engine.
+        /// The renderer type of the engine.
         /// </summary>
         protected FlutterDesktopRendererType RendererType { get; set; } = FlutterDesktopRendererType.kEGL;
 
@@ -92,7 +92,7 @@ namespace Tizen.Flutter.Embedding
         {
             base.OnCreate();
 
-            Engine = new FlutterEngine(DartEntrypoint, DartEntrypointArgs, RendererType);
+            Engine = new FlutterEngine(DartEntrypoint, DartEntrypointArgs);
             if (!Engine.IsValid)
             {
                 throw new Exception("Could not create a Flutter engine.");
@@ -107,9 +107,10 @@ namespace Tizen.Flutter.Embedding
                 transparent = IsWindowTransparent,
                 focusable = IsWindowFocusable,
                 top_level = IsTopLevel,
+                renderer_type = RendererType,
             };
-            View = FlutterDesktopViewCreateFromNewWindow(ref windowProperties, Engine.Engine);
 
+            View = FlutterDesktopViewCreateFromNewWindow(ref windowProperties, Engine.Engine);
             if (View.IsInvalid)
             {
                 throw new Exception("Could not launch a Flutter application.");

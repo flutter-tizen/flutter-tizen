@@ -11,8 +11,7 @@
 bool FlutterApp::OnCreate() {
   TizenLog::Debug("Launching a Flutter application...");
 
-  engine_ = FlutterEngine::Create(dart_entrypoint_, dart_entrypoint_args_,
-                                  renderer_type_);
+  engine_ = FlutterEngine::Create(dart_entrypoint_, dart_entrypoint_args_);
   if (!engine_) {
     TizenLog::Error("Could not create a Flutter engine.");
     return false;
@@ -26,6 +25,7 @@ bool FlutterApp::OnCreate() {
   window_prop.transparent = is_window_transparent_;
   window_prop.focusable = is_window_focusable_;
   window_prop.top_level = is_top_level_;
+  window_prop.renderer_type = renderer_type_;
 
   view_ = FlutterDesktopViewCreateFromNewWindow(window_prop,
                                                 engine_->RelinquishEngine());
