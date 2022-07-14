@@ -52,9 +52,13 @@ namespace Tizen.Flutter.Embedding
         protected bool IsTopLevel { get; set; } = false;
 
         /// <summary>
-        /// The renderer type of the engine.
+        /// The renderer type of the engine. Defaults to kEGL. If the profile is wearable, defaults to kEvasGL.
         /// </summary>
+#if WEARABLE_PROFILE
+        protected FlutterDesktopRendererType RendererType { get; set; } = FlutterDesktopRendererType.kEvasGL;
+#else
         protected FlutterDesktopRendererType RendererType { get; set; } = FlutterDesktopRendererType.kEGL;
+#endif
 
         /// <summary>
         /// The optional entrypoint in the Dart project. Defaults to main() if the value is empty.

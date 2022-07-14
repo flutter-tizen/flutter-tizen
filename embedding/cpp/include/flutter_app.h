@@ -82,7 +82,14 @@ class FlutterApp : public flutter::PluginRegistry {
   bool is_top_level_ = false;
 
   // The renderer type of the engine.
+  //
+  // Defaults to kEGL. If the profile is wearable, defaults to kEvasGL.
+#ifdef WEARABLE_PROFILE
+  FlutterDesktopRendererType renderer_type_ =
+      FlutterDesktopRendererType::kEvasGL;
+#else
   FlutterDesktopRendererType renderer_type_ = FlutterDesktopRendererType::kEGL;
+#endif
 
  private:
   // The optional entrypoint in the Dart project.
