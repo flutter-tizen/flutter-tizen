@@ -16,6 +16,15 @@ namespace Tizen.Flutter.Embedding
     public class FlutterApplication : CoreUIApplication, IPluginRegistry
     {
         /// <summary>
+        /// Initialize FlutterApplication.
+        /// </summary>
+        FlutterApplication {
+#if WEARABLE_PROFILE
+            RendererType = FlutterDesktopRendererType.kEvasGL;
+#endif
+        }
+
+        /// <summary>
         /// The x-coordinate of the top left corner of the window.
         /// </summary>
         protected int WindowOffsetX { get; set; } = 0;
@@ -54,11 +63,7 @@ namespace Tizen.Flutter.Embedding
         /// <summary>
         /// The renderer type of the engine. Defaults to kEGL. If the profile is wearable, defaults to kEvasGL.
         /// </summary>
-#if WEARABLE_PROFILE
-        protected FlutterDesktopRendererType RendererType { get; set; } = FlutterDesktopRendererType.kEvasGL;
-#else
         protected FlutterDesktopRendererType RendererType { get; set; } = FlutterDesktopRendererType.kEGL;
-#endif
 
         /// <summary>
         /// The optional entrypoint in the Dart project. Defaults to main() if the value is empty.
@@ -102,6 +107,12 @@ namespace Tizen.Flutter.Embedding
                 throw new Exception("Could not create a Flutter engine.");
             }
 
+#if WEARABLE_PROFILE
+            if (RendererType ==  FlutterDesktopRendererType.kEGL)
+            {
+                throw new Exception("FlutterDesktopRendererType.kEGL renderer type is not supported by this profile.");
+            }
+#endif
             var windowProperties = new FlutterDesktopWindowProperties
             {
                 x = WindowOffsetX,
