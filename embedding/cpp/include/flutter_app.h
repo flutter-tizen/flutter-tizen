@@ -15,10 +15,22 @@
 
 #include "flutter_engine.h"
 
+enum class FlutterRendererType {
+  // The renderer based on EvasGL.
+  kEvasGL,
+  // The renderer based on EGL.
+  kEGL,
+};
+
 // The app base class for headed Flutter execution.
 class FlutterApp : public flutter::PluginRegistry {
  public:
-  explicit FlutterApp() {}
+  explicit FlutterApp()
+#ifdef WEARABLE_PROFILE
+      : renderer_type_(FlutterRendererType::kEvasGL)
+#endif
+  {
+  }
   virtual ~FlutterApp() {}
 
   virtual bool OnCreate();
@@ -84,12 +96,7 @@ class FlutterApp : public flutter::PluginRegistry {
   // The renderer type of the engine.
   //
   // Defaults to kEGL. If the profile is wearable, defaults to kEvasGL.
-#ifdef WEARABLE_PROFILE
-  FlutterDesktopRendererType renderer_type_ =
-      FlutterDesktopRendererType::kEvasGL;
-#else
-  FlutterDesktopRendererType renderer_type_ = FlutterDesktopRendererType::kEGL;
-#endif
+  FlutterRendererType renderer_type_ = FlutterRendererType::kEGL;
 
  private:
   // The optional entrypoint in the Dart project.

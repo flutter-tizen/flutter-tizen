@@ -11,6 +11,21 @@ using static Tizen.Flutter.Embedding.Interop;
 namespace Tizen.Flutter.Embedding
 {
     /// <summary>
+    /// Enumeration for the renderer type of the engine.
+    /// </summary>
+    public enum FlutterRendererType
+    {
+        /// <summary>
+        /// The renderer based on EvasGL.
+        /// </summary>
+        EvasGL = 0,
+        /// <summary>
+        /// The renderer based on EGL.
+        /// </summary>
+        EGL
+    }
+
+    /// <summary>
     /// The app base class for headed Flutter execution.
     /// </summary>
     public class FlutterApplication : CoreUIApplication, IPluginRegistry
@@ -18,9 +33,10 @@ namespace Tizen.Flutter.Embedding
         /// <summary>
         /// Initialize FlutterApplication.
         /// </summary>
-        FlutterApplication {
+        public FlutterApplication()
+        {
 #if WEARABLE_PROFILE
-            RendererType = FlutterDesktopRendererType.kEvasGL;
+            RendererType = FlutterRendererType.EvasGL;
 #endif
         }
 
@@ -61,9 +77,9 @@ namespace Tizen.Flutter.Embedding
         protected bool IsTopLevel { get; set; } = false;
 
         /// <summary>
-        /// The renderer type of the engine. Defaults to kEGL. If the profile is wearable, defaults to kEvasGL.
+        /// The renderer type of the engine. Defaults to EGL. If the profile is wearable, defaults to EvasGL.
         /// </summary>
-        protected FlutterDesktopRendererType RendererType { get; set; } = FlutterDesktopRendererType.kEGL;
+        protected FlutterRendererType RendererType { get; set; } = FlutterRendererType.EGL;
 
         /// <summary>
         /// The optional entrypoint in the Dart project. Defaults to main() if the value is empty.
@@ -108,9 +124,9 @@ namespace Tizen.Flutter.Embedding
             }
 
 #if WEARABLE_PROFILE
-            if (RendererType ==  FlutterDesktopRendererType.kEGL)
+            if (RendererType ==  FlutterRendererType.EGL)
             {
-                throw new Exception("FlutterDesktopRendererType.kEGL renderer type is not supported by this profile.");
+                throw new Exception("FlutterRendererType.kEGL is not supported by this profile.");
             }
 #endif
             var windowProperties = new FlutterDesktopWindowProperties
@@ -122,7 +138,7 @@ namespace Tizen.Flutter.Embedding
                 transparent = IsWindowTransparent,
                 focusable = IsWindowFocusable,
                 top_level = IsTopLevel,
-                renderer_type = RendererType,
+                renderer_type = (FlutterDesktopRendererType)RendererType,
             };
 
             View = FlutterDesktopViewCreateFromNewWindow(ref windowProperties, Engine.Engine);
