@@ -144,8 +144,8 @@ class DotnetTpk extends TizenPackage {
       if (buildMode.isPrecompiled) 'Release' else 'Debug',
       '-o',
       '${outputDir.path}/', // The trailing '/' is needed.
-      '/p:DefineConstants=${buildInfo.deviceProfile.toUpperCase()}_PROFILE',
       tizenProject.editableDirectory.path,
+      '/p:DefineConstants=${buildInfo.deviceProfile.toUpperCase()}_PROFILE',
     ]);
     if (result.exitCode != 0) {
       throwToolExit('Failed to build .NET application:\n$result');

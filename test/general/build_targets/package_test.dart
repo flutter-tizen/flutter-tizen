@@ -83,6 +83,8 @@ void main() {
           .childFile('tizen_plugins/lib/libshared.so')
           .createSync(recursive: true);
 
+      const String deviceProfile = 'common';
+
       processManager.addCommand(FakeCommand(
         command: <String>[
           'dotnet',
@@ -92,6 +94,7 @@ void main() {
           '-o',
           '${outputDir.path}/tpk/',
           '${projectDir.path}/tizen',
+          '/p:DefineConstants=${deviceProfile.toUpperCase()}_PROFILE',
         ],
         onRun: () {
           outputDir
@@ -103,7 +106,7 @@ void main() {
       await DotnetTpk(const TizenBuildInfo(
         BuildInfo.release,
         targetArch: 'arm',
-        deviceProfile: 'common',
+        deviceProfile: deviceProfile,
       )).build(environment);
 
       final Directory ephemeralDir =
@@ -152,6 +155,8 @@ void main() {
           .childDirectory('flutter_assets')
           .createSync(recursive: true);
 
+      const String deviceProfile = 'common';
+
       processManager.addCommand(FakeCommand(
         command: <String>[
           'dotnet',
@@ -161,6 +166,7 @@ void main() {
           '-o',
           '${outputDir.path}/tpk/',
           '${projectDir.path}/tizen',
+          '/p:DefineConstants=${deviceProfile.toUpperCase()}_PROFILE',
         ],
         onRun: () {
           outputDir
@@ -172,7 +178,7 @@ void main() {
       await DotnetTpk(const TizenBuildInfo(
         BuildInfo.debug,
         targetArch: 'arm',
-        deviceProfile: 'common',
+        deviceProfile: deviceProfile,
       )).build(environment);
 
       expect(
