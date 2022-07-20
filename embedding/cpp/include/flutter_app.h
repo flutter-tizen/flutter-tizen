@@ -25,11 +25,10 @@ enum class FlutterRendererType {
 // The app base class for headed Flutter execution.
 class FlutterApp : public flutter::PluginRegistry {
  public:
-  explicit FlutterApp()
+  explicit FlutterApp() {
 #ifdef WEARABLE_PROFILE
-      : renderer_type_(FlutterRendererType::kEvasGL)
+    renderer_type_ = FlutterRendererType::kEvasGL;
 #endif
-  {
   }
   virtual ~FlutterApp() {}
 

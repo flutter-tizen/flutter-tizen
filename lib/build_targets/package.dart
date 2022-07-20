@@ -144,8 +144,8 @@ class DotnetTpk extends TizenPackage {
       if (buildMode.isPrecompiled) 'Release' else 'Debug',
       '-o',
       '${outputDir.path}/', // The trailing '/' is needed.
-      tizenProject.editableDirectory.path,
       '/p:DefineConstants=${buildInfo.deviceProfile.toUpperCase()}_PROFILE',
+      tizenProject.editableDirectory.path,
     ]);
     if (result.exitCode != 0) {
       throwToolExit('Failed to build .NET application:\n$result');
@@ -290,10 +290,10 @@ class NativeTpk extends TizenPackage {
       embeddingDir.path,
       configuration: buildConfig,
       arch: getTizenCliArch(buildInfo.targetArch),
-      extraOptions: <String>[
-        '-fPIC',
-        '-D${buildInfo.deviceProfile.toUpperCase()}_PROFILE'
+      predefines: <String>[
+        '${buildInfo.deviceProfile.toUpperCase()}_PROFILE',
       ],
+      extraOptions: <String>['-fPIC'],
       rootstrap: rootstrap.id,
     );
     final File embeddingLib = embeddingDir

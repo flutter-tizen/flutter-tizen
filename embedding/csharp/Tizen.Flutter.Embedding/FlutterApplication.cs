@@ -22,7 +22,7 @@ namespace Tizen.Flutter.Embedding
         /// <summary>
         /// The renderer based on EGL.
         /// </summary>
-        EGL
+        EGL,
     }
 
     /// <summary>

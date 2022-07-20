@@ -19,7 +19,7 @@ bool FlutterApp::OnCreate() {
 #ifdef WEARABLE_PROFILE
   if (renderer_type_ == FlutterRendererType::kEGL) {
     TizenLog::Error(
-        "FlutterRendererType.kEGL is not supported by this profile.");
+        "FlutterRendererType::kEGL is not supported by this profile.");
     return false;
   }
 #endif
