@@ -161,8 +161,8 @@ void main() {
           'Debug',
           '-o',
           '${outputDir.path}/tpk/',
-          '${projectDir.path}/tizen',
           '/p:DefineConstants=COMMON_PROFILE',
+          '${projectDir.path}/tizen',
         ],
         onRun: () {
           outputDir
