@@ -89,6 +89,10 @@ namespace Tizen.Flutter.Embedding
         public static extern FlutterDesktopView FlutterDesktopViewCreateFromNewWindow(
             ref FlutterDesktopWindowProperties window_properties,
             FlutterDesktopEngine engine);
+
+        [DllImport("flutter_tizen.so")]
+        public static extern void FlutterDesktopViewDestroy(
+            FlutterDesktopView view);
         #endregion
 
         #region flutter_messenger.h

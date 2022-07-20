@@ -136,9 +136,9 @@ namespace Tizen.Flutter.Embedding
             Debug.Assert(Engine.IsValid);
 
             DotnetPluginRegistry.Instance.RemoveAllPlugins();
-
-            Engine.Shutdown();
+            FlutterDesktopViewDestroy(View);
             Engine = null;
+            View = null;
         }
 
         protected override void OnAppControlReceived(AppControlReceivedEventArgs e)
