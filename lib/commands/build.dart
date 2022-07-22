@@ -19,6 +19,7 @@ class TizenBuildCommand extends BuildCommand {
   TizenBuildCommand({bool verboseHelp = false})
       : super(verboseHelp: verboseHelp) {
     addSubcommand(BuildTpkCommand(verboseHelp: verboseHelp));
+    addSubcommand(BuildModuleCommand(verboseHelp: verboseHelp));
   }
 }
 
@@ -55,14 +56,6 @@ class BuildTpkCommand extends BuildSubCommand
   @override
   final String description = 'Build a Tizen TPK file from your app.';
 
-  /// See: [validateBuild] in `build_validation.dart`
-  void _validateBuild(TizenBuildInfo tizenBuildInfo) {
-    if (tizenBuildInfo.buildInfo.mode.isPrecompiled &&
-        tizenBuildInfo.targetArch == 'x86') {
-      throwToolExit('x86 ABI does not support AOT compilation.');
-    }
-  }
-
   /// See: [BuildApkCommand.runCommand] in `build_apk.dart`
   @override
   Future<FlutterCommandResult> runCommand() async {
@@ -87,5 +80,67 @@ class BuildTpkCommand extends BuildSubCommand
       tizenBuildInfo: tizenBuildInfo,
     );
     return FlutterCommandResult.success();
+  }
+}
+
+class BuildModuleCommand extends BuildSubCommand
+    with DartPluginRegistry, TizenRequiredArtifacts {
+  BuildModuleCommand({required bool verboseHelp})
+      : super(verboseHelp: verboseHelp) {
+    addCommonDesktopBuildOptions(verboseHelp: verboseHelp);
+    argParser.addOption(
+      'target-arch',
+      defaultsTo: 'arm',
+      allowed: <String>['arm', 'arm64', 'x86'],
+      help: 'The target architecture for which the the app is compiled.',
+    );
+    argParser.addOption(
+      'device-profile',
+      abbr: 'p',
+      allowed: <String>['mobile', 'wearable', 'tv', 'common'],
+      help: 'The type of device that the app will run on. Choose "wearable" '
+          'for watch devices and "common" for IoT (Raspberry Pi) devices.',
+    );
+    // TODO: --output-dir
+  }
+
+  @override
+  final String name = 'module';
+
+  @override
+  final String description =
+      'Build a module that can be embedded in your existing Tizen native app.';
+
+  @override
+  Future<FlutterCommandResult> runCommand() async {
+    final String? deviceProfile = stringArg('device-profile');
+    if (deviceProfile == null) {
+      // TODO(swift-kim): Consider relieving this limitation.
+      throwToolExit(
+          'The --device-profile (-p) option is mandatory. e.g. -pwearable, -ptv');
+    }
+    final BuildInfo buildInfo = await getBuildInfo();
+    final TizenBuildInfo tizenBuildInfo = TizenBuildInfo(
+      buildInfo,
+      targetArch: stringArg('target-arch')!,
+      deviceProfile: deviceProfile,
+    );
+    _validateBuild(tizenBuildInfo);
+    displayNullSafetyMode(buildInfo);
+
+    await tizenBuilder?.buildModule(
+      project: FlutterProject.current(),
+      targetFile: targetFile,
+      tizenBuildInfo: tizenBuildInfo,
+    );
+    return FlutterCommandResult.success();
+  }
+}
+
+/// See: [validateBuild] in `build_validation.dart`
+void _validateBuild(TizenBuildInfo tizenBuildInfo) {
+  if (tizenBuildInfo.buildInfo.mode.isPrecompiled &&
+      tizenBuildInfo.targetArch == 'x86') {
+    throwToolExit('x86 ABI does not support AOT compilation.');
   }
 }
