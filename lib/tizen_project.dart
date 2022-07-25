@@ -6,12 +6,15 @@
 import 'package:file/file.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/base/logger.dart';
+import 'package:flutter_tools/src/bundle.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/commands/clean.dart';
+import 'package:flutter_tools/src/flutter_manifest.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/project.dart';
 import 'package:flutter_tools/src/template.dart';
 import 'package:xml/xml.dart';
+import 'package:yaml/yaml.dart';
 
 import 'tizen_plugins.dart';
 import 'tizen_tpk.dart';
@@ -21,6 +24,21 @@ class TizenProject extends FlutterProjectPlatform {
   TizenProject.fromFlutter(this.parent);
 
   final FlutterProject parent;
+
+  /// See: [FlutterManifest] in `flutter_manifest.xml`
+  late final Map<String, Object?> parentPubspec = () {
+    final File manifestFile = parent.directory.childFile(defaultManifestPath);
+    if (!manifestFile.existsSync()) {
+      return <String, Object?>{};
+    }
+    YamlMap? yamlMap;
+    try {
+      yamlMap = loadYaml(manifestFile.readAsStringSync()) as YamlMap?;
+    } on YamlException {
+      return <String, Object?>{};
+    }
+    return yamlMap?.cast<String, Object?>() ?? <String, Object?>{};
+  }();
 
   @override
   String get pluginConfigKey => TizenPlugin.kConfigKey;
@@ -72,7 +90,23 @@ class TizenProject extends FlutterProjectPlatform {
   @override
   bool existsSync() => editableDirectory.existsSync();
 
-  bool get isDotnet => projectFile.path.endsWith('.csproj');
+  String get language {
+    if (parent.isModule) {
+      final Object? flutterDescriptor = parentPubspec['flutter'];
+      if (flutterDescriptor is YamlMap) {
+        final Object? module = flutterDescriptor['module'];
+        if (module is YamlMap) {
+          final Object? tizenLanguage = module['tizenLanguage'];
+          if (tizenLanguage is String) {
+            return tizenLanguage;
+          }
+        }
+      }
+    }
+    return projectFile.path.endsWith('.csproj') ? 'csharp' : 'cpp';
+  }
+
+  bool get isDotnet => language == 'csharp';
 
   String get outputTpkName {
     final TizenManifest manifest = TizenManifest.parseFromXml(manifestFile);
@@ -84,7 +118,7 @@ class TizenProject extends FlutterProjectPlatform {
     if (parent.isModule && !existsSync()) {
       await _overwriteFromTemplate(
         globals.fs.path
-            .join('..', '..', '..', '..', 'templates', 'module', 'cpp'),
+            .join('..', '..', '..', '..', 'templates', 'module', language),
         editableDirectory,
       );
     }
