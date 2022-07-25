@@ -10,6 +10,7 @@ import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/commands/clean.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/project.dart';
+import 'package:flutter_tools/src/template.dart';
 import 'package:xml/xml.dart';
 
 import 'tizen_plugins.dart';
@@ -24,7 +25,13 @@ class TizenProject extends FlutterProjectPlatform {
   @override
   String get pluginConfigKey => TizenPlugin.kConfigKey;
 
-  Directory get editableDirectory => parent.directory.childDirectory('tizen');
+  Directory get editableDirectory {
+    final Directory tizenDir = parent.directory.childDirectory('tizen');
+    if (!parent.isModule || tizenDir.existsSync()) {
+      return tizenDir;
+    }
+    return parent.directory.childDirectory('.tizen');
+  }
 
   /// The directory in the project that is managed by Flutter. As much as
   /// possible, files that are edited by Flutter tooling after initial project
@@ -72,11 +79,39 @@ class TizenProject extends FlutterProjectPlatform {
     return '${manifest.packageId}-${manifest.version}.tpk';
   }
 
+  /// See: [AndroidProject.ensureReadyForPlatformSpecificTooling] in `project.dart`
   Future<void> ensureReadyForPlatformSpecificTooling() async {
-    if (!existsSync() || !isDotnet) {
-      return;
+    if (parent.isModule && !existsSync()) {
+      await _overwriteFromTemplate(
+        globals.fs.path
+            .join('..', '..', '..', '..', 'templates', 'module', 'cpp'),
+        editableDirectory,
+      );
     }
-    updateDotnetUserProjectFile(projectFile);
+    if (existsSync() && isDotnet) {
+      updateDotnetUserProjectFile(projectFile);
+    }
+  }
+
+  /// Source: [AndroidProject._overwriteFromTemplate] in `project.dart`
+  Future<void> _overwriteFromTemplate(String path, Directory target) async {
+    final Template template = await Template.fromName(
+      path,
+      fileSystem: globals.fs,
+      templateManifest: null,
+      logger: globals.logger,
+      templateRenderer: globals.templateRenderer,
+    );
+    final String androidIdentifier = parent.manifest.androidPackage ??
+        'com.example.${parent.manifest.appName}';
+    template.render(
+      target,
+      <String, Object>{
+        'projectName': parent.manifest.appName,
+        'tizenIdentifier': androidIdentifier,
+      },
+      printStatusWhenWriting: false,
+    );
   }
 
   void clean() {

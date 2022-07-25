@@ -78,14 +78,16 @@ class TizenCreateCommand extends CreateCommand {
       .childDirectory('flutter_tools')
       .childDirectory('templates');
 
-  /// See: [CreateCommand._getProjectType] in `create.dart`
-  bool get _shouldGeneratePlugin {
+  /// See: [CreateCommand._getProjectType] in `create.dart` (simplified)
+  FlutterProjectType get _projectType {
+    FlutterProjectType template;
     if (argResults['template'] != null) {
-      return stringArg('template') == 'plugin';
-    } else if (projectDir.existsSync() && projectDir.listSync().isNotEmpty) {
-      return determineTemplateType() == FlutterProjectType.plugin;
+      template = stringToProjectType(stringArg('template'));
     }
-    return false;
+    if (projectDir.existsSync() && projectDir.listSync().isNotEmpty) {
+      template = determineTemplateType();
+    }
+    return template ?? FlutterProjectType.app;
   }
 
   @override
@@ -268,7 +270,7 @@ class TizenCreateCommand extends CreateCommand {
       return result;
     }
 
-    if (_shouldGeneratePlugin) {
+    if (_projectType == FlutterProjectType.plugin) {
       // Generate .csproj.user file if the plugin is a dotnet project.
       final FlutterProject project = FlutterProject.fromDirectory(projectDir);
       final TizenProject tizenProject = TizenProject.fromFlutter(project);
@@ -323,9 +325,13 @@ class TizenCreateCommand extends CreateCommand {
     if (argResults.rest.isEmpty) {
       return super.runCommand();
     }
+
     final List<String> platforms = stringsArg('platforms');
-    bool shouldRenderTizenTemplate = platforms.contains('tizen');
-    if (_shouldGeneratePlugin && !argResults.wasParsed('platforms')) {
+    bool shouldRenderTizenTemplate =
+        _projectType == FlutterProjectType.module ||
+            platforms.contains('tizen');
+    if (_projectType == FlutterProjectType.plugin &&
+        !argResults.wasParsed('platforms')) {
       shouldRenderTizenTemplate = false;
     }
     if (!shouldRenderTizenTemplate) {
@@ -368,13 +374,6 @@ class TizenCreateCommand extends CreateCommand {
       _flutterTemplates.childDirectory('app').childDirectory('lib'),
     );
 
-    // Apply patch files in the application template.
-    for (final File file in appTemplate.listSync().whereType<File>()) {
-      if (file.basename.endsWith('.patch')) {
-        _runGitApply(_flutterTemplates, file);
-      }
-    }
-
     // Copy plugin template to the flutter_tools/templates directory.
     final Directory pluginTemplate = _tizenTemplates.childDirectory('plugin');
     _copyDirectoryIfExists(
@@ -389,6 +388,20 @@ class TizenCreateCommand extends CreateCommand {
           .childDirectory('plugin')
           .childDirectory('tizen-csharp.tmpl'),
     );
+
+    // Apply patches if available.
+    final List<Directory> templates = <Directory>[
+      appTemplate,
+      pluginTemplate,
+      _tizenTemplates.childDirectory('module'),
+    ];
+    for (final Directory template in templates) {
+      for (final File file in template.listSync().whereType<File>()) {
+        if (file.basename.endsWith('.patch')) {
+          _runGitApply(_flutterTemplates, file);
+        }
+      }
+    }
   }
 
   void _copyDirectoryIfExists(Directory source, Directory target) {

@@ -291,9 +291,6 @@ Future<void> ensureReadyForTizenTooling(FlutterProject project) async {
     return;
   }
   final TizenProject tizenProject = TizenProject.fromFlutter(project);
-  if (!tizenProject.existsSync()) {
-    return;
-  }
   await tizenProject.ensureReadyForPlatformSpecificTooling();
 
   await _ensurePluginsReadyForTizenTooling(project);
