@@ -90,13 +90,13 @@ void main() {
           '-c',
           'Release',
           '-o',
-          '${outputDir.path}/tpk/',
+          '${outputDir.path}/',
           '/p:DefineConstants=COMMON_PROFILE',
           '${projectDir.path}/tizen',
         ],
         onRun: () {
           outputDir
-              .childFile('tpk/package_id-1.0.0.tpk')
+              .childFile('package_id-1.0.0.tpk')
               .createSync(recursive: true);
         },
       ));
@@ -160,13 +160,13 @@ void main() {
           '-c',
           'Debug',
           '-o',
-          '${outputDir.path}/tpk/',
+          '${outputDir.path}/',
           '/p:DefineConstants=COMMON_PROFILE',
           '${projectDir.path}/tizen',
         ],
         onRun: () {
           outputDir
-              .childFile('tpk/package_id-1.0.0.tpk')
+              .childFile('package_id-1.0.0.tpk')
               .createSync(recursive: true);
         },
       ));
@@ -227,7 +227,7 @@ type = app
         deviceProfile: 'common',
       )).build(environment);
 
-      final File outputTpk = outputDir.childFile('tpk/package_id-1.0.0.tpk');
+      final File outputTpk = outputDir.childFile('package_id-1.0.0.tpk');
       expect(outputTpk, exists);
 
       final Directory tizenDir = projectDir.childDirectory('tizen');

@@ -58,8 +58,10 @@ class TizenBuilder {
       );
     }
 
-    final Directory outputDir =
-        project.directory.childDirectory('build').childDirectory('tizen');
+    final Directory outputDir = project.directory
+        .childDirectory('build')
+        .childDirectory('tizen')
+        .childDirectory('tpk');
     final BuildInfo buildInfo = tizenBuildInfo.buildInfo;
     // Used by AotElfBase to generate an AOT snapshot.
     final String targetPlatform = getNameForTargetPlatform(
@@ -116,8 +118,7 @@ class TizenBuilder {
       status.stop();
     }
 
-    final Directory tpkDir = outputDir.childDirectory('tpk');
-    final File tpkFile = tpkDir.childFile(tizenProject.outputTpkName);
+    final File tpkFile = outputDir.childFile(tizenProject.outputTpkName);
     if (!tpkFile.existsSync()) {
       throwToolExit('The output TPK does not exist.');
     }
@@ -128,7 +129,7 @@ class TizenBuilder {
       color: TerminalColor.green,
     );
 
-    final Directory tpkrootDir = tpkDir.childDirectory('tpkroot');
+    final Directory tpkrootDir = outputDir.childDirectory('tpkroot');
     if (buildInfo.codeSizeDirectory != null && tpkrootDir.existsSync()) {
       sizeAnalyzer ??= SizeAnalyzer(
         fileSystem: globals.fs,
@@ -173,6 +174,7 @@ class TizenBuilder {
     required FlutterProject project,
     required TizenBuildInfo tizenBuildInfo,
     required String targetFile,
+    String? outputDirectory,
   }) async {
     // TODO: Add relevant tests.
 
@@ -189,8 +191,15 @@ class TizenBuilder {
       );
     }
 
-    final Directory outputDir =
-        project.directory.childDirectory('build').childDirectory('tizen');
+    Directory outputDir;
+    if (outputDirectory != null) {
+      outputDir = globals.fs.directory(outputDirectory);
+    } else {
+      outputDir = project.directory
+          .childDirectory('build')
+          .childDirectory('tizen')
+          .childDirectory('module');
+    }
     final BuildInfo buildInfo = tizenBuildInfo.buildInfo;
     // Used by AotElfBase to generate an AOT snapshot.
     final String targetPlatform = getNameForTargetPlatform(

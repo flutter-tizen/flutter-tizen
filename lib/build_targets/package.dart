@@ -79,7 +79,7 @@ class DotnetTpk extends TizenPackage {
     final Directory libDir = ephemeralDir.childDirectory('lib')
       ..createSync(recursive: true);
 
-    final Directory outputDir = environment.outputDir.childDirectory('tpk');
+    final Directory outputDir = environment.outputDir;
     if (outputDir.existsSync()) {
       outputDir.deleteSync(recursive: true);
     }
@@ -218,7 +218,7 @@ class NativeTpk extends TizenPackage {
     }
     libDir.createSync(recursive: true);
 
-    final Directory outputDir = environment.outputDir.childDirectory('tpk');
+    final Directory outputDir = environment.outputDir;
     if (outputDir.existsSync()) {
       outputDir.deleteSync(recursive: true);
     }
@@ -400,7 +400,7 @@ class NativeModule extends TizenPackage {
         FlutterProject.fromDirectory(environment.projectDir);
     final TizenProject tizenProject = TizenProject.fromFlutter(project);
 
-    final Directory outputDir = environment.outputDir.childDirectory('module');
+    final Directory outputDir = environment.outputDir;
     if (outputDir.existsSync()) {
       outputDir.deleteSync(recursive: true);
     }

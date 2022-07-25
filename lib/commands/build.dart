@@ -101,7 +101,11 @@ class BuildModuleCommand extends BuildSubCommand
       help: 'The type of device that the app will run on. Choose "wearable" '
           'for watch devices and "common" for IoT (Raspberry Pi) devices.',
     );
-    // TODO: --output-dir
+    argParser.addOption(
+      'output-dir',
+      help: 'The absolute path to the directory where the files are generated. '
+          'By default, this is "<current-directory>/build/tizen/module".',
+    );
   }
 
   @override
@@ -109,7 +113,7 @@ class BuildModuleCommand extends BuildSubCommand
 
   @override
   final String description =
-      'Build a module that can be embedded in your existing Tizen native app.';
+      'Build a module that can be embedded in your existing Tizen app.';
 
   @override
   Future<FlutterCommandResult> runCommand() async {
@@ -132,6 +136,7 @@ class BuildModuleCommand extends BuildSubCommand
       project: FlutterProject.current(),
       targetFile: targetFile,
       tizenBuildInfo: tizenBuildInfo,
+      outputDirectory: stringArg('output-dir'),
     );
     return FlutterCommandResult.success();
   }

@@ -136,7 +136,7 @@ void main() {
           BuildResult(success: true),
           (Target target, Environment environment) {
             environment.outputDir
-                .childFile('tpk/package_id-1.0.0.tpk')
+                .childFile('package_id-1.0.0.tpk')
                 .createSync(recursive: true);
           },
         ),
@@ -180,10 +180,10 @@ void main() {
           BuildResult(success: true),
           (Target target, Environment environment) {
             environment.outputDir
-                .childDirectory('tpk/tpkroot')
+                .childDirectory('tpkroot')
                 .createSync(recursive: true);
             environment.outputDir
-                .childFile('tpk/package_id-1.0.0.tpk')
+                .childFile('package_id-1.0.0.tpk')
                 .createSync(recursive: true);
           },
         ),
