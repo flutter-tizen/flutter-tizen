@@ -142,46 +142,6 @@ void main() {
         ),
   });
 
-  testUsingContext('Can update tizen-manifest.xml', () async {
-    fileSystem.file('tizen/tizen-manifest.xml')
-      ..createSync(recursive: true)
-      ..writeAsStringSync(_kTizenManifestContents);
-
-    const BuildInfo buildInfo = BuildInfo(
-      BuildMode.debug,
-      null,
-      treeShakeIcons: false,
-      buildName: '9.9.9',
-    );
-    await TizenBuilder().buildTpk(
-      project: project,
-      tizenBuildInfo: const TizenBuildInfo(
-        buildInfo,
-        targetArch: 'arm',
-        deviceProfile: 'wearable',
-      ),
-      targetFile: 'main.dart',
-    );
-
-    final String tizenManifest =
-        fileSystem.file('tizen/tizen-manifest.xml').readAsStringSync();
-    expect(tizenManifest, isNot(equals(_kTizenManifestContents)));
-    expect(tizenManifest, contains('9.9.9'));
-    expect(tizenManifest, contains('wearable'));
-  }, overrides: <Type, Generator>{
-    FileSystem: () => fileSystem,
-    ProcessManager: () => FakeProcessManager.any(),
-    TizenSdk: () => FakeTizenSdk(fileSystem),
-    BuildSystem: () => TestBuildSystem.all(
-          BuildResult(success: true),
-          (Target target, Environment environment) {
-            environment.outputDir
-                .childFile('tpk/package_id-9.9.9.tpk')
-                .createSync(recursive: true);
-          },
-        ),
-  });
-
   testUsingContext('Performs code size analysis', () async {
     fileSystem.file('tizen/tizen-manifest.xml')
       ..createSync(recursive: true)

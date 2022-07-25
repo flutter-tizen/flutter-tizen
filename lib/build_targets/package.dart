@@ -274,7 +274,7 @@ class NativeTpk extends TizenPackage {
     final TizenManifest tizenManifest =
         TizenManifest.parseFromXml(tizenProject.manifestFile);
     final Rootstrap rootstrap = tizenSdk!.getFlutterRootstrap(
-      profile: tizenManifest.profile,
+      profile: buildInfo.deviceProfile,
       apiVersion: tizenManifest.apiVersion,
       arch: buildInfo.targetArch,
     );

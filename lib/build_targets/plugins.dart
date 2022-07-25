@@ -112,7 +112,7 @@ class NativePlugins extends Target {
     assert(tizenSdk != null);
     final TizenManifest tizenManifest =
         TizenManifest.parseFromXml(tizenProject.manifestFile);
-    final String profile = tizenManifest.profile;
+    final String profile = buildInfo.deviceProfile;
     final String apiVersion = tizenManifest.apiVersion;
     final Rootstrap rootstrap = tizenSdk!.getFlutterRootstrap(
       profile: profile,

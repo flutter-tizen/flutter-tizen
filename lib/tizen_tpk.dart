@@ -130,7 +130,6 @@ class TizenManifest {
 
   /// The package version number in the "x.y.z" format.
   String get version => _manifest.getAttribute('version')!;
-  set version(String value) => _manifest.setAttribute('version', value);
 
   /// The target API version number.
   String get apiVersion => _manifest.getAttribute('api-version') ?? '4.0';
@@ -149,7 +148,6 @@ class TizenManifest {
 
   /// The profile name representing the target device type.
   String get profile => _profile.getAttribute('name')!;
-  set profile(String value) => _profile.setAttribute('name', value);
 
   late final Iterable<XmlElement> _applications = () {
     final Iterable<XmlElement> elements = _manifest.children
@@ -184,7 +182,7 @@ class TizenManifest {
   String? get applicationType => _applications.first.getAttribute('type');
 
   @override
-  String toString() => _document.toXmlString(pretty: true, indent: '    ');
+  String toString() => _document.toXmlString(pretty: true);
 }
 
 /// Represents the content of `signature1.xml` or `author-signature.xml` file.
