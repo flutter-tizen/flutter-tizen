@@ -28,7 +28,6 @@ class BuildTpkCommand extends BuildSubCommand
   BuildTpkCommand({required bool verboseHelp})
       : super(verboseHelp: verboseHelp) {
     addCommonDesktopBuildOptions(verboseHelp: verboseHelp);
-    usesBuildNameOption();
     argParser.addOption(
       'target-arch',
       defaultsTo: 'arm',
