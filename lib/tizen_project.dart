@@ -120,15 +120,13 @@ class TizenProject extends FlutterProjectPlatform {
   Future<void> ensureReadyForPlatformSpecificTooling() async {
     if (parent.isModule && !existsSync()) {
       // TODO: Recreate if the project type doesn't match.
-      if (editableDirectory.existsSync()) {
-        editableDirectory.deleteSync(recursive: true);
-      }
-      final Directory tempDir = globals.fs.systemTempDirectory.createTempSync();
+      // Note that all files and directories in the template must end with
+      // the '.tmpl' extension.
       await _overwriteFromTemplate(
-        globals.fs.path.join('..', '..', '..', '..', 'templates', 'module'),
-        tempDir,
+        globals.fs.path.join('..', '..', '..', '..', 'templates', 'module',
+            tizenLanguage ?? 'cpp'),
+        editableDirectory,
       );
-      copyDirectory(tempDir.childDirectory('tizen'), editableDirectory);
     }
     if (existsSync() && isDotnet) {
       updateDotnetUserProjectFile(dotnetProjectFile!);
@@ -151,7 +149,6 @@ class TizenProject extends FlutterProjectPlatform {
       <String, Object>{
         'projectName': parent.manifest.appName,
         'tizenIdentifier': androidIdentifier,
-        'tizenLanguage': tizenLanguage ?? 'cpp',
       },
       printStatusWhenWriting: false,
     );
