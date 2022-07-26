@@ -253,13 +253,15 @@ class TizenCreateCommand extends CreateCommand {
       throwToolExit('Creating an FFI plugin project is not yet supported.');
     }
 
-    final String templateName = template == 'app' ? '$appType-app' : template;
-    if (!_tizenTemplates
-        .childDirectory(templateName)
-        .childDirectory(tizenLanguage)
-        .existsSync()) {
-      throwToolExit(
-          'Could not locate a template: $templateName/$tizenLanguage');
+    if (template != 'module') {
+      final String templateName = template == 'app' ? '$appType-app' : template;
+      if (!_tizenTemplates
+          .childDirectory(templateName)
+          .childDirectory(tizenLanguage)
+          .existsSync()) {
+        throwToolExit(
+            'Could not locate a template: $templateName/$tizenLanguage');
+      }
     }
   }
 
@@ -275,7 +277,7 @@ class TizenCreateCommand extends CreateCommand {
       final FlutterProject project = FlutterProject.fromDirectory(projectDir);
       final TizenProject tizenProject = TizenProject.fromFlutter(project);
       if (tizenProject.existsSync() && tizenProject.isDotnet) {
-        updateDotnetUserProjectFile(tizenProject.projectFile);
+        updateDotnetUserProjectFile(tizenProject.dotnetProjectFile);
       }
 
       final String relativePluginPath =
@@ -390,12 +392,11 @@ class TizenCreateCommand extends CreateCommand {
     );
 
     // Apply patches if available.
-    final List<Directory> templates = <Directory>[
+    for (final Directory template in <Directory>[
       appTemplate,
       pluginTemplate,
       _tizenTemplates.childDirectory('module'),
-    ];
-    for (final Directory template in templates) {
+    ]) {
       for (final File file in template.listSync().whereType<File>()) {
         if (file.basename.endsWith('.patch')) {
           _runGitApply(_flutterTemplates, file);

@@ -81,16 +81,21 @@ class TizenProject extends FlutterProjectPlatform {
       ? uiManifestFile
       : editableDirectory.childFile('tizen-manifest.xml');
 
-  File get projectFile =>
-      findDotnetProjectFile(editableDirectory) ??
-      (isMultiApp
-          ? uiAppDirectory.childFile('project_def.prop')
-          : editableDirectory.childFile('project_def.prop'));
-
   @override
   bool existsSync() => editableDirectory.existsSync();
 
-  String get language {
+  File? get nativeProjectFile {
+    final File projectDef = isMultiApp
+        ? uiAppDirectory.childFile('project_def.prop')
+        : editableDirectory.childFile('project_def.prop');
+    return projectDef.existsSync() ? projectDef : null;
+  }
+
+  File? get dotnetProjectFile => findDotnetProjectFile(editableDirectory);
+
+  bool get isDotnet => dotnetProjectFile != null;
+
+  String? get tizenLanguage {
     if (parent.isModule) {
       final Object? flutterDescriptor = parentPubspec['flutter'];
       if (flutterDescriptor is YamlMap) {
@@ -103,10 +108,8 @@ class TizenProject extends FlutterProjectPlatform {
         }
       }
     }
-    return projectFile.path.endsWith('.csproj') ? 'csharp' : 'cpp';
+    return null;
   }
-
-  bool get isDotnet => language == 'csharp';
 
   String get outputTpkName {
     final TizenManifest manifest = TizenManifest.parseFromXml(manifestFile);
@@ -116,14 +119,19 @@ class TizenProject extends FlutterProjectPlatform {
   /// See: [AndroidProject.ensureReadyForPlatformSpecificTooling] in `project.dart`
   Future<void> ensureReadyForPlatformSpecificTooling() async {
     if (parent.isModule && !existsSync()) {
+      // TODO: Recreate if the project type doesn't match.
+      if (editableDirectory.existsSync()) {
+        editableDirectory.deleteSync(recursive: true);
+      }
+      final Directory tempDir = globals.fs.systemTempDirectory.createTempSync();
       await _overwriteFromTemplate(
-        globals.fs.path
-            .join('..', '..', '..', '..', 'templates', 'module', language),
-        editableDirectory,
+        globals.fs.path.join('..', '..', '..', '..', 'templates', 'module'),
+        tempDir,
       );
+      copyDirectory(tempDir.childDirectory('tizen'), editableDirectory);
     }
     if (existsSync() && isDotnet) {
-      updateDotnetUserProjectFile(projectFile);
+      updateDotnetUserProjectFile(dotnetProjectFile!);
     }
   }
 
@@ -143,6 +151,7 @@ class TizenProject extends FlutterProjectPlatform {
       <String, Object>{
         'projectName': parent.manifest.appName,
         'tizenIdentifier': androidIdentifier,
+        'tizenLanguage': tizenLanguage ?? 'cpp',
       },
       printStatusWhenWriting: false,
     );
