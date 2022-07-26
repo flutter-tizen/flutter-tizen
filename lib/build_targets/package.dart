@@ -200,15 +200,13 @@ class NativeTpk extends TizenPackage {
     final TizenProject tizenProject = TizenProject.fromFlutter(project);
 
     // Clean up the intermediate and output directories.
-    final Directory tizenDir = tizenProject.editableDirectory;
-    final Directory projectDir =
-        tizenProject.isMultiApp ? tizenProject.uiAppDirectory : tizenDir;
-    final Directory resDir = projectDir.childDirectory('res');
+    final Directory hostAppRoot = tizenProject.hostAppRoot;
+    final Directory resDir = hostAppRoot.childDirectory('res');
     if (resDir.existsSync()) {
       resDir.deleteSync(recursive: true);
     }
     resDir.createSync(recursive: true);
-    final Directory libDir = projectDir.childDirectory('lib');
+    final Directory libDir = hostAppRoot.childDirectory('lib');
     if (libDir.existsSync()) {
       libDir.deleteSync(recursive: true);
     }
@@ -303,7 +301,7 @@ class NativeTpk extends TizenPackage {
       'evas',
     ];
 
-    final Directory buildDir = projectDir.childDirectory(buildConfig);
+    final Directory buildDir = hostAppRoot.childDirectory(buildConfig);
     if (buildDir.existsSync()) {
       buildDir.deleteSync(recursive: true);
     }
@@ -343,13 +341,14 @@ class NativeTpk extends TizenPackage {
       '-L${libDir.path.toPosixPath()}',
       '-lflutter_tizen_${buildInfo.deviceProfile}',
       for (String lib in embeddingDependencies) '-l$lib',
+      '-I${tizenProject.managedDirectory.path.toPosixPath()}',
       '-I${pluginsDir.childDirectory('include').path.toPosixPath()}',
       if (pluginsLib.existsSync()) '-lflutter_plugins',
     ];
 
     // Build the app.
     result = await tizenSdk!.buildApp(
-      tizenDir.path,
+      tizenProject.editableDirectory.path,
       build: <String, Object>{
         'name': 'b1',
         'methods': <String>['m1'],

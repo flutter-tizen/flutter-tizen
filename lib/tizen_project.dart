@@ -13,6 +13,7 @@ import 'package:flutter_tools/src/flutter_manifest.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/project.dart';
 import 'package:flutter_tools/src/template.dart';
+import 'package:meta/meta.dart';
 import 'package:xml/xml.dart';
 import 'package:yaml/yaml.dart';
 
@@ -26,7 +27,7 @@ class TizenProject extends FlutterProjectPlatform {
   final FlutterProject parent;
 
   /// See: [FlutterManifest] in `flutter_manifest.xml`
-  late final Map<String, Object?> parentPubspec = () {
+  late final Map<String, Object?> _parentPubspec = () {
     final File manifestFile = parent.directory.childFile(defaultManifestPath);
     if (!manifestFile.existsSync()) {
       return <String, Object?>{};
@@ -43,18 +44,21 @@ class TizenProject extends FlutterProjectPlatform {
   @override
   String get pluginConfigKey => TizenPlugin.kConfigKey;
 
-  Directory get editableDirectory {
-    final Directory tizenDir = parent.directory.childDirectory('tizen');
-    if (!parent.isModule || tizenDir.existsSync()) {
-      return tizenDir;
+  Directory get editableDirectory => parent.directory.childDirectory('tizen');
+  Directory get _ephemeralModuleDirectory =>
+      parent.directory.childDirectory('.tizen');
+
+  Directory get hostAppRoot {
+    if (!parent.isModule || editableDirectory.existsSync()) {
+      return isMultiApp ? uiAppDirectory : editableDirectory;
     }
-    return parent.directory.childDirectory('.tizen');
+    return _ephemeralModuleDirectory;
   }
 
   /// The directory in the project that is managed by Flutter. As much as
   /// possible, files that are edited by Flutter tooling after initial project
   /// creation should live here.
-  Directory get managedDirectory => editableDirectory.childDirectory('flutter');
+  Directory get managedDirectory => hostAppRoot.childDirectory('flutter');
 
   /// The subdirectory of [managedDirectory] that contains files that are
   /// generated on the fly. All generated files that are not intended to be
@@ -63,43 +67,42 @@ class TizenProject extends FlutterProjectPlatform {
       managedDirectory.childDirectory('ephemeral');
 
   /// The intermediate output directory in the project that is managed by dotnet.
-  Directory get intermediateDirectory =>
-      editableDirectory.childDirectory('obj');
+  Directory get intermediateDirectory => hostAppRoot.childDirectory('obj');
 
   bool get isMultiApp =>
       uiAppDirectory.existsSync() && serviceAppDirectory.existsSync();
 
+  @visibleForTesting
   Directory get uiAppDirectory => editableDirectory.childDirectory('ui');
+
+  @visibleForTesting
   Directory get serviceAppDirectory =>
       editableDirectory.childDirectory('service');
 
+  // TODO(swift-kim): Add @visibleForTesting to these.
   File get uiManifestFile => uiAppDirectory.childFile('tizen-manifest.xml');
   File get serviceManifestFile =>
       serviceAppDirectory.childFile('tizen-manifest.xml');
 
-  File get manifestFile => isMultiApp
-      ? uiManifestFile
-      : editableDirectory.childFile('tizen-manifest.xml');
+  File get manifestFile => hostAppRoot.childFile('tizen-manifest.xml');
 
   @override
-  bool existsSync() => editableDirectory.existsSync();
+  bool existsSync() => hostAppRoot.existsSync();
 
   File? get projectFile {
-    final File? csprojFile = findDotnetProjectFile(editableDirectory);
+    final File? csprojFile = findDotnetProjectFile(hostAppRoot);
     if (csprojFile != null) {
       return csprojFile;
     }
-    final File projectDef = isMultiApp
-        ? uiAppDirectory.childFile('project_def.prop')
-        : editableDirectory.childFile('project_def.prop');
+    final File projectDef = hostAppRoot.childFile('project_def.prop');
     return projectDef.existsSync() ? projectDef : null;
   }
 
   bool get isDotnet => projectFile?.basename.endsWith('.csproj') ?? false;
 
-  String? get tizenLanguage {
+  String? get _tizenLanguage {
     if (parent.isModule) {
-      final Object? flutterDescriptor = parentPubspec['flutter'];
+      final Object? flutterDescriptor = _parentPubspec['flutter'];
       if (flutterDescriptor is YamlMap) {
         final Object? module = flutterDescriptor['module'];
         if (module is YamlMap) {
@@ -125,8 +128,8 @@ class TizenProject extends FlutterProjectPlatform {
       // language do not match. Beware that files in "tizen/" should not be
       // overwritten.
       await _overwriteFromTemplate(
-        globals.fs.path.join('module', tizenLanguage ?? 'cpp'),
-        editableDirectory,
+        globals.fs.path.join('module', _tizenLanguage ?? 'cpp'),
+        hostAppRoot,
       );
     }
     if (existsSync() && isDotnet) {
@@ -160,20 +163,18 @@ class TizenProject extends FlutterProjectPlatform {
     if (!existsSync()) {
       return;
     }
+    _deleteFile(_ephemeralModuleDirectory);
     _deleteFile(managedDirectory);
 
     if (isDotnet) {
-      _deleteFile(editableDirectory.childDirectory('bin'));
-      _deleteFile(editableDirectory.childDirectory('obj'));
+      _deleteFile(hostAppRoot.childDirectory('bin'));
+      _deleteFile(hostAppRoot.childDirectory('obj'));
     } else {
+      _deleteFile(hostAppRoot.childDirectory('Debug'));
+      _deleteFile(hostAppRoot.childDirectory('Release'));
       if (isMultiApp) {
-        _deleteFile(uiAppDirectory.childDirectory('Debug'));
-        _deleteFile(uiAppDirectory.childDirectory('Release'));
         _deleteFile(serviceAppDirectory.childDirectory('Debug'));
         _deleteFile(serviceAppDirectory.childDirectory('Release'));
-      } else {
-        _deleteFile(editableDirectory.childDirectory('Debug'));
-        _deleteFile(editableDirectory.childDirectory('Release'));
       }
     }
   }
