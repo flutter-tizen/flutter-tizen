@@ -260,6 +260,28 @@ void main() {
     Logger: () => logger,
   });
 
+  testUsingContext('Can create a C# module project', () async {
+    final TizenCreateCommand command = TizenCreateCommand();
+    final CommandRunner<void> runner = createTestCommandRunner(command);
+    await runner.run(<String>[
+      'create',
+      '--template=module',
+      projectDir.path,
+    ]);
+
+    expect(projectDir.childFile('lib/main.dart'), exists);
+    expect(projectDir.childFile('.tizen/Runner.csproj'), exists);
+  }, overrides: <Type, Generator>{
+    Pub: () => TizenPub(
+          fileSystem: globals.fs,
+          logger: globals.logger,
+          processManager: globals.processManager,
+          platform: globals.platform,
+          botDetector: globals.botDetector,
+          usage: globals.flutterUsage,
+        ),
+  });
+
   testUsingContext('Can create a C++ module project', () async {
     final TizenCreateCommand command = TizenCreateCommand();
     final CommandRunner<void> runner = createTestCommandRunner(command);
@@ -271,7 +293,7 @@ void main() {
     ]);
 
     expect(projectDir.childFile('lib/main.dart'), exists);
-    expect(projectDir.childDirectory('.tizen'), exists);
+    expect(projectDir.childFile('.tizen/project_def.prop'), exists);
   }, overrides: <Type, Generator>{
     Pub: () => TizenPub(
           fileSystem: globals.fs,

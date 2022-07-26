@@ -78,8 +78,8 @@ class TizenCreateCommand extends CreateCommand {
       .childDirectory('flutter_tools')
       .childDirectory('templates');
 
-  /// See: [CreateCommand._getProjectType] in `create.dart` (simplified)
-  FlutterProjectType get _projectType {
+  /// See: [CreateCommand._getProjectType] in `create.dart`
+  bool get _shouldGeneratePlugin {
     FlutterProjectType template;
     if (argResults['template'] != null) {
       template = stringToProjectType(stringArg('template'));
@@ -87,7 +87,7 @@ class TizenCreateCommand extends CreateCommand {
     if (projectDir.existsSync() && projectDir.listSync().isNotEmpty) {
       template = determineTemplateType();
     }
-    return template ?? FlutterProjectType.app;
+    return template == FlutterProjectType.plugin;
   }
 
   @override
@@ -253,15 +253,13 @@ class TizenCreateCommand extends CreateCommand {
       throwToolExit('Creating an FFI plugin project is not yet supported.');
     }
 
-    if (template != 'module') {
-      final String templateName = template == 'app' ? '$appType-app' : template;
-      if (!_tizenTemplates
-          .childDirectory(templateName)
-          .childDirectory(tizenLanguage)
-          .existsSync()) {
-        throwToolExit(
-            'Could not locate a template: $templateName/$tizenLanguage');
-      }
+    final String templateName = template == 'app' ? '$appType-app' : template;
+    if (!_tizenTemplates
+        .childDirectory(templateName)
+        .childDirectory(tizenLanguage)
+        .existsSync()) {
+      throwToolExit(
+          'Could not locate a template: $templateName/$tizenLanguage');
     }
   }
 
@@ -272,12 +270,12 @@ class TizenCreateCommand extends CreateCommand {
       return result;
     }
 
-    if (_projectType == FlutterProjectType.plugin) {
+    if (_shouldGeneratePlugin) {
       // Generate .csproj.user file if the plugin is a dotnet project.
       final FlutterProject project = FlutterProject.fromDirectory(projectDir);
       final TizenProject tizenProject = TizenProject.fromFlutter(project);
       if (tizenProject.existsSync() && tizenProject.isDotnet) {
-        updateDotnetUserProjectFile(tizenProject.dotnetProjectFile);
+        updateDotnetUserProjectFile(tizenProject.projectFile);
       }
 
       final String relativePluginPath =
@@ -329,11 +327,8 @@ class TizenCreateCommand extends CreateCommand {
     }
 
     final List<String> platforms = stringsArg('platforms');
-    bool shouldRenderTizenTemplate =
-        _projectType == FlutterProjectType.module ||
-            platforms.contains('tizen');
-    if (_projectType == FlutterProjectType.plugin &&
-        !argResults.wasParsed('platforms')) {
+    bool shouldRenderTizenTemplate = platforms.contains('tizen');
+    if (_shouldGeneratePlugin && !argResults.wasParsed('platforms')) {
       shouldRenderTizenTemplate = false;
     }
     if (!shouldRenderTizenTemplate) {
@@ -391,7 +386,7 @@ class TizenCreateCommand extends CreateCommand {
           .childDirectory('tizen-csharp.tmpl'),
     );
 
-    // Apply patches if available.
+    // Apply patches if found.
     for (final Directory template in <Directory>[
       appTemplate,
       pluginTemplate,

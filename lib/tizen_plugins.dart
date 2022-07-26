@@ -529,7 +529,7 @@ void _writeIntermediateDotnetFiles(
   TizenProject project,
   List<TizenPlugin> dotnetPlugins,
 ) {
-  final String projectFileName = project.dotnetProjectFile!.basename;
+  final String projectFileName = project.projectFile!.basename;
   final Map<String, Object> context = <String, Object>{
     'dotnetPlugins': dotnetPlugins.map((TizenPlugin plugin) => plugin.toMap()),
   };

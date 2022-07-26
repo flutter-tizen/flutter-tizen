@@ -84,16 +84,18 @@ class TizenProject extends FlutterProjectPlatform {
   @override
   bool existsSync() => editableDirectory.existsSync();
 
-  File? get nativeProjectFile {
+  File? get projectFile {
+    final File? csprojFile = findDotnetProjectFile(editableDirectory);
+    if (csprojFile != null) {
+      return csprojFile;
+    }
     final File projectDef = isMultiApp
         ? uiAppDirectory.childFile('project_def.prop')
         : editableDirectory.childFile('project_def.prop');
     return projectDef.existsSync() ? projectDef : null;
   }
 
-  File? get dotnetProjectFile => findDotnetProjectFile(editableDirectory);
-
-  bool get isDotnet => dotnetProjectFile != null;
+  bool get isDotnet => projectFile?.basename.endsWith('.csproj') ?? false;
 
   String? get tizenLanguage {
     if (parent.isModule) {
@@ -119,24 +121,24 @@ class TizenProject extends FlutterProjectPlatform {
   /// See: [AndroidProject.ensureReadyForPlatformSpecificTooling] in `project.dart`
   Future<void> ensureReadyForPlatformSpecificTooling() async {
     if (parent.isModule && !existsSync()) {
-      // TODO: Recreate if the project type doesn't match.
-      // Note that all files and directories in the template must end with
-      // the '.tmpl' extension.
+      // TODO(swift-kim): Regenerate from template if the project type and
+      // language do not match. Beware that files in "tizen/" should not be
+      // overwritten.
       await _overwriteFromTemplate(
-        globals.fs.path.join('..', '..', '..', '..', 'templates', 'module',
-            tizenLanguage ?? 'cpp'),
+        globals.fs.path.join('module', tizenLanguage ?? 'cpp'),
         editableDirectory,
       );
     }
     if (existsSync() && isDotnet) {
-      updateDotnetUserProjectFile(dotnetProjectFile!);
+      updateDotnetUserProjectFile(projectFile!);
     }
   }
 
   /// Source: [AndroidProject._overwriteFromTemplate] in `project.dart`
   Future<void> _overwriteFromTemplate(String path, Directory target) async {
     final Template template = await Template.fromName(
-      path,
+      // Relative to "flutter_tools/templates/".
+      globals.fs.path.join('..', '..', '..', '..', 'templates', path),
       fileSystem: globals.fs,
       templateManifest: null,
       logger: globals.logger,
