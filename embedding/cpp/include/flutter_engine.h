@@ -10,7 +10,6 @@
 #include <flutter_tizen.h>
 
 #include <memory>
-#include <optional>
 #include <string>
 #include <vector>
 

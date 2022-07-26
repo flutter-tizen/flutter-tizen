@@ -27,7 +27,6 @@ import 'build_targets/package.dart';
 import 'tizen_build_info.dart';
 import 'tizen_project.dart';
 import 'tizen_sdk.dart';
-import 'tizen_tpk.dart';
 
 /// The define to control what Tizen device is built for.
 const String kDeviceProfile = 'DeviceProfile';
@@ -58,8 +57,6 @@ class TizenBuilder {
         'Run "flutter-tizen doctor" and install required components.',
       );
     }
-
-    _updateManifest(tizenProject, tizenBuildInfo);
 
     final Directory outputDir =
         project.directory.childDirectory('build').childDirectory('tizen');
@@ -169,27 +166,6 @@ class TizenBuilder {
         '\$ flutter-tizen pub global activate devtools\n'
         '\$ flutter-tizen pub global run devtools --appSizeBase=$relativeAppSizePath\n',
       );
-    }
-  }
-
-  /// Updates tizen-manifest.xml with the given build info.
-  void _updateManifest(TizenProject project, TizenBuildInfo buildInfo) {
-    void updateManifestFile(File manifestFile) {
-      final TizenManifest manifest = TizenManifest.parseFromXml(manifestFile);
-      final String? buildName =
-          buildInfo.buildInfo.buildName ?? project.parent.manifest.buildName;
-      if (buildName != null) {
-        manifest.version = buildName;
-      }
-      manifest.profile = buildInfo.deviceProfile;
-      manifestFile.writeAsStringSync('$manifest\n');
-    }
-
-    if (project.isMultiApp) {
-      updateManifestFile(project.uiManifestFile);
-      updateManifestFile(project.serviceManifestFile);
-    } else {
-      updateManifestFile(project.manifestFile);
     }
   }
 }
