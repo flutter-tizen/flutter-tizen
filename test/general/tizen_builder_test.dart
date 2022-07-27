@@ -60,135 +60,161 @@ void main() {
     );
   });
 
-  testUsingContext('Build fails if there is no Tizen project', () async {
-    await expectLater(
-      () => TizenBuilder().buildTpk(
-        project: project,
-        tizenBuildInfo: tizenBuildInfo,
-        targetFile: 'main.dart',
-      ),
-      throwsToolExit(message: 'This project is not configured for Tizen.'),
-    );
-  }, overrides: <Type, Generator>{
-    FileSystem: () => fileSystem,
-    ProcessManager: () => FakeProcessManager.any(),
-  });
-
-  testUsingContext('Build fails if Tizen Studio is not installed', () async {
-    fileSystem.file('tizen/tizen-manifest.xml')
-      ..createSync(recursive: true)
-      ..writeAsStringSync(_kTizenManifestContents);
-
-    await expectLater(
-      () => TizenBuilder().buildTpk(
-        project: project,
-        tizenBuildInfo: tizenBuildInfo,
-        targetFile: 'main.dart',
-      ),
-      throwsToolExit(message: 'Unable to locate Tizen CLI executable.'),
-    );
-  }, overrides: <Type, Generator>{
-    FileSystem: () => fileSystem,
-    ProcessManager: () => FakeProcessManager.any(),
-  });
-
-  testUsingContext('Output TPK is missing', () async {
-    fileSystem.file('tizen/tizen-manifest.xml')
-      ..createSync(recursive: true)
-      ..writeAsStringSync(_kTizenManifestContents);
-
-    await expectLater(
-      () => TizenBuilder().buildTpk(
-        project: project,
-        tizenBuildInfo: tizenBuildInfo,
-        targetFile: 'main.dart',
-      ),
-      throwsToolExit(message: 'The output TPK does not exist.'),
-    );
-  }, overrides: <Type, Generator>{
-    FileSystem: () => fileSystem,
-    ProcessManager: () => FakeProcessManager.any(),
-    TizenSdk: () => FakeTizenSdk(fileSystem),
-    BuildSystem: () => TestBuildSystem.all(BuildResult(success: true)),
-  });
-
-  testUsingContext('Indicates that TPK has been built successfully', () async {
-    fileSystem.file('tizen/tizen-manifest.xml')
-      ..createSync(recursive: true)
-      ..writeAsStringSync(_kTizenManifestContents);
-
-    await TizenBuilder().buildTpk(
-      project: project,
-      tizenBuildInfo: tizenBuildInfo,
-      targetFile: 'main.dart',
-    );
-
-    expect(
-      logger.statusText,
-      contains('Built build/tizen/tpk/package_id-1.0.0.tpk (0.0MB).'),
-    );
-  }, overrides: <Type, Generator>{
-    FileSystem: () => fileSystem,
-    ProcessManager: () => FakeProcessManager.any(),
-    Logger: () => logger,
-    TizenSdk: () => FakeTizenSdk(fileSystem),
-    BuildSystem: () => TestBuildSystem.all(
-          BuildResult(success: true),
-          (Target target, Environment environment) {
-            environment.outputDir
-                .childFile('package_id-1.0.0.tpk')
-                .createSync(recursive: true);
-          },
+  group('TizenBuilder.buildTpk', () {
+    testUsingContext('Build fails if there is no Tizen project', () async {
+      await expectLater(
+        () => TizenBuilder().buildTpk(
+          project: project,
+          tizenBuildInfo: tizenBuildInfo,
+          targetFile: 'main.dart',
         ),
+        throwsToolExit(message: 'This project is not configured for Tizen.'),
+      );
+    }, overrides: <Type, Generator>{
+      FileSystem: () => fileSystem,
+      ProcessManager: () => FakeProcessManager.any(),
+    });
+
+    testUsingContext('Build fails if Tizen Studio is not installed', () async {
+      fileSystem.file('tizen/tizen-manifest.xml')
+        ..createSync(recursive: true)
+        ..writeAsStringSync(_kTizenManifestContents);
+
+      await expectLater(
+        () => TizenBuilder().buildTpk(
+          project: project,
+          tizenBuildInfo: tizenBuildInfo,
+          targetFile: 'main.dart',
+        ),
+        throwsToolExit(message: 'Unable to locate Tizen CLI executable.'),
+      );
+    }, overrides: <Type, Generator>{
+      FileSystem: () => fileSystem,
+      ProcessManager: () => FakeProcessManager.any(),
+    });
+
+    testUsingContext('Output TPK is missing', () async {
+      fileSystem.file('tizen/tizen-manifest.xml')
+        ..createSync(recursive: true)
+        ..writeAsStringSync(_kTizenManifestContents);
+
+      await expectLater(
+        () => TizenBuilder().buildTpk(
+          project: project,
+          tizenBuildInfo: tizenBuildInfo,
+          targetFile: 'main.dart',
+        ),
+        throwsToolExit(message: 'The output TPK does not exist.'),
+      );
+    }, overrides: <Type, Generator>{
+      FileSystem: () => fileSystem,
+      ProcessManager: () => FakeProcessManager.any(),
+      TizenSdk: () => FakeTizenSdk(fileSystem),
+      BuildSystem: () => TestBuildSystem.all(BuildResult(success: true)),
+    });
+
+    testUsingContext('Indicates that TPK has been built successfully',
+        () async {
+      fileSystem.file('tizen/tizen-manifest.xml')
+        ..createSync(recursive: true)
+        ..writeAsStringSync(_kTizenManifestContents);
+
+      await TizenBuilder().buildTpk(
+        project: project,
+        tizenBuildInfo: tizenBuildInfo,
+        targetFile: 'main.dart',
+      );
+
+      expect(
+        logger.statusText,
+        contains('Built build/tizen/tpk/package_id-1.0.0.tpk (0.0MB).'),
+      );
+    }, overrides: <Type, Generator>{
+      FileSystem: () => fileSystem,
+      ProcessManager: () => FakeProcessManager.any(),
+      Logger: () => logger,
+      TizenSdk: () => FakeTizenSdk(fileSystem),
+      BuildSystem: () => TestBuildSystem.all(
+            BuildResult(success: true),
+            (Target target, Environment environment) {
+              environment.outputDir
+                  .childFile('package_id-1.0.0.tpk')
+                  .createSync(recursive: true);
+            },
+          ),
+    });
+
+    testUsingContext('Performs code size analysis', () async {
+      fileSystem.file('tizen/tizen-manifest.xml')
+        ..createSync(recursive: true)
+        ..writeAsStringSync(_kTizenManifestContents);
+
+      const BuildInfo buildInfo = BuildInfo(
+        BuildMode.release,
+        null,
+        treeShakeIcons: false,
+        codeSizeDirectory: 'code_size_analysis',
+      );
+      await TizenBuilder().buildTpk(
+        project: project,
+        tizenBuildInfo: const TizenBuildInfo(
+          buildInfo,
+          targetArch: 'arm',
+          deviceProfile: 'wearable',
+        ),
+        targetFile: 'main.dart',
+        sizeAnalyzer: _FakeSizeAnalyzer(fileSystem: fileSystem, logger: logger),
+      );
+
+      final File codeSizeFile =
+          fileSystem.file('.flutter-devtools/tpk-code-size-analysis_01.json');
+      expect(codeSizeFile, exists);
+      expect(
+        logger.statusText,
+        contains('A summary of your TPK analysis can be found at'),
+      );
+    }, overrides: <Type, Generator>{
+      FileSystem: () => fileSystem,
+      ProcessManager: () => FakeProcessManager.any(),
+      Logger: () => logger,
+      TizenSdk: () => FakeTizenSdk(fileSystem),
+      BuildSystem: () => TestBuildSystem.all(
+            BuildResult(success: true),
+            (Target target, Environment environment) {
+              environment.outputDir
+                  .childDirectory('tpkroot')
+                  .createSync(recursive: true);
+              environment.outputDir
+                  .childFile('package_id-1.0.0.tpk')
+                  .createSync(recursive: true);
+            },
+          ),
+      FileSystemUtils: () =>
+          FileSystemUtils(fileSystem: fileSystem, platform: platform),
+    });
   });
 
-  testUsingContext('Performs code size analysis', () async {
-    fileSystem.file('tizen/tizen-manifest.xml')
-      ..createSync(recursive: true)
-      ..writeAsStringSync(_kTizenManifestContents);
+  group('TizenBuilder.buildModule', () {
+    testUsingContext('Indicates that module has been built successfully',
+        () async {
+      fileSystem.file('tizen/tizen-manifest.xml')
+        ..createSync(recursive: true)
+        ..writeAsStringSync(_kTizenManifestContents);
 
-    const BuildInfo buildInfo = BuildInfo(
-      BuildMode.release,
-      null,
-      treeShakeIcons: false,
-      codeSizeDirectory: 'code_size_analysis',
-    );
-    await TizenBuilder().buildTpk(
-      project: project,
-      tizenBuildInfo: const TizenBuildInfo(
-        buildInfo,
-        targetArch: 'arm',
-        deviceProfile: 'wearable',
-      ),
-      targetFile: 'main.dart',
-      sizeAnalyzer: _FakeSizeAnalyzer(fileSystem: fileSystem, logger: logger),
-    );
+      await TizenBuilder().buildModule(
+        project: project,
+        tizenBuildInfo: tizenBuildInfo,
+        targetFile: 'main.dart',
+      );
 
-    final File codeSizeFile =
-        fileSystem.file('.flutter-devtools/tpk-code-size-analysis_01.json');
-    expect(codeSizeFile, exists);
-    expect(
-      logger.statusText,
-      contains('A summary of your TPK analysis can be found at'),
-    );
-  }, overrides: <Type, Generator>{
-    FileSystem: () => fileSystem,
-    ProcessManager: () => FakeProcessManager.any(),
-    Logger: () => logger,
-    TizenSdk: () => FakeTizenSdk(fileSystem),
-    BuildSystem: () => TestBuildSystem.all(
-          BuildResult(success: true),
-          (Target target, Environment environment) {
-            environment.outputDir
-                .childDirectory('tpkroot')
-                .createSync(recursive: true);
-            environment.outputDir
-                .childFile('package_id-1.0.0.tpk')
-                .createSync(recursive: true);
-          },
-        ),
-    FileSystemUtils: () =>
-        FileSystemUtils(fileSystem: fileSystem, platform: platform),
+      expect(logger.statusText, contains('Built build/tizen/module.'));
+    }, overrides: <Type, Generator>{
+      FileSystem: () => fileSystem,
+      ProcessManager: () => FakeProcessManager.any(),
+      Logger: () => logger,
+      TizenSdk: () => FakeTizenSdk(fileSystem),
+      BuildSystem: () => TestBuildSystem.all(BuildResult(success: true)),
+    });
   });
 }
 
