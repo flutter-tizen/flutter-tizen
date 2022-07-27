@@ -446,6 +446,7 @@ class NativeModule extends TizenPackage {
 
     final File generatedPluginRegistrant = tizenProject.managedDirectory
         .childFile('generated_plugin_registrant.h');
+    assert(generatedPluginRegistrant.existsSync());
     generatedPluginRegistrant
         .copySync(incDir.childFile(generatedPluginRegistrant.basename).path);
 
