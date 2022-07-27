@@ -392,7 +392,13 @@ class NativeModule extends TizenPackage {
   NativeModule(super.tizenBuildInfo);
 
   @override
-  String get name => 'native_module';
+  String get name => 'tizen_native_module';
+
+  @override
+  List<Target> get dependencies => <Target>[
+        ...super.dependencies,
+        NativeEmbedding(buildInfo),
+      ];
 
   @override
   Future<void> build(Environment environment) async {
@@ -419,16 +425,9 @@ class NativeModule extends TizenPackage {
     );
 
     final BuildMode buildMode = buildInfo.buildInfo.mode;
-    final String buildConfig = getBuildConfig(buildMode);
     final Directory engineDir =
         getEngineArtifactsDirectory(buildInfo.targetArch, buildMode);
     final Directory commonDir = engineDir.parent.childDirectory('tizen-common');
-
-    final Directory clientWrapperDir =
-        commonDir.childDirectory('cpp_client_wrapper');
-    final Directory publicDir = commonDir.childDirectory('public');
-    copyDirectory(clientWrapperDir.childDirectory('include'), incDir);
-    copyDirectory(publicDir, incDir);
 
     final File engineBinary = engineDir.childFile('libflutter_engine.so');
     final File embedder =
@@ -452,6 +451,10 @@ class NativeModule extends TizenPackage {
 
     final Directory pluginsDir =
         environment.buildDir.childDirectory('tizen_plugins');
+    final Directory pluginsIncludeDir = pluginsDir.childDirectory('include');
+    if (pluginsIncludeDir.existsSync()) {
+      copyDirectory(pluginsIncludeDir, incDir);
+    }
     final File pluginsLib = pluginsDir.childFile('libflutter_plugins.so');
     if (pluginsLib.existsSync()) {
       pluginsLib.copySync(libDir.childFile(pluginsLib.basename).path);
@@ -461,40 +464,18 @@ class NativeModule extends TizenPackage {
       pluginsUserLibDir.listSync().whereType<File>().forEach(
           (File lib) => lib.copySync(libDir.childFile(lib.basename).path));
     }
-    copyDirectory(pluginsDir.childDirectory('include'), incDir);
 
-    // Build the embedding source code.
-    final Directory embeddingDir = environment.fileSystem
-        .directory(Cache.flutterRoot)
-        .parent
-        .childDirectory('embedding')
-        .childDirectory('cpp');
+    final Directory clientWrapperDir =
+        commonDir.childDirectory('cpp_client_wrapper');
+    final Directory publicDir = commonDir.childDirectory('public');
+    copyDirectory(clientWrapperDir.childDirectory('include'), incDir);
+    copyDirectory(publicDir, incDir);
+
+    final Directory embeddingDir =
+        environment.buildDir.childDirectory('tizen_embedding');
     copyDirectory(embeddingDir.childDirectory('include'), incDir);
 
-    assert(tizenSdk != null);
-    final TizenManifest tizenManifest =
-        TizenManifest.parseFromXml(tizenProject.manifestFile);
-    final Rootstrap rootstrap = tizenSdk!.getFlutterRootstrap(
-      profile: tizenManifest.profile,
-      apiVersion: tizenManifest.apiVersion,
-      arch: buildInfo.targetArch,
-    );
-
-    // We need to build the C++ embedding separately because the absolute path
-    // to the embedding directory may contain spaces.
-    final RunResult result = await tizenSdk!.buildNative(
-      embeddingDir.path,
-      configuration: buildConfig,
-      arch: getTizenCliArch(buildInfo.targetArch),
-      extraOptions: <String>['-fPIC'],
-      rootstrap: rootstrap.id,
-    );
-    final File embeddingLib = embeddingDir
-        .childDirectory(buildConfig)
-        .childFile('libembedding_cpp.a');
-    if (result.exitCode != 0) {
-      throwToolExit('Failed to build ${embeddingLib.basename}:\n$result');
-    }
+    final File embeddingLib = embeddingDir.childFile('libembedding_cpp.a');
     embeddingLib.copySync(libDir.childFile(embeddingLib.basename).path);
   }
 }

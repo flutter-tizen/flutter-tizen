@@ -223,11 +223,18 @@ class TizenBuilder {
       generateDartPluginRegistry: false,
     );
 
+    if (tizenProject.isDotnet) {
+      throwToolExit(
+        'Building a .NET module is currently not supported.\n'
+        'Delete the project and recreate with the "--tizen-language cpp" option.',
+      );
+    }
+    final Target target = NativeModule(tizenBuildInfo);
+
     final String buildModeName = getNameForBuildMode(buildInfo.mode);
     final Status status = globals.logger.startProgress(
         'Building a Tizen application in $buildModeName mode...');
     try {
-      final Target target = NativeModule(tizenBuildInfo);
       final BuildResult result =
           await globals.buildSystem.build(target, environment);
       if (!result.success) {
