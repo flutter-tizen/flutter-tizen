@@ -87,7 +87,17 @@ class BuildModuleCommand extends BuildSubCommand
     with DartPluginRegistry, TizenRequiredArtifacts {
   BuildModuleCommand({required bool verboseHelp})
       : super(verboseHelp: verboseHelp) {
-    addCommonDesktopBuildOptions(verboseHelp: verboseHelp);
+    addBuildModeFlags(verboseHelp: verboseHelp);
+    addDartObfuscationOption();
+    addEnableExperimentation(hide: !verboseHelp);
+    addNullSafetyModeOptions(hide: !verboseHelp);
+    addSplitDebugInfoOption();
+    addTreeShakeIconsFlag();
+    usesDartDefineOption();
+    usesExtraDartFlagOptions(verboseHelp: verboseHelp);
+    usesPubOption();
+    usesTargetOption();
+    usesTrackWidgetCreation(verboseHelp: verboseHelp);
     argParser.addOption(
       'target-arch',
       defaultsTo: 'arm',
