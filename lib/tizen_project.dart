@@ -24,17 +24,18 @@ import 'tizen_tpk.dart';
 class TizenProject extends FlutterProjectPlatform {
   TizenProject.fromFlutter(this.parent);
 
+  /// The parent of this project.
   final FlutterProject parent;
 
   /// See: [FlutterManifest] in `flutter_manifest.xml`
   late final Map<String, Object?> _parentPubspec = () {
-    final File manifestFile = parent.directory.childFile(defaultManifestPath);
-    if (!manifestFile.existsSync()) {
+    final File pubspecFile = parent.directory.childFile(defaultManifestPath);
+    if (!pubspecFile.existsSync()) {
       return <String, Object?>{};
     }
     YamlMap? yamlMap;
     try {
-      yamlMap = loadYaml(manifestFile.readAsStringSync()) as YamlMap?;
+      yamlMap = loadYaml(pubspecFile.readAsStringSync()) as YamlMap?;
     } on YamlException {
       return <String, Object?>{};
     }
@@ -48,6 +49,7 @@ class TizenProject extends FlutterProjectPlatform {
   Directory get _ephemeralModuleDirectory =>
       parent.directory.childDirectory('.tizen');
 
+  /// The parent directory of [manifestFile] and [projectFile].
   Directory get hostAppRoot {
     if (!parent.isModule || editableDirectory.existsSync()) {
       return isMultiApp ? uiAppDirectory : editableDirectory;
@@ -79,8 +81,10 @@ class TizenProject extends FlutterProjectPlatform {
   Directory get serviceAppDirectory =>
       editableDirectory.childDirectory('service');
 
-  // TODO(swift-kim): Add @visibleForTesting to these.
+  @visibleForTesting
   File get uiManifestFile => uiAppDirectory.childFile('tizen-manifest.xml');
+
+  @visibleForTesting
   File get serviceManifestFile =>
       serviceAppDirectory.childFile('tizen-manifest.xml');
 
@@ -89,6 +93,7 @@ class TizenProject extends FlutterProjectPlatform {
   @override
   bool existsSync() => hostAppRoot.existsSync();
 
+  /// Either `Runner.csproj` or `project_def.prop` if any, otherwise null.
   File? get projectFile {
     final File? csprojFile = findDotnetProjectFile(hostAppRoot);
     if (csprojFile != null) {
@@ -100,6 +105,9 @@ class TizenProject extends FlutterProjectPlatform {
 
   bool get isDotnet => projectFile?.basename.endsWith('.csproj') ?? false;
 
+  /// Returns "tizenLanguage" string declared in [parent]'s pubspec.
+  ///
+  /// Only applicable for module projects.
   String? get _tizenLanguage {
     if (parent.isModule) {
       final Object? flutterDescriptor = _parentPubspec['flutter'];
