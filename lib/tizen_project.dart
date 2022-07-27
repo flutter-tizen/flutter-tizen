@@ -133,11 +133,11 @@ class TizenProject extends FlutterProjectPlatform {
   Future<void> ensureReadyForPlatformSpecificTooling() async {
     if (parent.isModule && !existsSync()) {
       // TODO(swift-kim): Regenerate from template if the project type and
-      // language do not match. Beware that files in "tizen/" should not be
+      // language do not match. Beware that editableDirectory should not be
       // overwritten.
       await _overwriteFromTemplate(
         globals.fs.path.join('module', _tizenLanguage ?? 'cpp'),
-        hostAppRoot,
+        parent.directory,
       );
     }
     if (existsSync() && isDotnet) {
