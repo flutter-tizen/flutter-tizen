@@ -36,58 +36,82 @@ void main() {
     tizenBuilder = _FakeTizenBuilder();
   });
 
-  testUsingContext('Device profile must be specified', () async {
-    final TizenBuildCommand command = TizenBuildCommand();
-    final CommandRunner<void> runner = createTestCommandRunner(command);
-    await expectLater(
-      () => runner.run(<String>['build', 'tpk', '--no-pub']),
-      throwsToolExit(),
-    );
-  }, overrides: <Type, Generator>{
-    FileSystem: () => fileSystem,
-    ProcessManager: () => FakeProcessManager.any(),
-  });
+  group('BuildTpkCommand', () {
+    testUsingContext('Device profile must be specified', () async {
+      final TizenBuildCommand command = TizenBuildCommand();
+      final CommandRunner<void> runner = createTestCommandRunner(command);
+      await expectLater(
+        () => runner.run(<String>['build', 'tpk', '--no-pub']),
+        throwsToolExit(),
+      );
+    }, overrides: <Type, Generator>{
+      FileSystem: () => fileSystem,
+      ProcessManager: () => FakeProcessManager.any(),
+    });
 
-  testUsingContext('Cannot build for x86 in release mode', () async {
-    final TizenBuildCommand command = TizenBuildCommand();
-    final CommandRunner<void> runner = createTestCommandRunner(command);
-    await expectLater(
-      () => runner.run(<String>[
+    testUsingContext('Cannot build for x86 in release mode', () async {
+      final TizenBuildCommand command = TizenBuildCommand();
+      final CommandRunner<void> runner = createTestCommandRunner(command);
+      await expectLater(
+        () => runner.run(<String>[
+          'build',
+          'tpk',
+          '--no-pub',
+          '--device-profile=common',
+          '--target-arch=x86',
+        ]),
+        throwsToolExit(message: 'x86 ABI does not support AOT compilation.'),
+      );
+    }, overrides: <Type, Generator>{
+      FileSystem: () => fileSystem,
+      ProcessManager: () => FakeProcessManager.any(),
+    });
+
+    testUsingContext('Can compute build info', () async {
+      final TizenBuildCommand command = TizenBuildCommand();
+      final CommandRunner<void> runner = createTestCommandRunner(command);
+
+      fileSystem.file('test_main.dart').createSync(recursive: true);
+
+      await runner.run(<String>[
         'build',
         'tpk',
         '--no-pub',
         '--device-profile=common',
-        '--target-arch=x86',
-      ]),
-      throwsToolExit(message: 'x86 ABI does not support AOT compilation.'),
-    );
-  }, overrides: <Type, Generator>{
-    FileSystem: () => fileSystem,
-    ProcessManager: () => FakeProcessManager.any(),
+        '--security-profile=test_profile',
+        '--target=test_main.dart',
+      ]);
+
+      expect(tizenBuilder.deviceProfile, equals('common'));
+      expect(tizenBuilder.securityProfile, equals('test_profile'));
+      expect(tizenBuilder.target, equals('test_main.dart'));
+    }, overrides: <Type, Generator>{
+      FileSystem: () => fileSystem,
+      ProcessManager: () => FakeProcessManager.any(),
+      TizenBuilder: () => tizenBuilder,
+    });
   });
 
-  testUsingContext('Can compute build info', () async {
-    final TizenBuildCommand command = TizenBuildCommand();
-    final CommandRunner<void> runner = createTestCommandRunner(command);
+  group('BuildModuleCommand', () {
+    testUsingContext('Can compute build info', () async {
+      final TizenBuildCommand command = TizenBuildCommand();
+      final CommandRunner<void> runner = createTestCommandRunner(command);
 
-    fileSystem.file('test_main.dart').createSync(recursive: true);
+      await runner.run(<String>[
+        'build',
+        'module',
+        '--no-pub',
+        '--device-profile=common',
+        '--output-dir=../my_app/flutter',
+      ]);
 
-    await runner.run(<String>[
-      'build',
-      'tpk',
-      '--no-pub',
-      '--device-profile=common',
-      '--security-profile=test_profile',
-      '--target=test_main.dart',
-    ]);
-
-    expect(tizenBuilder.deviceProfile, equals('common'));
-    expect(tizenBuilder.securityProfile, equals('test_profile'));
-    expect(tizenBuilder.target, equals('test_main.dart'));
-  }, overrides: <Type, Generator>{
-    FileSystem: () => fileSystem,
-    ProcessManager: () => FakeProcessManager.any(),
-    TizenBuilder: () => tizenBuilder,
+      expect(tizenBuilder.deviceProfile, equals('common'));
+      expect(tizenBuilder.outputPath, equals('../my_app/flutter'));
+    }, overrides: <Type, Generator>{
+      FileSystem: () => fileSystem,
+      ProcessManager: () => FakeProcessManager.any(),
+      TizenBuilder: () => tizenBuilder,
+    });
   });
 }
 
@@ -97,6 +121,7 @@ class _FakeTizenBuilder extends Fake implements TizenBuilder {
   String deviceProfile;
   String securityProfile;
   String target;
+  String outputPath;
 
   @override
   Future<void> buildTpk({
@@ -108,5 +133,17 @@ class _FakeTizenBuilder extends Fake implements TizenBuilder {
     deviceProfile = tizenBuildInfo.deviceProfile;
     securityProfile = tizenBuildInfo.securityProfile;
     target = targetFile;
+  }
+
+  @override
+  Future<void> buildModule({
+    @required FlutterProject project,
+    @required TizenBuildInfo tizenBuildInfo,
+    @required String targetFile,
+    String outputDirectory,
+  }) async {
+    deviceProfile = tizenBuildInfo.deviceProfile;
+    target = targetFile;
+    outputPath = outputDirectory;
   }
 }
