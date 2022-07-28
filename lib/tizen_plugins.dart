@@ -291,9 +291,6 @@ Future<void> ensureReadyForTizenTooling(FlutterProject project) async {
     return;
   }
   final TizenProject tizenProject = TizenProject.fromFlutter(project);
-  if (!tizenProject.existsSync()) {
-    return;
-  }
   await tizenProject.ensureReadyForPlatformSpecificTooling();
 
   await _ensurePluginsReadyForTizenTooling(project);
@@ -532,7 +529,7 @@ void _writeIntermediateDotnetFiles(
   TizenProject project,
   List<TizenPlugin> dotnetPlugins,
 ) {
-  final String projectFileName = project.projectFile.basename;
+  final String projectFileName = project.projectFile!.basename;
   final Map<String, Object> context = <String, Object>{
     'dotnetPlugins': dotnetPlugins.map((TizenPlugin plugin) => plugin.toMap()),
   };

@@ -1,0 +1,9 @@
+diff --git a/packages/flutter_tools/templates/module/common/pubspec.yaml.tmpl b/packages/flutter_tools/templates/module/common/pubspec.yaml.tmpl
+index 4606b8bd4d..ac16acb4ea 100644
+--- a/packages/flutter_tools/templates/module/common/pubspec.yaml.tmpl
++++ b/packages/flutter_tools/templates/module/common/pubspec.yaml.tmpl
+@@ -85,3 +85,4 @@ flutter:
+     androidX: true
+     androidPackage: {{androidIdentifier}}
+     iosBundleIdentifier: {{iosIdentifier}}
++    tizenLanguage: {{tizenLanguage}}

@@ -10,10 +10,12 @@ import 'dart:io';
 import 'package:args/command_runner.dart';
 import 'package:file_testing/file_testing.dart';
 import 'package:flutter_tizen/commands/create.dart';
+import 'package:flutter_tizen/tizen_pub.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/base/net.dart';
 import 'package:flutter_tools/src/cache.dart';
+import 'package:flutter_tools/src/dart/pub.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:pubspec_parse/pubspec_parse.dart';
 
@@ -256,5 +258,50 @@ void main() {
     expect(logger.statusText, isNot(contains(_kNoPlatformsMessage)));
   }, overrides: <Type, Generator>{
     Logger: () => logger,
+  });
+
+  testUsingContext('Can create a C# module project', () async {
+    final TizenCreateCommand command = TizenCreateCommand();
+    final CommandRunner<void> runner = createTestCommandRunner(command);
+    await runner.run(<String>[
+      'create',
+      '--template=module',
+      projectDir.path,
+    ]);
+
+    expect(projectDir.childFile('lib/main.dart'), exists);
+    expect(projectDir.childFile('.tizen/Runner.csproj'), exists);
+  }, overrides: <Type, Generator>{
+    Pub: () => TizenPub(
+          fileSystem: globals.fs,
+          logger: globals.logger,
+          processManager: globals.processManager,
+          platform: globals.platform,
+          botDetector: globals.botDetector,
+          usage: globals.flutterUsage,
+        ),
+  });
+
+  testUsingContext('Can create a C++ module project', () async {
+    final TizenCreateCommand command = TizenCreateCommand();
+    final CommandRunner<void> runner = createTestCommandRunner(command);
+    await runner.run(<String>[
+      'create',
+      '--template=module',
+      '--tizen-language=cpp',
+      projectDir.path,
+    ]);
+
+    expect(projectDir.childFile('lib/main.dart'), exists);
+    expect(projectDir.childFile('.tizen/project_def.prop'), exists);
+  }, overrides: <Type, Generator>{
+    Pub: () => TizenPub(
+          fileSystem: globals.fs,
+          logger: globals.logger,
+          processManager: globals.processManager,
+          platform: globals.platform,
+          botDetector: globals.botDetector,
+          usage: globals.flutterUsage,
+        ),
   });
 }

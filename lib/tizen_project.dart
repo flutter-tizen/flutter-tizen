@@ -6,11 +6,16 @@
 import 'package:file/file.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/base/logger.dart';
+import 'package:flutter_tools/src/bundle.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/commands/clean.dart';
+import 'package:flutter_tools/src/flutter_manifest.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/project.dart';
+import 'package:flutter_tools/src/template.dart';
+import 'package:meta/meta.dart';
 import 'package:xml/xml.dart';
+import 'package:yaml/yaml.dart';
 
 import 'tizen_plugins.dart';
 import 'tizen_tpk.dart';
@@ -19,17 +24,43 @@ import 'tizen_tpk.dart';
 class TizenProject extends FlutterProjectPlatform {
   TizenProject.fromFlutter(this.parent);
 
+  /// The parent of this project.
   final FlutterProject parent;
+
+  /// See: [FlutterManifest] in `flutter_manifest.xml`
+  late final Map<String, Object?> _parentPubspec = () {
+    final File pubspecFile = parent.directory.childFile(defaultManifestPath);
+    if (!pubspecFile.existsSync()) {
+      return <String, Object?>{};
+    }
+    YamlMap? yamlMap;
+    try {
+      yamlMap = loadYaml(pubspecFile.readAsStringSync()) as YamlMap?;
+    } on YamlException {
+      return <String, Object?>{};
+    }
+    return yamlMap?.cast<String, Object?>() ?? <String, Object?>{};
+  }();
 
   @override
   String get pluginConfigKey => TizenPlugin.kConfigKey;
 
   Directory get editableDirectory => parent.directory.childDirectory('tizen');
+  Directory get _ephemeralModuleDirectory =>
+      parent.directory.childDirectory('.tizen');
+
+  /// The parent directory of [manifestFile] and [projectFile].
+  Directory get hostAppRoot {
+    if (!parent.isModule || editableDirectory.existsSync()) {
+      return isMultiApp ? uiAppDirectory : editableDirectory;
+    }
+    return _ephemeralModuleDirectory;
+  }
 
   /// The directory in the project that is managed by Flutter. As much as
   /// possible, files that are edited by Flutter tooling after initial project
   /// creation should live here.
-  Directory get managedDirectory => editableDirectory.childDirectory('flutter');
+  Directory get managedDirectory => hostAppRoot.childDirectory('flutter');
 
   /// The subdirectory of [managedDirectory] that contains files that are
   /// generated on the fly. All generated files that are not intended to be
@@ -38,65 +69,120 @@ class TizenProject extends FlutterProjectPlatform {
       managedDirectory.childDirectory('ephemeral');
 
   /// The intermediate output directory in the project that is managed by dotnet.
-  Directory get intermediateDirectory =>
-      editableDirectory.childDirectory('obj');
+  Directory get intermediateDirectory => hostAppRoot.childDirectory('obj');
 
   bool get isMultiApp =>
       uiAppDirectory.existsSync() && serviceAppDirectory.existsSync();
 
+  @visibleForTesting
   Directory get uiAppDirectory => editableDirectory.childDirectory('ui');
+
+  @visibleForTesting
   Directory get serviceAppDirectory =>
       editableDirectory.childDirectory('service');
 
+  @visibleForTesting
   File get uiManifestFile => uiAppDirectory.childFile('tizen-manifest.xml');
+
+  @visibleForTesting
   File get serviceManifestFile =>
       serviceAppDirectory.childFile('tizen-manifest.xml');
 
-  File get manifestFile => isMultiApp
-      ? uiManifestFile
-      : editableDirectory.childFile('tizen-manifest.xml');
-
-  File get projectFile =>
-      findDotnetProjectFile(editableDirectory) ??
-      (isMultiApp
-          ? uiAppDirectory.childFile('project_def.prop')
-          : editableDirectory.childFile('project_def.prop'));
+  File get manifestFile => hostAppRoot.childFile('tizen-manifest.xml');
 
   @override
-  bool existsSync() => editableDirectory.existsSync();
+  bool existsSync() => hostAppRoot.existsSync();
 
-  bool get isDotnet => projectFile.path.endsWith('.csproj');
+  /// Either `Runner.csproj` or `project_def.prop` if any, otherwise null.
+  File? get projectFile {
+    final File? csprojFile = findDotnetProjectFile(hostAppRoot);
+    if (csprojFile != null) {
+      return csprojFile;
+    }
+    final File projectDef = hostAppRoot.childFile('project_def.prop');
+    return projectDef.existsSync() ? projectDef : null;
+  }
+
+  bool get isDotnet => projectFile?.basename.endsWith('.csproj') ?? false;
+
+  /// Returns "tizenLanguage" string declared in [parent]'s pubspec.
+  ///
+  /// Only applicable for module projects.
+  String? get _tizenLanguage {
+    if (parent.isModule) {
+      final Object? flutterDescriptor = _parentPubspec['flutter'];
+      if (flutterDescriptor is YamlMap) {
+        final Object? module = flutterDescriptor['module'];
+        if (module is YamlMap) {
+          final Object? tizenLanguage = module['tizenLanguage'];
+          if (tizenLanguage is String) {
+            return tizenLanguage;
+          }
+        }
+      }
+    }
+    return null;
+  }
 
   String get outputTpkName {
     final TizenManifest manifest = TizenManifest.parseFromXml(manifestFile);
     return '${manifest.packageId}-${manifest.version}.tpk';
   }
 
+  /// See: [AndroidProject.ensureReadyForPlatformSpecificTooling] in `project.dart`
   Future<void> ensureReadyForPlatformSpecificTooling() async {
-    if (!existsSync() || !isDotnet) {
-      return;
+    if (parent.isModule && !existsSync()) {
+      // TODO(swift-kim): Regenerate from template if the project type and
+      // language do not match. Beware that editableDirectory should not be
+      // overwritten.
+      await _overwriteFromTemplate(
+        globals.fs.path.join('module', _tizenLanguage ?? 'cpp'),
+        parent.directory,
+      );
     }
-    updateDotnetUserProjectFile(projectFile);
+    if (existsSync() && isDotnet) {
+      updateDotnetUserProjectFile(projectFile!);
+    }
+  }
+
+  /// Source: [AndroidProject._overwriteFromTemplate] in `project.dart`
+  Future<void> _overwriteFromTemplate(String path, Directory target) async {
+    final Template template = await Template.fromName(
+      // Relative to "flutter_tools/templates/".
+      globals.fs.path.join('..', '..', '..', '..', 'templates', path),
+      fileSystem: globals.fs,
+      templateManifest: null,
+      logger: globals.logger,
+      templateRenderer: globals.templateRenderer,
+    );
+    final String androidIdentifier = parent.manifest.androidPackage ??
+        'com.example.${parent.manifest.appName}';
+    template.render(
+      target,
+      <String, Object>{
+        'projectName': parent.manifest.appName,
+        'tizenIdentifier': androidIdentifier,
+      },
+      printStatusWhenWriting: false,
+    );
   }
 
   void clean() {
     if (!existsSync()) {
       return;
     }
+    _deleteFile(_ephemeralModuleDirectory);
     _deleteFile(managedDirectory);
 
     if (isDotnet) {
-      _deleteFile(editableDirectory.childDirectory('bin'));
-      _deleteFile(editableDirectory.childDirectory('obj'));
+      _deleteFile(hostAppRoot.childDirectory('bin'));
+      _deleteFile(hostAppRoot.childDirectory('obj'));
     } else {
+      _deleteFile(hostAppRoot.childDirectory('Debug'));
+      _deleteFile(hostAppRoot.childDirectory('Release'));
       if (isMultiApp) {
-        _deleteFile(uiAppDirectory.childDirectory('Debug'));
-        _deleteFile(uiAppDirectory.childDirectory('Release'));
         _deleteFile(serviceAppDirectory.childDirectory('Debug'));
         _deleteFile(serviceAppDirectory.childDirectory('Release'));
-      } else {
-        _deleteFile(editableDirectory.childDirectory('Debug'));
-        _deleteFile(editableDirectory.childDirectory('Release'));
       }
     }
   }

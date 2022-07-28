@@ -80,6 +80,9 @@ The following commands from the [Flutter CLI](https://flutter.dev/docs/reference
 
   # Create a new C# plugin project in "plugin_name" directory.
   flutter-tizen create --platforms tizen --template plugin --tizen-language csharp plugin_name
+
+  # Create a new C++ module project in "module_name" directory.
+  flutter-tizen create --template module --tizen-language cpp module_name
   ```
 
 - ### `devices`
