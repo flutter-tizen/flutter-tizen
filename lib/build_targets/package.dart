@@ -8,7 +8,6 @@ import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/base/process.dart';
 import 'package:flutter_tools/src/build_info.dart';
 import 'package:flutter_tools/src/build_system/build_system.dart';
-import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/project.dart';
 import 'package:meta/meta.dart';
@@ -18,6 +17,7 @@ import '../tizen_project.dart';
 import '../tizen_sdk.dart';
 import '../tizen_tpk.dart';
 import 'application.dart';
+import 'embedding.dart';
 import 'utils.dart';
 
 /// This target doesn't specify any input or output but the build system always
@@ -61,7 +61,7 @@ class DotnetTpk extends TizenPackage {
       logger: globals.logger, processManager: globals.processManager);
 
   @override
-  String get name => 'dotnet_tpk';
+  String get name => 'tizen_dotnet_tpk';
 
   @override
   Future<void> build(Environment environment) async {
@@ -191,7 +191,13 @@ class NativeTpk extends TizenPackage {
   NativeTpk(super.tizenBuildInfo);
 
   @override
-  String get name => 'native_tpk';
+  String get name => 'tizen_native_tpk';
+
+  @override
+  List<Target> get dependencies => <Target>[
+        ...super.dependencies,
+        NativeEmbedding(buildInfo),
+      ];
 
   @override
   Future<void> build(Environment environment) async {
@@ -262,11 +268,6 @@ class NativeTpk extends TizenPackage {
     final Directory clientWrapperDir =
         commonDir.childDirectory('cpp_client_wrapper');
     final Directory publicDir = commonDir.childDirectory('public');
-    final Directory embeddingDir = environment.fileSystem
-        .directory(Cache.flutterRoot)
-        .parent
-        .childDirectory('embedding')
-        .childDirectory('cpp');
 
     assert(tizenSdk != null);
     final TizenManifest tizenManifest =
@@ -277,21 +278,9 @@ class NativeTpk extends TizenPackage {
       arch: buildInfo.targetArch,
     );
 
-    // We need to build the C++ embedding separately because the absolute path
-    // to the embedding directory may contain spaces.
-    RunResult result = await tizenSdk!.buildNative(
-      embeddingDir.path,
-      configuration: buildConfig,
-      arch: getTizenCliArch(buildInfo.targetArch),
-      extraOptions: <String>['-fPIC'],
-      rootstrap: rootstrap.id,
-    );
-    final File embeddingLib = embeddingDir
-        .childDirectory(buildConfig)
-        .childFile('libembedding_cpp.a');
-    if (result.exitCode != 0) {
-      throwToolExit('Failed to build ${embeddingLib.basename}:\n$result');
-    }
+    final Directory embeddingDir =
+        environment.buildDir.childDirectory('tizen_embedding');
+    final File embeddingLib = embeddingDir.childFile('libembedding_cpp.a');
     const List<String> embeddingDependencies = <String>[
       'appcore-agent',
       'capi-appfw-app-common',
@@ -347,7 +336,7 @@ class NativeTpk extends TizenPackage {
     ];
 
     // Build the app.
-    result = await tizenSdk!.buildApp(
+    final RunResult result = await tizenSdk!.buildApp(
       tizenProject.editableDirectory.path,
       build: <String, Object>{
         'name': 'b1',

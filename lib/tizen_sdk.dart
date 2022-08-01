@@ -238,7 +238,7 @@ class TizenSdk {
 
   Rootstrap getFlutterRootstrap({
     required String profile,
-    required String apiVersion,
+    String? apiVersion,
     required String arch,
   }) {
     if (profile == 'common') {
@@ -249,6 +249,7 @@ class TizenSdk {
       // Note: The tv-samsung rootstrap is not publicly available.
       profile = 'tv-samsung';
     }
+    apiVersion ??= '4.0';
 
     double versionToDouble(String versionString) {
       final double? version = double.tryParse(versionString);

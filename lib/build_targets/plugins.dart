@@ -113,7 +113,7 @@ class NativePlugins extends Target {
     final TizenManifest tizenManifest =
         TizenManifest.parseFromXml(tizenProject.manifestFile);
     final String profile = buildInfo.deviceProfile;
-    final String apiVersion = tizenManifest.apiVersion;
+    final String? apiVersion = tizenManifest.apiVersion;
     final Rootstrap rootstrap = tizenSdk!.getFlutterRootstrap(
       profile: profile,
       apiVersion: apiVersion,
@@ -275,15 +275,14 @@ USER_LIBS = pthread ${userLibs.join(' ')}
       throwToolExit('Failed to build native plugins:\n$result');
     }
 
-    File outputLib = buildDir.childFile('libflutter_plugins.so');
+    final File outputLib = buildDir.childFile('libflutter_plugins.so');
     if (!outputLib.existsSync()) {
       throwToolExit(
         'Build succeeded but the file ${outputLib.path} is not found:\n'
         '${result.stdout}',
       );
     }
-    outputLib = outputLib.copySync(rootDir.childFile(outputLib.basename).path);
-    outputs.add(outputLib);
+    outputs.add(outputLib.copySync(rootDir.childFile(outputLib.basename).path));
 
     // Remove intermediate files.
     for (final File lib in libDir

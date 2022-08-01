@@ -132,7 +132,7 @@ class TizenManifest {
   String get version => _manifest.getAttribute('version')!;
 
   /// The target API version number.
-  String get apiVersion => _manifest.getAttribute('api-version') ?? '4.0';
+  String? get apiVersion => _manifest.getAttribute('api-version');
 
   late final XmlElement _profile = () {
     if (_manifest.findElements('profile').isEmpty) {
