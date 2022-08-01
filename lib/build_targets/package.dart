@@ -279,30 +279,9 @@ class NativeTpk extends TizenPackage {
       arch: buildInfo.targetArch,
     );
 
-<<<<<<< HEAD
     final Directory embeddingDir =
         environment.buildDir.childDirectory('tizen_embedding');
     final File embeddingLib = embeddingDir.childFile('libembedding_cpp.a');
-=======
-    // We need to build the C++ embedding separately because the absolute path
-    // to the embedding directory may contain spaces.
-    RunResult result = await tizenSdk!.buildNative(
-      embeddingDir.path,
-      configuration: buildConfig,
-      arch: getTizenCliArch(buildInfo.targetArch),
-      predefines: <String>[
-        '${buildInfo.deviceProfile.toUpperCase()}_PROFILE',
-      ],
-      extraOptions: <String>['-fPIC'],
-      rootstrap: rootstrap.id,
-    );
-    final File embeddingLib = embeddingDir
-        .childDirectory(buildConfig)
-        .childFile('libembedding_cpp.a');
-    if (result.exitCode != 0) {
-      throwToolExit('Failed to build ${embeddingLib.basename}:\n$result');
-    }
->>>>>>> Add profile check for renderer in cpp
     const List<String> embeddingDependencies = <String>[
       'appcore-agent',
       'capi-appfw-app-common',
