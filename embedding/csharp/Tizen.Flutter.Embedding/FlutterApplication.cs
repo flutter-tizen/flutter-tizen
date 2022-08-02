@@ -11,10 +11,35 @@ using static Tizen.Flutter.Embedding.Interop;
 namespace Tizen.Flutter.Embedding
 {
     /// <summary>
+    /// Enumeration for the renderer type of the engine.
+    /// </summary>
+    public enum FlutterRendererType
+    {
+        /// <summary>
+        /// The renderer based on EvasGL.
+        /// </summary>
+        EvasGL = 0,
+        /// <summary>
+        /// The renderer based on EGL.
+        /// </summary>
+        EGL,
+    }
+
+    /// <summary>
     /// The app base class for headed Flutter execution.
     /// </summary>
     public class FlutterApplication : CoreUIApplication, IPluginRegistry
     {
+        /// <summary>
+        /// Initialize FlutterApplication.
+        /// </summary>
+        public FlutterApplication()
+        {
+#if WEARABLE_PROFILE
+            RendererType = FlutterRendererType.EvasGL;
+#endif
+        }
+
         /// <summary>
         /// The x-coordinate of the top left corner of the window.
         /// </summary>
@@ -50,6 +75,11 @@ namespace Tizen.Flutter.Embedding
         /// If true, the "http://tizen.org/privilege/window.priority.set" privilege must be added to tizen-manifest.xml file.
         /// </summary>
         protected bool IsTopLevel { get; set; } = false;
+
+        /// <summary>
+        /// The renderer type of the engine. Defaults to EGL. If the profile is wearable, defaults to EvasGL.
+        /// </summary>
+        protected FlutterRendererType RendererType { get; set; } = FlutterRendererType.EGL;
 
         /// <summary>
         /// The optional entrypoint in the Dart project. Defaults to main() if the value is empty.
@@ -93,6 +123,12 @@ namespace Tizen.Flutter.Embedding
                 throw new Exception("Could not create a Flutter engine.");
             }
 
+#if WEARABLE_PROFILE
+            if (RendererType ==  FlutterRendererType.EGL)
+            {
+                throw new Exception("FlutterRendererType.kEGL is not supported by this profile.");
+            }
+#endif
             var windowProperties = new FlutterDesktopWindowProperties
             {
                 x = WindowOffsetX,
@@ -102,6 +138,7 @@ namespace Tizen.Flutter.Embedding
                 transparent = IsWindowTransparent,
                 focusable = IsWindowFocusable,
                 top_level = IsTopLevel,
+                renderer_type = (FlutterDesktopRendererType)RendererType,
             };
 
             View = FlutterDesktopViewCreateFromNewWindow(ref windowProperties, Engine.Engine);

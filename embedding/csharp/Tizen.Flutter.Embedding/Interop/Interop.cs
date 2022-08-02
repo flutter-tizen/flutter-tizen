@@ -11,6 +11,12 @@ namespace Tizen.Flutter.Embedding
     public static class Interop
     {
         #region flutter_tizen.h
+        public enum FlutterDesktopRendererType
+        {
+            kEvasGL,
+            kEGL,
+        };
+
         [StructLayout(LayoutKind.Sequential)]
         public struct FlutterDesktopWindowProperties
         {
@@ -24,6 +30,7 @@ namespace Tizen.Flutter.Embedding
             public bool focusable;
             [MarshalAs(UnmanagedType.U1)]
             public bool top_level;
+            public FlutterDesktopRendererType renderer_type;
         }
 
         [StructLayout(LayoutKind.Sequential)]

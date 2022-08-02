@@ -91,6 +91,7 @@ void main() {
           'Release',
           '-o',
           '${outputDir.path}/tpk/',
+          '/p:DefineConstants=COMMON_PROFILE',
           '${projectDir.path}/tizen',
         ],
         onRun: () {
@@ -160,6 +161,7 @@ void main() {
           'Debug',
           '-o',
           '${outputDir.path}/tpk/',
+          '/p:DefineConstants=COMMON_PROFILE',
           '${projectDir.path}/tizen',
         ],
         onRun: () {

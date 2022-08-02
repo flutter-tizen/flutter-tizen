@@ -16,6 +16,13 @@ bool FlutterApp::OnCreate() {
     TizenLog::Error("Could not create a Flutter engine.");
     return false;
   }
+#ifdef WEARABLE_PROFILE
+  if (renderer_type_ == FlutterRendererType::kEGL) {
+    TizenLog::Error(
+        "FlutterRendererType::kEGL is not supported by this profile.");
+    return false;
+  }
+#endif
 
   FlutterDesktopWindowProperties window_prop = {};
   window_prop.x = window_offset_x_;
@@ -25,6 +32,8 @@ bool FlutterApp::OnCreate() {
   window_prop.transparent = is_window_transparent_;
   window_prop.focusable = is_window_focusable_;
   window_prop.top_level = is_top_level_;
+  window_prop.renderer_type =
+      static_cast<FlutterDesktopRendererType>(renderer_type_);
 
   view_ = FlutterDesktopViewCreateFromNewWindow(window_prop,
                                                 engine_->RelinquishEngine());

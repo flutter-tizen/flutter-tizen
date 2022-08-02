@@ -15,10 +15,21 @@
 
 #include "flutter_engine.h"
 
+enum class FlutterRendererType {
+  // The renderer based on EvasGL.
+  kEvasGL,
+  // The renderer based on EGL.
+  kEGL,
+};
+
 // The app base class for headed Flutter execution.
 class FlutterApp : public flutter::PluginRegistry {
  public:
-  explicit FlutterApp() {}
+  explicit FlutterApp() {
+#ifdef WEARABLE_PROFILE
+    renderer_type_ = FlutterRendererType::kEvasGL;
+#endif
+  }
   virtual ~FlutterApp() {}
 
   virtual bool OnCreate();
@@ -80,6 +91,11 @@ class FlutterApp : public flutter::PluginRegistry {
   // If true, the "http://tizen.org/privilege/window.priority.set" privilege
   // must be added to tizen-manifest.xml file.
   bool is_top_level_ = false;
+
+  // The renderer type of the engine.
+  //
+  // Defaults to kEGL. If the profile is wearable, defaults to kEvasGL.
+  FlutterRendererType renderer_type_ = FlutterRendererType::kEGL;
 
  private:
   // The optional entrypoint in the Dart project.
