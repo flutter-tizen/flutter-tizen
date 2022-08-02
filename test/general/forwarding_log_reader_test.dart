@@ -9,6 +9,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:fake_async/fake_async.dart';
 import 'package:flutter_tizen/forwarding_log_reader.dart';
 import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/device.dart';
@@ -17,9 +18,6 @@ import 'package:test/fake.dart';
 
 import '../src/common.dart';
 import '../src/context.dart';
-
-const String _kConnectionErrorMessage =
-    'Failed to connect to the device logger.';
 
 void main() {
   BufferLogger logger;
@@ -37,10 +35,10 @@ void main() {
       socketFactory: (String host, int port) async =>
           _FakeWorkingSocket('Message'),
     );
-    await logReader.start(retry: 0);
+    await logReader.start();
 
     expect(logReader.hostPort, isNotNull);
-    expect(await logReader.logLines.first, 'Message');
+    expect(await logReader.logLines.first, equals('Message'));
   });
 
   testUsingContext('The device logger is unresponsive', () async {
@@ -49,9 +47,25 @@ void main() {
       device,
       socketFactory: (String host, int port) async => _FakeNoResponseSocket(),
     );
-    await logReader.start(retry: 0);
+    FakeAsync().run((FakeAsync time) {
+      unawaited(logReader.start());
 
-    expect(logger.errorText, contains(_kConnectionErrorMessage));
+      time.elapse(const Duration(seconds: 5));
+      expect(logger.errorText, isEmpty);
+
+      time.elapse(const Duration(seconds: 20));
+      expect(
+        logger.errorText,
+        contains(
+            'Connecting to the device logger is taking longer than expected'),
+      );
+
+      time.elapse(const Duration(seconds: 20));
+      expect(
+        logger.errorText,
+        contains('Still attempting to connect to the device logger'),
+      );
+    });
   }, overrides: <Type, Generator>{
     Logger: () => logger,
   });
@@ -62,10 +76,10 @@ void main() {
       device,
       socketFactory: (String host, int port) => throw Exception('Socket error'),
     );
-    await logReader.start(retry: 0);
-
-    expect(logger.errorText, contains('Connection failed:'));
-    expect(logger.errorText, contains(_kConnectionErrorMessage));
+    await expectLater(
+      () => logReader.start(),
+      throwsToolExit(message: 'Connection failed:'),
+    );
   }, overrides: <Type, Generator>{
     Logger: () => logger,
   });
