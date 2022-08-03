@@ -17,6 +17,7 @@ import '../tizen_plugins.dart';
 import '../tizen_project.dart';
 import '../tizen_sdk.dart';
 import '../tizen_tpk.dart';
+import 'embedding.dart';
 import 'utils.dart';
 
 /// Compiles Tizen native plugins into a shared object.
@@ -44,7 +45,9 @@ class NativePlugins extends Target {
       ];
 
   @override
-  List<Target> get dependencies => const <Target>[];
+  List<Target> get dependencies => <Target>[
+        NativeEmbedding(buildInfo),
+      ];
 
   @override
   Future<void> build(Environment environment) async {
@@ -83,22 +86,17 @@ class NativePlugins extends Target {
 
     final BuildMode buildMode = buildInfo.buildInfo.mode;
     final String buildConfig = getBuildConfig(buildMode);
-
     final Directory engineDir =
         getEngineArtifactsDirectory(buildInfo.targetArch, buildMode);
+    final Directory commonDir = engineDir.parent.childDirectory('tizen-common');
+
     final File embedder =
         engineDir.childFile('libflutter_tizen_${buildInfo.deviceProfile}.so');
     inputs.add(embedder);
 
-    final Directory commonDir = engineDir.parent.childDirectory('tizen-common');
     final Directory clientWrapperDir =
         commonDir.childDirectory('cpp_client_wrapper');
     final Directory publicDir = commonDir.childDirectory('public');
-    clientWrapperDir
-        .listSync(recursive: true)
-        .whereType<File>()
-        .forEach(inputs.add);
-    publicDir.listSync(recursive: true).whereType<File>().forEach(inputs.add);
 
     assert(tizenSdk != null);
     final TizenManifest tizenManifest =
@@ -111,6 +109,10 @@ class NativePlugins extends Target {
       arch: buildInfo.targetArch,
     );
     inputs.add(tizenProject.manifestFile);
+
+    final Directory embeddingDir =
+        environment.buildDir.childDirectory('tizen_embedding');
+    final File embeddingLib = embeddingDir.childFile('libembedding_cpp.a');
 
     final List<String> userLibs = <String>[];
     final List<String> pluginClasses = <String>[];
@@ -136,6 +138,7 @@ class NativePlugins extends Target {
           if (!plugin.isStaticLib) ...<String>[
             '-l${getLibNameForFileName(embedder.basename)}',
             '-L${engineDir.path.toPosixPath()}',
+            embeddingLib.path.toPosixPath(),
           ],
         ],
         rootstrap: rootstrap.id,
