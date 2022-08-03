@@ -253,10 +253,16 @@ class NativeTpk extends TizenPackage {
       copyDirectory(pluginsResDir, resDir);
     }
     final Directory pluginsLibDir = pluginsDir.childDirectory('lib');
+    final List<String> pluginLibs = <String>[];
     if (pluginsLibDir.existsSync()) {
-      copyDirectory(pluginsLibDir, libDir);
+      copyDirectory(
+        pluginsLibDir,
+        libDir,
+        onFileCopied: (File srcFile, File destFile) {
+          pluginLibs.add(getLibNameForFileName(srcFile.basename));
+        },
+      );
     }
-    final File pluginsLib = pluginsLibDir.childFile('libflutter_plugins.so');
 
     // Prepare for build.
     final Directory clientWrapperDir =
@@ -326,7 +332,7 @@ class NativeTpk extends TizenPackage {
       for (String lib in embeddingDependencies) '-l$lib',
       '-I${tizenProject.managedDirectory.path.toPosixPath()}',
       '-I${pluginsDir.childDirectory('include').path.toPosixPath()}',
-      if (pluginsLib.existsSync()) '-lflutter_plugins',
+      for (String lib in pluginLibs) '-l$lib',
     ];
 
     // Build the app.
