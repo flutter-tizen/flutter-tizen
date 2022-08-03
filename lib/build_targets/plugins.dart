@@ -132,10 +132,10 @@ class NativePlugins extends Target {
           '${buildInfo.deviceProfile.toUpperCase()}_PROFILE',
         ],
         extraOptions: <String>[
-          '-fPIC',
+          if (!plugin.isSharedLib) '-fPIC',
           '-I${clientWrapperDir.childDirectory('include').path.toPosixPath()}',
           '-I${publicDir.path.toPosixPath()}',
-          if (!plugin.isStaticLib) ...<String>[
+          if (plugin.isSharedLib) ...<String>[
             '-l${getLibNameForFileName(embedder.basename)}',
             '-L${engineDir.path.toPosixPath()}',
             embeddingLib.path.toPosixPath(),
@@ -148,10 +148,9 @@ class NativePlugins extends Target {
       }
 
       assert(plugin.libName != null);
-      assert(plugin.pluginClass != null);
-      final File libFile = plugin.isStaticLib
-          ? buildDir.childFile('lib${plugin.libName!}.a')
-          : buildDir.childFile('lib${plugin.libName!}.so');
+      final File libFile = plugin.isSharedLib
+          ? buildDir.childFile('lib${plugin.libName!}.so')
+          : buildDir.childFile('lib${plugin.libName!}.a');
       if (!libFile.existsSync()) {
         throwToolExit(
           'Build succeeded but the file ${libFile.path} is not found:\n'
@@ -160,7 +159,8 @@ class NativePlugins extends Target {
       }
       libFile.copySync(libDir.childFile(libFile.basename).path);
       userLibs.add(plugin.libName!);
-      if (plugin.isStaticLib) {
+
+      if (!plugin.isSharedLib) {
         pluginClasses.add(plugin.pluginClass!);
       }
 
@@ -192,8 +192,8 @@ class NativePlugins extends Target {
         );
       }
 
-      // Copy user libs for later linking.
-      // TODO(swift-kim): Remove user libs support for staticLibs completely.
+      // Copy user libraries.
+      // TODO(swift-kim): Remove user libs support for staticLib projects.
       final Directory pluginLibDir = plugin.directory.childDirectory('lib');
       final List<Directory> pluginLibDirs = <Directory>[
         pluginLibDir.childDirectory(buildInfo.targetArch),
@@ -201,9 +201,9 @@ class NativePlugins extends Target {
         pluginLibDir,
       ];
       for (final Directory directory
-          in pluginLibDirs.where((Directory d) => d.existsSync())) {
+          in pluginLibDirs.where((Directory dir) => dir.existsSync())) {
         for (final File lib in directory.listSync().whereType<File>()) {
-          // TODO: allow all files (recursive, including *.so.*)
+          // TODO(swift-kim): Allow symbolic links on non-Windows.
           final bool isSharedLib = lib.basename.endsWith('.so');
           final bool isStaticLib = lib.basename.endsWith('.a');
           if (isSharedLib || isStaticLib) {
@@ -211,11 +211,10 @@ class NativePlugins extends Target {
             if (userLibs.contains(libName)) {
               continue;
             }
-            lib.copySync(libDir.childFile(lib.basename).path);
-
-            if (plugin.isStaticLib) {
+            if (!plugin.isSharedLib) {
               userLibs.add(libName);
             }
+            lib.copySync(libDir.childFile(lib.basename).path);
 
             inputs.add(lib);
             if (isSharedLib) {
@@ -239,9 +238,6 @@ APPNAME = flutter_plugins
 type = sharedLib
 profile = $profile-$apiVersion
 
-USER_INC_DIRS = ${clientWrapperDir.path.escapeSpaces()}/include
-USER_SRCS = ${clientWrapperDir.path.escapeSpaces()}/*.cc
-
 USER_LFLAGS = -Wl,-rpath='\$\$ORIGIN'
 USER_LIBS = pthread ${userLibs.join(' ')}
 ''');
@@ -255,9 +251,11 @@ USER_LIBS = pthread ${userLibs.join(' ')}
         configuration: buildConfig,
         arch: getTizenCliArch(buildInfo.targetArch),
         extraOptions: <String>[
+          '-I${clientWrapperDir.childDirectory('include').path.toPosixPath()}',
+          '-I${publicDir.path.toPosixPath()}',
           '-l${getLibNameForFileName(embedder.basename)}',
           '-L${engineDir.path.toPosixPath()}',
-          '-I${publicDir.path.toPosixPath()}',
+          embeddingLib.path.toPosixPath(),
           '-L${libDir.path.toPosixPath()}',
           // Forces plugin entrypoints to be exported, because unreferenced
           // objects are not included in the output shared object by default.

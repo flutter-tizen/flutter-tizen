@@ -23,10 +23,6 @@ extension PathUtils on String {
     }
     return encloseWith + path + encloseWith;
   }
-
-  String escapeSpaces() {
-    return replaceAll(' ', r'\ ');
-  }
 }
 
 String getBuildConfig(BuildMode buildMode) {

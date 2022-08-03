@@ -103,7 +103,7 @@ class TizenPlugin extends PluginPlatform implements NativeOrDartPlugin {
       if (dartPluginClass != null) kDartPluginClass: dartPluginClass,
       if (fileName != null) kFileName: fileName,
       if (fileName != null) kFilePath: directory.childFile(fileName!).path,
-      if (libName != null) kLibName: isStaticLib ? 'flutter_plugins' : libName,
+      if (libName != null) kLibName: isSharedLib ? libName : 'flutter_plugins',
     };
   }
 
@@ -113,7 +113,7 @@ class TizenPlugin extends PluginPlatform implements NativeOrDartPlugin {
     return parseIniFile(projectFile);
   }();
 
-  bool get isStaticLib => _projectProperties['type'] == 'staticLib';
+  bool get isSharedLib => _projectProperties['type'] == 'sharedLib';
 
   String? get libName => _projectProperties['APPNAME']?.toLowerCase();
 }
