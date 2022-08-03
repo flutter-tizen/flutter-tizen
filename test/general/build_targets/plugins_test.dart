@@ -123,8 +123,8 @@ dependencies:
 
     final Directory outputDir =
         environment.buildDir.childDirectory('tizen_plugins');
-    expect(outputDir.childFile('libflutter_plugins.so'), exists);
     expect(outputDir.childFile('include/some_native_plugin.h'), exists);
+    expect(outputDir.childFile('lib/libflutter_plugins.so'), exists);
   }, overrides: <Type, Generator>{
     FileSystem: () => fileSystem,
     ProcessManager: () => processManager,
@@ -154,7 +154,7 @@ dependencies:
 
     final Directory outputDir =
         environment.buildDir.childDirectory('tizen_plugins');
-    expect(outputDir.childFile('libflutter_plugins.so'), isNot(exists));
+    expect(outputDir.childFile('lib/libflutter_plugins.so'), isNot(exists));
     expect(outputDir.childFile('lib/libsome_native_plugin.so'), exists);
     expect(outputDir.childFile('lib/libshared.so'), exists);
   }, overrides: <Type, Generator>{

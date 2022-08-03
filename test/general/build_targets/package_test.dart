@@ -77,7 +77,7 @@ void main() {
           .createSync(recursive: true);
       environment.buildDir.childFile('app.so').createSync(recursive: true);
       environment.buildDir
-          .childFile('tizen_plugins/libflutter_plugins.so')
+          .childFile('tizen_plugins/lib/libflutter_plugins.so')
           .createSync(recursive: true);
       environment.buildDir
           .childFile('tizen_plugins/lib/libshared.so')
@@ -215,7 +215,7 @@ type = app
           .createSync(recursive: true);
       environment.buildDir.childFile('app.so').createSync(recursive: true);
       environment.buildDir
-          .childFile('tizen_plugins/libflutter_plugins.so')
+          .childFile('tizen_plugins/lib/libflutter_plugins.so')
           .createSync(recursive: true);
       environment.buildDir
           .childFile('tizen_plugins/lib/libshared.so')

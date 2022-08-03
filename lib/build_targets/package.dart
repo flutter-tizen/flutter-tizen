@@ -115,18 +115,13 @@ class DotnetTpk extends TizenPackage {
 
     final Directory pluginsDir =
         environment.buildDir.childDirectory('tizen_plugins');
-    final File pluginsLib = pluginsDir.childFile('libflutter_plugins.so');
-    if (pluginsLib.existsSync()) {
-      pluginsLib.copySync(libDir.childFile(pluginsLib.basename).path);
-    }
     final Directory pluginsResDir = pluginsDir.childDirectory('res');
     if (pluginsResDir.existsSync()) {
       copyDirectory(pluginsResDir, resDir);
     }
-    final Directory pluginsUserLibDir = pluginsDir.childDirectory('lib');
-    if (pluginsUserLibDir.existsSync()) {
-      pluginsUserLibDir.listSync().whereType<File>().forEach(
-          (File lib) => lib.copySync(libDir.childFile(lib.basename).path));
+    final Directory pluginsLibDir = pluginsDir.childDirectory('lib');
+    if (pluginsLibDir.existsSync()) {
+      copyDirectory(pluginsLibDir, libDir);
     }
 
     // Run the .NET build.
@@ -253,15 +248,15 @@ class NativeTpk extends TizenPackage {
 
     final Directory pluginsDir =
         environment.buildDir.childDirectory('tizen_plugins');
-    final File pluginsLib = pluginsDir.childFile('libflutter_plugins.so');
-    if (pluginsLib.existsSync()) {
-      pluginsLib.copySync(libDir.childFile(pluginsLib.basename).path);
+    final Directory pluginsResDir = pluginsDir.childDirectory('res');
+    if (pluginsResDir.existsSync()) {
+      copyDirectory(pluginsResDir, resDir);
     }
-    final Directory pluginsUserLibDir = pluginsDir.childDirectory('lib');
-    if (pluginsUserLibDir.existsSync()) {
-      pluginsUserLibDir.listSync().whereType<File>().forEach(
-          (File lib) => lib.copySync(libDir.childFile(lib.basename).path));
+    final Directory pluginsLibDir = pluginsDir.childDirectory('lib');
+    if (pluginsLibDir.existsSync()) {
+      copyDirectory(pluginsLibDir, libDir);
     }
+    final File pluginsLib = pluginsLibDir.childFile('libflutter_plugins.so');
 
     // Prepare for build.
     final Directory clientWrapperDir =

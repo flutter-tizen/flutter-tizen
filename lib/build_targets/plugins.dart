@@ -73,15 +73,14 @@ class NativePlugins extends Target {
       return;
     }
 
-    // Create a dummy project in the build directory.
-    final Directory rootDir = environment.buildDir
+    final Directory outputDir = environment.buildDir
         .childDirectory('tizen_plugins')
       ..createSync(recursive: true);
-    final Directory includeDir = rootDir.childDirectory('include')
+    final Directory includeDir = outputDir.childDirectory('include')
       ..createSync(recursive: true);
-    final Directory resDir = rootDir.childDirectory('res')
+    final Directory resDir = outputDir.childDirectory('res')
       ..createSync(recursive: true);
-    final Directory libDir = rootDir.childDirectory('lib')
+    final Directory libDir = outputDir.childDirectory('lib')
       ..createSync(recursive: true);
 
     final BuildMode buildMode = buildInfo.buildInfo.mode;
@@ -203,7 +202,8 @@ class NativePlugins extends Target {
       for (final Directory directory
           in pluginLibDirs.where((Directory dir) => dir.existsSync())) {
         for (final File lib in directory.listSync().whereType<File>()) {
-          // TODO(swift-kim): Allow symbolic links on non-Windows.
+          // Symbolic links are not supported because they are not portable.
+          // Issue: https://github.com/flutter-tizen/flutter-tizen/pull/322
           final bool isSharedLib = lib.basename.endsWith('.so');
           final bool isStaticLib = lib.basename.endsWith('.a');
           if (isSharedLib || isStaticLib) {
@@ -230,9 +230,9 @@ class NativePlugins extends Target {
       outputs.add(includeDir.childFile(header.basename));
     }
 
-    // Build libflutter_plugins.so if necessary.
+    // Create a dummy project and build libflutter_plugins.so if necessary.
     if (pluginClasses.isNotEmpty) {
-      final File projectDef = rootDir.childFile('project_def.prop');
+      final File projectDef = outputDir.childFile('project_def.prop');
       projectDef.writeAsStringSync('''
 APPNAME = flutter_plugins
 type = sharedLib
@@ -242,12 +242,12 @@ USER_LFLAGS = -Wl,-rpath='\$\$ORIGIN'
 USER_LIBS = pthread ${userLibs.join(' ')}
 ''');
 
-      final Directory buildDir = rootDir.childDirectory(buildConfig);
+      final Directory buildDir = outputDir.childDirectory(buildConfig);
       if (buildDir.existsSync()) {
         buildDir.deleteSync(recursive: true);
       }
       final RunResult result = await tizenSdk!.buildNative(
-        rootDir.path,
+        outputDir.path,
         configuration: buildConfig,
         arch: getTizenCliArch(buildInfo.targetArch),
         extraOptions: <String>[
@@ -277,7 +277,7 @@ USER_LIBS = pthread ${userLibs.join(' ')}
         );
       }
       outputs
-          .add(outputLib.copySync(rootDir.childFile(outputLib.basename).path));
+          .add(outputLib.copySync(libDir.childFile(outputLib.basename).path));
     }
 
     // Remove intermediate files.
