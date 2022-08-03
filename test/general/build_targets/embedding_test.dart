@@ -24,6 +24,7 @@ import '../../src/fake_tizen_sdk.dart';
 void main() {
   FileSystem fileSystem;
   FakeProcessManager processManager;
+  Cache cache;
 
   setUpAll(() {
     Cache.flutterRoot = 'flutter';
@@ -32,6 +33,10 @@ void main() {
   setUp(() {
     fileSystem = MemoryFileSystem.test();
     processManager = FakeProcessManager.empty();
+    cache = Cache.test(
+      fileSystem: fileSystem,
+      processManager: FakeProcessManager.any(),
+    );
 
     final Directory embeddingDir = fileSystem.directory('embedding/cpp');
     embeddingDir.childFile('project_def.prop')
@@ -41,6 +46,8 @@ APPNAME = embedding_cpp
 type = staticLib
 ''');
     embeddingDir.childFile('include/flutter.h').createSync(recursive: true);
+
+    _installFakeEngineArtifacts(cache.getArtifactDirectory('engine'));
   });
 
   testUsingContext('Build succeeds', () async {
@@ -65,6 +72,16 @@ type = staticLib
   }, overrides: <Type, Generator>{
     FileSystem: () => fileSystem,
     ProcessManager: () => processManager,
+    Cache: () => cache,
     TizenSdk: () => FakeTizenSdk(fileSystem),
   });
+}
+
+void _installFakeEngineArtifacts(Directory engineArtifactDir) {
+  for (final String directory in <String>[
+    'tizen-common/cpp_client_wrapper/include',
+    'tizen-common/public',
+  ]) {
+    engineArtifactDir.childDirectory(directory).createSync(recursive: true);
+  }
 }

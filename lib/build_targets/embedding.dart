@@ -29,6 +29,7 @@ class NativeEmbedding extends Target {
   @override
   List<Source> get inputs => const <Source>[
         Source.pattern('{FLUTTER_ROOT}/../lib/build_targets/embedding.dart'),
+        Source.pattern('{FLUTTER_ROOT}/../lib/tizen_sdk.dart'),
       ];
 
   @override
