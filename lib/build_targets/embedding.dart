@@ -74,6 +74,18 @@ class NativeEmbedding extends Target {
 
     final BuildMode buildMode = buildInfo.buildInfo.mode;
     final String buildConfig = getBuildConfig(buildMode);
+    final Directory engineDir =
+        getEngineArtifactsDirectory(buildInfo.targetArch, buildMode);
+    final Directory commonDir = engineDir.parent.childDirectory('tizen-common');
+
+    final Directory clientWrapperDir =
+        commonDir.childDirectory('cpp_client_wrapper');
+    final Directory publicDir = commonDir.childDirectory('public');
+    clientWrapperDir
+        .listSync(recursive: true)
+        .whereType<File>()
+        .forEach(inputs.add);
+    publicDir.listSync(recursive: true).whereType<File>().forEach(inputs.add);
 
     assert(tizenSdk != null);
     String? apiVersion;
