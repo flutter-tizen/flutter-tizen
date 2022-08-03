@@ -24,6 +24,7 @@ import 'package:package_config/package_config.dart';
 import 'package:yaml/yaml.dart';
 
 import 'tizen_project.dart';
+import 'tizen_sdk.dart';
 
 /// Constant for 'namespace' key in plugin maps.
 const String kNamespace = 'namespace';
@@ -33,6 +34,9 @@ const String kFileName = 'fileName';
 
 /// Constant for 'filePath' key in plugin maps.
 const String kFilePath = 'filePath';
+
+/// Constant for 'libName' key in plugin maps.
+const String kLibName = 'libName';
 
 /// Contains the parameters to template a Tizen plugin.
 ///
@@ -99,10 +103,19 @@ class TizenPlugin extends PluginPlatform implements NativeOrDartPlugin {
       if (dartPluginClass != null) kDartPluginClass: dartPluginClass,
       if (fileName != null) kFileName: fileName,
       if (fileName != null) kFilePath: directory.childFile(fileName!).path,
+      if (libName != null) kLibName: isStaticLib ? 'flutter_plugins' : libName,
     };
   }
 
   File get projectFile => directory.childFile('project_def.prop');
+
+  late final Map<String, String> _projectProperties = () {
+    return parseIniFile(projectFile);
+  }();
+
+  bool get isStaticLib => _projectProperties['type'] == 'staticLib';
+
+  String? get libName => _projectProperties['APPNAME']?.toLowerCase();
 }
 
 /// Any [FlutterCommand] that references [targetFile] should extend this mixin
@@ -461,7 +474,7 @@ namespace Runner
     internal class GeneratedPluginRegistrant
     {
       {{#cppPlugins}}
-        [DllImport("flutter_plugins.so")]
+        [DllImport("{{libName}}.so")]
         public static extern void {{pluginClass}}RegisterWithRegistrar(
             FlutterDesktopPluginRegistrar registrar);
 
