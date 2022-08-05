@@ -207,6 +207,9 @@ class TizenProject extends FlutterProjectPlatform {
 }
 
 File? findDotnetProjectFile(Directory directory) {
+  if (!directory.existsSync()) {
+    return null;
+  }
   for (final File file in directory.listSync().whereType<File>()) {
     if (file.path.endsWith('.csproj')) {
       return file;
