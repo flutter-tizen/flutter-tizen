@@ -12,6 +12,7 @@
 ElmFlutterView::~ElmFlutterView() {
   if (view_) {
     FlutterDesktopViewDestroy(view_);
+    view_ = nullptr;
   }
 }
 

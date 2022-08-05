@@ -57,7 +57,7 @@ class FlutterApp : public flutter::PluginRegistry {
   FlutterDesktopPluginRegistrarRef GetRegistrarForPlugin(
       const std::string &plugin_name) override;
 
-  bool IsRunning() { return engine_ != nullptr; }
+  bool IsRunning() { return view_ != nullptr; }
 
   void SetDartEntrypoint(const std::string &entrypoint) {
     dart_entrypoint_ = entrypoint;

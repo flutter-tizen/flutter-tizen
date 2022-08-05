@@ -34,6 +34,13 @@ namespace Tizen.Flutter.Embedding
         }
 
         [StructLayout(LayoutKind.Sequential)]
+        public struct FlutterDesktopViewProperties
+        {
+            public int width;
+            public int height;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
         public struct FlutterDesktopEngineProperties
         {
             public string assets_path;
@@ -94,8 +101,24 @@ namespace Tizen.Flutter.Embedding
             FlutterDesktopEngine engine);
 
         [DllImport("flutter_tizen.so")]
+        public static extern FlutterDesktopView FlutterDesktopViewCreateFromElmParent(
+            ref FlutterDesktopViewProperties view_properties,
+            FlutterDesktopEngine engine,
+            IntPtr parent);
+
+        [DllImport("flutter_tizen.so")]
         public static extern void FlutterDesktopViewDestroy(
             FlutterDesktopView view);
+
+        [DllImport("flutter_tizen.so")]
+        public static extern IntPtr FlutterDesktopViewGetEvasObject(
+            FlutterDesktopView view);
+
+        [DllImport("flutter_tizen.so")]
+        public static extern void FlutterDesktopViewResize(
+            FlutterDesktopView view,
+            int width,
+            int height);
         #endregion
 
         #region flutter_messenger.h
