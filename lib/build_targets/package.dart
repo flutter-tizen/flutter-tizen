@@ -79,17 +79,16 @@ class DotnetTpk extends TizenPackage {
     final Directory libDir = ephemeralDir.childDirectory('lib')
       ..createSync(recursive: true);
 
-    final Directory outputDir = environment.outputDir.childDirectory('tpk');
+    final Directory outputDir = environment.outputDir;
     if (outputDir.existsSync()) {
       outputDir.deleteSync(recursive: true);
     }
     outputDir.createSync(recursive: true);
 
     // Copy necessary files.
-    final Directory flutterAssetsDir = resDir.childDirectory('flutter_assets');
     copyDirectory(
       environment.buildDir.childDirectory('flutter_assets'),
-      flutterAssetsDir,
+      resDir.childDirectory('flutter_assets'),
     );
 
     final BuildMode buildMode = buildInfo.buildInfo.mode;
@@ -219,17 +218,16 @@ class NativeTpk extends TizenPackage {
     }
     libDir.createSync(recursive: true);
 
-    final Directory outputDir = environment.outputDir.childDirectory('tpk');
+    final Directory outputDir = environment.outputDir;
     if (outputDir.existsSync()) {
       outputDir.deleteSync(recursive: true);
     }
     outputDir.createSync(recursive: true);
 
     // Copy necessary files.
-    final Directory flutterAssetsDir = resDir.childDirectory('flutter_assets');
     copyDirectory(
       environment.buildDir.childDirectory('flutter_assets'),
-      flutterAssetsDir,
+      resDir.childDirectory('flutter_assets'),
     );
 
     final BuildMode buildMode = buildInfo.buildInfo.mode;
@@ -387,5 +385,98 @@ class NativeTpk extends TizenPackage {
     // Extract the contents of the TPK to support code size analysis.
     final Directory tpkrootDir = outputDir.childDirectory('tpkroot');
     globals.os.unzip(outputTpk, tpkrootDir);
+  }
+}
+
+class NativeModule extends TizenPackage {
+  NativeModule(super.tizenBuildInfo);
+
+  @override
+  String get name => 'tizen_native_module';
+
+  @override
+  List<Target> get dependencies => <Target>[
+        ...super.dependencies,
+        NativeEmbedding(buildInfo),
+      ];
+
+  @override
+  Future<void> build(Environment environment) async {
+    final FlutterProject project =
+        FlutterProject.fromDirectory(environment.projectDir);
+    final TizenProject tizenProject = TizenProject.fromFlutter(project);
+
+    final Directory outputDir = environment.outputDir;
+    if (outputDir.existsSync()) {
+      outputDir.deleteSync(recursive: true);
+    }
+    outputDir.createSync(recursive: true);
+    final Directory incDir = outputDir.childDirectory('inc')
+      ..createSync(recursive: true);
+    final Directory resDir = outputDir.childDirectory('res')
+      ..createSync(recursive: true);
+    final Directory libDir = outputDir.childDirectory('lib')
+      ..createSync(recursive: true);
+
+    // Copy necessary files.
+    copyDirectory(
+      environment.buildDir.childDirectory('flutter_assets'),
+      resDir.childDirectory('flutter_assets'),
+    );
+
+    final BuildMode buildMode = buildInfo.buildInfo.mode;
+    final Directory engineDir =
+        getEngineArtifactsDirectory(buildInfo.targetArch, buildMode);
+    final Directory commonDir = engineDir.parent.childDirectory('tizen-common');
+
+    final File engineBinary = engineDir.childFile('libflutter_engine.so');
+    final File embedder =
+        engineDir.childFile('libflutter_tizen_${buildInfo.deviceProfile}.so');
+    final File icuData =
+        commonDir.childDirectory('icu').childFile('icudtl.dat');
+
+    engineBinary.copySync(libDir.childFile(engineBinary.basename).path);
+    embedder.copySync(libDir.childFile(embedder.basename).path);
+    icuData.copySync(resDir.childFile(icuData.basename).path);
+
+    if (buildMode.isPrecompiled) {
+      final File aotSnapshot = environment.buildDir.childFile('app.so');
+      aotSnapshot.copySync(libDir.childFile('libapp.so').path);
+    }
+
+    final File generatedPluginRegistrant = tizenProject.managedDirectory
+        .childFile('generated_plugin_registrant.h');
+    assert(generatedPluginRegistrant.existsSync());
+    generatedPluginRegistrant
+        .copySync(incDir.childFile(generatedPluginRegistrant.basename).path);
+
+    final Directory pluginsDir =
+        environment.buildDir.childDirectory('tizen_plugins');
+    final Directory pluginsIncludeDir = pluginsDir.childDirectory('include');
+    if (pluginsIncludeDir.existsSync()) {
+      copyDirectory(pluginsIncludeDir, incDir);
+    }
+    final File pluginsLib = pluginsDir.childFile('libflutter_plugins.so');
+    if (pluginsLib.existsSync()) {
+      pluginsLib.copySync(libDir.childFile(pluginsLib.basename).path);
+    }
+    final Directory pluginsUserLibDir = pluginsDir.childDirectory('lib');
+    if (pluginsUserLibDir.existsSync()) {
+      pluginsUserLibDir.listSync().whereType<File>().forEach(
+          (File lib) => lib.copySync(libDir.childFile(lib.basename).path));
+    }
+
+    final Directory clientWrapperDir =
+        commonDir.childDirectory('cpp_client_wrapper');
+    final Directory publicDir = commonDir.childDirectory('public');
+    copyDirectory(clientWrapperDir.childDirectory('include'), incDir);
+    copyDirectory(publicDir, incDir);
+
+    final Directory embeddingDir =
+        environment.buildDir.childDirectory('tizen_embedding');
+    copyDirectory(embeddingDir.childDirectory('include'), incDir);
+
+    final File embeddingLib = embeddingDir.childFile('libembedding_cpp.a');
+    embeddingLib.copySync(libDir.childFile(embeddingLib.basename).path);
   }
 }

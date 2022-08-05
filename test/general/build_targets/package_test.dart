@@ -61,7 +61,7 @@ void main() {
     _installFakeEngineArtifacts(cache.getArtifactDirectory('engine'));
   });
 
-  group('.NET TPK', () {
+  group('DotnetTpk', () {
     testUsingContext('Build succeeds', () async {
       final Directory outputDir = projectDir.childDirectory('out');
       final Environment environment = Environment.test(
@@ -90,13 +90,13 @@ void main() {
           '-c',
           'Release',
           '-o',
-          '${outputDir.path}/tpk/',
+          '${outputDir.path}/',
           '/p:DefineConstants=COMMON_PROFILE',
           '${projectDir.path}/tizen',
         ],
         onRun: () {
           outputDir
-              .childFile('tpk/package_id-1.0.0.tpk')
+              .childFile('package_id-1.0.0.tpk')
               .createSync(recursive: true);
         },
       ));
@@ -160,13 +160,13 @@ void main() {
           '-c',
           'Debug',
           '-o',
-          '${outputDir.path}/tpk/',
+          '${outputDir.path}/',
           '/p:DefineConstants=COMMON_PROFILE',
           '${projectDir.path}/tizen',
         ],
         onRun: () {
           outputDir
-              .childFile('tpk/package_id-1.0.0.tpk')
+              .childFile('package_id-1.0.0.tpk')
               .createSync(recursive: true);
         },
       ));
@@ -190,7 +190,7 @@ void main() {
     });
   });
 
-  group('Native TPK', () {
+  group('NativeTpk', () {
     setUp(() {
       projectDir.childFile('tizen/project_def.prop')
         ..createSync(recursive: true)
@@ -227,7 +227,7 @@ type = app
         deviceProfile: 'common',
       )).build(environment);
 
-      final File outputTpk = outputDir.childFile('tpk/package_id-1.0.0.tpk');
+      final File outputTpk = outputDir.childFile('package_id-1.0.0.tpk');
       expect(outputTpk, exists);
 
       final Directory tizenDir = projectDir.childDirectory('tizen');
@@ -286,11 +286,75 @@ type = app
       TizenSdk: () => FakeTizenSdk(fileSystem),
     });
   });
+
+  group('NativeModule', () {
+    testUsingContext('Build succeeds', () async {
+      final Directory outputDir = projectDir.childDirectory('out');
+      final Environment environment = Environment.test(
+        projectDir,
+        outputDir: outputDir,
+        fileSystem: fileSystem,
+        logger: logger,
+        artifacts: artifacts,
+        processManager: processManager,
+      );
+      environment.buildDir
+          .childDirectory('flutter_assets')
+          .createSync(recursive: true);
+      environment.buildDir.childFile('app.so').createSync(recursive: true);
+      projectDir
+          .childFile('tizen/flutter/generated_plugin_registrant.h')
+          .createSync(recursive: true);
+      environment.buildDir
+          .childFile('tizen_plugins/libflutter_plugins.so')
+          .createSync(recursive: true);
+      environment.buildDir
+          .childFile('tizen_embedding/include/flutter.h')
+          .createSync(recursive: true);
+      environment.buildDir
+          .childFile('tizen_embedding/libembedding_cpp.a')
+          .createSync(recursive: true);
+
+      await NativeModule(const TizenBuildInfo(
+        BuildInfo.release,
+        targetArch: 'arm',
+        deviceProfile: 'common',
+      )).build(environment);
+
+      final Directory flutterAssetsDir =
+          outputDir.childDirectory('res/flutter_assets');
+      final File engineBinary = outputDir.childFile('lib/libflutter_engine.so');
+      final File embedder =
+          outputDir.childFile('lib/libflutter_tizen_common.so');
+      final File icuData = outputDir.childFile('res/icudtl.dat');
+      final File aotSnapshot = outputDir.childFile('lib/libapp.so');
+      final File generatedPluginRegistrant =
+          outputDir.childFile('inc/generated_plugin_registrant.h');
+      final File pluginsLib = outputDir.childFile('lib/libflutter_plugins.so');
+      final File embeddingHeader = outputDir.childFile('inc/flutter.h');
+      final File embeddingLib = outputDir.childFile('lib/libembedding_cpp.a');
+
+      expect(flutterAssetsDir, exists);
+      expect(engineBinary, exists);
+      expect(embedder, exists);
+      expect(icuData, exists);
+      expect(aotSnapshot, exists);
+      expect(generatedPluginRegistrant, exists);
+      expect(pluginsLib, exists);
+      expect(embeddingHeader, exists);
+      expect(embeddingLib, exists);
+    }, overrides: <Type, Generator>{
+      FileSystem: () => fileSystem,
+      ProcessManager: () => processManager,
+      Cache: () => cache,
+      TizenSdk: () => FakeTizenSdk(fileSystem, securityProfile: 'test_profile'),
+    });
+  });
 }
 
 void _installFakeEngineArtifacts(Directory engineArtifactDir) {
   for (final String directory in <String>[
-    'tizen-common/cpp_client_wrapper',
+    'tizen-common/cpp_client_wrapper/include',
     'tizen-common/public',
   ]) {
     engineArtifactDir.childDirectory(directory).createSync(recursive: true);

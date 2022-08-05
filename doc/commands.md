@@ -43,6 +43,9 @@ The following commands from the [Flutter CLI](https://flutter.dev/docs/reference
 
   # Build a TPK for emulator.
   flutter-tizen build tpk --device-profile wearable --debug --target-arch x86
+
+  # Build a Flutter module for adding to an existing Tizen app.
+  flutter-tizen build module --device-profile common
   ```
 
 - ### `clean`
