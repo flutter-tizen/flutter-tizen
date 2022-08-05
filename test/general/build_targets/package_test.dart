@@ -306,7 +306,7 @@ type = app
           .childFile('tizen/flutter/generated_plugin_registrant.h')
           .createSync(recursive: true);
       environment.buildDir
-          .childFile('tizen_plugins/libflutter_plugins.so')
+          .childFile('tizen_plugins/lib/libflutter_plugins.so')
           .createSync(recursive: true);
       environment.buildDir
           .childFile('tizen_embedding/include/flutter.h')
