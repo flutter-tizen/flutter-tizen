@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:flutter_tools/src/base/common.dart';
 import 'package:flutter_tools/src/base/terminal.dart';
 import 'package:flutter_tools/src/device.dart';
 import 'package:flutter_tools/src/device_port_forwarder.dart';
@@ -137,10 +138,7 @@ class ForwardingLogReader extends DeviceLogReader {
   }
 
   /// Starts receiving messages from the device logger.
-  ///
-  /// If [retry] is positive and the device logger is not yet ready, the
-  /// connection will be retried [retry] times.
-  Future<void> start({int retry = 3}) async {
+  Future<void> start() async {
     if (_socket != null) {
       globals.printTrace('Already connected to the device logger.');
       return;
@@ -153,25 +151,30 @@ class ForwardingLogReader extends DeviceLogReader {
     // is disposed.
     await _portForwarder.forward(hostPort, hostPort: hostPort);
 
+    int attempts = 0;
     try {
       while (true) {
+        attempts += 1;
         _socket = await _connectAndListen();
-        if (_socket != null || --retry < 0) {
+        if (_socket != null) {
+          globals.printTrace(
+              'The logging service started at ${_socket!.remoteAddress.address}:${_socket!.remotePort}.');
           break;
+        }
+        if (attempts == 10) {
+          globals.printError(
+              'Connecting to the device logger is taking longer than expected...');
+        } else if (attempts == 20) {
+          globals.printError(
+            'Still attempting to connect to the device logger...\n'
+            'If you do not see the application running on the device, it might have crashed. The device log (dlog) might have more details.\n'
+            'Please open an issue in https://github.com/flutter-tizen/flutter-tizen/issues if the problem persists.',
+          );
         }
         await Future<void>.delayed(const Duration(seconds: 2));
       }
     } on Exception catch (error) {
-      globals.printError('Connection failed: $error');
-    }
-    if (_socket == null) {
-      globals.printError(
-        'Failed to connect to the device logger.\n'
-        'Please open an issue in https://github.com/flutter-tizen/flutter-tizen/issues if the problem persists.',
-      );
-    } else {
-      globals.printTrace(
-          'The logging service started at ${_socket!.remoteAddress.address}:${_socket!.remotePort}.');
+      throwToolExit('Connection failed: $error');
     }
   }
 
