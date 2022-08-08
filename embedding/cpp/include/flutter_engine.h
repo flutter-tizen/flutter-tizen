@@ -70,6 +70,7 @@ class FlutterEngine : public flutter::PluginRegistry {
   // Gives up ownership of |engine_|, but keeps a weak reference to it.
   FlutterDesktopEngineRef RelinquishEngine();
 
+  // |flutter::PluginRegistry|
   FlutterDesktopPluginRegistrarRef GetRegistrarForPlugin(
       const std::string& plugin_name) override;
 

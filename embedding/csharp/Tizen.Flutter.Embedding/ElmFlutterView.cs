@@ -5,11 +5,9 @@ using static Tizen.Flutter.Embedding.Interop;
 
 namespace Tizen.Flutter.Embedding
 {
-    // TODO: Revisit EvasObject.cs implementation.
-    // TODO: consider renaming EvasObjectImpl.
-    // TODO: Add documentation.
-    // TODO(another PR): Format the C# code.
-    // TODO: Runner.csproj: nuget or ProjectReference.
+    /// <summary>
+    /// Represents an <see cref="EvasObject"/> instance created by the embedder.
+    /// </summary>
     class EvasObjectImpl : EvasObject
     {
         public EvasObjectImpl(EvasObject parent, IntPtr handle) : base(parent)
@@ -19,26 +17,54 @@ namespace Tizen.Flutter.Embedding
 
         protected override IntPtr CreateHandle(EvasObject parent)
         {
+            if (Handle == IntPtr.Zero)
+            {
+                throw new InvalidOperationException("The handle cannot be created again.");
+            }
             return Handle;
         }
     }
 
+    /// <summary>
+    /// Displays a Flutter screen in a Tizen application.
+    /// </summary>
     public class ElmFlutterView : IPluginRegistry
     {
+        /// <summary>
+        /// The Flutter engine instance.
+        /// </summary>
         private FlutterEngine Engine { get; set; } = null;
 
+        /// <summary>
+        /// The Flutter view instance handle.
+        /// </summary>
         private FlutterDesktopView View { get; set; } = new FlutterDesktopView();
 
+        /// <summary>
+        /// The backing Evas object for this view.
+        /// </summary>
         public EvasObject EvasObject { get; private set; } = null;
 
+        /// <summary>
+        /// The parent of <see cref="EvasObject"/>.
+        /// </summary>
         private EvasObject Parent { get; set; } = null;
 
+        /// <summary>
+        /// The initial width of the view. Defaults to the parent width if the value is zero.
+        /// </summary>
         private int InitialWidth { get; set; } = 0;
 
+        /// <summary>
+        /// The initial height of the view. Defaults to the parent height if the value is zero.
+        /// </summary>
         private int InitialHeight { get; set; } = 0;
 
         public bool IsRunning => !View.IsInvalid;
 
+        /// <summary>
+        /// The current width of the view.
+        /// </summary>
         public int Width
         {
             get
@@ -49,6 +75,9 @@ namespace Tizen.Flutter.Embedding
             }
         }
 
+        /// <summary>
+        /// The current height of the view.
+        /// </summary>
         public int Height
         {
             get

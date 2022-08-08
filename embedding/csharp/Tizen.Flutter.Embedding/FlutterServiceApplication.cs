@@ -103,10 +103,6 @@ namespace Tizen.Flutter.Embedding
             Engine.NotifyLocaleChange();
         }
 
-        /// <summary>
-        /// Returns the plugin registrar handle for the plugin with the given name.
-        /// The name must be unique across the application.
-        /// </summary>
         public FlutterDesktopPluginRegistrar GetRegistrarForPlugin(string pluginName)
         {
             if (Engine.IsValid)

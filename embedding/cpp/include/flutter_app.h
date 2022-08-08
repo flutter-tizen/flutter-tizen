@@ -54,14 +54,15 @@ class FlutterApp : public flutter::PluginRegistry {
 
   virtual int Run(int argc, char **argv);
 
-  FlutterDesktopPluginRegistrarRef GetRegistrarForPlugin(
-      const std::string &plugin_name) override;
-
   bool IsRunning() { return view_ != nullptr; }
 
   void SetDartEntrypoint(const std::string &entrypoint) {
     dart_entrypoint_ = entrypoint;
   }
+
+  // |flutter::PluginRegistry|
+  FlutterDesktopPluginRegistrarRef GetRegistrarForPlugin(
+      const std::string &plugin_name) override;
 
  protected:
   // The x-coordinate of the top left corner of the window.
