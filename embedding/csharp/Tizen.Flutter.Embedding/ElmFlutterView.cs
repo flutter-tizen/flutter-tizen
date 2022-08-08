@@ -159,6 +159,7 @@ namespace Tizen.Flutter.Embedding
             if (IsRunning)
             {
                 FlutterDesktopViewDestroy(View);
+                Engine = null;
                 View = new FlutterDesktopView();
             }
         }
@@ -178,7 +179,7 @@ namespace Tizen.Flutter.Embedding
 
         public FlutterDesktopPluginRegistrar GetRegistrarForPlugin(string pluginName)
         {
-            if (Engine.IsValid)
+            if (IsRunning)
             {
                 return Engine.GetRegistrarForPlugin(pluginName);
             }

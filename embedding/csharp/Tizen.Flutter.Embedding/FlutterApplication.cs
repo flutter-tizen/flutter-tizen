@@ -101,6 +101,11 @@ namespace Tizen.Flutter.Embedding
         /// </summary>
         protected internal FlutterDesktopView View { get; private set; } = new FlutterDesktopView();
 
+        /// <summary>
+        /// Whether the app has started.
+        /// </summary>
+        public bool IsRunning => View != null;
+
         public override void Run(string[] args)
         {
             // Log any unhandled exception.
@@ -152,7 +157,7 @@ namespace Tizen.Flutter.Embedding
         {
             base.OnResume();
 
-            Debug.Assert(Engine.IsValid);
+            Debug.Assert(IsRunning);
 
             Engine.NotifyAppIsResumed();
         }
@@ -161,7 +166,7 @@ namespace Tizen.Flutter.Embedding
         {
             base.OnPause();
 
-            Debug.Assert(Engine.IsValid);
+            Debug.Assert(IsRunning);
 
             Engine.NotifyAppIsPaused();
         }
@@ -170,7 +175,7 @@ namespace Tizen.Flutter.Embedding
         {
             base.OnTerminate();
 
-            Debug.Assert(Engine.IsValid);
+            Debug.Assert(IsRunning);
 
             DotnetPluginRegistry.Instance.RemoveAllPlugins();
             FlutterDesktopViewDestroy(View);
@@ -180,7 +185,7 @@ namespace Tizen.Flutter.Embedding
 
         protected override void OnAppControlReceived(AppControlReceivedEventArgs e)
         {
-            Debug.Assert(Engine.IsValid);
+            Debug.Assert(IsRunning);
 
             Engine.NotifyAppControl(e.ReceivedAppControl);
         }
@@ -189,7 +194,7 @@ namespace Tizen.Flutter.Embedding
         {
             base.OnLowMemory(e);
 
-            Debug.Assert(Engine.IsValid);
+            Debug.Assert(IsRunning);
 
             Engine.NotifyLowMemoryWarning();
         }
@@ -198,7 +203,7 @@ namespace Tizen.Flutter.Embedding
         {
             base.OnLocaleChanged(e);
 
-            Debug.Assert(Engine.IsValid);
+            Debug.Assert(IsRunning);
 
             Engine.NotifyLocaleChange();
         }
@@ -207,14 +212,14 @@ namespace Tizen.Flutter.Embedding
         {
             base.OnRegionFormatChanged(e);
 
-            Debug.Assert(Engine.IsValid);
+            Debug.Assert(IsRunning);
 
             Engine.NotifyLocaleChange();
         }
 
         public FlutterDesktopPluginRegistrar GetRegistrarForPlugin(string pluginName)
         {
-            if (Engine.IsValid)
+            if (IsRunning)
             {
                 return Engine.GetRegistrarForPlugin(pluginName);
             }
