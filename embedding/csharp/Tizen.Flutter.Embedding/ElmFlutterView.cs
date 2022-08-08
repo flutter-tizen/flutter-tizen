@@ -9,6 +9,7 @@ namespace Tizen.Flutter.Embedding
     // TODO: consider renaming EvasObjectImpl.
     // TODO: Add documentation.
     // TODO(another PR): Format the C# code.
+    // TODO: Runner.csproj: nuget or ProjectReference.
     class EvasObjectImpl : EvasObject
     {
         public EvasObjectImpl(EvasObject parent, IntPtr handle) : base(parent)
@@ -83,6 +84,11 @@ namespace Tizen.Flutter.Embedding
                 Engine = new FlutterEngine();
             }
 
+            if (!Engine.IsValid)
+            {
+                throw new Exception("Could not create a Flutter engine.");
+            }
+
             var viewProperties = new FlutterDesktopViewProperties
             {
                 width = InitialWidth,
@@ -109,6 +115,15 @@ namespace Tizen.Flutter.Embedding
         public void SetEngine(FlutterEngine engine)
         {
             Engine = engine;
+        }
+
+        public void Destroy()
+        {
+            if (IsRunning)
+            {
+                FlutterDesktopViewDestroy(View);
+                View = new FlutterDesktopView();
+            }
         }
 
         public void Resize(int width, int height)
