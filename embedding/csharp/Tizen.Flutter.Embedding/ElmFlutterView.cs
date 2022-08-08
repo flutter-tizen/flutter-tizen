@@ -17,10 +17,6 @@ namespace Tizen.Flutter.Embedding
 
         protected override IntPtr CreateHandle(EvasObject parent)
         {
-            if (Handle == IntPtr.Zero)
-            {
-                throw new InvalidOperationException("The handle cannot be created again.");
-            }
             return Handle;
         }
     }
@@ -60,6 +56,9 @@ namespace Tizen.Flutter.Embedding
         /// </summary>
         private int InitialHeight { get; set; } = 0;
 
+        /// <summary>
+        /// Whether the view is running.
+        /// </summary>
         public bool IsRunning => !View.IsInvalid;
 
         /// <summary>
@@ -100,6 +99,9 @@ namespace Tizen.Flutter.Embedding
             InitialHeight = initialHeight;
         }
 
+        /// <summary>
+        /// Starts running the view with the associated engine, creating if not set.
+        /// </summary>
         public bool RunEngine()
         {
             if (Parent == null)
@@ -141,11 +143,17 @@ namespace Tizen.Flutter.Embedding
             return true;
         }
 
+        /// <summary>
+        /// Sets an engine associated with this view.
+        /// </summary>
         public void SetEngine(FlutterEngine engine)
         {
             Engine = engine;
         }
 
+        /// <summary>
+        /// Terminates the running view and the associated engine.
+        /// </summary>
         public void Destroy()
         {
             if (IsRunning)
@@ -155,6 +163,9 @@ namespace Tizen.Flutter.Embedding
             }
         }
 
+        /// <summary>
+        /// Resizes the view.
+        /// </summary>
         public void Resize(int width, int height)
         {
             Debug.Assert(IsRunning);
@@ -165,10 +176,6 @@ namespace Tizen.Flutter.Embedding
             }
         }
 
-        /// <summary>
-        /// Returns the plugin registrar handle for the plugin with the given name.
-        /// The name must be unique across the application.
-        /// </summary>
         public FlutterDesktopPluginRegistrar GetRegistrarForPlugin(string pluginName)
         {
             if (Engine.IsValid)

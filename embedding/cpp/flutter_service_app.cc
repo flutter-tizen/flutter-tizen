@@ -26,7 +26,6 @@ bool FlutterServiceApp::OnCreate() {
 
 void FlutterServiceApp::OnTerminate() {
   assert(IsRunning());
-  TizenLog::Debug("Shutting down the service application...");
   engine_ = nullptr;
 }
 

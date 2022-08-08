@@ -16,6 +16,7 @@ bool FlutterApp::OnCreate() {
     TizenLog::Error("Could not create a Flutter engine.");
     return false;
   }
+
 #ifdef WEARABLE_PROFILE
   if (renderer_type_ == FlutterRendererType::kEGL) {
     TizenLog::Error(
@@ -56,7 +57,6 @@ void FlutterApp::OnPause() {
 
 void FlutterApp::OnTerminate() {
   assert(IsRunning());
-  TizenLog::Debug("Shutting down the application...");
   FlutterDesktopViewDestroy(view_);
   engine_ = nullptr;
   view_ = nullptr;

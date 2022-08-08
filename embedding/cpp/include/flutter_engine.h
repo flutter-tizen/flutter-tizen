@@ -62,7 +62,7 @@ class FlutterEngine : public flutter::PluginRegistry {
   // "system channel".
   void NotifyLowMemoryWarning();
 
-  // Notifies that the locale has changed.
+  // Notifies that the system locale has changed.
   //
   // This method sends a "locale change" message to Flutter.
   void NotifyLocaleChange();

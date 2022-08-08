@@ -128,8 +128,8 @@ namespace Tizen.Flutter.Embedding
         }
 
         /// <summary>
-        /// Notifies that the locale has changed.
-        /// ThisThis method sends a "locale change" message to Flutter.
+        /// Notifies that the system locale has changed.
+        /// This method sends a "locale change" message to Flutter.
         /// </summary>
         public void NotifyLocaleChange()
         {
