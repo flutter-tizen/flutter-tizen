@@ -285,8 +285,7 @@ class TizenSdk {
 
     Rootstrap rootstrap = getRootstrap(profile, apiVersion, type);
     if (!rootstrap.isValid && profile == 'tv-samsung') {
-      _logger.printStatus(
-          'TV SDK could not be found. Trying with Wearable SDK...');
+      _logger.printTrace('TV SDK could not be found.');
       profile = 'wearable';
       rootstrap = getRootstrap(profile, apiVersion, type);
     }

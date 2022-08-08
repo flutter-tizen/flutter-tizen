@@ -227,7 +227,7 @@ void main() {
     expect(rootstrap.id, equals('wearable-4.0-device.flutter'));
     expect(rootstrap.isValid, isTrue);
 
-    expect(logger.statusText, contains('TV SDK could not be found.'));
+    expect(logger.traceText, contains('TV SDK could not be found.'));
   });
 
   testWithoutContext('SecurityProfiles.parseFromXml can detect active profile',
