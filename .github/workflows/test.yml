@@ -36,3 +36,44 @@ jobs:
           dotnet-version: '5.0.x'
       - name: Run tests
         run: dotnet test embedding/csharp
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          path: flutter-tizen
+      - name: Install Tizen Studio
+        run: |
+          sudo apt install -y pciutils zip libncurses5 python libpython2.7 make gettext
+          curl http://download.tizen.org/sdk/Installer/tizen-studio_4.6/web-cli_Tizen_Studio_4.6_ubuntu-64.bin -o install.bin
+          chmod a+x install.bin
+          ./install.bin --accept-license $HOME/tizen-studio
+          rm install.bin
+      - name: Install Tizen Studio packages
+        run: |
+          $HOME/tizen-studio/package-manager/package-manager-cli.bin install \
+            NativeToolchain-Gcc-9.2 \
+            WEARABLE-4.0-NativeAppDevelopment
+      - name: Create a Tizen certificate profile
+        run: |
+          export PATH=$PATH:$HOME/tizen-studio/tools/ide/bin
+          tizen certificate -a tizen -p tizen -f tizen
+          tizen security-profiles add \
+            -n tizen \
+            -a $HOME/tizen-studio-data/keystore/author/tizen.p12 \
+            -p tizen
+      - name: Set up flutter-tizen
+        run: |
+          export PATH=`pwd`/flutter-tizen/bin:$PATH
+          echo $PATH >> $GITHUB_PATH
+          flutter-tizen doctor -v
+      - name: Build native TPK
+        run: |
+          flutter-tizen create --tizen-language cpp native_app
+          cd native_app
+          flutter-tizen build tpk -pwearable --debug
+      - name: Build .NET TPK
+        run: |
+          flutter-tizen create --tizen-language csharp dotnet_app
+          cd dotnet_app
+          flutter-tizen build tpk -pwearable --debug
