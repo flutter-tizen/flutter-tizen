@@ -106,7 +106,7 @@ dependencies:
         .createSync(recursive: true);
   });
 
-  testUsingContext('Can build for debug x86', () async {
+  testUsingContext('Can build staticLib project', () async {
     final Environment environment = Environment.test(
       projectDir,
       fileSystem: fileSystem,
@@ -121,13 +121,42 @@ dependencies:
       deviceProfile: 'wearable',
     )).build(environment);
 
-    final File outputLib =
-        environment.buildDir.childFile('tizen_plugins/libflutter_plugins.so');
-    expect(outputLib, exists);
+    final Directory outputDir =
+        environment.buildDir.childDirectory('tizen_plugins');
+    expect(outputDir.childFile('include/some_native_plugin.h'), exists);
+    expect(outputDir.childFile('lib/libflutter_plugins.so'), exists);
+  }, overrides: <Type, Generator>{
+    FileSystem: () => fileSystem,
+    ProcessManager: () => processManager,
+    Cache: () => cache,
+    TizenSdk: () => FakeTizenSdk(fileSystem),
+  });
 
-    final File header = environment.buildDir
-        .childFile('tizen_plugins/include/some_native_plugin.h');
-    expect(header, exists);
+  testUsingContext('Can build sharedLib project', () async {
+    final File projectDef = pluginDir.childFile('tizen/project_def.prop');
+    projectDef.writeAsStringSync(
+        projectDef.readAsStringSync().replaceFirst('staticLib', 'sharedLib'));
+
+    final Environment environment = Environment.test(
+      projectDir,
+      fileSystem: fileSystem,
+      logger: logger,
+      artifacts: artifacts,
+      processManager: processManager,
+    );
+    pluginDir.childFile('tizen/lib/libshared.so').createSync(recursive: true);
+
+    await NativePlugins(const TizenBuildInfo(
+      BuildInfo.debug,
+      targetArch: 'x86',
+      deviceProfile: 'wearable',
+    )).build(environment);
+
+    final Directory outputDir =
+        environment.buildDir.childDirectory('tizen_plugins');
+    expect(outputDir.childFile('lib/libflutter_plugins.so'), isNot(exists));
+    expect(outputDir.childFile('lib/libsome_native_plugin.so'), exists);
+    expect(outputDir.childFile('lib/libshared.so'), exists);
   }, overrides: <Type, Generator>{
     FileSystem: () => fileSystem,
     ProcessManager: () => processManager,
@@ -178,43 +207,16 @@ dependencies:
       deviceProfile: 'common',
     )).build(environment);
 
-    final Directory rootDir =
+    final Directory outputDir =
         environment.buildDir.childDirectory('tizen_plugins');
-    expect(rootDir.childFile('lib/libstatic.a'), isNot(exists));
-    expect(rootDir.childFile('lib/libshared.so'), exists);
+    expect(outputDir.childFile('lib/libstatic.a'), isNot(exists));
+    expect(outputDir.childFile('lib/libshared.so'), exists);
 
     final Map<String, String> projectDef =
-        parseIniFile(rootDir.childFile('project_def.prop'));
+        parseIniFile(outputDir.childFile('project_def.prop'));
     expect(
       projectDef['USER_LIBS'],
       contains('some_native_plugin static shared'),
-    );
-  }, overrides: <Type, Generator>{
-    FileSystem: () => fileSystem,
-    ProcessManager: () => processManager,
-    Cache: () => cache,
-    TizenSdk: () => FakeTizenSdk(fileSystem),
-  });
-
-  testUsingContext('Building non-staticLib project fails', () async {
-    final Environment environment = Environment.test(
-      projectDir,
-      fileSystem: fileSystem,
-      logger: logger,
-      artifacts: artifacts,
-      processManager: processManager,
-    );
-    final File projectDef = pluginDir.childFile('tizen/project_def.prop');
-    projectDef.writeAsStringSync(
-        projectDef.readAsStringSync().replaceFirst('staticLib', 'sharedLib'));
-
-    await expectLater(
-      () => NativePlugins(const TizenBuildInfo(
-        BuildInfo.release,
-        targetArch: 'arm',
-        deviceProfile: 'common',
-      )).build(environment),
-      throwsToolExit(),
     );
   }, overrides: <Type, Generator>{
     FileSystem: () => fileSystem,

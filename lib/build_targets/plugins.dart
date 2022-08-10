@@ -17,6 +17,7 @@ import '../tizen_plugins.dart';
 import '../tizen_project.dart';
 import '../tizen_sdk.dart';
 import '../tizen_tpk.dart';
+import 'embedding.dart';
 import 'utils.dart';
 
 /// Compiles Tizen native plugins into a shared object.
@@ -44,20 +45,9 @@ class NativePlugins extends Target {
       ];
 
   @override
-  List<Target> get dependencies => const <Target>[];
-
-  void _checkProjectType(TizenPlugin plugin) {
-    final Map<String, String> properties = parseIniFile(plugin.projectFile);
-    final String? type = properties['type'];
-    if (type != 'staticLib') {
-      throwToolExit(
-        'The project type of ${plugin.name} is "$type" which is not supported.\n'
-        'Make sure the package is up to date by running "flutter-tizen pub upgrade".\n\n'
-        'If you are the maintainer of the ${plugin.name} package, consider migrating the project to "staticLib" type.\n'
-        'Otherwise, you may modify the value of "type" in ${plugin.projectFile.path} to temporarily fix the problem.',
-      );
-    }
-  }
+  List<Target> get dependencies => <Target>[
+        NativeEmbedding(buildInfo),
+      ];
 
   @override
   Future<void> build(Environment environment) async {
@@ -83,15 +73,14 @@ class NativePlugins extends Target {
       return;
     }
 
-    // Create a dummy project in the build directory.
-    final Directory rootDir = environment.buildDir
+    final Directory outputDir = environment.buildDir
         .childDirectory('tizen_plugins')
       ..createSync(recursive: true);
-    final Directory includeDir = rootDir.childDirectory('include')
+    final Directory includeDir = outputDir.childDirectory('include')
       ..createSync(recursive: true);
-    final Directory resDir = rootDir.childDirectory('res')
+    final Directory resDir = outputDir.childDirectory('res')
       ..createSync(recursive: true);
-    final Directory libDir = rootDir.childDirectory('lib')
+    final Directory libDir = outputDir.childDirectory('lib')
       ..createSync(recursive: true);
 
     final BuildMode buildMode = buildInfo.buildInfo.mode;
@@ -100,14 +89,13 @@ class NativePlugins extends Target {
         getEngineArtifactsDirectory(buildInfo.targetArch, buildMode);
     final Directory commonDir = engineDir.parent.childDirectory('tizen-common');
 
+    final File embedder =
+        engineDir.childFile('libflutter_tizen_${buildInfo.deviceProfile}.so');
+    inputs.add(embedder);
+
     final Directory clientWrapperDir =
         commonDir.childDirectory('cpp_client_wrapper');
     final Directory publicDir = commonDir.childDirectory('public');
-    clientWrapperDir
-        .listSync(recursive: true)
-        .whereType<File>()
-        .forEach(inputs.add);
-    publicDir.listSync(recursive: true).whereType<File>().forEach(inputs.add);
 
     assert(tizenSdk != null);
     final TizenManifest tizenManifest =
@@ -121,11 +109,14 @@ class NativePlugins extends Target {
     );
     inputs.add(tizenProject.manifestFile);
 
+    final Directory embeddingDir =
+        environment.buildDir.childDirectory('tizen_embedding');
+    final File embeddingLib = embeddingDir.childFile('libembedding_cpp.a');
+
     final List<String> userLibs = <String>[];
     final List<String> pluginClasses = <String>[];
 
     for (final TizenPlugin plugin in nativePlugins) {
-      _checkProjectType(plugin);
       inputs.add(plugin.projectFile);
 
       final Directory buildDir = plugin.directory.childDirectory(buildConfig);
@@ -140,9 +131,14 @@ class NativePlugins extends Target {
           '${buildInfo.deviceProfile.toUpperCase()}_PROFILE',
         ],
         extraOptions: <String>[
-          '-fPIC',
+          if (!plugin.isSharedLib) '-fPIC',
           '-I${clientWrapperDir.childDirectory('include').path.toPosixPath()}',
           '-I${publicDir.path.toPosixPath()}',
+          if (plugin.isSharedLib) ...<String>[
+            '-l${getLibNameForFileName(embedder.basename)}',
+            '-L${engineDir.path.toPosixPath()}',
+            embeddingLib.path.toPosixPath(),
+          ],
         ],
         rootstrap: rootstrap.id,
       );
@@ -150,11 +146,10 @@ class NativePlugins extends Target {
         throwToolExit('Failed to build ${plugin.name} plugin:\n$result');
       }
 
-      assert(plugin.fileName != null);
-      assert(plugin.pluginClass != null);
-      final String libName =
-          getLibNameForFileName(plugin.fileName!.toLowerCase());
-      final File libFile = buildDir.childFile('lib$libName.a');
+      assert(plugin.libName != null);
+      final File libFile = plugin.isSharedLib
+          ? buildDir.childFile('lib${plugin.libName!}.so')
+          : buildDir.childFile('lib${plugin.libName!}.a');
       if (!libFile.existsSync()) {
         throwToolExit(
           'Build succeeded but the file ${libFile.path} is not found:\n'
@@ -162,8 +157,11 @@ class NativePlugins extends Target {
         );
       }
       libFile.copySync(libDir.childFile(libFile.basename).path);
-      userLibs.add(libName);
-      pluginClasses.add(plugin.pluginClass!);
+      userLibs.add(plugin.libName!);
+
+      if (!plugin.isSharedLib) {
+        pluginClasses.add(plugin.pluginClass!);
+      }
 
       final Directory pluginIncludeDir = plugin.directory.childDirectory('inc');
       if (pluginIncludeDir.existsSync()) {
@@ -193,7 +191,8 @@ class NativePlugins extends Target {
         );
       }
 
-      // Copy user libs for later linking.
+      // Copy user libraries.
+      // TODO(swift-kim): Remove user libs support for staticLib projects.
       final Directory pluginLibDir = plugin.directory.childDirectory('lib');
       final List<Directory> pluginLibDirs = <Directory>[
         pluginLibDir.childDirectory(buildInfo.targetArch),
@@ -201,8 +200,10 @@ class NativePlugins extends Target {
         pluginLibDir,
       ];
       for (final Directory directory
-          in pluginLibDirs.where((Directory d) => d.existsSync())) {
+          in pluginLibDirs.where((Directory dir) => dir.existsSync())) {
         for (final File lib in directory.listSync().whereType<File>()) {
+          // Symbolic links are not supported because they are not portable.
+          // Issue: https://github.com/flutter-tizen/flutter-tizen/pull/322
           final bool isSharedLib = lib.basename.endsWith('.so');
           final bool isStaticLib = lib.basename.endsWith('.a');
           if (isSharedLib || isStaticLib) {
@@ -210,8 +211,10 @@ class NativePlugins extends Target {
             if (userLibs.contains(libName)) {
               continue;
             }
+            if (!plugin.isSharedLib) {
+              userLibs.add(libName);
+            }
             lib.copySync(libDir.childFile(lib.basename).path);
-            userLibs.add(libName);
 
             inputs.add(lib);
             if (isSharedLib) {
@@ -227,62 +230,55 @@ class NativePlugins extends Target {
       outputs.add(includeDir.childFile(header.basename));
     }
 
-    // The absolute path to clientWrapperDir may contain spaces.
-    // We need to copy the entire directory into the build directory because
-    // USER_SRCS in project_def.prop doesn't allow spaces.
-    copyDirectory(
-        clientWrapperDir, rootDir.childDirectory(clientWrapperDir.basename));
-
-    final File projectDef = rootDir.childFile('project_def.prop');
-    projectDef.writeAsStringSync('''
+    // Create a dummy project and build libflutter_plugins.so if necessary.
+    if (pluginClasses.isNotEmpty) {
+      final File projectDef = outputDir.childFile('project_def.prop');
+      projectDef.writeAsStringSync('''
 APPNAME = flutter_plugins
 type = sharedLib
 profile = $profile-$apiVersion
-
-USER_INC_DIRS = ${clientWrapperDir.basename}/include
-USER_SRCS = ${clientWrapperDir.basename}/*.cc
 
 USER_LFLAGS = -Wl,-rpath='\$\$ORIGIN'
 USER_LIBS = pthread ${userLibs.join(' ')}
 ''');
 
-    final File embedder =
-        engineDir.childFile('libflutter_tizen_${buildInfo.deviceProfile}.so');
-    inputs.add(embedder);
-
-    final Directory buildDir = rootDir.childDirectory(buildConfig);
-    if (buildDir.existsSync()) {
-      buildDir.deleteSync(recursive: true);
-    }
-    final RunResult result = await tizenSdk!.buildNative(
-      rootDir.path,
-      configuration: buildConfig,
-      arch: getTizenCliArch(buildInfo.targetArch),
-      extraOptions: <String>[
-        '-l${getLibNameForFileName(embedder.basename)}',
-        '-L${engineDir.path.toPosixPath()}',
-        '-I${publicDir.path.toPosixPath()}',
-        '-L${libDir.path.toPosixPath()}',
-        // Forces plugin entrypoints to be exported, because unreferenced
-        // objects are not included in the output shared object by default.
-        // Another option is to use the -Wl,--[no-]whole-archive flag.
-        for (String className in pluginClasses)
-          '-Wl,--undefined=${className}RegisterWithRegistrar',
-      ],
-      rootstrap: rootstrap.id,
-    );
-    if (result.exitCode != 0) {
-      throwToolExit('Failed to build native plugins:\n$result');
-    }
-
-    final File outputLib = buildDir.childFile('libflutter_plugins.so');
-    if (!outputLib.existsSync()) {
-      throwToolExit(
-        'Build succeeded but the file ${outputLib.path} is not found:\n'
-        '${result.stdout}',
+      final Directory buildDir = outputDir.childDirectory(buildConfig);
+      if (buildDir.existsSync()) {
+        buildDir.deleteSync(recursive: true);
+      }
+      final RunResult result = await tizenSdk!.buildNative(
+        outputDir.path,
+        configuration: buildConfig,
+        arch: getTizenCliArch(buildInfo.targetArch),
+        extraOptions: <String>[
+          '-I${clientWrapperDir.childDirectory('include').path.toPosixPath()}',
+          '-I${publicDir.path.toPosixPath()}',
+          '-l${getLibNameForFileName(embedder.basename)}',
+          '-L${engineDir.path.toPosixPath()}',
+          embeddingLib.path.toPosixPath(),
+          '-L${libDir.path.toPosixPath()}',
+          // Forces plugin entrypoints to be exported, because unreferenced
+          // objects are not included in the output shared object by default.
+          // Another option is to use the -Wl,--[no-]whole-archive flag.
+          for (String className in pluginClasses)
+            '-Wl,--undefined=${className}RegisterWithRegistrar',
+        ],
+        rootstrap: rootstrap.id,
       );
+      if (result.exitCode != 0) {
+        throwToolExit('Failed to build native plugins:\n$result');
+      }
+
+      final File outputLib = buildDir.childFile('libflutter_plugins.so');
+      if (!outputLib.existsSync()) {
+        throwToolExit(
+          'Build succeeded but the file ${outputLib.path} is not found:\n'
+          '${result.stdout}',
+        );
+      }
+      outputs
+          .add(outputLib.copySync(libDir.childFile(outputLib.basename).path));
     }
-    outputs.add(outputLib.copySync(rootDir.childFile(outputLib.basename).path));
 
     // Remove intermediate files.
     for (final File lib in libDir

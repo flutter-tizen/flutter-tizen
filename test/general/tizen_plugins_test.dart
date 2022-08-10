@@ -154,6 +154,12 @@ flutter:
         pluginClass: SomeNativePlugin
         fileName: some_native_plugin.h
 ''');
+    pluginDir.childFile('tizen/project_def.prop')
+      ..createSync(recursive: true)
+      ..writeAsStringSync('''
+APPNAME = some_native_plugin
+type = staticLib
+''');
     pubspecFile.writeAsStringSync('''
 dependencies:
   some_native_plugin:
