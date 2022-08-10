@@ -17,6 +17,14 @@ namespace Tizen.Flutter.Embedding
             kEGL,
         };
 
+        public enum FlutterDesktopViewMouseEventType
+        {
+            kMouseDown,
+            kMouseUp,
+            kMouseMove,
+            kMouseScroll,
+        };
+
         [StructLayout(LayoutKind.Sequential)]
         public struct FlutterDesktopWindowProperties
         {
