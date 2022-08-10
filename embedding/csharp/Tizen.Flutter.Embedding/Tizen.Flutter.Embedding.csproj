@@ -1,8 +1,8 @@
-﻿  <Project Sdk="Tizen.NET.Sdk/1.1.7">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>library</OutputType>
-    <TargetFramework>tizen90</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
 
   <PropertyGroup>

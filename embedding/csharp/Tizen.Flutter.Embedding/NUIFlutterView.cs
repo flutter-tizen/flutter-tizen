@@ -89,7 +89,7 @@ namespace Tizen.Flutter.Embedding
             var nativeImageQueue = new NativeImageQueue((uint)base.Size2D.Width, (uint)base.Size2D.Height, NativeImageQueue.ColorFormat.RGBA8888);
             global::System.Runtime.InteropServices.HandleRef nativeImageQueueHandle = (global::System.Runtime.InteropServices.HandleRef)field?.GetValue(nativeImageQueue);
             base.SetImage(nativeImageQueue.GenerateUrl().ToString());
-            
+
             var viewProperties = new FlutterDesktopViewProperties
             {
                 width = base.Size2D.Width,
@@ -101,7 +101,7 @@ namespace Tizen.Flutter.Embedding
             {
                 TizenLog.Error("Could not launch a Flutter view.");
                 return false;
-            }            
+            }
 
             base.Focusable = true;
             base.KeyEvent += (object source, View.KeyEventArgs eventArgs) =>
@@ -112,7 +112,7 @@ namespace Tizen.Flutter.Embedding
 
             base.TouchEvent += (object source, View.TouchEventArgs eventArgs) =>
             {
-                FocusManager.Instance.SetCurrentFocusView(this);    
+                FocusManager.Instance.SetCurrentFocusView(this);
                 FlutterDesktopViewMouseEventType type;
                 switch (eventArgs.Touch.GetState(0))
                 {
