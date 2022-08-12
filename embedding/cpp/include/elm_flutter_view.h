@@ -36,11 +36,15 @@ class ElmFlutterView {
   FlutterEngine *engine() { return engine_.get(); }
 
   // Sets an engine associated with this view.
+  //
+  // The engine must not be already running.
   void SetEngine(std::unique_ptr<FlutterEngine> engine) {
     engine_ = std::move(engine);
   }
 
   // Starts running the view with the associated engine, creating if not set.
+  //
+  // |SetEngine| must not be called after this call.
   bool RunEngine();
 
   // Resizes the view.
