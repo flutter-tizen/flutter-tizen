@@ -253,9 +253,9 @@ USER_LIBS = pthread ${userLibs.join(' ')}
         extraOptions: <String>[
           '-I${clientWrapperDir.childDirectory('include').path.toPosixPath()}',
           '-I${publicDir.path.toPosixPath()}',
-          '-l${getLibNameForFileName(embedder.basename)}',
-          '-L${engineDir.path.toPosixPath()}',
           embeddingLib.path.toPosixPath(),
+          '-L${engineDir.path.toPosixPath()}',
+          '-l${getLibNameForFileName(embedder.basename)}',
           '-L${libDir.path.toPosixPath()}',
           // Forces plugin entrypoints to be exported, because unreferenced
           // objects are not included in the output shared object by default.
