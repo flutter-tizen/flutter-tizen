@@ -42,7 +42,7 @@ bool ElmFlutterView::RunEngine() {
   }
 
   evas_object_ =
-      static_cast<Evas_Object *>(FlutterDesktopViewGetEvasObject(view_));
+      static_cast<Evas_Object *>(FlutterDesktopViewGetNativeHandle(view_));
   if (!evas_object_) {
     TizenLog::Error("Could not get an Evas object.");
     return false;

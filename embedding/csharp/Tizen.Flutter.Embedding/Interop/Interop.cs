@@ -68,7 +68,7 @@ namespace Tizen.Flutter.Embedding
             FlutterDesktopEngine engine);
 
         [DllImport("flutter_tizen.so")]
-        public static extern IntPtr FlutterDesktopPluginRegistrarGetNativeWindow(
+        public static extern FlutterDesktopView FlutterDesktopPluginRegistrarGetView(
             FlutterDesktopPluginRegistrar registrar);
 
         [DllImport("flutter_tizen.so")]
@@ -99,6 +99,10 @@ namespace Tizen.Flutter.Embedding
 
         [DllImport("flutter_tizen.so")]
         public static extern void FlutterDesktopViewDestroy(
+            FlutterDesktopView view);
+
+        [DllImport("flutter_tizen.so")]
+        public static extern IntPtr FlutterDesktopViewGetNativeHandle(
             FlutterDesktopView view);
         #endregion
 
