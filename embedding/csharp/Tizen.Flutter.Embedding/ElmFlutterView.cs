@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright 2022 Samsung Electronics Co., Ltd. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+using System;
 using System.Diagnostics;
 using ElmSharp;
 using static Tizen.Flutter.Embedding.Interop;
@@ -24,12 +28,12 @@ namespace Tizen.Flutter.Embedding
     /// <summary>
     /// Displays a Flutter screen in a Tizen application.
     /// </summary>
-    public class ElmFlutterView : IPluginRegistry
+    public class ElmFlutterView
     {
         /// <summary>
         /// The Flutter engine instance.
         /// </summary>
-        private FlutterEngine Engine { get; set; } = null;
+        public FlutterEngine Engine { get; set; } = null;
 
         /// <summary>
         /// The Flutter view instance handle.
@@ -102,8 +106,18 @@ namespace Tizen.Flutter.Embedding
         /// <summary>
         /// Starts running the view with the associated engine, creating if not set.
         /// </summary>
+        /// <remarks>
+        /// <see cref="Engine"/> must not be set again after this call.
+        /// <see cref="Destroy"/> must be called if the view is no longer used.
+        /// </remarks>
         public bool RunEngine()
         {
+            if (IsRunning)
+            {
+                TizenLog.Error("The engine is already running.");
+                return false;
+            }
+
             if (Parent == null)
             {
                 TizenLog.Error("The parent object is invalid.");
@@ -117,7 +131,8 @@ namespace Tizen.Flutter.Embedding
 
             if (!Engine.IsValid)
             {
-                throw new Exception("Could not create a Flutter engine.");
+                TizenLog.Error("Could not create a Flutter engine.");
+                return false;
             }
 
             var viewProperties = new FlutterDesktopViewProperties
@@ -144,14 +159,6 @@ namespace Tizen.Flutter.Embedding
         }
 
         /// <summary>
-        /// Sets an engine associated with this view.
-        /// </summary>
-        public void SetEngine(FlutterEngine engine)
-        {
-            Engine = engine;
-        }
-
-        /// <summary>
         /// Terminates the running view and the associated engine.
         /// </summary>
         public void Destroy()
@@ -175,15 +182,6 @@ namespace Tizen.Flutter.Embedding
             {
                 FlutterDesktopViewResize(View, width, height);
             }
-        }
-
-        public FlutterDesktopPluginRegistrar GetRegistrarForPlugin(string pluginName)
-        {
-            if (IsRunning)
-            {
-                return Engine.GetRegistrarForPlugin(pluginName);
-            }
-            return new FlutterDesktopPluginRegistrar();
         }
     }
 }
