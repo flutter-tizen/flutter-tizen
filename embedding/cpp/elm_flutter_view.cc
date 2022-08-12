@@ -16,6 +16,11 @@ ElmFlutterView::~ElmFlutterView() {
 }
 
 bool ElmFlutterView::RunEngine() {
+  if (IsRunning()) {
+    TizenLog::Error("The engine is already running.");
+    return false;
+  }
+
   if (!parent_) {
     TizenLog::Error("The parent object is invalid.");
     return false;
