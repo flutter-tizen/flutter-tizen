@@ -16,32 +16,41 @@
 #include "flutter_engine.h"
 
 // Displays a Flutter screen in a Tizen application.
-class ElmFlutterView : public flutter::PluginRegistry {
+class ElmFlutterView {
  public:
   explicit ElmFlutterView(Evas_Object *parent) : parent_(parent) {}
+
   explicit ElmFlutterView(Evas_Object *parent, int32_t initial_width,
                           int32_t initial_height)
       : parent_(parent),
         initial_width_(initial_width),
         initial_height_(initial_height) {}
+
   virtual ~ElmFlutterView();
 
-  FlutterDesktopPluginRegistrarRef GetRegistrarForPlugin(
-      const std::string &plugin_name) override;
-
-  bool IsRunning() { return engine_ != nullptr; }
+  // Whether the view is running.
+  bool IsRunning() { return view_ != nullptr; }
 
   Evas_Object *evas_object() { return evas_object_; }
 
-  void Resize(int32_t width, int32_t height);
+  FlutterEngine *engine() { return engine_.get(); }
 
+  // Sets an engine associated with this view.
+  void SetEngine(std::unique_ptr<FlutterEngine> engine) {
+    engine_ = std::move(engine);
+  }
+
+  // Starts running the view with the associated engine, creating if not set.
   bool RunEngine();
 
+  // Resizes the view.
+  void Resize(int32_t width, int32_t height);
+
+  // The current width of the view.
   int32_t GetWidth();
 
+  // The current height of the view.
   int32_t GetHeight();
-
-  void SetEngine(std::unique_ptr<FlutterEngine> engine);
 
  private:
   // The Flutter engine instance.
@@ -50,10 +59,10 @@ class ElmFlutterView : public flutter::PluginRegistry {
   // The Flutter view instance handle.
   FlutterDesktopViewRef view_ = nullptr;
 
-  // The Evas object instance handle.
+  // The backing Evas object for this view.
   Evas_Object *evas_object_ = nullptr;
 
-  // The Evas object's parent instance handle.
+  // The parent of |evas_object_|.
   Evas_Object *parent_ = nullptr;
 
   // The initial width of the view.
