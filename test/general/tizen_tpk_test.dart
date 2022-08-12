@@ -39,7 +39,7 @@ void main() {
       ..createSync(recursive: true)
       ..writeAsStringSync('''
 <manifest package="package_id" version="9.9.9" api-version="4.0">
-    <ui-application appid="app_id" exec="Runner.dll" type="dotnet" api-version="9"/>
+    <ui-application appid="app_id" exec="Runner.dll" type="dotnet"/>
 </manifest>
 ''');
 
@@ -50,7 +50,6 @@ void main() {
     expect(manifest.profile, equals('common'));
     expect(manifest.applicationId, equals('app_id'));
     expect(manifest.applicationType, equals('dotnet'));
-    expect(manifest.dotnetApiLevel, equals('9'));
   });
 
   testUsingContext('TizenManifest.parseFromXml can parse multi-app manifest',

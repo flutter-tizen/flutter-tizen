@@ -126,7 +126,7 @@ class DotnetTpk extends TizenPackage {
 
     final TizenManifest tizenManifest =
         TizenManifest.parseFromXml(tizenProject.manifestFile);
-    final String? apiLevel = tizenManifest.dotnetApiLevel;
+    final String? apiVersion = tizenManifest.apiVersion;
 
     // Run the .NET build.
     if (dotnetCli == null) {
@@ -142,7 +142,7 @@ class DotnetTpk extends TizenPackage {
       if (buildMode.isPrecompiled) 'Release' else 'Debug',
       '-o',
       '${outputDir.path}/', // The trailing '/' is needed.
-      if (apiLevel != null) '/p:TizenApiLevel=$apiLevel',
+      if (apiVersion != null) '/p:TizenApiVersion=$apiVersion',
       '/p:DefineConstants=${buildInfo.deviceProfile.toUpperCase()}_PROFILE',
       tizenProject.editableDirectory.path,
     ]);

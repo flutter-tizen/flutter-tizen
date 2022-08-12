@@ -181,9 +181,6 @@ class TizenManifest {
   /// The application type (either "capp" or "dotnet").
   String? get applicationType => _applications.first.getAttribute('type');
 
-  /// The TizenFX API level of the application.
-  String? get dotnetApiLevel => _applications.first.getAttribute('api-version');
-
   @override
   String toString() => _document.toXmlString(pretty: true);
 }

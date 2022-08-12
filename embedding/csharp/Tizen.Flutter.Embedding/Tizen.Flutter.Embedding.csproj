@@ -6,14 +6,14 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <TizenApiLevel Condition="'$(TizenApiLevel)' == ''">4</TizenApiLevel>
+    <TizenApiVersion Condition="'$(TizenApiVersion)' == ''">4.0</TizenApiVersion>
   </PropertyGroup>
 
-  <ItemGroup Condition="$(TizenApiLevel) &lt; 9">
+  <ItemGroup Condition="$(TizenApiVersion) &lt; 6.5">
     <PackageReference Include="Tizen.NET" Version="4.0.1.14164" />
   </ItemGroup>
 
-  <ItemGroup Condition="$(TizenApiLevel) &gt;= 9">
+  <ItemGroup Condition="$(TizenApiVersion) &gt;= 6.5">
     <PackageReference Include="Tizen.NET" Version="9.0.0.16760" />
   </ItemGroup>
 
