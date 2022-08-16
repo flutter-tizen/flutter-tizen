@@ -148,7 +148,7 @@ namespace Tizen.Flutter.Embedding
                 return false;
             }
 
-            EvasObject = new EvasObjectImpl(Parent, FlutterDesktopViewGetEvasObject(View));
+            EvasObject = new EvasObjectImpl(Parent, FlutterDesktopViewGetNativeHandle(View));
             if (!EvasObject.IsRealized)
             {
                 TizenLog.Error("Could not get an Evas object.");

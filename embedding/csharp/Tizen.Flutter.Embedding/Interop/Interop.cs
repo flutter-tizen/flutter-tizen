@@ -111,7 +111,7 @@ namespace Tizen.Flutter.Embedding
             FlutterDesktopView view);
 
         [DllImport("flutter_tizen.so")]
-        public static extern IntPtr FlutterDesktopViewGetEvasObject(
+        public static extern IntPtr FlutterDesktopViewGetNativeHandle(
             FlutterDesktopView view);
 
         [DllImport("flutter_tizen.so")]
