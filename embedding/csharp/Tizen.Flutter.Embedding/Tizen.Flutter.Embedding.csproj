@@ -5,8 +5,16 @@
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
 
-  <ItemGroup>
+  <PropertyGroup>
+    <TizenApiVersion Condition="'$(TizenApiVersion)' == ''">4.0</TizenApiVersion>
+  </PropertyGroup>
+
+  <ItemGroup Condition="$(TizenApiVersion) &lt; 6.5">
     <PackageReference Include="Tizen.NET" Version="4.0.1.14164" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$(TizenApiVersion) &gt;= 6.5">
+    <PackageReference Include="Tizen.NET" Version="9.0.0.16760" />
   </ItemGroup>
 
 </Project>
