@@ -16,6 +16,11 @@ ElmFlutterView::~ElmFlutterView() {
 }
 
 bool ElmFlutterView::RunEngine() {
+  if (IsRunning()) {
+    TizenLog::Error("The engine is already running.");
+    return false;
+  }
+
   if (!parent_) {
     TizenLog::Error("The parent object is invalid.");
     return false;
@@ -51,10 +56,6 @@ bool ElmFlutterView::RunEngine() {
   return true;
 }
 
-void ElmFlutterView::SetEngine(std::unique_ptr<FlutterEngine> engine) {
-  engine_ = std::move(engine);
-}
-
 void ElmFlutterView::Resize(int32_t width, int32_t height) {
   assert(IsRunning());
 
@@ -80,12 +81,4 @@ int32_t ElmFlutterView::GetHeight() {
   int32_t height = 0;
   evas_object_geometry_get(evas_object_, nullptr, nullptr, nullptr, &height);
   return height;
-}
-
-FlutterDesktopPluginRegistrarRef ElmFlutterView::GetRegistrarForPlugin(
-    const std::string &plugin_name) {
-  if (engine_) {
-    return engine_->GetRegistrarForPlugin(plugin_name.c_str());
-  }
-  return nullptr;
 }
