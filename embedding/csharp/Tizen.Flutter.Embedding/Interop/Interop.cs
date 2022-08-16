@@ -68,10 +68,6 @@ namespace Tizen.Flutter.Embedding
             FlutterDesktopEngine engine);
 
         [DllImport("flutter_tizen.so")]
-        public static extern IntPtr FlutterDesktopPluginRegistrarGetNativeWindow(
-            FlutterDesktopPluginRegistrar registrar);
-
-        [DllImport("flutter_tizen.so")]
         public static extern void FlutterDesktopEngineNotifyAppControl(
             FlutterDesktopEngine engine,
             SafeAppControlHandle handle);
