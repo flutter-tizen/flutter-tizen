@@ -43,6 +43,8 @@ namespace Tizen.Flutter.Embedding
         /// </summary>
         public bool IsRunning => !View.IsInvalid;
 
+        private uint lastTouchEventTime = 0;
+
         /// <summary>
         /// The current width of the view.
         /// </summary>
@@ -90,13 +92,17 @@ namespace Tizen.Flutter.Embedding
             global::System.Runtime.InteropServices.HandleRef nativeImageQueueHandle = (global::System.Runtime.InteropServices.HandleRef)field?.GetValue(nativeImageQueue);
             base.SetImage(nativeImageQueue.GenerateUrl().ToString());
 
+            Type imageViewBaseType = typeof(ImageView).BaseType.BaseType.BaseType.BaseType;
+            FieldInfo imageViewField = imageViewBaseType.GetField("swigCPtr", global::System.Reflection.BindingFlags.NonPublic | global::System.Reflection.BindingFlags.Instance);
+            global::System.Runtime.InteropServices.HandleRef imageViewHandle = (global::System.Runtime.InteropServices.HandleRef)imageViewField?.GetValue(this);
+
             var viewProperties = new FlutterDesktopViewProperties
             {
                 width = base.Size2D.Width,
                 height = base.Size2D.Height,
             };
 
-            View = FlutterDesktopViewCreateFromNativeImageQueue(ref viewProperties, Engine.Engine, nativeImageQueueHandle.Handle);
+            View = FlutterDesktopViewCreateFromImageView(ref viewProperties, Engine.Engine, imageViewHandle.Handle, nativeImageQueueHandle.Handle, NUIApplication.GetDefaultWindow().GetNativeId());
             if (View.IsInvalid)
             {
                 TizenLog.Error("Could not launch a Flutter view.");
@@ -112,6 +118,10 @@ namespace Tizen.Flutter.Embedding
 
             base.TouchEvent += (object source, View.TouchEventArgs eventArgs) =>
             {
+                if (lastTouchEventTime == eventArgs.Touch.GetTime())
+                {
+                    return false;
+                }
                 FocusManager.Instance.SetCurrentFocusView(this);
                 FlutterDesktopViewMouseEventType type;
                 switch (eventArgs.Touch.GetState(0))
@@ -127,11 +137,13 @@ namespace Tizen.Flutter.Embedding
                         type = FlutterDesktopViewMouseEventType.kMouseMove;
                         break;
                 }
+                lastTouchEventTime = eventArgs.Touch.GetTime();
                 FlutterDesktopViewOnMouseEvent(View, type, eventArgs.Touch.GetLocalPosition(0).X, eventArgs.Touch.GetLocalPosition(0).Y, eventArgs.Touch.GetTime(), eventArgs.Touch.GetDeviceId(0));
                 return true;
             };
             return true;
         }
+
 
         /// <summary>
         /// Sets an engine associated with this view.

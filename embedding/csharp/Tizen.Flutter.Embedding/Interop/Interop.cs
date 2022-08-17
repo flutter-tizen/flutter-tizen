@@ -22,7 +22,6 @@ namespace Tizen.Flutter.Embedding
             kMouseDown,
             kMouseUp,
             kMouseMove,
-            kMouseScroll,
         };
 
         [StructLayout(LayoutKind.Sequential)]
