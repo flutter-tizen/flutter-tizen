@@ -96,9 +96,15 @@ class DotnetTpk extends TizenPackage {
         getEngineArtifactsDirectory(buildInfo.targetArch, buildMode);
     final Directory commonDir = engineDir.parent.childDirectory('tizen-common');
 
+    final TizenManifest tizenManifest =
+        TizenManifest.parseFromXml(tizenProject.manifestFile);
+    final String? apiVersion = tizenManifest.apiVersion;
+    final String? nuiSupport = apiVersion == "6.5" ? "_nui" : "";
+
     final File engineBinary = engineDir.childFile('libflutter_engine.so');
     final File embedder =
-        engineDir.childFile('libflutter_tizen_${buildInfo.deviceProfile}.so');
+        engineDir.childFile('libflutter_tizen_${buildInfo.deviceProfile}${nuiSupport}.so');
+
     final File icuData =
         commonDir.childDirectory('icu').childFile('icudtl.dat');
 
@@ -123,10 +129,6 @@ class DotnetTpk extends TizenPackage {
     if (pluginsLibDir.existsSync()) {
       copyDirectory(pluginsLibDir, libDir);
     }
-
-    final TizenManifest tizenManifest =
-        TizenManifest.parseFromXml(tizenProject.manifestFile);
-    final String? apiVersion = tizenManifest.apiVersion;
 
     // Run the .NET build.
     if (dotnetCli == null) {

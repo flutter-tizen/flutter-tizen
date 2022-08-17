@@ -102,13 +102,44 @@ namespace Tizen.Flutter.Embedding
             ref FlutterDesktopViewProperties view_properties, FlutterDesktopEngine engine, IntPtr parent);
 
         [DllImport("flutter_tizen.so")]
-        public static extern void FlutterDesktopViewDestroy(FlutterDesktopView view);
+        public static extern FlutterDesktopView FlutterDesktopViewCreateFromImageView(
+            ref FlutterDesktopViewProperties view_properties,
+            FlutterDesktopEngine engine,
+            IntPtr image_view,
+            IntPtr native_image_queue,
+            int default_window_id);
+
+        [DllImport("flutter_tizen.so")]
+        public static extern void FlutterDesktopViewDestroy(
+            FlutterDesktopView view);
 
         [DllImport("flutter_tizen.so")]
         public static extern IntPtr FlutterDesktopViewGetNativeHandle(FlutterDesktopView view);
 
         [DllImport("flutter_tizen.so")]
-        public static extern void FlutterDesktopViewResize(FlutterDesktopView view, int width, int height);
+        public static extern void FlutterDesktopViewResize(
+            FlutterDesktopView view,
+            int width,
+            int height);
+
+        [DllImport("flutter_tizen.so")]
+        public static extern void FlutterDesktopViewOnMouseEvent(
+            FlutterDesktopView view,
+            FlutterDesktopViewMouseEventType type,
+            double x,
+            double y,
+            uint timestamp,
+            int device_id);
+
+        [DllImport("flutter_tizen.so")]
+        public static extern void FlutterDesktopViewOnKeyEvent(
+            FlutterDesktopView view,
+            string key,
+            string key_string,
+            uint modifiers,
+            uint scan_code,
+            [MarshalAs(UnmanagedType.U1)]
+            bool is_down);
         #endregion
 
         #region flutter_messenger.h

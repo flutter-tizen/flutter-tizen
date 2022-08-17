@@ -16,12 +16,12 @@ namespace Tizen.Flutter.Embedding
     /// <summary>
     /// Displays a Flutter screen in a Tizen application.
     /// </summary>
-    public class NUIFlutterView : ImageView, IPluginRegistry
+    public class NUIFlutterView : ImageView
     {
         /// <summary>
         /// The Flutter engine instance.
         /// </summary>
-        private FlutterEngine Engine { get; set; } = null;
+        public FlutterEngine Engine { get; set; } = null;
 
         /// <summary>
         /// The Flutter view instance handle.
@@ -76,9 +76,15 @@ namespace Tizen.Flutter.Embedding
         /// </summary>
         public bool RunEngine()
         {
+            if (IsRunning)
+            {
+                TizenLog.Error("The engine is already running.");
+                return false;
+            }
+
             if (Engine == null)
             {
-                Engine = new FlutterEngine();
+                Engine = new FlutterEngine("", new List<string>());
             }
 
             if (!Engine.IsValid)
@@ -177,15 +183,6 @@ namespace Tizen.Flutter.Embedding
             {
                 FlutterDesktopViewResize(View, width, height);
             }
-        }
-
-        public FlutterDesktopPluginRegistrar GetRegistrarForPlugin(string pluginName)
-        {
-            if (IsRunning)
-            {
-                return Engine.GetRegistrarForPlugin(pluginName);
-            }
-            return new FlutterDesktopPluginRegistrar();
         }
     }
 }
