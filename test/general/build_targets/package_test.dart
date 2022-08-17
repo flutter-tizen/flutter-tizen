@@ -334,7 +334,8 @@ type = app
           outputDir.childFile('inc/generated_plugin_registrant.h');
       final File pluginsLib = outputDir.childFile('lib/libflutter_plugins.so');
       final File embeddingHeader = outputDir.childFile('inc/flutter.h');
-      final File embeddingLib = outputDir.childFile('lib/libembedding_cpp.a');
+      final File embeddingLib =
+          outputDir.childFile('Release/libembedding_cpp.a');
 
       expect(flutterAssetsDir, exists);
       expect(engineBinary, exists);

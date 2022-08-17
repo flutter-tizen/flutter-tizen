@@ -412,6 +412,9 @@ class NativeModule extends TizenPackage {
         FlutterProject.fromDirectory(environment.projectDir);
     final TizenProject tizenProject = TizenProject.fromFlutter(project);
 
+    final BuildMode buildMode = buildInfo.buildInfo.mode;
+    final String buildConfig = getBuildConfig(buildMode);
+
     final Directory outputDir = environment.outputDir;
     if (outputDir.existsSync()) {
       outputDir.deleteSync(recursive: true);
@@ -423,6 +426,8 @@ class NativeModule extends TizenPackage {
       ..createSync(recursive: true);
     final Directory libDir = outputDir.childDirectory('lib')
       ..createSync(recursive: true);
+    final Directory buildDir = outputDir.childDirectory(buildConfig)
+      ..createSync(recursive: true);
 
     // Copy necessary files.
     copyDirectory(
@@ -430,7 +435,6 @@ class NativeModule extends TizenPackage {
       resDir.childDirectory('flutter_assets'),
     );
 
-    final BuildMode buildMode = buildInfo.buildInfo.mode;
     final Directory engineDir =
         getEngineArtifactsDirectory(buildInfo.targetArch, buildMode);
     final Directory commonDir = engineDir.parent.childDirectory('tizen-common');
@@ -482,6 +486,6 @@ class NativeModule extends TizenPackage {
     copyDirectory(embeddingDir.childDirectory('include'), incDir);
 
     final File embeddingLib = embeddingDir.childFile('libembedding_cpp.a');
-    embeddingLib.copySync(libDir.childFile(embeddingLib.basename).path);
+    embeddingLib.copySync(buildDir.childFile(embeddingLib.basename).path);
   }
 }
