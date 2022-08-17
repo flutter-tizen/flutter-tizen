@@ -25,14 +25,17 @@ namespace Tizen.Flutter.Embedding
         /// </summary>
         public bool IsValid => !Engine.IsInvalid;
 
-        public FlutterEngine(string dartEntrypoint, List<string> dartEntrypointArgs) : this(
-            "../res/flutter_assets", "../res/icudtl.dat", "../lib/libapp.so", dartEntrypoint, dartEntrypointArgs)
+        public FlutterEngine(string dartEntrypoint = "", List<string> dartEntrypointArgs = null)
+            : this("../res/flutter_assets", "../res/icudtl.dat", "../lib/libapp.so",
+                   dartEntrypoint, dartEntrypointArgs)
         {
         }
 
         public FlutterEngine(string assetsPath, string icuDataPath, string aotLibraryPath,
-            string dartEntrypoint, List<string> dartEntrypointArgs)
+                             string dartEntrypoint = "", List<string> dartEntrypointArgs = null)
         {
+            dartEntrypointArgs = dartEntrypointArgs ?? new List<string>();
+
             using (var switches = new StringArray(ParseEngineArgs()))
             using (var entrypointArgs = new StringArray(dartEntrypointArgs))
             {
@@ -125,8 +128,8 @@ namespace Tizen.Flutter.Embedding
         }
 
         /// <summary>
-        /// Notifies that the locale has changed.
-        /// ThisThis method sends a "locale change" message to Flutter.
+        /// Notifies that the system locale has changed.
+        /// This method sends a "locale change" message to Flutter.
         /// </summary>
         public void NotifyLocaleChange()
         {

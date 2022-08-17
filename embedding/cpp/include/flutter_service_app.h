@@ -21,32 +21,43 @@ class FlutterServiceApp : public flutter::PluginRegistry {
   explicit FlutterServiceApp() {}
   virtual ~FlutterServiceApp() {}
 
+  // Called when the app is starting.
+  //
+  // Invoking this method implicitly initializes |engine_|.
+  // Any method that overrides this method must invoke this method.
   virtual bool OnCreate();
 
+  // Called when the app is terminating.
   virtual void OnTerminate();
 
+  // Called when an app control message has been received.
   virtual void OnAppControlReceived(app_control_h app_control);
 
+  // Called when the system is running out of memory.
   virtual void OnLowMemory(app_event_info_h event_info);
 
+  // Called when the device is running out of battery.
   virtual void OnLowBattery(app_event_info_h event_info) {}
 
+  // Called when the system language has changed.
   virtual void OnLanguageChanged(app_event_info_h event_info);
 
+  // Called when the system region format has changed.
   virtual void OnRegionFormatChanged(app_event_info_h event_info);
 
-  virtual void OnDeviceOrientationChanged(app_event_info_h event_info) {}
-
+  // Runs the main loop of the app.
   virtual int Run(int argc, char **argv);
 
-  FlutterDesktopPluginRegistrarRef GetRegistrarForPlugin(
-      const std::string &plugin_name) override;
-
+  // Whether the app has started.
   bool IsRunning() { return engine_ != nullptr; }
 
   void SetDartEntrypoint(const std::string &entrypoint) {
     dart_entrypoint_ = entrypoint;
   }
+
+  // |flutter::PluginRegistry|
+  FlutterDesktopPluginRegistrarRef GetRegistrarForPlugin(
+      const std::string &plugin_name) override;
 
  private:
   // The optional entrypoint in the Dart project.

@@ -62,7 +62,7 @@ class FlutterEngine : public flutter::PluginRegistry {
   // "system channel".
   void NotifyLowMemoryWarning();
 
-  // Notifies that the locale has changed.
+  // Notifies that the system locale has changed.
   //
   // This method sends a "locale change" message to Flutter.
   void NotifyLocaleChange();
@@ -70,6 +70,7 @@ class FlutterEngine : public flutter::PluginRegistry {
   // Gives up ownership of |engine_|, but keeps a weak reference to it.
   FlutterDesktopEngineRef RelinquishEngine();
 
+  // |flutter::PluginRegistry|
   FlutterDesktopPluginRegistrarRef GetRegistrarForPlugin(
       const std::string& plugin_name) override;
 

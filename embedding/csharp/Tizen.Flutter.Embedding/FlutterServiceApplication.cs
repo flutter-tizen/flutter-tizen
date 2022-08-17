@@ -29,6 +29,11 @@ namespace Tizen.Flutter.Embedding
         /// </summary>
         internal FlutterEngine Engine { get; private set; } = null;
 
+        /// <summary>
+        /// Whether the app has started.
+        /// </summary>
+        public bool IsRunning => Engine != null;
+
         public override void Run(string[] args)
         {
             // Log any unhandled exception.
@@ -61,7 +66,7 @@ namespace Tizen.Flutter.Embedding
         {
             base.OnTerminate();
 
-            Debug.Assert(Engine.IsValid);
+            Debug.Assert(IsRunning);
 
             DotnetPluginRegistry.Instance.RemoveAllPlugins();
 
@@ -71,7 +76,7 @@ namespace Tizen.Flutter.Embedding
 
         protected override void OnAppControlReceived(AppControlReceivedEventArgs e)
         {
-            Debug.Assert(Engine.IsValid);
+            Debug.Assert(IsRunning);
 
             Engine.NotifyAppControl(e.ReceivedAppControl);
         }
@@ -80,7 +85,7 @@ namespace Tizen.Flutter.Embedding
         {
             base.OnLowMemory(e);
 
-            Debug.Assert(Engine.IsValid);
+            Debug.Assert(IsRunning);
 
             Engine.NotifyLowMemoryWarning();
         }
@@ -89,7 +94,7 @@ namespace Tizen.Flutter.Embedding
         {
             base.OnLocaleChanged(e);
 
-            Debug.Assert(Engine.IsValid);
+            Debug.Assert(IsRunning);
 
             Engine.NotifyLocaleChange();
         }
@@ -98,18 +103,14 @@ namespace Tizen.Flutter.Embedding
         {
             base.OnRegionFormatChanged(e);
 
-            Debug.Assert(Engine.IsValid);
+            Debug.Assert(IsRunning);
 
             Engine.NotifyLocaleChange();
         }
 
-        /// <summary>
-        /// Returns the plugin registrar handle for the plugin with the given name.
-        /// The name must be unique across the application.
-        /// </summary>
         public FlutterDesktopPluginRegistrar GetRegistrarForPlugin(string pluginName)
         {
-            if (Engine.IsValid)
+            if (IsRunning)
             {
                 return Engine.GetRegistrarForPlugin(pluginName);
             }
