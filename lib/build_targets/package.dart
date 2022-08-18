@@ -99,11 +99,11 @@ class DotnetTpk extends TizenPackage {
     final TizenManifest tizenManifest =
         TizenManifest.parseFromXml(tizenProject.manifestFile);
     final String? apiVersion = tizenManifest.apiVersion;
-    final String? nuiSupport = apiVersion == "6.5" ? "_nui" : "";
+    final String nuiSupport = apiVersion == '6.5' ? '_nui' : '';
 
     final File engineBinary = engineDir.childFile('libflutter_engine.so');
-    final File embedder =
-        engineDir.childFile('libflutter_tizen_${buildInfo.deviceProfile}${nuiSupport}.so');
+    final File embedder = engineDir.childFile(
+        'libflutter_tizen_${buildInfo.deviceProfile}$nuiSupport.so');
 
     final File icuData =
         commonDir.childDirectory('icu').childFile('icudtl.dat');

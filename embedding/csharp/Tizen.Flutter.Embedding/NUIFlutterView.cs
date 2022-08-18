@@ -92,13 +92,13 @@ namespace Tizen.Flutter.Embedding
                 throw new Exception("Could not create a Flutter engine.");
             }
 
-            Type baseType = typeof(NativeImageQueue).BaseType.BaseType.BaseType;
+            global::System.Type baseType = typeof(NativeImageQueue).BaseType.BaseType.BaseType;
             FieldInfo field = baseType.GetField("swigCPtr", global::System.Reflection.BindingFlags.NonPublic | global::System.Reflection.BindingFlags.Instance);
             var nativeImageQueue = new NativeImageQueue((uint)base.Size2D.Width, (uint)base.Size2D.Height, NativeImageQueue.ColorFormat.RGBA8888);
             global::System.Runtime.InteropServices.HandleRef nativeImageQueueHandle = (global::System.Runtime.InteropServices.HandleRef)field?.GetValue(nativeImageQueue);
             base.SetImage(nativeImageQueue.GenerateUrl().ToString());
 
-            Type imageViewBaseType = typeof(ImageView).BaseType.BaseType.BaseType.BaseType;
+            global::System.Type imageViewBaseType = typeof(ImageView).BaseType.BaseType.BaseType.BaseType;
             FieldInfo imageViewField = imageViewBaseType.GetField("swigCPtr", global::System.Reflection.BindingFlags.NonPublic | global::System.Reflection.BindingFlags.Instance);
             global::System.Runtime.InteropServices.HandleRef imageViewHandle = (global::System.Runtime.InteropServices.HandleRef)imageViewField?.GetValue(this);
 
@@ -118,7 +118,7 @@ namespace Tizen.Flutter.Embedding
             base.Focusable = true;
             base.KeyEvent += (object source, View.KeyEventArgs eventArgs) =>
             {
-                FlutterDesktopViewOnKeyEvent(View, eventArgs.Key.LogicalKey, eventArgs.Key.KeyString, (uint)eventArgs.Key.KeyModifier, (uint)eventArgs.Key.KeyCode, eventArgs.Key.State == Key.StateType.Down ? true : false);
+                FlutterDesktopViewOnKeyEvent(View, eventArgs.Key.KeyPressedName, eventArgs.Key.KeyPressed, (uint)eventArgs.Key.KeyModifier, (uint)eventArgs.Key.KeyCode, eventArgs.Key.State == Key.StateType.Down ? true : false);
                 return true;
             };
 
