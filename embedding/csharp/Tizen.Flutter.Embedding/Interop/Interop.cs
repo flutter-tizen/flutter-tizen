@@ -58,75 +58,55 @@ namespace Tizen.Flutter.Embedding
             ref FlutterDesktopEngineProperties engine_properties);
 
         [DllImport("flutter_tizen.so")]
-        public static extern bool FlutterDesktopEngineRun(
-            FlutterDesktopEngine engine);
+        public static extern bool FlutterDesktopEngineRun(FlutterDesktopEngine engine);
 
         [DllImport("flutter_tizen.so")]
-        public static extern void FlutterDesktopEngineShutdown(
-            FlutterDesktopEngine engine);
+        public static extern void FlutterDesktopEngineShutdown(FlutterDesktopEngine engine);
 
         [DllImport("flutter_tizen.so")]
         public static extern FlutterDesktopPluginRegistrar FlutterDesktopEngineGetPluginRegistrar(
-            FlutterDesktopEngine engine,
-            string plugin_name);
+            FlutterDesktopEngine engine, string plugin_name);
 
         [DllImport("flutter_tizen.so")]
-        public static extern FlutterDesktopMessenger FlutterDesktopEngineGetMessenger(
-            FlutterDesktopEngine engine);
+        public static extern FlutterDesktopMessenger FlutterDesktopEngineGetMessenger(FlutterDesktopEngine engine);
 
         [DllImport("flutter_tizen.so")]
         public static extern void FlutterDesktopEngineNotifyAppControl(
-            FlutterDesktopEngine engine,
-            SafeAppControlHandle handle);
+            FlutterDesktopEngine engine, SafeAppControlHandle handle);
 
         [DllImport("flutter_tizen.so")]
-        public static extern void FlutterDesktopEngineNotifyLocaleChange(
-            FlutterDesktopEngine engine);
+        public static extern void FlutterDesktopEngineNotifyLocaleChange(FlutterDesktopEngine engine);
 
         [DllImport("flutter_tizen.so")]
-        public static extern void FlutterDesktopEngineNotifyLowMemoryWarning(
-            FlutterDesktopEngine engine);
+        public static extern void FlutterDesktopEngineNotifyLowMemoryWarning(FlutterDesktopEngine engine);
 
         [DllImport("flutter_tizen.so")]
-        public static extern void FlutterDesktopEngineNotifyAppIsResumed(
-            FlutterDesktopEngine engine);
+        public static extern void FlutterDesktopEngineNotifyAppIsResumed(FlutterDesktopEngine engine);
 
         [DllImport("flutter_tizen.so")]
-        public static extern void FlutterDesktopEngineNotifyAppIsPaused(
-            FlutterDesktopEngine engine);
+        public static extern void FlutterDesktopEngineNotifyAppIsPaused(FlutterDesktopEngine engine);
 
         [DllImport("flutter_tizen.so")]
         public static extern FlutterDesktopView FlutterDesktopViewCreateFromNewWindow(
-            ref FlutterDesktopWindowProperties window_properties,
-            FlutterDesktopEngine engine);
+            ref FlutterDesktopWindowProperties window_properties, FlutterDesktopEngine engine);
 
         [DllImport("flutter_tizen.so")]
         public static extern FlutterDesktopView FlutterDesktopViewCreateFromElmParent(
-            ref FlutterDesktopViewProperties view_properties,
-            FlutterDesktopEngine engine,
-            IntPtr parent);
+            ref FlutterDesktopViewProperties view_properties, FlutterDesktopEngine engine, IntPtr parent);
 
         [DllImport("flutter_tizen.so")]
-        public static extern void FlutterDesktopViewDestroy(
-            FlutterDesktopView view);
+        public static extern void FlutterDesktopViewDestroy(FlutterDesktopView view);
 
         [DllImport("flutter_tizen.so")]
-        public static extern IntPtr FlutterDesktopViewGetNativeHandle(
-            FlutterDesktopView view);
+        public static extern IntPtr FlutterDesktopViewGetNativeHandle(FlutterDesktopView view);
 
         [DllImport("flutter_tizen.so")]
-        public static extern void FlutterDesktopViewResize(
-            FlutterDesktopView view,
-            int width,
-            int height);
+        public static extern void FlutterDesktopViewResize(FlutterDesktopView view, int width, int height);
         #endregion
 
         #region flutter_messenger.h
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate void FlutterDesktopBinaryReply(
-            IntPtr data,
-            uint data_size,
-            IntPtr user_data);
+        public delegate void FlutterDesktopBinaryReply(IntPtr data, uint data_size, IntPtr user_data);
 
         [StructLayout(LayoutKind.Sequential)]
         public struct FlutterDesktopMessage
@@ -140,41 +120,26 @@ namespace Tizen.Flutter.Embedding
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void FlutterDesktopMessageCallback(
-            [MarshalAs(
-                UnmanagedType.CustomMarshaler,
-                MarshalTypeRef = typeof(FlutterDesktopMessenger.Marshaler))]
+            [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(FlutterDesktopMessenger.Marshaler))]
             FlutterDesktopMessenger messenger,
-            IntPtr message,
-            IntPtr user_data);
+            IntPtr message, IntPtr user_data);
 
         [DllImport("flutter_tizen.so")]
         public static extern bool FlutterDesktopMessengerSend(
-            FlutterDesktopMessenger messenger,
-            string channel,
-            IntPtr message,
-            uint message_size);
+            FlutterDesktopMessenger messenger, string channel, IntPtr message, uint message_size);
 
         [DllImport("flutter_tizen.so")]
         public static extern bool FlutterDesktopMessengerSendWithReply(
-            FlutterDesktopMessenger messenger,
-            string channel,
-            IntPtr message,
-            uint message_size,
-            FlutterDesktopBinaryReply reply,
-            IntPtr user_data);
+            FlutterDesktopMessenger messenger, string channel, IntPtr message, uint message_size,
+            FlutterDesktopBinaryReply reply, IntPtr user_data);
 
         [DllImport("flutter_tizen.so")]
         public static extern void FlutterDesktopMessengerSendResponse(
-            FlutterDesktopMessenger messenger,
-            IntPtr handle,
-            IntPtr data,
-            uint data_length);
+            FlutterDesktopMessenger messenger, IntPtr handle, IntPtr data, uint data_length);
 
         [DllImport("flutter_tizen.so")]
         public static extern void FlutterDesktopMessengerSetCallback(
-            FlutterDesktopMessenger messenger,
-            string channel,
-            FlutterDesktopMessageCallback callback,
+            FlutterDesktopMessenger messenger, string channel, FlutterDesktopMessageCallback callback,
             IntPtr user_data);
         #endregion
 

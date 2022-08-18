@@ -3,8 +3,6 @@
 // found in the LICENSE file.
 
 using System;
-using System.Linq;
-using System.Threading.Tasks;
 using NSubstitute;
 using Xunit;
 

@@ -37,8 +37,8 @@ namespace Tizen.Flutter.Embedding
         /// </summary>
         /// <param name="errorCode">An error code string.</param>
         /// <param name="errorMessage">An error message String, possibly null.</param>
-        /// <param name="errorDetails">Error details, possibly null. Consider supporting
-        /// <see cref="Exception"/>in your codec.This is the most common value passed to this field.</param>
+        /// <param name="errorDetails">Error details, possibly null. Consider supporting <see cref="Exception"/>
+        /// in your codec. This is the most common value passed to this field.</param>
         /// <returns>A byte array containing the encoding.</returns>
         byte[] EncodeErrorEnvelope(string errorCode, string errorMessage, object errorDetails);
 
@@ -47,8 +47,8 @@ namespace Tizen.Flutter.Embedding
         /// </summary>
         /// <param name="errorCode">An error code string.</param>
         /// <param name="errorMessage">An error message String, possibly null.</param>
-        /// <param name="errorDetails">Error details, possibly null. Consider supporting
-        /// <see cref="Exception"/>in your codec.This is the most common value passed to this field.</param>
+        /// <param name="errorDetails">Error details, possibly null. Consider supporting <see cref="Exception"/>
+        /// in your codec. This is the most common value passed to this field.</param>
         /// <param name="errorStacktrace">Platform stacktrace for the error. possibly null.</param>
         /// <returns>A byte array containing the encoding.</returns>
         byte[] EncodeErrorEnvelope(string errorCode, string errorMessage, object errorDetails, string errorStacktrace);

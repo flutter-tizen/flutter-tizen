@@ -72,7 +72,8 @@ namespace Tizen.Flutter.Embedding
 
         /// <summary>
         /// Whether the app should be displayed over other apps.
-        /// If true, the "http://tizen.org/privilege/window.priority.set" privilege must be added to tizen-manifest.xml file.
+        /// If true, the "http://tizen.org/privilege/window.priority.set" privilege must be added to tizen-manifest.xml
+        /// file.
         /// </summary>
         protected bool IsTopLevel { get; set; } = false;
 
@@ -129,7 +130,7 @@ namespace Tizen.Flutter.Embedding
             }
 
 #if WEARABLE_PROFILE
-            if (RendererType ==  FlutterRendererType.EGL)
+            if (RendererType == FlutterRendererType.EGL)
             {
                 throw new Exception("FlutterRendererType.kEGL is not supported by this profile.");
             }

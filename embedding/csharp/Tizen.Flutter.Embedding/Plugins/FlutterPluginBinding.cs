@@ -9,7 +9,7 @@ namespace Tizen.Flutter.Embedding
     /// </summary>
     /// <remarks>
     /// This interface is used by Flutter plugins to access the Flutter engine.
-    /// Currently, only <see cref="IBinaryMessenger" /> is supported, but more interfaces may be added in the future.
+    /// Currently, only <see cref="IBinaryMessenger"/> is supported, but more interfaces may be added in the future.
     /// </remarks>
     public interface IFlutterPluginBinding
     {

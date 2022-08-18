@@ -16,10 +16,10 @@ namespace Tizen.Flutter.Embedding
         private static DefaultBinaryMessenger _instance;
         private static readonly object _lock = new object();
         private readonly FlutterDesktopMessenger _messenger;
-        private readonly Dictionary<string, BinaryMessageHandler> _handlers
-            = new Dictionary<string, BinaryMessageHandler>();
-        private readonly Dictionary<int, TaskCompletionSource<byte[]>> _replyCallbackSources
-            = new Dictionary<int, TaskCompletionSource<byte[]>>();
+        private readonly Dictionary<string, BinaryMessageHandler> _handlers =
+            new Dictionary<string, BinaryMessageHandler>();
+        private readonly Dictionary<int, TaskCompletionSource<byte[]>> _replyCallbackSources =
+            new Dictionary<int, TaskCompletionSource<byte[]>>();
         private readonly FlutterDesktopBinaryReply _replyCallback;
         private readonly FlutterDesktopMessageCallback _messageCallback;
 
@@ -78,12 +78,14 @@ namespace Tizen.Flutter.Embedding
             }
             if (message == null)
             {
-                FlutterDesktopMessengerSendWithReply(_messenger, channel, IntPtr.Zero, 0, _replyCallback, (IntPtr)replyId);
+                FlutterDesktopMessengerSendWithReply(
+                    _messenger, channel, IntPtr.Zero, 0, _replyCallback, (IntPtr)replyId);
                 return tcs.Task;
             }
             using (var pinned = PinnedObject.Get(message))
             {
-                FlutterDesktopMessengerSendWithReply(_messenger, channel, pinned.Pointer, (uint)message.Length, _replyCallback, (IntPtr)replyId);
+                FlutterDesktopMessengerSendWithReply(
+                    _messenger, channel, pinned.Pointer, (uint)message.Length, _replyCallback, (IntPtr)replyId);
             }
             return tcs.Task;
         }
@@ -124,7 +126,8 @@ namespace Tizen.Flutter.Embedding
                 {
                     using (var pinned = PinnedObject.Get(replyBytes))
                     {
-                        FlutterDesktopMessengerSendResponse(messenger, receivedMessage.response_handle, pinned.Pointer, (uint)replyBytes.Length);
+                        FlutterDesktopMessengerSendResponse(
+                            messenger, receivedMessage.response_handle, pinned.Pointer, (uint)replyBytes.Length);
                     }
                 }
                 else

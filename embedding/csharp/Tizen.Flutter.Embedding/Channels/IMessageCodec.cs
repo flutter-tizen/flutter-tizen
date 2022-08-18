@@ -6,7 +6,7 @@ namespace Tizen.Flutter.Embedding
 {
     /// <summary>
     /// A message encoding/decoding mechanism.
-    /// <para>Both operations throw an exception, if conversion fails, Such situations should be treated
+    /// <para>Both operations throw an exception, if conversion fails. Such situations should be treated
     /// as programming errors.</para>
     /// </summary>
     public interface IMessageCodec<T>
