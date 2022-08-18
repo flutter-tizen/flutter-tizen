@@ -102,8 +102,8 @@ class DotnetTpk extends TizenPackage {
     final String nuiSupport = apiVersion == '6.5' ? '_nui' : '';
 
     final File engineBinary = engineDir.childFile('libflutter_engine.so');
-    final File embedder = engineDir.childFile(
-        'libflutter_tizen_${buildInfo.deviceProfile}$nuiSupport.so');
+    final File embedder = engineDir
+        .childFile('libflutter_tizen_${buildInfo.deviceProfile}$nuiSupport.so');
 
     final File icuData =
         commonDir.childDirectory('icu').childFile('icudtl.dat');
@@ -137,6 +137,7 @@ class DotnetTpk extends TizenPackage {
         'Install the latest .NET SDK from: https://dotnet.microsoft.com/download',
       );
     }
+    final String nuiSupportDefine = apiVersion == '6.5' ? 'NUI_SUPPORT;' : '';
     final RunResult result = await _processUtils.run(<String>[
       dotnetCli!.path,
       'build',
@@ -145,7 +146,7 @@ class DotnetTpk extends TizenPackage {
       '-o',
       '${outputDir.path}/', // The trailing '/' is needed.
       if (apiVersion != null) '/p:TizenApiVersion=$apiVersion',
-      '/p:DefineConstants=${buildInfo.deviceProfile.toUpperCase()}_PROFILE',
+      '/p:DefineConstants=$nuiSupportDefine${buildInfo.deviceProfile.toUpperCase()}_PROFILE',
       tizenProject.editableDirectory.path,
     ]);
     if (result.exitCode != 0) {

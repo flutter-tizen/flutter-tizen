@@ -43,7 +43,12 @@ namespace Tizen.Flutter.Embedding
         /// </summary>
         public bool IsRunning => !View.IsInvalid;
 
+#if NUI_SUPPORT
+        /// <summary>
+        /// Save last TouchEvent time.
+        /// </summary>
         private uint lastTouchEventTime = 0;
+#endif
 
         /// <summary>
         /// The current width of the view.
@@ -92,6 +97,7 @@ namespace Tizen.Flutter.Embedding
                 throw new Exception("Could not create a Flutter engine.");
             }
 
+#if NUI_SUPPORT
             global::System.Type baseType = typeof(NativeImageQueue).BaseType.BaseType.BaseType;
             FieldInfo field = baseType.GetField("swigCPtr", global::System.Reflection.BindingFlags.NonPublic | global::System.Reflection.BindingFlags.Instance);
             var nativeImageQueue = new NativeImageQueue((uint)base.Size2D.Width, (uint)base.Size2D.Height, NativeImageQueue.ColorFormat.RGBA8888);
@@ -148,6 +154,9 @@ namespace Tizen.Flutter.Embedding
                 return true;
             };
             return true;
+#else
+            throw new Exception("NUI is not supported.");
+#endif
         }
 
 
