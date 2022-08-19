@@ -17,8 +17,7 @@ namespace Tizen.Flutter.Embedding
         /// and the default <see cref="IBinaryMessenger"/>.
         /// </summary>
         /// <param name="name">A channel name string.</param>
-        public MethodChannel(string name)
-            : this(name, StandardMethodCodec.Instance)
+        public MethodChannel(string name) : this(name, StandardMethodCodec.Instance)
         {
         }
 
@@ -28,8 +27,7 @@ namespace Tizen.Flutter.Embedding
         /// </summary>
         /// <param name="name">A channel name string.</param>
         /// <param name="codec">A <see cref="IMethodCodec"/>.</param>
-        public MethodChannel(string name, IMethodCodec codec)
-            : this(name, codec, DefaultBinaryMessenger.Instance)
+        public MethodChannel(string name, IMethodCodec codec) : this(name, codec, DefaultBinaryMessenger.Instance)
         {
         }
 

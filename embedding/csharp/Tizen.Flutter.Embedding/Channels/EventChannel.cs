@@ -17,8 +17,7 @@ namespace Tizen.Flutter.Embedding
         /// and the default <see cref="IBinaryMessenger"/>.
         /// </summary>
         /// <param name="name">A channel name string.</param>
-        public EventChannel(string name)
-            : this(name, StandardMethodCodec.Instance)
+        public EventChannel(string name) : this(name, StandardMethodCodec.Instance)
         {
         }
 
@@ -28,8 +27,7 @@ namespace Tizen.Flutter.Embedding
         /// </summary>
         /// <param name="name">A channel name string.</param>
         /// <param name="codec">A <see cref="IMethodCodec"/>.</param>
-        public EventChannel(string name, IMethodCodec codec)
-            : this(name, codec, DefaultBinaryMessenger.Instance)
+        public EventChannel(string name, IMethodCodec codec) : this(name, codec, DefaultBinaryMessenger.Instance)
         {
         }
 
@@ -151,7 +149,8 @@ namespace Tizen.Flutter.Embedding
             }
             else
             {
-                return Task.FromResult(_channel.Codec.EncodeErrorEnvelope("error", "No active stream to cancel.", null));
+                return Task.FromResult(
+                    _channel.Codec.EncodeErrorEnvelope("error", "No active stream to cancel.", null));
             }
         }
 

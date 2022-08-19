@@ -14,10 +14,10 @@ using static Tizen.Flutter.Embedding.StandardMessageHelper;
 namespace Tizen.Flutter.Embedding
 {
     /// <summary>
-    /// <see cref="IMessageCodec{T}" /> using the Flutter standard binary encoding.
+    /// <see cref="IMessageCodec{T}"/> using the Flutter standard binary encoding.
     /// <para>
     /// This codec is guaranteed to be compatible with the corresponding
-    /// <see href = "https://api.flutter.dev/flutter/services/StandardMessageCodec-class.html">StandardMessageCodec</see>
+    /// <see href="https://api.flutter.dev/flutter/services/StandardMessageCodec-class.html">StandardMessageCodec</see>
     /// on the Dart side. These parts of the Flutter SDK are evolved synchronously.
     /// </para>
     /// </summary>
@@ -40,7 +40,7 @@ namespace Tizen.Flutter.Embedding
         private const byte FLOAT_ARRAY = 14;
 
         /// <summary>
-        /// Singleton instance of <see cref="StandardMessageCodec" />.
+        /// Singleton instance of <see cref="StandardMessageCodec"/>.
         /// </summary>
         public static StandardMessageCodec Instance => new StandardMessageCodec();
 

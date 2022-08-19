@@ -9,7 +9,7 @@ using Tizen.Flutter.Embedding.Common;
 namespace Tizen.Flutter.Embedding
 {
     /// <summary>
-    /// <see cref="IMethodCodec" /> using the Flutter standard binary encoding.
+    /// <see cref="IMethodCodec"/> using the Flutter standard binary encoding.
     /// <para>
     /// This codec is guaranteed to be compatible with the corresponding
     /// <see href = "https://api.flutter.dev/flutter/services/StandardMethodCodec-class.html">StandardMethodCodec</see>
@@ -84,7 +84,8 @@ namespace Tizen.Flutter.Embedding
         }
 
         /// <InheritDoc/>
-        public byte[] EncodeErrorEnvelope(string errorCode, string errorMessage, object errorDetails, String errorStacktrace)
+        public byte[] EncodeErrorEnvelope(
+            string errorCode, string errorMessage, object errorDetails, string errorStacktrace)
         {
             using (var stream = new MemoryStream())
             using (var writer = new BinaryWriter(stream))

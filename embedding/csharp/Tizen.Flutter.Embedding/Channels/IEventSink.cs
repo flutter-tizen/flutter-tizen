@@ -25,7 +25,8 @@ namespace Tizen.Flutter.Embedding
 
         /// <summary>
         /// Consumes end of stream. 
-        /// <para>Ensuing calls to <see cref="Success(object)"/> or <see cref="Error(string, string, object)"/>, if any, are ignored.</para>
+        /// <para>Ensuing calls to <see cref="Success(object)"/> or <see cref="Error(string, string, object)"/>,
+        /// if any, are ignored.</para>
         /// </summary>
         void EndOfStream();
     }

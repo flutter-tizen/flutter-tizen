@@ -11,16 +11,17 @@ namespace Tizen.Flutter.Embedding
     /// A registry for dotnet plugins implementing the <see cref="IFlutterPlugin"/> interface.
     /// </summary>
     /// <remarks>
-    /// When the plugin is registered, the <see cref="IFlutterPlugin.OnAttachedToEngine"/> method is called.
+    /// When a plugin is registered, the <see cref="IFlutterPlugin.OnAttachedToEngine"/> method is called.
     /// The registered plugin is automatically unregistered with the <see cref="IFlutterPlugin.OnDetachedFromEngine"/>
     /// method call when the Flutter engine is detached.
     /// </remarks>
     public class DotnetPluginRegistry
     {
-        private static readonly Lazy<DotnetPluginRegistry> _instance
-            = new Lazy<DotnetPluginRegistry>(() => new DotnetPluginRegistry());
+        private static readonly Lazy<DotnetPluginRegistry> _instance =
+            new Lazy<DotnetPluginRegistry>(() => new DotnetPluginRegistry());
 
-        private readonly ConcurrentDictionary<int, IFlutterPlugin> _plugins = new ConcurrentDictionary<int, IFlutterPlugin>();
+        private readonly ConcurrentDictionary<int, IFlutterPlugin> _plugins =
+            new ConcurrentDictionary<int, IFlutterPlugin>();
 
         private DotnetPluginRegistry()
         {

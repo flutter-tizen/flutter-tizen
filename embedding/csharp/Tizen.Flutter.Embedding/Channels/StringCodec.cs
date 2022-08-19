@@ -7,7 +7,7 @@ using System.Text;
 namespace Tizen.Flutter.Embedding
 {
     /// <summary>
-    /// <see cref="IMessageCodec{T}" /> for UTF-8 encoded String messages.
+    /// <see cref="IMessageCodec{T}"/> for UTF-8 encoded String messages.
     /// </summary>
     public class StringCodec : IMessageCodec<string>
     {

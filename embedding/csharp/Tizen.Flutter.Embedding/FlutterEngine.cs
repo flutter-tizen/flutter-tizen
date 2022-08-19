@@ -26,13 +26,13 @@ namespace Tizen.Flutter.Embedding
         public bool IsValid => !Engine.IsInvalid;
 
         public FlutterEngine(string dartEntrypoint = "", List<string> dartEntrypointArgs = null)
-            : this("../res/flutter_assets", "../res/icudtl.dat", "../lib/libapp.so",
-                   dartEntrypoint, dartEntrypointArgs)
+            : this("../res/flutter_assets", "../res/icudtl.dat", "../lib/libapp.so", dartEntrypoint, dartEntrypointArgs)
         {
         }
 
-        public FlutterEngine(string assetsPath, string icuDataPath, string aotLibraryPath,
-                             string dartEntrypoint = "", List<string> dartEntrypointArgs = null)
+        public FlutterEngine(
+            string assetsPath, string icuDataPath, string aotLibraryPath, string dartEntrypoint = "",
+            List<string> dartEntrypointArgs = null)
         {
             dartEntrypointArgs = dartEntrypointArgs ?? new List<string>();
 
@@ -117,7 +117,7 @@ namespace Tizen.Flutter.Embedding
 
         /// <summary>
         /// Notifies that a low memory warning has been received.
-        /// This method sends a "memory pressure warning" message to Flutter over the "system channel".
+        /// This method sends a "memory pressure warning" message to Flutter over the "system" channel.
         /// </summary>
         public void NotifyLowMemoryWarning()
         {
