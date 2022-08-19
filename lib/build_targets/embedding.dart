@@ -64,6 +64,7 @@ class NativeEmbedding extends Target {
         .parent
         .childDirectory('embedding')
         .childDirectory('cpp');
+    embeddingDir.listSync().whereType<File>().forEach(inputs.add);
     copyDirectory(
       embeddingDir.childDirectory('include'),
       outputDir.childDirectory('include'),
