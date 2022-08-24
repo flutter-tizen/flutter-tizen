@@ -6,9 +6,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using Tizen.NUI;
 using Tizen.NUI.BaseComponents;
-
 using static Tizen.Flutter.Embedding.Interop;
 
 namespace Tizen.Flutter.Embedding
@@ -29,56 +29,32 @@ namespace Tizen.Flutter.Embedding
         private FlutterDesktopView View { get; set; } = new FlutterDesktopView();
 
         /// <summary>
-        /// The initial width of the view. Defaults to the parent width if the value is zero.
-        /// </summary>
-        private int InitialWidth { get; set; } = 0;
-
-        /// <summary>
-        /// The initial height of the view. Defaults to the parent height if the value is zero.
-        /// </summary>
-        private int InitialHeight { get; set; } = 0;
-
-        /// <summary>
         /// Whether the view is running.
         /// </summary>
         public bool IsRunning => !View.IsInvalid;
 
-#if NUI_SUPPORT
         /// <summary>
-        /// Save last TouchEvent time.
+        /// When the view last received a touch event in milliseconds.
         /// </summary>
-        private uint lastTouchEventTime = 0;
-#endif
+        private uint _lastTouchEventTime = 0;
 
         /// <summary>
         /// The current width of the view.
         /// </summary>
-        public int Width
-        {
-            get
-            {
-                Debug.Assert(IsRunning);
-
-                return base.Size2D.Width;
-            }
-        }
+        public int Width => Size2D.Width;
 
         /// <summary>
         /// The current height of the view.
         /// </summary>
-        public int Height
-        {
-            get
-            {
-                Debug.Assert(IsRunning);
-
-                return base.Size2D.Height;
-            }
-        }
+        public int Height => Size2D.Height;
 
         /// <summary>
         /// Starts running the view with the associated engine, creating if not set.
         /// </summary>
+        /// <remarks>
+        /// <see cref="Engine"/> must not be set again after this call.
+        /// <see cref="Destroy"/> must be called if the view is no longer used.
+        /// </remarks>
         public bool RunEngine()
         {
             if (IsRunning)
@@ -94,47 +70,54 @@ namespace Tizen.Flutter.Embedding
 
             if (!Engine.IsValid)
             {
-                throw new Exception("Could not create a Flutter engine.");
+                TizenLog.Error("Could not create a Flutter engine.");
+                return false;
             }
 
-#if NUI_SUPPORT
-            global::System.Type baseType = typeof(NativeImageQueue).BaseType.BaseType.BaseType;
-            FieldInfo field = baseType.GetField("swigCPtr", global::System.Reflection.BindingFlags.NonPublic | global::System.Reflection.BindingFlags.Instance);
-            var nativeImageQueue = new NativeImageQueue((uint)base.Size2D.Width, (uint)base.Size2D.Height, NativeImageQueue.ColorFormat.RGBA8888);
-            global::System.Runtime.InteropServices.HandleRef nativeImageQueueHandle = (global::System.Runtime.InteropServices.HandleRef)field?.GetValue(nativeImageQueue);
-            base.SetImage(nativeImageQueue.GenerateUrl().ToString());
+            Type baseType = typeof(NativeImageQueue).BaseType.BaseType.BaseType;
+            FieldInfo field = baseType.GetField("swigCPtr", BindingFlags.NonPublic | BindingFlags.Instance);
+            NativeImageQueue nativeImageQueue =
+                new NativeImageQueue((uint)Width, (uint)Height, NativeImageQueue.ColorFormat.RGBA8888);
+            HandleRef nativeImageQueueRef = (HandleRef)field.GetValue(nativeImageQueue);
+            SetImage(nativeImageQueue.GenerateUrl().ToString());
 
-            global::System.Type imageViewBaseType = typeof(ImageView).BaseType.BaseType.BaseType.BaseType;
-            FieldInfo imageViewField = imageViewBaseType.GetField("swigCPtr", global::System.Reflection.BindingFlags.NonPublic | global::System.Reflection.BindingFlags.Instance);
-            global::System.Runtime.InteropServices.HandleRef imageViewHandle = (global::System.Runtime.InteropServices.HandleRef)imageViewField?.GetValue(this);
+            Type imageViewBaseType = typeof(ImageView).BaseType.BaseType.BaseType.BaseType;
+            FieldInfo imageViewField =
+                imageViewBaseType.GetField("swigCPtr", BindingFlags.NonPublic | BindingFlags.Instance);
+            HandleRef imageViewRef = (HandleRef)imageViewField.GetValue(this);
 
             var viewProperties = new FlutterDesktopViewProperties
             {
-                width = base.Size2D.Width,
-                height = base.Size2D.Height,
+                width = Width,
+                height = Height,
             };
 
-            View = FlutterDesktopViewCreateFromImageView(ref viewProperties, Engine.Engine, imageViewHandle.Handle, nativeImageQueueHandle.Handle, NUIApplication.GetDefaultWindow().GetNativeId());
+            View = FlutterDesktopViewCreateFromImageView(
+                ref viewProperties, Engine.Engine, imageViewRef.Handle, nativeImageQueueRef.Handle,
+                NUIApplication.GetDefaultWindow().GetNativeId());
             if (View.IsInvalid)
             {
                 TizenLog.Error("Could not launch a Flutter view.");
                 return false;
             }
 
-            base.Focusable = true;
-            base.KeyEvent += (object source, View.KeyEventArgs eventArgs) =>
+            Focusable = true;
+            KeyEvent += (object source, KeyEventArgs eventArgs) =>
             {
-                FlutterDesktopViewOnKeyEvent(View, eventArgs.Key.KeyPressedName, eventArgs.Key.KeyPressed, (uint)eventArgs.Key.KeyModifier, (uint)eventArgs.Key.KeyCode, eventArgs.Key.State == Key.StateType.Down ? true : false);
+                FlutterDesktopViewOnKeyEvent(
+                    View, eventArgs.Key.KeyPressedName, eventArgs.Key.KeyPressed, (uint)eventArgs.Key.KeyModifier,
+                    (uint)eventArgs.Key.KeyCode, eventArgs.Key.State == Key.StateType.Down);
                 return true;
             };
 
-            base.TouchEvent += (object source, View.TouchEventArgs eventArgs) =>
+            TouchEvent += (object source, TouchEventArgs eventArgs) =>
             {
-                if (lastTouchEventTime == eventArgs.Touch.GetTime())
+                if (_lastTouchEventTime == eventArgs.Touch.GetTime())
                 {
                     return false;
                 }
                 FocusManager.Instance.SetCurrentFocusView(this);
+
                 FlutterDesktopViewMouseEventType type;
                 switch (eventArgs.Touch.GetState(0))
                 {
@@ -149,23 +132,15 @@ namespace Tizen.Flutter.Embedding
                         type = FlutterDesktopViewMouseEventType.kMouseMove;
                         break;
                 }
-                lastTouchEventTime = eventArgs.Touch.GetTime();
-                FlutterDesktopViewOnMouseEvent(View, type, eventArgs.Touch.GetLocalPosition(0).X, eventArgs.Touch.GetLocalPosition(0).Y, eventArgs.Touch.GetTime(), eventArgs.Touch.GetDeviceId(0));
+                FlutterDesktopViewOnMouseEvent(
+                    View, type, eventArgs.Touch.GetLocalPosition(0).X, eventArgs.Touch.GetLocalPosition(0).Y,
+                    eventArgs.Touch.GetTime(), eventArgs.Touch.GetDeviceId(0));
+
+                _lastTouchEventTime = eventArgs.Touch.GetTime();
                 return true;
             };
+
             return true;
-#else
-            throw new Exception("NUI is not supported.");
-#endif
-        }
-
-
-        /// <summary>
-        /// Sets an engine associated with this view.
-        /// </summary>
-        public void SetEngine(FlutterEngine engine)
-        {
-            Engine = engine;
         }
 
         /// <summary>
@@ -188,7 +163,7 @@ namespace Tizen.Flutter.Embedding
         {
             Debug.Assert(IsRunning);
 
-            if (base.Size2D.Width != width || base.Size2D.Height != height)
+            if (Width != width || Height != height)
             {
                 FlutterDesktopViewResize(View, width, height);
             }

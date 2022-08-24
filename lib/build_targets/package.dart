@@ -98,12 +98,13 @@ class DotnetTpk extends TizenPackage {
 
     final TizenManifest tizenManifest =
         TizenManifest.parseFromXml(tizenProject.manifestFile);
+    final String profile = buildInfo.deviceProfile;
     final String? apiVersion = tizenManifest.apiVersion;
-    final String nuiSupport = apiVersion == '6.5' ? '_nui' : '';
+    final String nuiSuffix = supportsNui(profile, apiVersion) ? '_nui' : '';
 
     final File engineBinary = engineDir.childFile('libflutter_engine.so');
-    final File embedder = engineDir
-        .childFile('libflutter_tizen_${buildInfo.deviceProfile}$nuiSupport.so');
+    final File embedder =
+        engineDir.childFile('libflutter_tizen_$profile$nuiSuffix.so');
 
     final File icuData =
         commonDir.childDirectory('icu').childFile('icudtl.dat');
@@ -137,7 +138,6 @@ class DotnetTpk extends TizenPackage {
         'Install the latest .NET SDK from: https://dotnet.microsoft.com/download',
       );
     }
-    final String nuiSupportDefine = apiVersion == '6.5' ? 'NUI_SUPPORT;' : '';
     final RunResult result = await _processUtils.run(<String>[
       dotnetCli!.path,
       'build',
@@ -146,7 +146,7 @@ class DotnetTpk extends TizenPackage {
       '-o',
       '${outputDir.path}/', // The trailing '/' is needed.
       if (apiVersion != null) '/p:TizenApiVersion=$apiVersion',
-      '/p:DefineConstants=$nuiSupportDefine${buildInfo.deviceProfile.toUpperCase()}_PROFILE',
+      '/p:DefineConstants=${profile.toUpperCase()}_PROFILE',
       tizenProject.editableDirectory.path,
     ]);
     if (result.exitCode != 0) {
@@ -280,8 +280,9 @@ class NativeTpk extends TizenPackage {
     assert(tizenSdk != null);
     final TizenManifest tizenManifest =
         TizenManifest.parseFromXml(tizenProject.manifestFile);
+    final String profile = buildInfo.deviceProfile;
     final Rootstrap rootstrap = tizenSdk!.getFlutterRootstrap(
-      profile: buildInfo.deviceProfile,
+      profile: profile,
       apiVersion: tizenManifest.apiVersion,
       arch: buildInfo.targetArch,
     );
@@ -336,7 +337,7 @@ class NativeTpk extends TizenPackage {
       '-I${embeddingDir.childDirectory('include').path.toPosixPath()}',
       embeddingLib.path.toPosixPath(),
       '-L${libDir.path.toPosixPath()}',
-      '-lflutter_tizen_${buildInfo.deviceProfile}',
+      '-lflutter_tizen_$profile',
       for (String lib in embeddingDependencies) '-l$lib',
       '-I${tizenProject.managedDirectory.path.toPosixPath()}',
       '-I${pluginsDir.childDirectory('include').path.toPosixPath()}',
@@ -357,7 +358,7 @@ class NativeTpk extends TizenPackage {
         'configs': <String>[buildConfig],
         'compiler': tizenSdk!.defaultNativeCompiler,
         'predefines': <String>[
-          '${buildInfo.deviceProfile.toUpperCase()}_PROFILE',
+          '${profile.toUpperCase()}_PROFILE',
         ],
         'extraoption': extraOptions.join(' '),
         'rootstraps': <Map<String, String>>[

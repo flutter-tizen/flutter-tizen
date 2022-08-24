@@ -5,6 +5,7 @@
 import 'package:file/file.dart';
 import 'package:flutter_tools/src/artifacts.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
+import 'package:flutter_tools/src/base/version.dart';
 import 'package:flutter_tools/src/build_info.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 
@@ -45,4 +46,17 @@ String getLibNameForFileName(String name) {
     name = name.substring(0, name.lastIndexOf('.'));
   }
   return name;
+}
+
+/// Returns true if the platform identified by [profile] and [apiVersion]
+/// supports NUI.
+bool supportsNui(String profile, String? apiVersion) {
+  if (profile != 'mobile' && profile != 'tv') {
+    return false;
+  }
+  final Version? version = Version.parse(apiVersion);
+  if (version == null) {
+    return false;
+  }
+  return version >= Version(6, 5, 0);
 }

@@ -89,8 +89,14 @@ class NativePlugins extends Target {
         getEngineArtifactsDirectory(buildInfo.targetArch, buildMode);
     final Directory commonDir = engineDir.parent.childDirectory('tizen-common');
 
+    final TizenManifest tizenManifest =
+        TizenManifest.parseFromXml(tizenProject.manifestFile);
+    final String profile = buildInfo.deviceProfile;
+    final String? apiVersion = tizenManifest.apiVersion;
+    final String nuiSuffix = supportsNui(profile, apiVersion) ? '_nui' : '';
+
     final File embedder =
-        engineDir.childFile('libflutter_tizen_${buildInfo.deviceProfile}.so');
+        engineDir.childFile('libflutter_tizen_$profile$nuiSuffix.so');
     inputs.add(embedder);
 
     final Directory clientWrapperDir =
@@ -98,10 +104,6 @@ class NativePlugins extends Target {
     final Directory publicDir = commonDir.childDirectory('public');
 
     assert(tizenSdk != null);
-    final TizenManifest tizenManifest =
-        TizenManifest.parseFromXml(tizenProject.manifestFile);
-    final String profile = buildInfo.deviceProfile;
-    final String? apiVersion = tizenManifest.apiVersion;
     final Rootstrap rootstrap = tizenSdk!.getFlutterRootstrap(
       profile: profile,
       apiVersion: apiVersion,
@@ -128,7 +130,7 @@ class NativePlugins extends Target {
         configuration: buildConfig,
         arch: getTizenCliArch(buildInfo.targetArch),
         predefines: <String>[
-          '${buildInfo.deviceProfile.toUpperCase()}_PROFILE',
+          '${profile.toUpperCase()}_PROFILE',
         ],
         extraOptions: <String>[
           if (!plugin.isSharedLib) '-fPIC',
