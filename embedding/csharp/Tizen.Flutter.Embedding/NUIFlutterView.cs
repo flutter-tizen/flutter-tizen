@@ -102,24 +102,24 @@ namespace Tizen.Flutter.Embedding
             }
 
             Focusable = true;
-            KeyEvent += (object source, KeyEventArgs eventArgs) =>
+            KeyEvent += (object s, KeyEventArgs e) =>
             {
                 FlutterDesktopViewOnKeyEvent(
-                    View, eventArgs.Key.KeyPressedName, eventArgs.Key.KeyPressed, (uint)eventArgs.Key.KeyModifier,
-                    (uint)eventArgs.Key.KeyCode, eventArgs.Key.State == Key.StateType.Down);
+                    View, e.Key.KeyPressedName, e.Key.KeyPressed, (uint)e.Key.KeyModifier, (uint)e.Key.KeyCode,
+                    e.Key.State == Key.StateType.Down);
                 return true;
             };
 
-            TouchEvent += (object source, TouchEventArgs eventArgs) =>
+            TouchEvent += (object s, TouchEventArgs e) =>
             {
-                if (_lastTouchEventTime == eventArgs.Touch.GetTime())
+                if (_lastTouchEventTime == e.Touch.GetTime())
                 {
                     return false;
                 }
                 FocusManager.Instance.SetCurrentFocusView(this);
 
                 FlutterDesktopViewMouseEventType type;
-                switch (eventArgs.Touch.GetState(0))
+                switch (e.Touch.GetState(0))
                 {
                     case PointStateType.Down:
                     default:
@@ -133,10 +133,10 @@ namespace Tizen.Flutter.Embedding
                         break;
                 }
                 FlutterDesktopViewOnMouseEvent(
-                    View, type, eventArgs.Touch.GetLocalPosition(0).X, eventArgs.Touch.GetLocalPosition(0).Y,
-                    eventArgs.Touch.GetTime(), eventArgs.Touch.GetDeviceId(0));
+                    View, type, e.Touch.GetLocalPosition(0).X, e.Touch.GetLocalPosition(0).Y, e.Touch.GetTime(),
+                    e.Touch.GetDeviceId(0));
 
-                _lastTouchEventTime = eventArgs.Touch.GetTime();
+                _lastTouchEventTime = e.Touch.GetTime();
                 return true;
             };
 
