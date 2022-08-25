@@ -184,19 +184,16 @@ dependencies:
         fileSystem.file('tizen/flutter/GeneratedPluginRegistrant.cs');
     expect(csharpPluginRegistrant, exists);
     expect(csharpPluginRegistrant.readAsStringSync(), contains('''
-namespace Runner
+internal class GeneratedPluginRegistrant
 {
-    internal class GeneratedPluginRegistrant
-    {
-        [DllImport("flutter_plugins.so")]
-        public static extern void SomeNativePluginRegisterWithRegistrar(
-            FlutterDesktopPluginRegistrar registrar);
+    [DllImport("flutter_plugins.so")]
+    public static extern void SomeNativePluginRegisterWithRegistrar(
+        FlutterDesktopPluginRegistrar registrar);
 
-        public static void RegisterPlugins(IPluginRegistry registry)
-        {
-            SomeNativePluginRegisterWithRegistrar(
-                registry.GetRegistrarForPlugin("SomeNativePlugin"));
-        }
+    public static void RegisterPlugins(IPluginRegistry registry)
+    {
+        SomeNativePluginRegisterWithRegistrar(
+            registry.GetRegistrarForPlugin("SomeNativePlugin"));
     }
 }
 '''));
@@ -243,15 +240,12 @@ dependencies:
         fileSystem.file('tizen/flutter/GeneratedPluginRegistrant.cs');
     expect(csharpPluginRegistrant, exists);
     expect(csharpPluginRegistrant.readAsStringSync(), contains('''
-namespace Runner
+internal class GeneratedPluginRegistrant
 {
-    internal class GeneratedPluginRegistrant
+    public static void RegisterPlugins(IPluginRegistry registry)
     {
-        public static void RegisterPlugins(IPluginRegistry registry)
-        {
-            DotnetPluginRegistry.Instance.AddPlugin(
-                new global::Some.Plugin.Namespace.SomeDotnetPlugin());
-        }
+        DotnetPluginRegistry.Instance.AddPlugin(
+            new global::Some.Plugin.Namespace.SomeDotnetPlugin());
     }
 }
 '''));
