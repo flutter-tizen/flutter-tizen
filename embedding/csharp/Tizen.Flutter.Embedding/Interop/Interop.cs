@@ -17,11 +17,11 @@ namespace Tizen.Flutter.Embedding
             kEGL,
         };
 
-        public enum FlutterDesktopViewMouseEventType
+        public enum FlutterDesktopPointerEventType
         {
-            kMouseDown,
-            kMouseUp,
-            kMouseMove,
+            kPointerDown,
+            kPointerUp,
+            kPointerMove,
         };
 
         [StructLayout(LayoutKind.Sequential)]
@@ -123,9 +123,9 @@ namespace Tizen.Flutter.Embedding
             int height);
 
         [DllImport("flutter_tizen.so")]
-        public static extern void FlutterDesktopViewOnMouseEvent(
+        public static extern void FlutterDesktopViewOnPointerEvent(
             FlutterDesktopView view,
-            FlutterDesktopViewMouseEventType type,
+            FlutterDesktopPointerEventType type,
             double x,
             double y,
             uint timestamp,

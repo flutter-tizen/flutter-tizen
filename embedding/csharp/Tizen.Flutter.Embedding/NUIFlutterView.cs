@@ -118,21 +118,21 @@ namespace Tizen.Flutter.Embedding
                 }
                 FocusManager.Instance.SetCurrentFocusView(this);
 
-                FlutterDesktopViewMouseEventType type;
+                FlutterDesktopPointerEventType type;
                 switch (e.Touch.GetState(0))
                 {
                     case PointStateType.Down:
                     default:
-                        type = FlutterDesktopViewMouseEventType.kMouseDown;
+                        type = FlutterDesktopPointerEventType.kPointerDown;
                         break;
                     case PointStateType.Up:
-                        type = FlutterDesktopViewMouseEventType.kMouseUp;
+                        type = FlutterDesktopPointerEventType.kPointerUp;
                         break;
                     case PointStateType.Motion:
-                        type = FlutterDesktopViewMouseEventType.kMouseMove;
+                        type = FlutterDesktopPointerEventType.kPointerMove;
                         break;
                 }
-                FlutterDesktopViewOnMouseEvent(
+                FlutterDesktopViewOnPointerEvent(
                     View, type, e.Touch.GetLocalPosition(0).X, e.Touch.GetLocalPosition(0).Y, e.Touch.GetTime(),
                     e.Touch.GetDeviceId(0));
 
