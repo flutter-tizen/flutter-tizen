@@ -146,7 +146,7 @@ class DotnetTpk extends TizenPackage {
       '-o',
       '${outputDir.path}/', // The trailing '/' is needed.
       '/p:DefineConstants=${profile.toUpperCase()}_PROFILE',
-      tizenProject.editableDirectory.path,
+      tizenProject.hostAppRoot.path,
     ]);
     if (result.exitCode != 0) {
       throwToolExit('Failed to build .NET application:\n$result');
