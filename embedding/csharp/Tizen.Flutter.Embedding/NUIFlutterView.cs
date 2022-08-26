@@ -39,22 +39,12 @@ namespace Tizen.Flutter.Embedding
         public bool IsRunning => !View.IsInvalid;
 
         /// <summary>
-        /// The current width of the view.
-        /// </summary>
-        public int Width => _viewSize.Width;
-
-        /// <summary>
-        /// The current height of the view.
-        /// </summary>
-        public int Height => _viewSize.Height;
-
-        /// <summary>
         /// When the view last received a touch event in milliseconds.
         /// </summary>
         private uint _lastTouchEventTime = 0;
 
         /// <summary>
-        /// The size of last set to the view.
+        /// The size of the Flutter view.
         /// </summary>
         private Size2D _viewSize = new Size2D();
 
@@ -127,21 +117,6 @@ namespace Tizen.Flutter.Embedding
                 FlutterDesktopViewDestroy(View);
                 Engine = null;
                 View = new FlutterDesktopView();
-            }
-        }
-
-        /// <summary>
-        /// Resizes the view.
-        /// </summary>
-        public void Resize(int width, int height)
-        {
-            Debug.Assert(IsRunning);
-
-            if (Width != width || Height != height)
-            {
-                FlutterDesktopViewResize(View, width, height);
-                _viewSize.Width = width;
-                _viewSize.Height = height;
             }
         }
 
