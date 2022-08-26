@@ -18,11 +18,6 @@ namespace Tizen.Flutter.Embedding
     /// </summary>
     public class NUIFlutterView : ImageView
     {
-        public NUIFlutterView()
-        {
-            _viewSize = Size2D;
-        }
-
         /// <summary>
         /// The Flutter engine instance.
         /// </summary>
@@ -46,7 +41,7 @@ namespace Tizen.Flutter.Embedding
         /// <summary>
         /// The size of the Flutter view.
         /// </summary>
-        private Size2D _viewSize = new Size2D();
+        private Size2D _size = new Size2D();
 
         /// <summary>
         /// Starts running the view with the associated engine, creating if not set.
@@ -74,12 +69,12 @@ namespace Tizen.Flutter.Embedding
                 return false;
             }
 
-            _viewSize = GetDefaultSize();
+            _size = GetDefaultSize();
 
             Type baseType = typeof(NativeImageQueue).BaseType.BaseType.BaseType;
             FieldInfo field = baseType.GetField("swigCPtr", BindingFlags.NonPublic | BindingFlags.Instance);
             NativeImageQueue nativeImageQueue =
-                new NativeImageQueue((uint)_viewSize.Width, (uint)_viewSize.Height, NativeImageQueue.ColorFormat.RGBA8888);
+                new NativeImageQueue((uint)_size.Width, (uint)_size.Height, NativeImageQueue.ColorFormat.RGBA8888);
             HandleRef nativeImageQueueRef = (HandleRef)field.GetValue(nativeImageQueue);
             SetImage(nativeImageQueue.GenerateUrl().ToString());
 
@@ -90,8 +85,8 @@ namespace Tizen.Flutter.Embedding
 
             var viewProperties = new FlutterDesktopViewProperties
             {
-                width = _viewSize.Width,
-                height = _viewSize.Height,
+                width = _size.Width,
+                height = _size.Height,
             };
 
             View = FlutterDesktopViewCreateFromImageView(
@@ -103,7 +98,7 @@ namespace Tizen.Flutter.Embedding
                 return false;
             }
 
-            RegisterEvent();
+            RegisterEventHandlers();
             return true;
         }
 
@@ -130,8 +125,7 @@ namespace Tizen.Flutter.Embedding
                 View parent = GetParent() as View;
                 if (!parent)
                 {
-                    Window window = NUIApplication.GetDefaultWindow();
-                    return new Size2D(window.Size.Width, window.Size.Height);
+                    return NUIApplication.GetDefaultWindow().Size;
                 }
                 return parent.Size2D;
             }
@@ -139,9 +133,9 @@ namespace Tizen.Flutter.Embedding
         }
 
         /// <summary>
-        /// Register view event callbacks.
+        /// Registers view event handlers.
         /// </summary>
-        private void RegisterEvent()
+        private void RegisterEventHandlers()
         {
             Focusable = true;
             KeyEvent += (object s, KeyEventArgs e) =>
@@ -194,11 +188,11 @@ namespace Tizen.Flutter.Embedding
 
             Relayout += (object s, EventArgs e) =>
             {
-                if (IsRunning && (_viewSize.Width != Size2D.Width || _viewSize.Height != Size2D.Height))
+                if (IsRunning && (_size.Width != Size2D.Width || _size.Height != Size2D.Height))
                 {
                     FlutterDesktopViewResize(View, Size2D.Width, Size2D.Height);
                 }
-                _viewSize = Size2D;
+                _size = Size2D;
             };
         }
     }
