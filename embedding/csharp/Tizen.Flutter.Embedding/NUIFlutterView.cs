@@ -18,6 +18,11 @@ namespace Tizen.Flutter.Embedding
     /// </summary>
     public class NUIFlutterView : ImageView
     {
+        public NUIFlutterView()
+        {
+            _viewSize = Size2D;
+        }
+
         /// <summary>
         /// The Flutter engine instance.
         /// </summary>
@@ -34,19 +39,24 @@ namespace Tizen.Flutter.Embedding
         public bool IsRunning => !View.IsInvalid;
 
         /// <summary>
+        /// The current width of the view.
+        /// </summary>
+        public int Width => _viewSize.Width;
+
+        /// <summary>
+        /// The current height of the view.
+        /// </summary>
+        public int Height => _viewSize.Height;
+
+        /// <summary>
         /// When the view last received a touch event in milliseconds.
         /// </summary>
         private uint _lastTouchEventTime = 0;
 
         /// <summary>
-        /// The current width of the view.
+        /// The size of last set to the view.
         /// </summary>
-        public int Width => Size2D.Width;
-
-        /// <summary>
-        /// The current height of the view.
-        /// </summary>
-        public int Height => Size2D.Height;
+        private Size2D _viewSize = new Size2D();
 
         /// <summary>
         /// Starts running the view with the associated engine, creating if not set.
@@ -65,7 +75,7 @@ namespace Tizen.Flutter.Embedding
 
             if (Engine == null)
             {
-                Engine = new FlutterEngine("", new List<string>());
+                Engine = new FlutterEngine();
             }
 
             if (!Engine.IsValid)
@@ -74,10 +84,12 @@ namespace Tizen.Flutter.Embedding
                 return false;
             }
 
+            _viewSize = GetDefaultSize();
+
             Type baseType = typeof(NativeImageQueue).BaseType.BaseType.BaseType;
             FieldInfo field = baseType.GetField("swigCPtr", BindingFlags.NonPublic | BindingFlags.Instance);
             NativeImageQueue nativeImageQueue =
-                new NativeImageQueue((uint)Width, (uint)Height, NativeImageQueue.ColorFormat.RGBA8888);
+                new NativeImageQueue((uint)_viewSize.Width, (uint)_viewSize.Height, NativeImageQueue.ColorFormat.RGBA8888);
             HandleRef nativeImageQueueRef = (HandleRef)field.GetValue(nativeImageQueue);
             SetImage(nativeImageQueue.GenerateUrl().ToString());
 
@@ -88,8 +100,8 @@ namespace Tizen.Flutter.Embedding
 
             var viewProperties = new FlutterDesktopViewProperties
             {
-                width = Width,
-                height = Height,
+                width = _viewSize.Width,
+                height = _viewSize.Height,
             };
 
             View = FlutterDesktopViewCreateFromImageView(
@@ -101,9 +113,69 @@ namespace Tizen.Flutter.Embedding
                 return false;
             }
 
+            RegisterEvent();
+            return true;
+        }
+
+        /// <summary>
+        /// Terminates the running view and the associated engine.
+        /// </summary>
+        public void Destroy()
+        {
+            if (IsRunning)
+            {
+                FlutterDesktopViewDestroy(View);
+                Engine = null;
+                View = new FlutterDesktopView();
+            }
+        }
+
+        /// <summary>
+        /// Resizes the view.
+        /// </summary>
+        public void Resize(int width, int height)
+        {
+            Debug.Assert(IsRunning);
+
+            if (Width != width || Height != height)
+            {
+                FlutterDesktopViewResize(View, width, height);
+                _viewSize.Width = width;
+                _viewSize.Height = height;
+            }
+        }
+
+        /// <summary>
+        /// Returns the size that can be the default.
+        /// </summary>
+        private Size2D GetDefaultSize()
+        {
+            if (Size2D.Width == 0 || Size2D.Height == 0)
+            {
+                View parent = GetParent() as View;
+                if (!parent)
+                {
+                    Window window = NUIApplication.GetDefaultWindow();
+                    return new Size2D(window.Size.Width, window.Size.Height);
+                }
+                return parent.Size2D;
+            }
+            return Size2D;
+        }
+
+        /// <summary>
+        /// Register view event callbacks.
+        /// </summary>
+        private void RegisterEvent()
+        {
             Focusable = true;
             KeyEvent += (object s, KeyEventArgs e) =>
             {
+                if (!IsRunning)
+                {
+                    return true;
+                }
+
                 FlutterDesktopViewOnKeyEvent(
                     View, e.Key.KeyPressedName, e.Key.KeyPressed, (uint)e.Key.KeyModifier, (uint)e.Key.KeyCode,
                     e.Key.State == Key.StateType.Down);
@@ -112,6 +184,11 @@ namespace Tizen.Flutter.Embedding
 
             TouchEvent += (object s, TouchEventArgs e) =>
             {
+                if (!IsRunning)
+                {
+                    return true;
+                }
+
                 if (_lastTouchEventTime == e.Touch.GetTime())
                 {
                     return false;
@@ -140,33 +217,14 @@ namespace Tizen.Flutter.Embedding
                 return true;
             };
 
-            return true;
-        }
-
-        /// <summary>
-        /// Terminates the running view and the associated engine.
-        /// </summary>
-        public void Destroy()
-        {
-            if (IsRunning)
+            Relayout += (object s, EventArgs e) =>
             {
-                FlutterDesktopViewDestroy(View);
-                Engine = null;
-                View = new FlutterDesktopView();
-            }
-        }
-
-        /// <summary>
-        /// Resizes the view.
-        /// </summary>
-        public void Resize(int width, int height)
-        {
-            Debug.Assert(IsRunning);
-
-            if (Width != width || Height != height)
-            {
-                FlutterDesktopViewResize(View, width, height);
-            }
+                if (IsRunning && (_viewSize.Width != Size2D.Width || _viewSize.Height != Size2D.Height))
+                {
+                    FlutterDesktopViewResize(View, Size2D.Width, Size2D.Height);
+                }
+                _viewSize = Size2D;
+            };
         }
     }
 }
