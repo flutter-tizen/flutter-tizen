@@ -91,7 +91,7 @@ namespace Tizen.Flutter.Embedding
 
             View = FlutterDesktopViewCreateFromImageView(
                 ref viewProperties, Engine.Engine, imageViewRef.Handle, nativeImageQueueRef.Handle,
-                NUIApplication.GetDefaultWindow().GetNativeId());
+                Window.Instance.GetNativeId());
             if (View.IsInvalid)
             {
                 TizenLog.Error("Could not launch a Flutter view.");
@@ -125,7 +125,7 @@ namespace Tizen.Flutter.Embedding
                 View parent = GetParent() as View;
                 if (!parent)
                 {
-                    return NUIApplication.GetDefaultWindow().Size;
+                    return Window.Instance.Size;
                 }
                 return parent.Size2D;
             }
