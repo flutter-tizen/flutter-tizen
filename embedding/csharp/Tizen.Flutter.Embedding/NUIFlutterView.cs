@@ -77,6 +77,7 @@ namespace Tizen.Flutter.Embedding
                 new NativeImageQueue((uint)_size.Width, (uint)_size.Height, NativeImageQueue.ColorFormat.RGBA8888);
             HandleRef nativeImageQueueRef = (HandleRef)field.GetValue(nativeImageQueue);
             SetImage(nativeImageQueue.GenerateUrl().ToString());
+            Size2D = _size;
 
             Type imageViewBaseType = typeof(ImageView).BaseType.BaseType.BaseType.BaseType;
             FieldInfo imageViewField =
@@ -122,12 +123,23 @@ namespace Tizen.Flutter.Embedding
         {
             if (Size2D.Width == 0 || Size2D.Height == 0)
             {
-                View parent = GetParent() as View;
-                if (!parent)
+                Container parent = GetParent();
+                if (parent == null)
                 {
-                    return Window.Instance.Size;
+                    Layer layer = Window.Instance.GetDefaultLayer();
+                    return new Size2D(layer.Viewport.Width, layer.Viewport.Height);
                 }
-                return parent.Size2D;
+
+                if (parent is View)
+                {
+                    View view = parent as View;
+                    return view.Size2D;
+                }
+                else if (parent is Layer)
+                {
+                    Layer layer = parent as Layer;
+                    return new Size2D(layer.Viewport.Width, layer.Viewport.Height);
+                }
             }
             return Size2D;
         }
