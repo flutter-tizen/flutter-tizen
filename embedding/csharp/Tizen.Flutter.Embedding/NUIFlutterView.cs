@@ -39,6 +39,11 @@ namespace Tizen.Flutter.Embedding
         private uint _lastTouchEventTime = 0;
 
         /// <summary>
+        /// The size of the Flutter view.
+        /// </summary>
+        private Size2D _size = new Size2D();
+
+        /// <summary>
         /// Starts running the view with the associated engine, creating if not set.
         /// </summary>
         /// <remarks>
@@ -91,6 +96,8 @@ namespace Tizen.Flutter.Embedding
                 TizenLog.Error("Could not launch a Flutter view.");
                 return false;
             }
+
+            _size = Size2D;
 
             RegisterEventHandlers();
             return true;
@@ -190,11 +197,11 @@ namespace Tizen.Flutter.Embedding
 
             Relayout += (object s, EventArgs e) =>
             {
-                if (IsRunning)
+                if (IsRunning && (_size.Width != Size2D.Width || _size.Height != Size2D.Height))
                 {
                     FlutterDesktopViewResize(View, Size2D.Width, Size2D.Height);
+                    _size = Size2D;
                 }
-
             };
         }
     }
