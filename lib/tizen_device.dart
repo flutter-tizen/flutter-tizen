@@ -470,6 +470,9 @@ class TizenDevice extends Device {
 
   @override
   Future<bool> stopApp(TizenTpk app, {String? userIdentifier}) async {
+    if (app == null) {
+      return false;
+    }
     try {
       final List<String> command = usesSecureProtocol
           ? <String>['shell', '0', 'kill', app.applicationId]

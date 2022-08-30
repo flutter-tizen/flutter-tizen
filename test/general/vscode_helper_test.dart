@@ -22,7 +22,7 @@ const String _kLaunchJson = r'''
             "type": "dart",
             "deviceId": "flutter-tester",
             "cwd": "${workspaceFolder}",
-            "observatoryUri": "http://127.0.0.1:12345"
+            "vmServiceUri": "http://127.0.0.1:12345"
         }
     ]
 }''';
