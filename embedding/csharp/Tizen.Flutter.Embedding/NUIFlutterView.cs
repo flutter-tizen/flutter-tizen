@@ -39,11 +39,6 @@ namespace Tizen.Flutter.Embedding
         private uint _lastTouchEventTime = 0;
 
         /// <summary>
-        /// The size of the Flutter view.
-        /// </summary>
-        private Size2D _size = new Size2D();
-
-        /// <summary>
         /// Starts running the view with the associated engine, creating if not set.
         /// </summary>
         /// <remarks>
@@ -69,15 +64,13 @@ namespace Tizen.Flutter.Embedding
                 return false;
             }
 
-            _size = GetDefaultSize();
-
+            Size2D size = GetDefaultSize();
             Type baseType = typeof(NativeImageQueue).BaseType.BaseType.BaseType;
             FieldInfo field = baseType.GetField("swigCPtr", BindingFlags.NonPublic | BindingFlags.Instance);
             NativeImageQueue nativeImageQueue =
-                new NativeImageQueue((uint)_size.Width, (uint)_size.Height, NativeImageQueue.ColorFormat.RGBA8888);
+                new NativeImageQueue((uint)size.Width, (uint)size.Height, NativeImageQueue.ColorFormat.RGBA8888);
             HandleRef nativeImageQueueRef = (HandleRef)field.GetValue(nativeImageQueue);
             SetImage(nativeImageQueue.GenerateUrl().ToString());
-            Size2D = _size;
 
             Type imageViewBaseType = typeof(ImageView).BaseType.BaseType.BaseType.BaseType;
             FieldInfo imageViewField =
@@ -86,8 +79,8 @@ namespace Tizen.Flutter.Embedding
 
             var viewProperties = new FlutterDesktopViewProperties
             {
-                width = _size.Width,
-                height = _size.Height,
+                width = size.Width,
+                height = size.Height,
             };
 
             View = FlutterDesktopViewCreateFromImageView(
@@ -129,15 +122,12 @@ namespace Tizen.Flutter.Embedding
                     Layer layer = Window.Instance.GetDefaultLayer();
                     return new Size2D(layer.Viewport.Width, layer.Viewport.Height);
                 }
-
-                if (parent is View)
+                else if (parent is View view)
                 {
-                    View view = parent as View;
                     return view.Size2D;
                 }
-                else if (parent is Layer)
+                else if (parent is Layer layer)
                 {
-                    Layer layer = parent as Layer;
                     return new Size2D(layer.Viewport.Width, layer.Viewport.Height);
                 }
             }
@@ -200,11 +190,11 @@ namespace Tizen.Flutter.Embedding
 
             Relayout += (object s, EventArgs e) =>
             {
-                if (IsRunning && (_size.Width != Size2D.Width || _size.Height != Size2D.Height))
+                if (IsRunning)
                 {
                     FlutterDesktopViewResize(View, Size2D.Width, Size2D.Height);
                 }
-                _size = Size2D;
+
             };
         }
     }
