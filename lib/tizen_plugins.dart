@@ -469,27 +469,24 @@ using System;
 using System.Runtime.InteropServices;
 using Tizen.Flutter.Embedding;
 
-namespace Runner
+internal class GeneratedPluginRegistrant
 {
-    internal class GeneratedPluginRegistrant
+  {{#cppPlugins}}
+    [DllImport("{{libName}}.so")]
+    public static extern void {{pluginClass}}RegisterWithRegistrar(
+        FlutterDesktopPluginRegistrar registrar);
+
+  {{/cppPlugins}}
+    public static void RegisterPlugins(IPluginRegistry registry)
     {
       {{#cppPlugins}}
-        [DllImport("{{libName}}.so")]
-        public static extern void {{pluginClass}}RegisterWithRegistrar(
-            FlutterDesktopPluginRegistrar registrar);
-
+        {{pluginClass}}RegisterWithRegistrar(
+            registry.GetRegistrarForPlugin("{{pluginClass}}"));
       {{/cppPlugins}}
-        public static void RegisterPlugins(IPluginRegistry registry)
-        {
-          {{#cppPlugins}}
-            {{pluginClass}}RegisterWithRegistrar(
-                registry.GetRegistrarForPlugin("{{pluginClass}}"));
-          {{/cppPlugins}}
-          {{#dotnetPlugins}}
-            DotnetPluginRegistry.Instance.AddPlugin(
-                new global::{{namespace}}.{{pluginClass}}());
-          {{/dotnetPlugins}}
-        }
+      {{#dotnetPlugins}}
+        DotnetPluginRegistry.Instance.AddPlugin(
+            new global::{{namespace}}.{{pluginClass}}());
+      {{/dotnetPlugins}}
     }
 }
 ''';

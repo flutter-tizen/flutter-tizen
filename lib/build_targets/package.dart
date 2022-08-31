@@ -146,7 +146,7 @@ class DotnetTpk extends TizenPackage {
       '-o',
       '${outputDir.path}/', // The trailing '/' is needed.
       '/p:DefineConstants=${profile.toUpperCase()}_PROFILE',
-      tizenProject.editableDirectory.path,
+      tizenProject.hostAppRoot.path,
     ]);
     if (result.exitCode != 0) {
       throwToolExit('Failed to build .NET application:\n$result');
@@ -394,6 +394,77 @@ class NativeTpk extends TizenPackage {
     // Extract the contents of the TPK to support code size analysis.
     final Directory tpkrootDir = outputDir.childDirectory('tpkroot');
     globals.os.unzip(outputTpk, tpkrootDir);
+  }
+}
+
+class DotnetModule extends TizenPackage {
+  DotnetModule(super.tizenBuildInfo);
+
+  @override
+  String get name => 'tizen_dotnet_module';
+
+  @override
+  Future<void> build(Environment environment) async {
+    final FlutterProject project =
+        FlutterProject.fromDirectory(environment.projectDir);
+    final TizenProject tizenProject = TizenProject.fromFlutter(project);
+
+    final Directory outputDir = environment.outputDir;
+    if (outputDir.existsSync()) {
+      outputDir.deleteSync(recursive: true);
+    }
+    outputDir.createSync(recursive: true);
+    final Directory resDir = outputDir.childDirectory('res')
+      ..createSync(recursive: true);
+    final Directory libDir = outputDir.childDirectory('lib')
+      ..createSync(recursive: true);
+    final Directory srcDir = outputDir.childDirectory('src')
+      ..createSync(recursive: true);
+
+    // Copy necessary files.
+    copyDirectory(
+      environment.buildDir.childDirectory('flutter_assets'),
+      resDir.childDirectory('flutter_assets'),
+    );
+
+    final BuildMode buildMode = buildInfo.buildInfo.mode;
+    final Directory engineDir =
+        getEngineArtifactsDirectory(buildInfo.targetArch, buildMode);
+    final Directory commonDir = engineDir.parent.childDirectory('tizen-common');
+
+    final File engineBinary = engineDir.childFile('libflutter_engine.so');
+    final File embedder =
+        engineDir.childFile('libflutter_tizen_${buildInfo.deviceProfile}.so');
+    final File icuData =
+        commonDir.childDirectory('icu').childFile('icudtl.dat');
+
+    engineBinary.copySync(libDir.childFile(engineBinary.basename).path);
+    // The embedder so name is statically defined in C# code and cannot be
+    // provided at runtime, so the file name must be a constant.
+    embedder.copySync(libDir.childFile('libflutter_tizen.so').path);
+    icuData.copySync(resDir.childFile(icuData.basename).path);
+
+    if (buildMode.isPrecompiled) {
+      final File aotSnapshot = environment.buildDir.childFile('app.so');
+      aotSnapshot.copySync(libDir.childFile('libapp.so').path);
+    }
+
+    final File generatedPluginRegistrant =
+        tizenProject.managedDirectory.childFile('GeneratedPluginRegistrant.cs');
+    assert(generatedPluginRegistrant.existsSync());
+    generatedPluginRegistrant
+        .copySync(srcDir.childFile(generatedPluginRegistrant.basename).path);
+
+    final Directory pluginsDir =
+        environment.buildDir.childDirectory('tizen_plugins');
+    final Directory pluginsResDir = pluginsDir.childDirectory('res');
+    if (pluginsResDir.existsSync()) {
+      copyDirectory(pluginsResDir, resDir);
+    }
+    final Directory pluginsLibDir = pluginsDir.childDirectory('lib');
+    if (pluginsLibDir.existsSync()) {
+      copyDirectory(pluginsLibDir, libDir);
+    }
   }
 }
 

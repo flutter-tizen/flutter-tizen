@@ -287,6 +287,59 @@ type = app
     });
   });
 
+  group('DotnetModule', () {
+    testUsingContext('Build succeeds', () async {
+      final Directory outputDir = projectDir.childDirectory('out');
+      final Environment environment = Environment.test(
+        projectDir,
+        outputDir: outputDir,
+        fileSystem: fileSystem,
+        logger: logger,
+        artifacts: artifacts,
+        processManager: processManager,
+      );
+      environment.buildDir
+          .childDirectory('flutter_assets')
+          .createSync(recursive: true);
+      environment.buildDir.childFile('app.so').createSync(recursive: true);
+      projectDir
+          .childFile('tizen/flutter/GeneratedPluginRegistrant.cs')
+          .createSync(recursive: true);
+      environment.buildDir
+          .childFile('tizen_plugins/lib/libflutter_plugins.so')
+          .createSync(recursive: true);
+
+      await DotnetModule(const TizenBuildInfo(
+        BuildInfo.release,
+        targetArch: 'arm',
+        deviceProfile: 'common',
+      )).build(environment);
+
+      final Directory flutterAssetsDir =
+          outputDir.childDirectory('res/flutter_assets');
+      final File engineBinary = outputDir.childFile('lib/libflutter_engine.so');
+      final File embedder = outputDir.childFile('lib/libflutter_tizen.so');
+      final File icuData = outputDir.childFile('res/icudtl.dat');
+      final File aotSnapshot = outputDir.childFile('lib/libapp.so');
+      final File generatedPluginRegistrant =
+          outputDir.childFile('src/GeneratedPluginRegistrant.cs');
+      final File pluginsLib = outputDir.childFile('lib/libflutter_plugins.so');
+
+      expect(flutterAssetsDir, exists);
+      expect(engineBinary, exists);
+      expect(embedder, exists);
+      expect(icuData, exists);
+      expect(aotSnapshot, exists);
+      expect(generatedPluginRegistrant, exists);
+      expect(pluginsLib, exists);
+    }, overrides: <Type, Generator>{
+      FileSystem: () => fileSystem,
+      ProcessManager: () => processManager,
+      Cache: () => cache,
+      TizenSdk: () => FakeTizenSdk(fileSystem, securityProfile: 'test_profile'),
+    });
+  });
+
   group('NativeModule', () {
     testUsingContext('Build succeeds', () async {
       final Directory outputDir = projectDir.childDirectory('out');
