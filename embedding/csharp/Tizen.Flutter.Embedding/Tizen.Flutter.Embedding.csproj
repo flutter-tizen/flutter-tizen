@@ -25,4 +25,8 @@
     <PackageReference Include="Tizen.NET" Version="9.0.0.16760" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(TargetFramework)' == 'tizen40'">
+    <Compile Remove="NUIFlutterView.cs" />
+  </ItemGroup>
+
 </Project>
