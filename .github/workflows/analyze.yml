@@ -21,6 +21,7 @@ jobs:
         run: flutter/bin/dart format --output=none --set-exit-if-changed lib test
       - name: Analyze project source
         run: flutter/bin/dart analyze --fatal-infos lib
+
   csharp:
     runs-on: ubuntu-latest
     steps:

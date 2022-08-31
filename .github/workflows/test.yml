@@ -27,6 +27,7 @@ jobs:
           sudo apt install -y lcov
           lcov --summary coverage/lcov.info
           lcov --list coverage/lcov.info
+
   embedding:
     runs-on: ubuntu-latest
     steps:
@@ -36,6 +37,7 @@ jobs:
           dotnet-version: '5.0.x'
       - name: Run tests
         run: dotnet test embedding/csharp
+
   e2e:
     runs-on: ubuntu-latest
     steps:

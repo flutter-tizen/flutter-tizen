@@ -1,0 +1,21 @@
+name: Release
+
+on: [workflow_dispatch]
+
+jobs:
+  nuget:
+    runs-on: ubuntu-latest
+    if: ${{ github.repository_owner == 'flutter-tizen' }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '6.0.x'
+      - name: Build and push
+        run: |
+          cd embedding/csharp/Tizen.Flutter.Embedding
+          dotnet build -c Release
+          dotnet nuget push bin/Release/*.nupkg \
+            -s https://api.nuget.org/v3/index.json \
+            -k ${{ secrets.NUGET_APIKEY }} \
+            --skip-duplicate
