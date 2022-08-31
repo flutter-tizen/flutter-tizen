@@ -145,7 +145,6 @@ class DotnetTpk extends TizenPackage {
       if (buildMode.isPrecompiled) 'Release' else 'Debug',
       '-o',
       '${outputDir.path}/', // The trailing '/' is needed.
-      if (apiVersion != null) '/p:TizenApiVersion=$apiVersion',
       '/p:DefineConstants=${profile.toUpperCase()}_PROFILE',
       tizenProject.editableDirectory.path,
     ]);

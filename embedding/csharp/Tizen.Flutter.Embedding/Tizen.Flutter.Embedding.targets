@@ -1,0 +1,18 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup Condition="'$(FlutterModuleDir)' != ''">
+    <FlutterModuleDir>$([MSBuild]::EnsureTrailingSlash($(FlutterModuleDir)))</FlutterModuleDir>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(FlutterModuleDir)' != ''">
+    <Compile Include="$(FlutterModuleDir)src\*.cs" />
+
+    <TizenTpkUserIncludeFiles Include="$(FlutterModuleDir)lib\**\*">
+      <TizenTpkSubDir>lib\%(RecursiveDir)</TizenTpkSubDir>
+    </TizenTpkUserIncludeFiles>
+    <TizenTpkUserIncludeFiles Include="$(FlutterModuleDir)res\**\*">
+      <TizenTpkSubDir>res\%(RecursiveDir)</TizenTpkSubDir>
+    </TizenTpkUserIncludeFiles>
+  </ItemGroup>
+
+</Project>
