@@ -11,7 +11,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Fetch Flutter SDK
         run: |
           git clone --depth=1 https://github.com/flutter/flutter.git
@@ -31,8 +31,8 @@ jobs:
   embedding:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-dotnet@v1
+      - uses: actions/checkout@v3
+      - uses: actions/setup-dotnet@v2
         with:
           dotnet-version: '5.0.x'
       - name: Run tests
@@ -41,7 +41,7 @@ jobs:
   e2e:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           path: flutter-tizen
       - name: Install Tizen Studio
