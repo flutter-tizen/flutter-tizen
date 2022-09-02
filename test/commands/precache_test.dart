@@ -103,7 +103,10 @@ class _FakeCache extends Fake implements Cache {
   Future<bool> isUpToDate() async => false;
 
   @override
-  Future<void> updateAll(Set<DevelopmentArtifact> requiredArtifacts) async {
+  Future<void> updateAll(
+    Set<DevelopmentArtifact> requiredArtifacts, {
+    bool offline = false,
+  }) async {
     artifacts.addAll(requiredArtifacts);
   }
 }

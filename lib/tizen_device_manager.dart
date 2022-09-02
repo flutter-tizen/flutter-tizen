@@ -14,7 +14,6 @@ import 'package:flutter_tools/src/flutter_device_manager.dart';
 import 'package:flutter_tools/src/fuchsia/fuchsia_workflow.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/macos/macos_workflow.dart';
-import 'package:flutter_tools/src/windows/uwptool.dart';
 import 'package:flutter_tools/src/windows/windows_workflow.dart';
 
 import 'tizen_device_discovery.dart';
@@ -56,11 +55,6 @@ class TizenDeviceManager extends FlutterDeviceManager {
             fileSystem: globals.fs,
             logger: globals.logger,
             platform: globals.platform,
-          ),
-          uwptool: UwpTool(
-            artifacts: globals.artifacts,
-            logger: globals.logger,
-            processManager: globals.processManager,
           ),
         );
 

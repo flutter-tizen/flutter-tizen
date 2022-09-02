@@ -204,7 +204,6 @@ class TizenCreateCommand extends CreateCommand {
     bool linux = false,
     bool macos = false,
     bool windows = false,
-    bool windowsUwp = false,
     bool implementationTests = false,
   }) {
     final Map<String, Object> context = super.createTemplateContext(
@@ -228,7 +227,6 @@ class TizenCreateCommand extends CreateCommand {
       linux: linux,
       macos: macos,
       windows: windows,
-      windowsUwp: windowsUwp,
       implementationTests: implementationTests,
     );
     context['tizen'] = true;
