@@ -425,7 +425,7 @@ class TizenCreateCommand extends CreateCommand {
 
   void _runGitApply(Directory directory, File patchFile) {
     final ProcessResult result = globals.processManager.runSync(
-      <String>['git', 'apply', patchFile.path],
+      <String>['git', 'apply', '--whitespace=fix', patchFile.path],
       workingDirectory: directory.path,
     );
     if (result.exitCode != 0) {
