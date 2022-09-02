@@ -8,7 +8,7 @@ jobs:
   dart:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Fetch Flutter SDK
         run: |
           git clone --depth=1 https://github.com/flutter/flutter.git
@@ -21,11 +21,12 @@ jobs:
         run: flutter/bin/dart format --output=none --set-exit-if-changed lib test
       - name: Analyze project source
         run: flutter/bin/dart analyze --fatal-infos lib
+
   csharp:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-dotnet@v1
+      - uses: actions/checkout@v3
+      - uses: actions/setup-dotnet@v2
         with:
           dotnet-version: '6.0.x'
       - name: Verify formatting
