@@ -107,7 +107,8 @@ GOTO :EOF
 
       ECHO Compiling flutter-tizen...
       CALL "%dart_exe%" --disable-dart-dev --no-enable-mirrors ^
-                        --snapshot="%snapshot_path%" --packages="%ROOT_DIR%\.packages" ^
+                        --snapshot="%snapshot_path%" ^
+                        --packages="%ROOT_DIR%\.dart_tool\package_config.json" ^
                         "%ROOT_DIR%\bin\flutter_tizen.dart" || (
         ECHO Error: Unable to compile the snapshot.
         EXIT /B 1

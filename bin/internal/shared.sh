@@ -88,7 +88,8 @@ function update_flutter_tizen() {
 
     echo "Compiling flutter-tizen..."
     "$DART_EXE" --disable-dart-dev --no-enable-mirrors \
-                --snapshot="$SNAPSHOT_PATH" --packages="$ROOT_DIR/.packages" \
+                --snapshot="$SNAPSHOT_PATH" \
+                --packages="$ROOT_DIR/.dart_tool/package_config.json" \
                 "$ROOT_DIR/bin/flutter_tizen.dart"
 
     echo "$revision" > "$stamp_path"
@@ -96,5 +97,7 @@ function update_flutter_tizen() {
 }
 
 function exec_snapshot() {
-  "$DART_EXE" --disable-dart-dev --packages="$ROOT_DIR/.packages" "$SNAPSHOT_PATH" "$@"
+  "$DART_EXE" --disable-dart-dev \
+              --packages="$ROOT_DIR/.dart_tool/package_config.json" \
+              "$SNAPSHOT_PATH" "$@"
 }
