@@ -3,8 +3,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @dart = 2.8
-
 import 'dart:io';
 
 import 'package:flutter_tools/executable.dart' as flutter show main;
@@ -37,6 +35,7 @@ import 'package:flutter_tools/src/emulator.dart';
 import 'package:flutter_tools/src/features.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/isolated/mustache_template.dart';
+import 'package:flutter_tools/src/project_validator.dart';
 import 'package:flutter_tools/src/runner/flutter_command.dart';
 import 'package:path/path.dart';
 
@@ -103,7 +102,8 @@ Future<void> main(List<String> args) async {
         terminal: globals.terminal,
         logger: globals.logger,
         processManager: globals.processManager,
-        artifacts: globals.artifacts,
+        artifacts: globals.artifacts!,
+        allProjectValidators: <ProjectValidator>[],
       ),
       ConfigCommand(verboseHelp: verboseHelp),
       DaemonCommand(hidden: !verboseHelp),
@@ -174,7 +174,7 @@ Future<void> main(List<String> args) async {
       DoctorValidatorsProvider: () => TizenDoctorValidatorsProvider(),
       EmulatorManager: () => TizenEmulatorManager(
             tizenSdk: tizenSdk,
-            tizenWorkflow: tizenWorkflow,
+            tizenWorkflow: tizenWorkflow!,
             fileSystem: globals.fs,
             logger: globals.logger,
             processManager: globals.processManager,

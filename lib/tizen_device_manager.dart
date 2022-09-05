@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @dart = 2.8
-
 import 'package:flutter_tools/src/android/android_workflow.dart';
 import 'package:flutter_tools/src/base/context.dart';
 import 'package:flutter_tools/src/context_runner.dart';
@@ -26,7 +24,7 @@ class TizenDeviceManager extends FlutterDeviceManager {
   TizenDeviceManager()
       : _tizenDeviceDiscovery = TizenDeviceDiscovery(
           tizenSdk: tizenSdk,
-          tizenWorkflow: tizenWorkflow,
+          tizenWorkflow: tizenWorkflow!,
           logger: globals.logger,
           fileSystem: globals.fs,
           processManager: globals.processManager,
@@ -36,26 +34,22 @@ class TizenDeviceManager extends FlutterDeviceManager {
           processManager: globals.processManager,
           platform: globals.platform,
           androidSdk: globals.androidSdk,
-          iosSimulatorUtils: globals.iosSimulatorUtils,
+          iosSimulatorUtils: globals.iosSimulatorUtils!,
           featureFlags: featureFlags,
           fileSystem: globals.fs,
-          iosWorkflow: globals.iosWorkflow,
-          artifacts: globals.artifacts,
+          iosWorkflow: globals.iosWorkflow!,
+          artifacts: globals.artifacts!,
           flutterVersion: globals.flutterVersion,
-          androidWorkflow: androidWorkflow,
-          fuchsiaWorkflow: fuchsiaWorkflow,
-          xcDevice: globals.xcdevice,
+          androidWorkflow: androidWorkflow!,
+          fuchsiaWorkflow: fuchsiaWorkflow!,
+          xcDevice: globals.xcdevice!,
           userMessages: globals.userMessages,
-          windowsWorkflow: windowsWorkflow,
-          macOSWorkflow: context.get<MacOSWorkflow>(),
-          fuchsiaSdk: globals.fuchsiaSdk,
+          windowsWorkflow: windowsWorkflow!,
+          macOSWorkflow: context.get<MacOSWorkflow>()!,
+          fuchsiaSdk: globals.fuchsiaSdk!,
           operatingSystemUtils: globals.os,
           terminal: globals.terminal,
-          customDevicesConfig: CustomDevicesConfig(
-            fileSystem: globals.fs,
-            logger: globals.logger,
-            platform: globals.platform,
-          ),
+          customDevicesConfig: context.get<CustomDevicesConfig>()!,
         );
 
   final TizenDeviceDiscovery _tizenDeviceDiscovery;
