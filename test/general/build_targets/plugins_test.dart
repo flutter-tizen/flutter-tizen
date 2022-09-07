@@ -18,7 +18,6 @@ import 'package:flutter_tools/src/cache.dart';
 
 import '../../src/common.dart';
 import '../../src/context.dart';
-import '../../src/fake_process_manager.dart';
 import '../../src/fake_tizen_sdk.dart';
 
 void main() {
