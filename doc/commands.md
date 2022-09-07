@@ -30,6 +30,16 @@ The following commands from the [Flutter CLI](https://flutter.dev/docs/reference
   flutter-tizen analyze
   ```
 
+- ### `attach`
+
+  Attach to a running app.
+
+  ```sh
+  flutter-tizen attach --debug-url http://127.0.0.1:43000/Swm0bjIe0ks=/
+  ```
+
+  For attaching to Tizen devices, the `--debug-url` value must be provided. The observatory URL can be obtained from the device log output (`flutter-tizen run` or `sdb dlog ConsoleMessage`) after you launch an app in either debug or profile mode.
+
 - ### `build`
 
   Flutter build command. See `flutter-tizen build -h` for all available subcommands.
@@ -200,10 +210,10 @@ The following commands from the [Flutter CLI](https://flutter.dev/docs/reference
   Take a screenshot from a connected device.
 
   ```sh
-  flutter-tizen screenshot --type rasterizer --observatory-uri http://127.0.0.1:43000/Swm0bjIe0ks=
+  flutter-tizen screenshot --type rasterizer --observatory-uri http://127.0.0.1:43000/Swm0bjIe0ks=/
   ```
 
-  You have to specify both `--type` and `--observatory-uri` values because the default (`device`) screenshot type is not supported by Tizen devices. The observatory URI value can be found in the device log output (`flutter-tizen run` or `flutter-tizen logs`) after you start an app in debug or profile mode.
+  Both `--type` and `--observatory-uri` must be provided because the default (`device`) screenshot type is not supported by Tizen devices. The observatory URI can be obtained from the device log output (`flutter-tizen run` or `sdb dlog ConsoleMessage`) after you launch an app in either debug or profile mode.
 
   If you're using a watch device, you can also take a screenshot by swiping the screen from left to right while pressing the Home button.
 

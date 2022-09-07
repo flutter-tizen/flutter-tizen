@@ -68,7 +68,7 @@ void updateLaunchJsonFile(FlutterProject project, Uri observatoryUri) {
     config['cwd'] = project.hasExampleApp
         ? r'${workspaceFolder}/example'
         : r'${workspaceFolder}';
-    config['observatoryUri'] = observatoryUri.toString();
+    config['vmServiceUri'] = observatoryUri.toString();
   }
 
   const JsonEncoder encoder = JsonEncoder.withIndent('    ');
