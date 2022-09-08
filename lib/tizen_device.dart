@@ -26,6 +26,7 @@ import 'package:process/process.dart';
 import 'forwarding_log_reader.dart';
 import 'tizen_build_info.dart';
 import 'tizen_builder.dart';
+import 'tizen_project.dart';
 import 'tizen_sdk.dart';
 import 'tizen_tpk.dart';
 import 'vscode_helper.dart';
@@ -382,6 +383,7 @@ class TizenDevice extends Device {
     final List<String> engineArgs = <String>[
       '--enable-dart-profiling',
       if (traceStartup) '--trace-startup',
+      if (route != null) ...<String>['--route', route],
       if (debuggingOptions.enableSoftwareRendering)
         '--enable-software-rendering',
       if (debuggingOptions.skiaDeterministicRendering)
@@ -399,6 +401,8 @@ class TizenDevice extends Device {
       if (debuggingOptions.dumpSkpOnShaderCompilation)
         '--dump-skp-on-shader-compilation',
       if (debuggingOptions.cacheSkSL) '--cache-sksl',
+      if (debuggingOptions.purgePersistentCache) '--purge-persistent-cache',
+      if (debuggingOptions.enableImpeller) '--enable-impeller',
       if (debuggingOptions.debuggingEnabled) ...<String>[
         '--enable-checked-mode',
         if (debuggingOptions.startPaused) '--start-paused',
@@ -538,8 +542,7 @@ class TizenDevice extends Device {
 
   @override
   bool isSupportedForProject(FlutterProject flutterProject) {
-    return flutterProject.isModule &&
-        flutterProject.directory.childDirectory('tizen').existsSync();
+    return TizenProject.fromFlutter(flutterProject).existsSync();
   }
 
   /// Source: [AndroidDevice.dispose] in `android_device.dart`

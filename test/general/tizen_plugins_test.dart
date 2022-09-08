@@ -13,7 +13,6 @@ import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/project.dart';
 import 'package:flutter_tools/src/runner/flutter_command.dart';
 
-import '../src/common.dart';
 import '../src/context.dart';
 import '../src/test_flutter_command_runner.dart';
 

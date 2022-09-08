@@ -235,8 +235,8 @@ class _FlutterTizenVersion extends FlutterVersion {
       .stdout
       .trim();
 
-  /// This should be overriden because [FlutterVersion._latestGitCommitDate]
-  /// runs the git log command in the `Cache.flutterRoot` directory.
+  /// This should be overriden because [FlutterVersion._gitCommitDate] runs
+  /// the git log command in the [Cache.flutterRoot] directory.
   @override
   String get frameworkCommitDate => _runGit(
       'git -c log.showSignature=false log -n 1 --pretty=format:%ad --date=iso');

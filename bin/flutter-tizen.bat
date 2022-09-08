@@ -41,4 +41,4 @@ REM Run the snapshot.
 SET flutter_dir=%ROOT_DIR%\flutter
 SET snapshot_path=%ROOT_DIR%\bin\cache\flutter-tizen.snapshot
 SET dart_exe=%flutter_dir%\bin\cache\dart-sdk\bin\dart.exe
-"%dart_exe%" --disable-dart-dev --packages="%ROOT_DIR%\.packages" "%snapshot_path%" %* & exit /B !ERRORLEVEL!
+"%dart_exe%" --disable-dart-dev --packages="%ROOT_DIR%\.dart_tool\package_config.json" "%snapshot_path%" %* & exit /B !ERRORLEVEL!

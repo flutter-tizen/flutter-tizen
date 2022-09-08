@@ -2,11 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @dart = 2.8
-
 import 'dart:io';
 
-import 'package:file/file.dart';
 import 'package:flutter_tools/src/base/common.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/base/terminal.dart';
@@ -32,8 +29,7 @@ const List<String> _kAvailablePlatforms = <String>[
 ];
 
 class TizenCreateCommand extends CreateCommand {
-  TizenCreateCommand({bool verboseHelp = false})
-      : super(verboseHelp: verboseHelp) {
+  TizenCreateCommand({super.verboseHelp}) {
     argParser.addOption(
       'tizen-language',
       allowed: <String>['cpp', 'csharp'],
@@ -61,8 +57,8 @@ class TizenCreateCommand extends CreateCommand {
   String get appType => stringArg('app-type') ?? 'ui';
 
   String get tizenLanguage {
-    if (argResults.wasParsed('tizen-language')) {
-      return stringArg('tizen-language');
+    if (argResults!.wasParsed('tizen-language')) {
+      return stringArg('tizen-language')!;
     }
     return stringArg('template') == 'plugin' ? 'cpp' : 'csharp';
   }
@@ -80,9 +76,10 @@ class TizenCreateCommand extends CreateCommand {
 
   /// See: [CreateCommand._getProjectType] in `create.dart`
   bool get _shouldGeneratePlugin {
-    FlutterProjectType template;
-    if (argResults['template'] != null) {
-      template = stringToProjectType(stringArg('template'));
+    FlutterProjectType? template;
+    final String? templateArgument = stringArg('template');
+    if (templateArgument != null) {
+      template = stringToProjectType(templateArgument);
     }
     if (projectDir.existsSync() && projectDir.listSync().isNotEmpty) {
       template = determineTemplateType();
@@ -91,7 +88,7 @@ class TizenCreateCommand extends CreateCommand {
   }
 
   @override
-  void addPlatformsOptions({String customHelp}) {
+  void addPlatformsOptions({String? customHelp}) {
     argParser.addMultiOption(
       'platforms',
       help: customHelp,
@@ -104,7 +101,7 @@ class TizenCreateCommand extends CreateCommand {
   Future<int> renderTemplate(
     String templateName,
     Directory directory,
-    Map<String, Object> context, {
+    Map<String, Object?> context, {
     bool overwrite = false,
     bool printStatusWhenWriting = true,
   }) async {
@@ -129,7 +126,7 @@ class TizenCreateCommand extends CreateCommand {
   Future<int> renderMerged(
     List<String> names,
     Directory directory,
-    Map<String, Object> context, {
+    Map<String, Object?> context, {
     bool overwrite = false,
     bool printStatusWhenWriting = true,
   }) async {
@@ -141,7 +138,7 @@ class TizenCreateCommand extends CreateCommand {
       fileSystem: globals.fs,
       logger: globals.logger,
       templateRenderer: globals.templateRenderer,
-      templateManifest: null,
+      templateManifest: <Uri>{},
     );
     return template.render(
       directory,
@@ -156,12 +153,12 @@ class TizenCreateCommand extends CreateCommand {
   Future<int> generateApp(
     List<String> templateNames,
     Directory directory,
-    Map<String, Object> templateContext, {
+    Map<String, Object?> templateContext, {
     bool overwrite = false,
     bool pluginExampleApp = false,
     bool printStatusWhenWriting = true,
     bool generateMetadata = true,
-    FlutterProjectType projectType,
+    FlutterProjectType? projectType,
   }) async {
     if (pluginExampleApp) {
       // Reset to the updated identifier for the example app.
@@ -183,19 +180,19 @@ class TizenCreateCommand extends CreateCommand {
   }
 
   @override
-  Map<String, Object> createTemplateContext({
-    String organization,
-    String projectName,
-    String titleCaseProjectName,
-    String projectDescription,
-    String androidLanguage,
-    String iosDevelopmentTeam,
-    String iosLanguage,
-    String flutterRoot,
-    String dartSdkVersionBounds,
-    String agpVersion,
-    String kotlinVersion,
-    String gradleVersion,
+  Map<String, Object?> createTemplateContext({
+    required String organization,
+    required String projectName,
+    required String titleCaseProjectName,
+    String? projectDescription,
+    String? androidLanguage,
+    String? iosDevelopmentTeam,
+    String? iosLanguage,
+    required String flutterRoot,
+    required String dartSdkVersionBounds,
+    String? agpVersion,
+    String? kotlinVersion,
+    String? gradleVersion,
     bool withPlatformChannelPluginHook = false,
     bool withFfiPluginHook = false,
     bool ios = false,
@@ -204,10 +201,9 @@ class TizenCreateCommand extends CreateCommand {
     bool linux = false,
     bool macos = false,
     bool windows = false,
-    bool windowsUwp = false,
     bool implementationTests = false,
   }) {
-    final Map<String, Object> context = super.createTemplateContext(
+    final Map<String, Object?> context = super.createTemplateContext(
       organization: organization,
       projectName: projectName,
       titleCaseProjectName: titleCaseProjectName,
@@ -228,7 +224,6 @@ class TizenCreateCommand extends CreateCommand {
       linux: linux,
       macos: macos,
       windows: windows,
-      windowsUwp: windowsUwp,
       implementationTests: implementationTests,
     );
     context['tizen'] = true;
@@ -244,7 +239,7 @@ class TizenCreateCommand extends CreateCommand {
 
     final String template = stringArg('template') ?? 'app';
 
-    if (template != 'app' && argResults.wasParsed('app-type')) {
+    if (template != 'app' && argResults!.wasParsed('app-type')) {
       throwToolExit(
           '--app-type=$appType and --template=$template cannot be provided at the same time.');
     }
@@ -275,7 +270,7 @@ class TizenCreateCommand extends CreateCommand {
       final FlutterProject project = FlutterProject.fromDirectory(projectDir);
       final TizenProject tizenProject = TizenProject.fromFlutter(project);
       if (tizenProject.existsSync() && tizenProject.isDotnet) {
-        updateDotnetUserProjectFile(tizenProject.projectFile);
+        updateDotnetUserProjectFile(tizenProject.projectFile!);
       }
 
       final String relativePluginPath =
@@ -284,10 +279,12 @@ class TizenCreateCommand extends CreateCommand {
         'Make sure your $relativePluginPath/pubspec.yaml contains the following lines.',
         color: TerminalColor.yellow,
       );
-      final Map<String, Object> templateContext = createTemplateContext(
+      final Map<String, Object?> templateContext = createTemplateContext(
         organization: '',
         projectName: projectName,
+        titleCaseProjectName: '',
         flutterRoot: '',
+        dartSdkVersionBounds: '',
       );
       if (templateContext['tizenLanguage'] == 'csharp') {
         globals.printStatus(
@@ -295,9 +292,9 @@ class TizenCreateCommand extends CreateCommand {
           '  plugin:\n'
           '    platforms:\n'
           '      tizen:\n'
-          '        namespace: ${templateContext['tizenNamespace'] as String}\n'
-          '        pluginClass: ${templateContext['pluginClass'] as String}\n'
-          '        fileName: ${templateContext['pluginClass'] as String}.csproj',
+          '        namespace: ${templateContext['tizenNamespace']}\n'
+          '        pluginClass: ${templateContext['pluginClass']}\n'
+          '        fileName: ${templateContext['pluginClass']}.csproj',
           color: TerminalColor.blue,
         );
       } else if (templateContext['tizenLanguage'] == 'cpp') {
@@ -306,7 +303,7 @@ class TizenCreateCommand extends CreateCommand {
           '  plugin:\n'
           '    platforms:\n'
           '      tizen:\n'
-          '        pluginClass: ${templateContext['pluginClass'] as String}\n'
+          '        pluginClass: ${templateContext['pluginClass']}\n'
           '        fileName: ${projectName}_plugin.h',
           color: TerminalColor.blue,
         );
@@ -322,13 +319,13 @@ class TizenCreateCommand extends CreateCommand {
   /// - [Template.render] in `template.dart`
   @override
   Future<FlutterCommandResult> runCommand() async {
-    if (argResults.rest.isEmpty) {
+    if (argResults!.rest.isEmpty) {
       return super.runCommand();
     }
 
     final List<String> platforms = stringsArg('platforms');
     bool shouldRenderTizenTemplate = platforms.contains('tizen');
-    if (_shouldGeneratePlugin && !argResults.wasParsed('platforms')) {
+    if (_shouldGeneratePlugin && !argResults!.wasParsed('platforms')) {
       shouldRenderTizenTemplate = false;
     }
     if (!shouldRenderTizenTemplate) {

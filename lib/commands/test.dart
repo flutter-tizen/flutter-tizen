@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @dart = 2.8
-
 import 'dart:async';
 
 import 'package:file/file.dart';
@@ -25,14 +23,10 @@ import '../tizen_plugins.dart';
 
 class TizenTestCommand extends TestCommand with TizenRequiredArtifacts {
   TizenTestCommand({
-    bool verboseHelp = false,
-    TestWrapper testWrapper = const TestWrapper(),
-    FlutterTestRunner testRunner,
-  }) : super(
-          verboseHelp: verboseHelp,
-          testWrapper: testWrapper,
-          testRunner: testRunner ?? TizenTestRunner(),
-        );
+    super.verboseHelp,
+    super.testWrapper,
+    FlutterTestRunner? testRunner,
+  }) : super(testRunner: testRunner ?? TizenTestRunner());
 
   @override
   Future<FlutterCommandResult> runCommand() {
@@ -70,7 +64,7 @@ class TizenTestRunner implements FlutterTestRunner {
       final LanguageVersion languageVersion = determineLanguageVersion(
         testFile,
         packageConfig.packageOf(testFileUri),
-        Cache.flutterRoot,
+        Cache.flutterRoot!,
       );
       final Map<String, Object> context = <String, Object>{
         'mainImport': testFileUri.toString(),
@@ -109,32 +103,32 @@ void main() {
   Future<int> runTests(
     TestWrapper testWrapper,
     List<String> testFiles, {
-    DebuggingOptions debuggingOptions,
+    required DebuggingOptions debuggingOptions,
     List<String> names = const <String>[],
     List<String> plainNames = const <String>[],
-    String tags,
-    String excludeTags,
+    String? tags,
+    String? excludeTags,
     bool enableObservatory = false,
     bool ipv6 = false,
     bool machine = false,
-    String precompiledDillPath,
-    Map<String, String> precompiledDillFiles,
+    String? precompiledDillPath,
+    Map<String, String>? precompiledDillFiles,
     bool updateGoldens = false,
-    TestWatcher watcher,
-    int concurrency,
-    bool buildTestAssets = false,
-    FlutterProject flutterProject,
-    String icudtlPath,
-    Directory coverageDirectory,
+    TestWatcher? watcher,
+    required int? concurrency,
+    String? testAssetDirectory,
+    FlutterProject? flutterProject,
+    String? icudtlPath,
+    Directory? coverageDirectory,
     bool web = false,
-    String randomSeed,
-    String reporter,
-    String timeout,
+    String? randomSeed,
+    String? reporter,
+    String? timeout,
     bool runSkipped = false,
-    int shardIndex,
-    int totalShards,
-    Device integrationTestDevice,
-    String integrationTestUserIdentifier,
+    int? shardIndex,
+    int? totalShards,
+    Device? integrationTestDevice,
+    String? integrationTestUserIdentifier,
   }) async {
     if (isIntegrationTest) {
       testFiles = await _generateEntrypointWrappers(testFiles);
@@ -155,7 +149,7 @@ void main() {
       updateGoldens: updateGoldens,
       watcher: watcher,
       concurrency: concurrency,
-      buildTestAssets: buildTestAssets,
+      testAssetDirectory: testAssetDirectory,
       flutterProject: flutterProject,
       icudtlPath: icudtlPath,
       coverageDirectory: coverageDirectory,

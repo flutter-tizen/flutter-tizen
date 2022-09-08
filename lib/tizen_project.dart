@@ -6,10 +6,8 @@
 import 'package:file/file.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/base/logger.dart';
-import 'package:flutter_tools/src/bundle.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/commands/clean.dart';
-import 'package:flutter_tools/src/flutter_manifest.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/project.dart';
 import 'package:flutter_tools/src/template.dart';
@@ -26,21 +24,6 @@ class TizenProject extends FlutterProjectPlatform {
 
   /// The parent of this project.
   final FlutterProject parent;
-
-  /// See: [FlutterManifest] in `flutter_manifest.xml`
-  late final Map<String, Object?> _parentPubspec = () {
-    final File pubspecFile = parent.directory.childFile(defaultManifestPath);
-    if (!pubspecFile.existsSync()) {
-      return <String, Object?>{};
-    }
-    YamlMap? yamlMap;
-    try {
-      yamlMap = loadYaml(pubspecFile.readAsStringSync()) as YamlMap?;
-    } on YamlException {
-      return <String, Object?>{};
-    }
-    return yamlMap?.cast<String, Object?>() ?? <String, Object?>{};
-  }();
 
   @override
   String get pluginConfigKey => TizenPlugin.kConfigKey;
@@ -110,14 +93,11 @@ class TizenProject extends FlutterProjectPlatform {
   /// Only applicable for module projects.
   String? get _tizenLanguage {
     if (parent.isModule) {
-      final Object? flutterDescriptor = _parentPubspec['flutter'];
-      if (flutterDescriptor is YamlMap) {
-        final Object? module = flutterDescriptor['module'];
-        if (module is YamlMap) {
-          final Object? tizenLanguage = module['tizenLanguage'];
-          if (tizenLanguage is String) {
-            return tizenLanguage;
-          }
+      final Object? module = parent.manifest.flutterDescriptor['module'];
+      if (module is YamlMap) {
+        final Object? tizenLanguage = module['tizenLanguage'];
+        if (tizenLanguage is String) {
+          return tizenLanguage;
         }
       }
     }

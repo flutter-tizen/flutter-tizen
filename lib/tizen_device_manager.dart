@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @dart = 2.8
-
 import 'package:flutter_tools/src/android/android_workflow.dart';
 import 'package:flutter_tools/src/base/context.dart';
 import 'package:flutter_tools/src/context_runner.dart';
@@ -14,7 +12,6 @@ import 'package:flutter_tools/src/flutter_device_manager.dart';
 import 'package:flutter_tools/src/fuchsia/fuchsia_workflow.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/macos/macos_workflow.dart';
-import 'package:flutter_tools/src/windows/uwptool.dart';
 import 'package:flutter_tools/src/windows/windows_workflow.dart';
 
 import 'tizen_device_discovery.dart';
@@ -27,7 +24,7 @@ class TizenDeviceManager extends FlutterDeviceManager {
   TizenDeviceManager()
       : _tizenDeviceDiscovery = TizenDeviceDiscovery(
           tizenSdk: tizenSdk,
-          tizenWorkflow: tizenWorkflow,
+          tizenWorkflow: tizenWorkflow!,
           logger: globals.logger,
           fileSystem: globals.fs,
           processManager: globals.processManager,
@@ -37,31 +34,22 @@ class TizenDeviceManager extends FlutterDeviceManager {
           processManager: globals.processManager,
           platform: globals.platform,
           androidSdk: globals.androidSdk,
-          iosSimulatorUtils: globals.iosSimulatorUtils,
+          iosSimulatorUtils: globals.iosSimulatorUtils!,
           featureFlags: featureFlags,
           fileSystem: globals.fs,
-          iosWorkflow: globals.iosWorkflow,
-          artifacts: globals.artifacts,
+          iosWorkflow: globals.iosWorkflow!,
+          artifacts: globals.artifacts!,
           flutterVersion: globals.flutterVersion,
-          androidWorkflow: androidWorkflow,
-          fuchsiaWorkflow: fuchsiaWorkflow,
-          xcDevice: globals.xcdevice,
+          androidWorkflow: androidWorkflow!,
+          fuchsiaWorkflow: fuchsiaWorkflow!,
+          xcDevice: globals.xcdevice!,
           userMessages: globals.userMessages,
-          windowsWorkflow: windowsWorkflow,
-          macOSWorkflow: context.get<MacOSWorkflow>(),
-          fuchsiaSdk: globals.fuchsiaSdk,
+          windowsWorkflow: windowsWorkflow!,
+          macOSWorkflow: context.get<MacOSWorkflow>()!,
+          fuchsiaSdk: globals.fuchsiaSdk!,
           operatingSystemUtils: globals.os,
           terminal: globals.terminal,
-          customDevicesConfig: CustomDevicesConfig(
-            fileSystem: globals.fs,
-            logger: globals.logger,
-            platform: globals.platform,
-          ),
-          uwptool: UwpTool(
-            artifacts: globals.artifacts,
-            logger: globals.logger,
-            processManager: globals.processManager,
-          ),
+          customDevicesConfig: context.get<CustomDevicesConfig>()!,
         );
 
   final TizenDeviceDiscovery _tizenDeviceDiscovery;
