@@ -104,7 +104,6 @@ class DotnetTpk extends TizenPackage {
     final File engineBinary = engineDir.childFile('libflutter_engine.so');
     final File embedder =
         engineDir.childFile('libflutter_tizen_$profile$nuiSuffix.so');
-
     final File icuData =
         commonDir.childDirectory('icu').childFile('icudtl.dat');
 
@@ -431,9 +430,15 @@ class DotnetModule extends TizenPackage {
         getEngineArtifactsDirectory(buildInfo.targetArch, buildMode);
     final Directory commonDir = engineDir.parent.childDirectory('tizen-common');
 
+    final TizenManifest tizenManifest =
+        TizenManifest.parseFromXml(tizenProject.manifestFile);
+    final String profile = buildInfo.deviceProfile;
+    final String? apiVersion = tizenManifest.apiVersion;
+    final String nuiSuffix = supportsNui(profile, apiVersion) ? '_nui' : '';
+
     final File engineBinary = engineDir.childFile('libflutter_engine.so');
     final File embedder =
-        engineDir.childFile('libflutter_tizen_${buildInfo.deviceProfile}.so');
+        engineDir.childFile('libflutter_tizen_$profile$nuiSuffix.so');
     final File icuData =
         commonDir.childDirectory('icu').childFile('icudtl.dat');
 
