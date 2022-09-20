@@ -18,6 +18,9 @@ namespace Tizen.Flutter.Embedding
     /// </summary>
     public class NUIFlutterView : ImageView
     {
+        private uint _lastTouchEventTime = 0;
+        private Size2D _size = new Size2D();
+
         /// <summary>
         /// The Flutter engine instance.
         /// </summary>
@@ -34,16 +37,6 @@ namespace Tizen.Flutter.Embedding
         public bool IsRunning => !View.IsInvalid;
 
         /// <summary>
-        /// When the view last received a touch event in milliseconds.
-        /// </summary>
-        private uint _lastTouchEventTime = 0;
-
-        /// <summary>
-        /// The size of the Flutter view.
-        /// </summary>
-        private Size2D _size = new Size2D();
-
-        /// <summary>
         /// Starts running the view with the associated engine, creating if not set.
         /// </summary>
         /// <remarks>
@@ -58,11 +51,7 @@ namespace Tizen.Flutter.Embedding
                 return false;
             }
 
-            if (Engine == null)
-            {
-                Engine = new FlutterEngine();
-            }
-
+            Engine = Engine ?? new FlutterEngine();
             if (!Engine.IsValid)
             {
                 TizenLog.Error("Could not create a Flutter engine.");
@@ -70,17 +59,13 @@ namespace Tizen.Flutter.Embedding
             }
 
             Size2D size = GetDefaultSize();
-            Type baseType = typeof(NativeImageQueue).BaseType.BaseType.BaseType;
-            FieldInfo field = baseType.GetField("swigCPtr", BindingFlags.NonPublic | BindingFlags.Instance);
-            NativeImageQueue nativeImageQueue =
+
+            var nativeImageQueue =
                 new NativeImageQueue((uint)size.Width, (uint)size.Height, NativeImageQueue.ColorFormat.RGBA8888);
-            HandleRef nativeImageQueueRef = (HandleRef)field.GetValue(nativeImageQueue);
+            var nativeImageQueueRef = GetFieldValue<HandleRef>(nativeImageQueue, typeof(Tizen.NUI.Disposable), "swigCPtr");
             SetImage(nativeImageQueue.GenerateUrl().ToString());
 
-            Type imageViewBaseType = typeof(ImageView).BaseType.BaseType.BaseType.BaseType;
-            FieldInfo imageViewField =
-                imageViewBaseType.GetField("swigCPtr", BindingFlags.NonPublic | BindingFlags.Instance);
-            HandleRef imageViewRef = (HandleRef)imageViewField.GetValue(this);
+            var imageViewRef = GetFieldValue<HandleRef>(this, typeof(Tizen.NUI.BaseHandle), "swigCPtr");
 
             var viewProperties = new FlutterDesktopViewProperties
             {
@@ -116,9 +101,6 @@ namespace Tizen.Flutter.Embedding
             }
         }
 
-        /// <summary>
-        /// Returns the size that can be the default.
-        /// </summary>
         private Size2D GetDefaultSize()
         {
             if (Size2D.Width == 0 || Size2D.Height == 0)
@@ -141,9 +123,6 @@ namespace Tizen.Flutter.Embedding
             return Size2D;
         }
 
-        /// <summary>
-        /// Registers view event handlers.
-        /// </summary>
         private void RegisterEventHandlers()
         {
             Focusable = true;
@@ -203,6 +182,12 @@ namespace Tizen.Flutter.Embedding
                     _size = Size2D;
                 }
             };
+        }
+
+        private T GetFieldValue<T>(object obj, Type type, string fieldName)
+        {
+            FieldInfo field = type.GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Instance);
+            return (T)field.GetValue(obj);
         }
     }
 }

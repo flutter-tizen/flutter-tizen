@@ -20,19 +20,14 @@ namespace Tizen.Flutter.Embedding
         public string DartEntrypoint { get; set; } = string.Empty;
 
         /// <summary>
-        /// The list of Dart entrypoint arguments.
+        /// Whether the app has started.
         /// </summary>
-        private List<string> DartEntrypointArgs { get; } = new List<string>();
+        public bool IsRunning => Engine != null;
 
         /// <summary>
         /// The Flutter engine instance.
         /// </summary>
         internal FlutterEngine Engine { get; private set; } = null;
-
-        /// <summary>
-        /// Whether the app has started.
-        /// </summary>
-        public bool IsRunning => Engine != null;
 
         public override void Run(string[] args)
         {
@@ -46,11 +41,20 @@ namespace Tizen.Flutter.Embedding
             base.Run(args);
         }
 
+        public FlutterDesktopPluginRegistrar GetRegistrarForPlugin(string pluginName)
+        {
+            if (IsRunning)
+            {
+                return Engine.GetRegistrarForPlugin(pluginName);
+            }
+            return new FlutterDesktopPluginRegistrar();
+        }
+
         protected override void OnCreate()
         {
             base.OnCreate();
 
-            Engine = new FlutterEngine(DartEntrypoint, DartEntrypointArgs);
+            Engine = new FlutterEngine(DartEntrypoint);
             if (!Engine.IsValid)
             {
                 throw new Exception("Could not create a Flutter engine.");
@@ -106,15 +110,6 @@ namespace Tizen.Flutter.Embedding
             Debug.Assert(IsRunning);
 
             Engine.NotifyLocaleChange();
-        }
-
-        public FlutterDesktopPluginRegistrar GetRegistrarForPlugin(string pluginName)
-        {
-            if (IsRunning)
-            {
-                return Engine.GetRegistrarForPlugin(pluginName);
-            }
-            return new FlutterDesktopPluginRegistrar();
         }
     }
 }

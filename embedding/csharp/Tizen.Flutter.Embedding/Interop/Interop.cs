@@ -8,7 +8,7 @@ using Tizen.Applications;
 
 namespace Tizen.Flutter.Embedding
 {
-    public static class Interop
+    internal static class Interop
     {
         #region flutter_tizen.h
         public enum FlutterDesktopRendererType
