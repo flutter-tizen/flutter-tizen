@@ -42,7 +42,7 @@ namespace Tizen.Flutter.Embedding
 
         /// <summary>
         /// The parent of <see cref="EvasObject"/>.
-        /// </summary>        
+        /// </summary>
         private EvasObject _parent;
 
         /// <summary>
@@ -124,11 +124,7 @@ namespace Tizen.Flutter.Embedding
                 return false;
             }
 
-            if (Engine == null)
-            {
-                Engine = new FlutterEngine();
-            }
-
+            Engine = Engine ?? new FlutterEngine();
             if (!Engine.IsValid)
             {
                 TizenLog.Error("Could not create a Flutter engine.");
