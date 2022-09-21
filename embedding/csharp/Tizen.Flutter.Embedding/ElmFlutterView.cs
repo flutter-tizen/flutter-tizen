@@ -30,9 +30,24 @@ namespace Tizen.Flutter.Embedding
     /// </summary>
     public class ElmFlutterView
     {
+        /// <summary>
+        /// The initial width of the view. Defaults to the parent width if the value is zero.
+        /// </summary>
         private int _initialWidth;
+
+        /// <summary>
+        /// The initial height of the view. Defaults to the parent height if the value is zero.
+        /// </summary>
         private int _initialHeight;
+
+        /// <summary>
+        /// The parent of <see cref="EvasObject"/>.
+        /// </summary>        
         private EvasObject _parent;
+
+        /// <summary>
+        /// The Flutter view instance handle.
+        /// </summary>
         private FlutterDesktopView _flutterView;
 
         public ElmFlutterView(EvasObject parent) : this(parent, 0, 0)

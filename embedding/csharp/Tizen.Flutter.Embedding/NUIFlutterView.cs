@@ -16,7 +16,14 @@ namespace Tizen.Flutter.Embedding
     /// </summary>
     public class NUIFlutterView : ImageView
     {
+        /// <summary>
+        /// When the view last received a touch event in milliseconds.
+        /// </summary>
         private uint _lastTouchEventTime = 0;
+
+        /// <summary>
+        /// The size of the Flutter view.
+        /// </summary>
         private Size2D _size = new Size2D();
 
         /// <summary>
@@ -99,6 +106,9 @@ namespace Tizen.Flutter.Embedding
             }
         }
 
+        /// <summary>
+        /// Returns the size that can be the default.
+        /// </summary>
         private Size2D GetDefaultSize()
         {
             if (Size2D.Width == 0 || Size2D.Height == 0)
@@ -121,6 +131,9 @@ namespace Tizen.Flutter.Embedding
             return Size2D;
         }
 
+        /// <summary>
+        /// Registers view event handlers.
+        /// </summary>
         private void RegisterEventHandlers()
         {
             Focusable = true;
