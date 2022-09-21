@@ -33,7 +33,7 @@ namespace Tizen.Flutter.Embedding
         private int _initialWidth;
         private int _initialHeight;
         private EvasObject _parent;
-        private FlutterDesktopView _desktopView;
+        private FlutterDesktopView _flutterView;
 
         public ElmFlutterView(EvasObject parent) : this(parent, 0, 0)
         {
@@ -44,7 +44,7 @@ namespace Tizen.Flutter.Embedding
             _parent = parent;
             _initialWidth = initialWidth;
             _initialHeight = initialHeight;
-            _desktopView = new FlutterDesktopView();
+            _flutterView = new FlutterDesktopView();
         }
 
         /// <summary>
@@ -60,7 +60,7 @@ namespace Tizen.Flutter.Embedding
         /// <summary>
         /// Whether the view is running.
         /// </summary>
-        public bool IsRunning => !_desktopView.IsInvalid;
+        public bool IsRunning => !_flutterView.IsInvalid;
 
         /// <summary>
         /// The current width of the view.
@@ -126,14 +126,14 @@ namespace Tizen.Flutter.Embedding
                 height = _initialHeight,
             };
 
-            _desktopView = FlutterDesktopViewCreateFromElmParent(ref viewProperties, Engine.Engine, _parent);
-            if (_desktopView.IsInvalid)
+            _flutterView = FlutterDesktopViewCreateFromElmParent(ref viewProperties, Engine.Engine, _parent);
+            if (_flutterView.IsInvalid)
             {
                 TizenLog.Error("Could not launch a Flutter view.");
                 return false;
             }
 
-            EvasObject = new EvasObjectImpl(_parent, FlutterDesktopViewGetNativeHandle(_desktopView));
+            EvasObject = new EvasObjectImpl(_parent, FlutterDesktopViewGetNativeHandle(_flutterView));
             if (!EvasObject.IsRealized)
             {
                 TizenLog.Error("Could not get an Evas object.");
@@ -150,9 +150,9 @@ namespace Tizen.Flutter.Embedding
         {
             if (IsRunning)
             {
-                FlutterDesktopViewDestroy(_desktopView);
+                FlutterDesktopViewDestroy(_flutterView);
                 Engine = null;
-                _desktopView = new FlutterDesktopView();
+                _flutterView = new FlutterDesktopView();
             }
         }
 
@@ -165,7 +165,7 @@ namespace Tizen.Flutter.Embedding
 
             if (EvasObject.Geometry.Width != width || EvasObject.Geometry.Height != height)
             {
-                FlutterDesktopViewResize(_desktopView, width, height);
+                FlutterDesktopViewResize(_flutterView, width, height);
             }
         }
     }

@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using Tizen.Applications;
 using static Tizen.Flutter.Embedding.Interop;
@@ -51,6 +50,16 @@ namespace Tizen.Flutter.Embedding
         public bool IsRunning => View != null;
 
         /// <summary>
+        /// The Flutter engine instance.
+        /// </summary>
+        internal FlutterEngine Engine { get; private set; } = null;
+
+        /// <summary>
+        /// The Flutter view instance handle.
+        /// </summary>
+        protected internal FlutterDesktopView View { get; private set; } = new FlutterDesktopView();
+
+        /// <summary>
         /// The x-coordinate of the top left corner of the window.
         /// </summary>
         protected int WindowOffsetX { get; set; } = 0;
@@ -91,16 +100,6 @@ namespace Tizen.Flutter.Embedding
         /// The renderer type of the engine. Defaults to EGL. If the profile is wearable, defaults to EvasGL.
         /// </summary>
         protected FlutterRendererType RendererType { get; set; } = FlutterRendererType.EGL;
-
-        /// <summary>
-        /// The Flutter view instance handle.
-        /// </summary>
-        protected internal FlutterDesktopView View { get; private set; } = new FlutterDesktopView();
-
-        /// <summary>
-        /// The Flutter engine instance.
-        /// </summary>
-        internal FlutterEngine Engine { get; private set; } = null;
 
         public override void Run(string[] args)
         {
