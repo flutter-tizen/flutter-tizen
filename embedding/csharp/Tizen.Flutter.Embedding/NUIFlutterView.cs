@@ -141,7 +141,7 @@ namespace Tizen.Flutter.Embedding
 
             FocusGained += (object s, EventArgs e) =>
             {
-                FlutterDesktopViewSetFocused(View, true);
+                FlutterDesktopViewSetFocus(View, true);
             };
 
             KeyEvent += (object s, KeyEventArgs e) =>
@@ -151,7 +151,7 @@ namespace Tizen.Flutter.Embedding
                     return true;
                 }
 
-                if (FlutterDesktopViewGetFocused(View))
+                if (FlutterDesktopViewIsFocused(View))
                 {
                     FlutterDesktopViewOnKeyEvent(
                                         View, e.Key.KeyPressedName, e.Key.KeyPressed, (uint)e.Key.KeyModifier, (uint)e.Key.KeyCode,
