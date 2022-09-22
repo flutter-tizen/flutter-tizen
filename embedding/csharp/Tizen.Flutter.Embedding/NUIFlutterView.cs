@@ -137,6 +137,13 @@ namespace Tizen.Flutter.Embedding
         private void RegisterEventHandlers()
         {
             Focusable = true;
+            FocusableInTouch = true;
+
+            FocusGained += (object s, EventArgs e) =>
+            {
+                FlutterDesktopViewSetFocused(View, true);
+            };
+
             KeyEvent += (object s, KeyEventArgs e) =>
             {
                 if (!IsRunning)
@@ -144,10 +151,14 @@ namespace Tizen.Flutter.Embedding
                     return true;
                 }
 
-                FlutterDesktopViewOnKeyEvent(
-                    View, e.Key.KeyPressedName, e.Key.KeyPressed, (uint)e.Key.KeyModifier, (uint)e.Key.KeyCode,
-                    e.Key.State == Key.StateType.Down);
-                return true;
+                if (FlutterDesktopViewGetFocused(View))
+                {
+                    FlutterDesktopViewOnKeyEvent(
+                                        View, e.Key.KeyPressedName, e.Key.KeyPressed, (uint)e.Key.KeyModifier, (uint)e.Key.KeyCode,
+                                        e.Key.State == Key.StateType.Down);
+                    return true;
+                }
+                return false;
             };
 
             TouchEvent += (object s, TouchEventArgs e) =>
