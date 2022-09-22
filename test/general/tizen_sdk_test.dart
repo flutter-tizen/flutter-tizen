@@ -82,6 +82,21 @@ void main() {
     expect(tizenSdk.securityProfiles, isNull);
   });
 
+  testUsingContext(
+      'TizenSdk.getPathVariable prepends msys2 directory to PATH on Windows',
+      () async {
+    final TizenSdk tizenSdk = TizenSdk.locateSdk();
+    expect(tizenSdk, isNotNull);
+    expect(tizenSdk.getPathVariable(), equals('/tools/msys2/usr/bin;/my/path'));
+  }, overrides: <Type, Generator>{
+    FileSystem: () => fileSystem,
+    ProcessManager: () => FakeProcessManager.any(),
+    Platform: () => FakePlatform(
+          operatingSystem: 'windows',
+          environment: <String, String>{'TIZEN_SDK': '/', 'PATH': '/my/path'},
+        ),
+  });
+
   testWithoutContext('TizenSdk.buildApp invokes the build-app command',
       () async {
     processManager.addCommand(FakeCommand(

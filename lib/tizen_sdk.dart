@@ -129,15 +129,16 @@ class TizenSdk {
 
   /// On non-Windows, returns the PATH environment variable.
   ///
-  /// On Windows, appends the msys2 executables directory to PATH and returns.
-  String _getPathVariable() {
+  /// On Windows, prepends the msys2 /usr/bin directory to PATH and returns.
+  @visibleForTesting
+  String getPathVariable() {
     String path = _platform.environment['PATH'] ?? '';
     if (_platform.isWindows) {
       final Directory msysUsrBin = toolsDirectory
           .childDirectory('msys2')
           .childDirectory('usr')
           .childDirectory('bin');
-      path += ';${msysUsrBin.path}';
+      path = '${msysUsrBin.path};$path';
     }
     return path;
   }
@@ -182,7 +183,7 @@ class TizenSdk {
         workingDirectory,
       ],
       environment: <String, String>{
-        'PATH': _getPathVariable(),
+        'PATH': getPathVariable(),
       },
     );
   }
@@ -213,7 +214,7 @@ class TizenSdk {
         workingDirectory,
       ],
       environment: <String, String>{
-        'PATH': _getPathVariable(),
+        'PATH': getPathVariable(),
       },
     );
   }
