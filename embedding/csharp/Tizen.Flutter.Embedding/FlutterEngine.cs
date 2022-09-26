@@ -15,16 +15,6 @@ namespace Tizen.Flutter.Embedding
     /// </summary>
     public class FlutterEngine : IPluginRegistry
     {
-        /// <summary>
-        /// Handle for interacting with the C API's engine reference.
-        /// </summary>
-        protected internal FlutterDesktopEngine Engine { get; private set; } = new FlutterDesktopEngine();
-
-        /// <summary>
-        /// Whether the engine is valid or not.
-        /// </summary>
-        public bool IsValid => !Engine.IsInvalid;
-
         public FlutterEngine(string dartEntrypoint = "", List<string> dartEntrypointArgs = null)
             : this("../res/flutter_assets", "../res/icudtl.dat", "../lib/libapp.so", dartEntrypoint, dartEntrypointArgs)
         {
@@ -54,6 +44,16 @@ namespace Tizen.Flutter.Embedding
                 Engine = FlutterDesktopEngineCreate(ref engineProperties);
             }
         }
+
+        /// <summary>
+        /// Whether the engine is valid or not.
+        /// </summary>
+        public bool IsValid => !Engine.IsInvalid;
+
+        /// <summary>
+        /// Handle for interacting with the C API's engine reference.
+        /// </summary>
+        protected internal FlutterDesktopEngine Engine { get; private set; } = new FlutterDesktopEngine();
 
         /// <summary>
         /// Starts running the engine.

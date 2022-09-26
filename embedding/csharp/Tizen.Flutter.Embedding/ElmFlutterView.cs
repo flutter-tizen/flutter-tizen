@@ -31,14 +31,41 @@ namespace Tizen.Flutter.Embedding
     public class ElmFlutterView
     {
         /// <summary>
-        /// The Flutter engine instance.
+        /// The initial width of the view. Defaults to the parent width if the value is zero.
         /// </summary>
-        public FlutterEngine Engine { get; set; } = null;
+        private int _initialWidth;
+
+        /// <summary>
+        /// The initial height of the view. Defaults to the parent height if the value is zero.
+        /// </summary>
+        private int _initialHeight;
+
+        /// <summary>
+        /// The parent of <see cref="EvasObject"/>.
+        /// </summary>
+        private EvasObject _parent;
 
         /// <summary>
         /// The Flutter view instance handle.
         /// </summary>
-        private FlutterDesktopView View { get; set; } = new FlutterDesktopView();
+        private FlutterDesktopView _flutterView;
+
+        public ElmFlutterView(EvasObject parent) : this(parent, 0, 0)
+        {
+        }
+
+        public ElmFlutterView(EvasObject parent, int initialWidth, int initialHeight)
+        {
+            _parent = parent;
+            _initialWidth = initialWidth;
+            _initialHeight = initialHeight;
+            _flutterView = new FlutterDesktopView();
+        }
+
+        /// <summary>
+        /// The Flutter engine instance.
+        /// </summary>
+        public FlutterEngine Engine { get; set; } = null;
 
         /// <summary>
         /// The backing Evas object for this view.
@@ -46,24 +73,9 @@ namespace Tizen.Flutter.Embedding
         public EvasObject EvasObject { get; private set; } = null;
 
         /// <summary>
-        /// The parent of <see cref="EvasObject"/>.
-        /// </summary>
-        private EvasObject Parent { get; set; } = null;
-
-        /// <summary>
-        /// The initial width of the view. Defaults to the parent width if the value is zero.
-        /// </summary>
-        private int InitialWidth { get; set; } = 0;
-
-        /// <summary>
-        /// The initial height of the view. Defaults to the parent height if the value is zero.
-        /// </summary>
-        private int InitialHeight { get; set; } = 0;
-
-        /// <summary>
         /// Whether the view is running.
         /// </summary>
-        public bool IsRunning => !View.IsInvalid;
+        public bool IsRunning => !_flutterView.IsInvalid;
 
         /// <summary>
         /// The current width of the view.
@@ -91,18 +103,6 @@ namespace Tizen.Flutter.Embedding
             }
         }
 
-        public ElmFlutterView(EvasObject parent)
-        {
-            Parent = parent;
-        }
-
-        public ElmFlutterView(EvasObject parent, int initialWidth, int initialHeight)
-        {
-            Parent = parent;
-            InitialWidth = initialWidth;
-            InitialHeight = initialHeight;
-        }
-
         /// <summary>
         /// Starts running the view with the associated engine, creating if not set.
         /// </summary>
@@ -118,17 +118,13 @@ namespace Tizen.Flutter.Embedding
                 return false;
             }
 
-            if (Parent == null)
+            if (_parent == null)
             {
                 TizenLog.Error("The parent object is invalid.");
                 return false;
             }
 
-            if (Engine == null)
-            {
-                Engine = new FlutterEngine();
-            }
-
+            Engine = Engine ?? new FlutterEngine();
             if (!Engine.IsValid)
             {
                 TizenLog.Error("Could not create a Flutter engine.");
@@ -137,18 +133,18 @@ namespace Tizen.Flutter.Embedding
 
             var viewProperties = new FlutterDesktopViewProperties
             {
-                width = InitialWidth,
-                height = InitialHeight,
+                width = _initialWidth,
+                height = _initialHeight,
             };
 
-            View = FlutterDesktopViewCreateFromElmParent(ref viewProperties, Engine.Engine, Parent);
-            if (View.IsInvalid)
+            _flutterView = FlutterDesktopViewCreateFromElmParent(ref viewProperties, Engine.Engine, _parent);
+            if (_flutterView.IsInvalid)
             {
                 TizenLog.Error("Could not launch a Flutter view.");
                 return false;
             }
 
-            EvasObject = new EvasObjectImpl(Parent, FlutterDesktopViewGetNativeHandle(View));
+            EvasObject = new EvasObjectImpl(_parent, FlutterDesktopViewGetNativeHandle(_flutterView));
             if (!EvasObject.IsRealized)
             {
                 TizenLog.Error("Could not get an Evas object.");
@@ -165,9 +161,9 @@ namespace Tizen.Flutter.Embedding
         {
             if (IsRunning)
             {
-                FlutterDesktopViewDestroy(View);
+                FlutterDesktopViewDestroy(_flutterView);
                 Engine = null;
-                View = new FlutterDesktopView();
+                _flutterView = new FlutterDesktopView();
             }
         }
 
@@ -180,7 +176,7 @@ namespace Tizen.Flutter.Embedding
 
             if (EvasObject.Geometry.Width != width || EvasObject.Geometry.Height != height)
             {
-                FlutterDesktopViewResize(View, width, height);
+                FlutterDesktopViewResize(_flutterView, width, height);
             }
         }
     }

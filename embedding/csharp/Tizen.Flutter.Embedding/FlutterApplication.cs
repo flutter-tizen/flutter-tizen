@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using Tizen.Applications;
 using static Tizen.Flutter.Embedding.Interop;
@@ -39,6 +38,26 @@ namespace Tizen.Flutter.Embedding
             RendererType = FlutterRendererType.EvasGL;
 #endif
         }
+
+        /// <summary>
+        /// The optional entrypoint in the Dart project. Defaults to main() if the value is empty.
+        /// </summary>
+        public string DartEntrypoint { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Whether the app has started.
+        /// </summary>
+        public bool IsRunning => View != null;
+
+        /// <summary>
+        /// The Flutter engine instance.
+        /// </summary>
+        internal FlutterEngine Engine { get; private set; } = null;
+
+        /// <summary>
+        /// The Flutter view instance handle.
+        /// </summary>
+        protected internal FlutterDesktopView View { get; private set; } = new FlutterDesktopView();
 
         /// <summary>
         /// The x-coordinate of the top left corner of the window.
@@ -82,31 +101,6 @@ namespace Tizen.Flutter.Embedding
         /// </summary>
         protected FlutterRendererType RendererType { get; set; } = FlutterRendererType.EGL;
 
-        /// <summary>
-        /// The optional entrypoint in the Dart project. Defaults to main() if the value is empty.
-        /// </summary>
-        public string DartEntrypoint { get; set; } = string.Empty;
-
-        /// <summary>
-        /// The list of Dart entrypoint arguments.
-        /// </summary>
-        private List<string> DartEntrypointArgs { get; } = new List<string>();
-
-        /// <summary>
-        /// The Flutter engine instance.
-        /// </summary>
-        internal FlutterEngine Engine { get; private set; } = null;
-
-        /// <summary>
-        /// The Flutter view instance handle.
-        /// </summary>
-        protected internal FlutterDesktopView View { get; private set; } = new FlutterDesktopView();
-
-        /// <summary>
-        /// Whether the app has started.
-        /// </summary>
-        public bool IsRunning => View != null;
-
         public override void Run(string[] args)
         {
             // Log any unhandled exception.
@@ -119,11 +113,20 @@ namespace Tizen.Flutter.Embedding
             base.Run(args);
         }
 
+        public FlutterDesktopPluginRegistrar GetRegistrarForPlugin(string pluginName)
+        {
+            if (IsRunning)
+            {
+                return Engine.GetRegistrarForPlugin(pluginName);
+            }
+            return new FlutterDesktopPluginRegistrar();
+        }
+
         protected override void OnCreate()
         {
             base.OnCreate();
 
-            Engine = new FlutterEngine(DartEntrypoint, DartEntrypointArgs);
+            Engine = new FlutterEngine(DartEntrypoint);
             if (!Engine.IsValid)
             {
                 throw new Exception("Could not create a Flutter engine.");
@@ -216,15 +219,6 @@ namespace Tizen.Flutter.Embedding
             Debug.Assert(IsRunning);
 
             Engine.NotifyLocaleChange();
-        }
-
-        public FlutterDesktopPluginRegistrar GetRegistrarForPlugin(string pluginName)
-        {
-            if (IsRunning)
-            {
-                return Engine.GetRegistrarForPlugin(pluginName);
-            }
-            return new FlutterDesktopPluginRegistrar();
         }
     }
 }

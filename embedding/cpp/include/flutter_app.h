@@ -119,9 +119,6 @@ class FlutterApp : public flutter::PluginRegistry {
   // Defaults to main() if the value is empty.
   std::string dart_entrypoint_;
 
-  // The list of Dart entrypoint arguments.
-  std::vector<std::string> dart_entrypoint_args_;
-
   // The Flutter engine instance.
   std::unique_ptr<FlutterEngine> engine_;
 

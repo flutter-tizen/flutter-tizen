@@ -8,7 +8,7 @@ using Tizen.Applications;
 
 namespace Tizen.Flutter.Embedding
 {
-    public static class Interop
+    internal static class Interop
     {
         #region flutter_tizen.h
         public enum FlutterDesktopRendererType
@@ -103,11 +103,8 @@ namespace Tizen.Flutter.Embedding
 
         [DllImport("flutter_tizen.so")]
         public static extern FlutterDesktopView FlutterDesktopViewCreateFromImageView(
-            ref FlutterDesktopViewProperties view_properties,
-            FlutterDesktopEngine engine,
-            IntPtr image_view,
-            IntPtr native_image_queue,
-            int default_window_id);
+            ref FlutterDesktopViewProperties view_properties, FlutterDesktopEngine engine, IntPtr image_view,
+            IntPtr native_image_queue, int default_window_id);
 
         [DllImport("flutter_tizen.so")]
         public static extern void FlutterDesktopViewDestroy(
@@ -117,29 +114,17 @@ namespace Tizen.Flutter.Embedding
         public static extern IntPtr FlutterDesktopViewGetNativeHandle(FlutterDesktopView view);
 
         [DllImport("flutter_tizen.so")]
-        public static extern void FlutterDesktopViewResize(
-            FlutterDesktopView view,
-            int width,
-            int height);
+        public static extern void FlutterDesktopViewResize(FlutterDesktopView view, int width, int height);
 
         [DllImport("flutter_tizen.so")]
         public static extern void FlutterDesktopViewOnPointerEvent(
-            FlutterDesktopView view,
-            FlutterDesktopPointerEventType type,
-            double x,
-            double y,
-            uint timestamp,
+            FlutterDesktopView view, FlutterDesktopPointerEventType type, double x, double y, uint timestamp,
             int device_id);
 
         [DllImport("flutter_tizen.so")]
         public static extern void FlutterDesktopViewOnKeyEvent(
-            FlutterDesktopView view,
-            string key,
-            string key_string,
-            uint modifiers,
-            uint scan_code,
-            [MarshalAs(UnmanagedType.U1)]
-            bool is_down);
+            FlutterDesktopView view, string key, string key_string, uint modifiers, uint scan_code,
+            [MarshalAs(UnmanagedType.U1)] bool is_down);
         #endregion
 
         #region flutter_messenger.h
@@ -159,8 +144,7 @@ namespace Tizen.Flutter.Embedding
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void FlutterDesktopMessageCallback(
             [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(FlutterDesktopMessenger.Marshaler))]
-            FlutterDesktopMessenger messenger,
-            IntPtr message, IntPtr user_data);
+            FlutterDesktopMessenger messenger, IntPtr message, IntPtr user_data);
 
         [DllImport("flutter_tizen.so")]
         public static extern bool FlutterDesktopMessengerSend(
