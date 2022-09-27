@@ -123,7 +123,7 @@ namespace Tizen.Flutter.Embedding
 
         [DllImport("flutter_tizen.so")]
         public static extern void FlutterDesktopViewOnKeyEvent(
-            FlutterDesktopView view, string key, string key_string, uint modifiers, uint scan_code,
+            FlutterDesktopView view, string key, string key_string, uint modifiers, uint scan_code, uint timestamp,
             [MarshalAs(UnmanagedType.U1)] bool is_down);
 
         [DllImport("flutter_tizen.so")]

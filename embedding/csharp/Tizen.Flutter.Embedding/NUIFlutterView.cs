@@ -155,7 +155,7 @@ namespace Tizen.Flutter.Embedding
                 {
                     FlutterDesktopViewOnKeyEvent(
                         View, e.Key.KeyPressedName, e.Key.KeyPressed, (uint)e.Key.KeyModifier, (uint)e.Key.KeyCode,
-                        e.Key.State == Key.StateType.Down);
+                        e.Key.Time, e.Key.State == Key.StateType.Down);
                     return true;
                 }
                 return false;
