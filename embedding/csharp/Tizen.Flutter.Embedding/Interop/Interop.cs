@@ -128,7 +128,7 @@ namespace Tizen.Flutter.Embedding
 
         [DllImport("flutter_tizen.so")]
         public static extern void FlutterDesktopViewSetFocus(
-            FlutterDesktopView view, [MarshalAs(UnmanagedType.U1)] bool focus);
+            FlutterDesktopView view, [MarshalAs(UnmanagedType.U1)] bool focused);
 
         [DllImport("flutter_tizen.so")]
         public static extern bool FlutterDesktopViewIsFocused(FlutterDesktopView view);
