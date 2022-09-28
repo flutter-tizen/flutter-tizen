@@ -125,6 +125,13 @@ namespace Tizen.Flutter.Embedding
         public static extern void FlutterDesktopViewOnKeyEvent(
             FlutterDesktopView view, string key, string key_string, uint modifiers, uint scan_code,
             [MarshalAs(UnmanagedType.U1)] bool is_down);
+
+        [DllImport("flutter_tizen.so")]
+        public static extern void FlutterDesktopViewSetFocus(
+            FlutterDesktopView view, [MarshalAs(UnmanagedType.U1)] bool focused);
+
+        [DllImport("flutter_tizen.so")]
+        public static extern bool FlutterDesktopViewIsFocused(FlutterDesktopView view);
         #endregion
 
         #region flutter_messenger.h
