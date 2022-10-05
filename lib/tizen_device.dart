@@ -479,7 +479,7 @@ class TizenDevice extends Device {
     }
     try {
       final List<String> command = usesSecureProtocol
-          ? <String>['shell', '0', 'kill', app.applicationId]
+          ? <String>['shell', '0', 'kill', app.id]
           : <String>['shell', 'app_launcher', '-k', app.applicationId];
       final String stdout = (await runSdbAsync(command)).stdout;
       return stdout.contains('Kill appId') ||
