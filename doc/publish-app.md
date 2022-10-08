@@ -49,7 +49,7 @@ The testing and review process may take more than 2 weeks to complete, depending
 
    ![Group type](images/seller-office-group-type.png)
 
-   For detailed information on the Seller Office partnership, see [Becoming Partner](https://developer.samsung.com/smarttv/develop/distribute/seller-office/membership/becoming-partner.html). To request the contact information for your local Content Manager, create a [**1:1 Q&A**](https://seller.samsungapps.com/tv/qna) support ticket.
+   For detailed information on the Seller Office partnership, see [Becoming Partners](https://developer.samsung.com/tv-seller-office/guides/membership/becoming-partner.html). To request the contact information for your local Content Manager, create a [**1:1 Q&A**](https://seller.samsungapps.com/tv/qna) support ticket.
 
 1. If done, go back to the **Applications** screen, and click the **Create App** button to get started with the app registration process. Make sure to choose **Tizen .NET Application (TPK package)** as your app type.
 
@@ -69,6 +69,5 @@ The testing and review process may take more than 4 weeks to complete. If you ru
 
 The following pages might also be useful.
 
-- [Seller Office Introduction](https://developer.samsung.com/smarttv/develop/distribute/seller-office.html)
-- [Seller Office FAQ](https://developer.samsung.com/smarttv/develop/distribute/seller-office/faq.html)
-- [Distributing Applications Q&A](https://developer.samsung.com/smarttv/develop/support/documentation-qa/distributing-applications-qa/seller-office-use.html)
+- [Samsung Apps TV Seller Office](https://developer.samsung.com/tv-seller-office/guides/overview.html)
+- [Application Registration Q&A](https://developer.samsung.com/tv-seller-office/faq/application-registration.html)

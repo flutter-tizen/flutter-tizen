@@ -61,6 +61,6 @@ Note: The debugger can only **attach** to an already running app. **Launching** 
 
 The following resources provide more information on debugging and optimizing Flutter apps.
 
-- [Flutter Docs: Debugging Flutter apps](https://flutter.dev/docs/testing/debugging)
-- [Flutter Docs: Flutter performance profiling](https://flutter.dev/docs/perf/rendering/ui-performance)
-- [Flutter Docs: Performance best practices](https://flutter.dev/docs/perf/rendering/best-practices)
+- [Flutter Docs: Debugging Flutter apps](https://docs.flutter.dev/testing/debugging)
+- [Flutter Docs: Flutter performance profiling](https://docs.flutter.dev/perf/ui-performance)
+- [Flutter Docs: Performance best practices](https://docs.flutter.dev/perf/best-practices)
