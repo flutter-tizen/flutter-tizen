@@ -8,18 +8,18 @@ Here are a few things you might consider when developing Flutter plugins for Tiz
 
 ### Implementation language
 
-- C++ or C# (based on platform channels)
-- Dart (based on Dart FFI)
+- C++ or C# (using platform channels)
+- Dart (using Dart FFI)
 
-Typical Flutter plugins are written in their platform native languages, such as Java on Android and C++ on Tizen. However, some Windows plugins such as [`path_provider_windows`](https://github.com/flutter/plugins/tree/master/packages/path_provider/path_provider_windows) and Tizen plugins such as [`path_provider_tizen`](https://github.com/flutter-tizen/plugins/tree/master/packages/path_provider) are written in pure Dart using [Dart FFI](https://dart.dev/guides/libraries/c-interop) without any native code. To learn more about FFI-based plugins, you might read [Flutter Docs: Binding to native code using dart:ffi](https://flutter.dev/docs/development/platform-integration/c-interop).
+Typical Flutter plugins are written in their platform native languages, such as Java on Android and C++ on Tizen. However, some Windows plugins such as [`path_provider_windows`](https://github.com/flutter/plugins/tree/main/packages/path_provider/path_provider_windows) and Tizen plugins such as [`path_provider_tizen`](https://github.com/flutter-tizen/plugins/tree/master/packages/path_provider) are written in pure Dart using [Dart FFI](https://dart.dev/guides/libraries/c-interop) without any native code.
 
-This document only covers native Tizen plugins written in C++. If you want to learn how to write a native plugin in C#, you might read [Writing a plugin in C#](develop-plugin-csharp.md).
+This document only covers native Tizen plugins written in C++. To learn more about FFI-based plugins on other platforms, you might read [Flutter Docs: Binding to native Android code using dart:ffi](https://docs.flutter.dev/development/platform-integration/android/c-interop). If you want to learn how to write a native plugin in C#, you might read [Writing a plugin in C#](develop-plugin-csharp.md).
 
 ### Targeting multiple platforms vs. Tizen only
 
 A Flutter plugin may support more than one platforms. For example, each of the [Flutter 1st-party plugins](https://github.com/flutter/plugins) developed by the Flutter team supports at least two (Android, iOS) or more platforms (web, macOS, Windows, Linux), based on the team's priority and the availability of the functionality on the platforms. [Federated plugins](https://flutter.dev/docs/development/packages-and-plugins/developing-packages#federated-plugins) are a way of splitting support for different platforms into separate packages. A federated plugin consists of an app-facing package, a **platform interface package**, and platform package(s) for each platform.
 
-On the other hand, it is also possible for a plugin to support only a single particular platform, e.g. [`flutter_plugin_android_lifecycle`](https://github.com/flutter/plugins/tree/master/packages/flutter_plugin_android_lifecycle) for Android and [`wearable_rotary`](https://github.com/flutter-tizen/plugins/tree/master/packages/wearable_rotary) for Tizen. In this case, there's no need to create a platform interface package. Instead, you can put everything into a single package.
+On the other hand, it is also possible for a plugin to support only a single particular platform, e.g. [`flutter_plugin_android_lifecycle`](https://github.com/flutter/plugins/tree/main/packages/flutter_plugin_android_lifecycle) for Android and [`wearable_rotary`](https://github.com/flutter-tizen/plugins/tree/master/packages/wearable_rotary) for Tizen. In this case, there's no need to create a platform interface package. Instead, you can put everything into a single package.
 
 ### Extending existing plugins vs. Creating new plugins
 
@@ -27,7 +27,7 @@ Adding a new platform support to an existing plugin is simple: create a platform
 
 Note: Even if the original plugin is not a federated plugin (has no platform interface package), it is possible to create an unendorsed platform implementation of the plugin by implicitly implementing the plugin's platform channels.
 
-You can create a new plugin from scratch, if the functionality you want to implement is not implemented by any other plugin, or is specific to Tizen. The new plugin can be either a single package plugin or a federated plugin, depending on whether you want to target the Tizen platform only or other platforms as well.
+You can also create a new plugin from scratch, if the functionality you want to implement is not implemented by any other plugin, or is specific to Tizen. The new plugin can be either a single package plugin or a federated plugin, depending on whether you want to target the Tizen platform only or other platforms as well.
 
 ## Create a plugin package
 
@@ -177,9 +177,9 @@ Besides the above mentioned [MethodChannel](https://api.flutter.dev/flutter/serv
 
 ### Tizen privileges
 
-If some privileges are required to run your plugin code, you have to list them in the plugin's README so that app developers can properly add them to their `tizen-manifest.xml`.
+If any privileges are required to run your plugin code, you have to list them in the plugin's README so that app developers can properly add them to their `tizen-manifest.xml`.
 
-If one or more privileges are [privacy-related privileges](https://docs.tizen.org/application/dotnet/tutorials/sec-privileges), permissions must be granted by user at runtime. To request permissions at runtime, use the [Privacy Privilege Manager API](https://docs.tizen.org/application/native/guides/security/privacy-related-permissions) ([example](https://github.com/flutter-tizen/plugins/blob/master/packages/image_picker/tizen/src/permission_manager.cc)).
+If one or more privileges are [privacy-related privileges](https://docs.tizen.org/application/dotnet/get-started/api-privileges), permissions must be granted by user at runtime. To request permissions at runtime, use the [Privacy Privilege Manager API](https://docs.tizen.org/application/native/guides/security/privacy-related-permissions) ([example](https://github.com/flutter-tizen/plugins/blob/master/packages/image_picker/tizen/src/permission_manager.cc)).
 
 On TV devices, permissions are already granted to apps by default. Invoking permission-related APIs will result in a library loading error on TV devices. If you want to run your plugin on different types of devices using a single codebase, consider using the `TV_PROFILE` macro to separate the TV-specific code ([example](https://github.com/flutter-tizen/plugins/blob/master/packages/image_picker/tizen/src/permission_manager.cc)).
 
