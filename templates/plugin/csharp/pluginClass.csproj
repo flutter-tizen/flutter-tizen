@@ -8,8 +8,4 @@
     <ProjectReference Include="$(FlutterEmbeddingPath)" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Tizen.NET" Version="4.0.1.14164" />
-  </ItemGroup>
-
 </Project>
