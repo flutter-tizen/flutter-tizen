@@ -91,6 +91,7 @@ class DotnetTpk extends TizenPackage {
     );
 
     final BuildMode buildMode = buildInfo.buildInfo.mode;
+    final String buildConfig = getBuildConfig(buildMode);
     final Directory engineDir =
         getEngineArtifactsDirectory(buildInfo.targetArch, buildMode);
     final Directory commonDir = engineDir.parent.childDirectory('tizen-common');
@@ -140,9 +141,7 @@ class DotnetTpk extends TizenPackage {
       dotnetCli!.path,
       'build',
       '-c',
-      if (buildMode.isPrecompiled) 'Release' else 'Debug',
-      '-o',
-      '${outputDir.path}/', // The trailing '/' is needed.
+      buildConfig,
       '/p:DefineConstants=${profile.toUpperCase()}_PROFILE',
       tizenProject.hostAppRoot.path,
     ]);
@@ -150,7 +149,12 @@ class DotnetTpk extends TizenPackage {
       throwToolExit('Failed to build .NET application:\n$result');
     }
 
-    final File outputTpk = outputDir.childFile(tizenProject.outputTpkName);
+    // "Runner -> /path/to/project/tizen/bin/Debug/tizen40/com.example.app-1.0.0.tpk"
+    final Match? match = RegExp(' -> (.+.tpk)').firstMatch(result.stdout);
+    if (match == null) {
+      throwToolExit('Unable to locate the output TPK:\n${result.stdout}');
+    }
+    final File outputTpk = environment.fileSystem.file(match.group(1));
     if (!outputTpk.existsSync()) {
       throwToolExit(
           'Build succeeded but the expected TPK not found:\n${result.stdout}');
@@ -183,6 +187,13 @@ class DotnetTpk extends TizenPackage {
         'The TPK was signed with the default certificate. You can create one using Certificate Manager.\n'
         'https://github.com/flutter-tizen/flutter-tizen/blob/master/doc/install-tizen-sdk.md#create-a-tizen-certificate',
       );
+    }
+
+    // Copy the TPK and tpkroot to the output directory.
+    outputTpk.copySync(outputDir.childFile(tizenProject.outputTpkName).path);
+    final Directory tpkrootDir = outputTpk.parent.childDirectory('tpkroot');
+    if (tpkrootDir.existsSync()) {
+      copyDirectory(tpkrootDir, outputDir.childDirectory('tpkroot'));
     }
   }
 }

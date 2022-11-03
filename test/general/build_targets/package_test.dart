@@ -23,6 +23,22 @@ import '../../src/context.dart';
 import '../../src/fake_process_manager.dart';
 import '../../src/fake_tizen_sdk.dart';
 
+const String kMsbuildOutput = '''
+MSBuild version 17.3.0+92e077650 for .NET
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Runner -> /flutter_project/tizen/bin/Release/tizen40/Runner.dll
+  Configuration :
+  Platform :
+  TargetFramework :
+  Runner is signed with Default Certificates!
+  Runner -> /flutter_project/tizen/bin/Release/tizen40/package_id-1.0.0.tpk
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+''';
+
 void main() {
   FileSystem fileSystem;
   FakeProcessManager processManager;
@@ -89,16 +105,15 @@ void main() {
           'build',
           '-c',
           'Release',
-          '-o',
-          '${outputDir.path}/',
           '/p:DefineConstants=COMMON_PROFILE',
           '${projectDir.path}/tizen',
         ],
         onRun: () {
-          outputDir
-              .childFile('package_id-1.0.0.tpk')
+          projectDir
+              .childFile('tizen/bin/Release/tizen40/package_id-1.0.0.tpk')
               .createSync(recursive: true);
         },
+        stdout: kMsbuildOutput,
       ));
 
       await DotnetTpk(const TizenBuildInfo(
@@ -106,6 +121,9 @@ void main() {
         targetArch: 'arm',
         deviceProfile: 'common',
       )).build(environment);
+
+      final File outputTpk = outputDir.childFile('package_id-1.0.0.tpk');
+      expect(outputTpk, exists);
 
       final Directory ephemeralDir =
           projectDir.childDirectory('tizen/flutter/ephemeral');
@@ -140,10 +158,9 @@ void main() {
     testUsingContext(
         'Use the default certificate if no security profile is found',
         () async {
-      final Directory outputDir = projectDir.childDirectory('out');
       final Environment environment = Environment.test(
         projectDir,
-        outputDir: outputDir,
+        outputDir: projectDir.childDirectory('out'),
         fileSystem: fileSystem,
         logger: logger,
         artifacts: artifacts,
@@ -152,27 +169,27 @@ void main() {
       environment.buildDir
           .childDirectory('flutter_assets')
           .createSync(recursive: true);
+      environment.buildDir.childFile('app.so').createSync(recursive: true);
 
       processManager.addCommand(FakeCommand(
         command: <String>[
           'dotnet',
           'build',
           '-c',
-          'Debug',
-          '-o',
-          '${outputDir.path}/',
+          'Release',
           '/p:DefineConstants=COMMON_PROFILE',
           '${projectDir.path}/tizen',
         ],
         onRun: () {
-          outputDir
-              .childFile('package_id-1.0.0.tpk')
+          projectDir
+              .childFile('tizen/bin/Release/tizen40/package_id-1.0.0.tpk')
               .createSync(recursive: true);
         },
+        stdout: kMsbuildOutput,
       ));
 
       await DotnetTpk(const TizenBuildInfo(
-        BuildInfo.debug,
+        BuildInfo.release,
         targetArch: 'arm',
         deviceProfile: 'common',
       )).build(environment);
@@ -256,10 +273,9 @@ type = app
     });
 
     testUsingContext('Build fails if no security profile is found', () async {
-      final Directory outputDir = projectDir.childDirectory('out');
       final Environment environment = Environment.test(
         projectDir,
-        outputDir: outputDir,
+        outputDir: projectDir.childDirectory('out'),
         fileSystem: fileSystem,
         logger: logger,
         artifacts: artifacts,
