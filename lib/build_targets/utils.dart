@@ -37,6 +37,25 @@ Directory getEngineArtifactsDirectory(String arch, BuildMode mode) {
       .childDirectory('tizen-$arch-${mode.name}');
 }
 
+Directory getEmbedderArtifactsDirectory(String? apiVersion, String arch) {
+  final Version? version = Version.parse(apiVersion);
+  if (version != null && version >= Version(6, 5, 0)) {
+    apiVersion = '6.5';
+  } else {
+    apiVersion = '5.5';
+  }
+  return globals.cache
+      .getArtifactDirectory('engine')
+      .childDirectory('tizen-$arch')
+      .childDirectory(apiVersion);
+}
+
+Directory getCommonArtifactsDirectory() {
+  return globals.cache
+      .getArtifactDirectory('engine')
+      .childDirectory('tizen-common');
+}
+
 /// Removes the "lib" prefix and file extension from [name] and returns.
 String getLibNameForFileName(String name) {
   if (name.startsWith('lib')) {
@@ -46,17 +65,4 @@ String getLibNameForFileName(String name) {
     name = name.substring(0, name.lastIndexOf('.'));
   }
   return name;
-}
-
-/// Returns true if the platform identified by [profile] and [apiVersion]
-/// supports NUI.
-bool supportsNui(String profile, String? apiVersion) {
-  if (profile != 'mobile' && profile != 'tv') {
-    return false;
-  }
-  final Version? version = Version.parse(apiVersion);
-  if (version == null) {
-    return false;
-  }
-  return version >= Version(6, 5, 0);
 }

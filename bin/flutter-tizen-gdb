@@ -399,28 +399,20 @@ def download_archive(message: str, url: str, location: Path):
 
 
 def download_symbols(device: TizenDevice):
-    version_file = Path(__file__).parent / 'internal' / 'engine.version'
+    version_file = Path(__file__).parent / 'internal' / 'embedder.version'
     with version_file.open() as file:
-        version = file.readline().strip()
-    if not version:
-        sys.exit('The engine version file is invalid.')
+        version = file.readline().strip()[:7]
+    if len(version) != 7:
+        sys.exit('The embedder version file is invalid.')
 
-    base_url = os.getenv('TIZEN_ENGINE_BASE_URL')
-    if not base_url:
-        base_url = 'https://github.com/flutter-tizen/engine/releases'
-
+    base_url = 'https://github.com/flutter-tizen/embedder/releases'
     device_arch = device.get_architecture()
-    if device_arch == 'x86':
-        modes = ['debug']
-    else:
-        modes = ['debug', 'release']
-
-    for mode in modes:
+    for api_level in ['5.5', '6.5']:
         # Any existing files will be overwritten.
-        location = Path('symbols') / f'tizen-{device_arch}-{mode}'
+        location = Path('symbols') / f'tizen-{api_level}-{device_arch}'
         location.mkdir(parents=True, exist_ok=True)
 
-        basename = f'tizen-{device_arch}-{mode}_symbols'
+        basename = f'tizen-{api_level}-{device_arch}_symbols'
         url = f'{base_url}/download/{version}/{basename}.zip'
 
         try:
@@ -439,7 +431,7 @@ def main():
     parser.add_argument('-p', '--debug-port', metavar='PORT', type=int,
                         help='Connects to an already running gdbserver on the specified port.')
     parser.add_argument('--download-symbols', action='store_true',
-                        help='Downloads engine and embedder debug symbols.')
+                        help='Downloads embedder debug symbols.')
     args = parser.parse_args()
 
     try:

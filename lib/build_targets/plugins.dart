@@ -81,22 +81,20 @@ class NativePlugins extends Target {
     final Directory libDir = outputDir.childDirectory('lib')
       ..createSync(recursive: true);
 
-    final BuildMode buildMode = buildInfo.buildInfo.mode;
-    final String buildConfig = getBuildConfig(buildMode);
-    final Directory engineDir =
-        getEngineArtifactsDirectory(buildInfo.targetArch, buildMode);
-    final Directory commonDir = engineDir.parent.childDirectory('tizen-common');
-
     final TizenManifest tizenManifest =
         TizenManifest.parseFromXml(tizenProject.manifestFile);
     final String profile = buildInfo.deviceProfile;
     final String? apiVersion = tizenManifest.apiVersion;
-    final String nuiSuffix = supportsNui(profile, apiVersion) ? '_nui' : '';
 
-    final File embedder =
-        engineDir.childFile('libflutter_tizen_$profile$nuiSuffix.so');
+    final BuildMode buildMode = buildInfo.buildInfo.mode;
+    final String buildConfig = getBuildConfig(buildMode);
+
+    final Directory embedderDir =
+        getEmbedderArtifactsDirectory(apiVersion, buildInfo.targetArch);
+    final File embedder = embedderDir.childFile('libflutter_tizen_$profile.so');
     inputs.add(embedder);
 
+    final Directory commonDir = getCommonArtifactsDirectory();
     final Directory clientWrapperDir =
         commonDir.childDirectory('cpp_client_wrapper');
     final Directory publicDir = commonDir.childDirectory('public');
@@ -136,7 +134,7 @@ class NativePlugins extends Target {
           '-I${publicDir.path.toPosixPath()}',
           if (plugin.isSharedLib) ...<String>[
             '-l${getLibNameForFileName(embedder.basename)}',
-            '-L${engineDir.path.toPosixPath()}',
+            '-L${embedderDir.path.toPosixPath()}',
             embeddingLib.path.toPosixPath(),
           ],
         ],
@@ -254,7 +252,7 @@ USER_LIBS = pthread ${userLibs.join(' ')}
           '-I${clientWrapperDir.childDirectory('include').path.toPosixPath()}',
           '-I${publicDir.path.toPosixPath()}',
           embeddingLib.path.toPosixPath(),
-          '-L${engineDir.path.toPosixPath()}',
+          '-L${embedderDir.path.toPosixPath()}',
           '-l${getLibNameForFileName(embedder.basename)}',
           '-L${libDir.path.toPosixPath()}',
           // Forces plugin entrypoints to be exported, because unreferenced

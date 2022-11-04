@@ -17,6 +17,11 @@ import 'package:meta/meta.dart';
 import 'package:path/path.dart';
 import 'package:process/process.dart';
 
+const String kTizenEngineStampName = 'tizen-engine';
+const String kTizenEngineRepoName = 'flutter-tizen/engine';
+const String kTizenEmbedderStampName = 'tizen-embedder';
+const String kTizenEmbedderRepoName = 'flutter-tizen/embedder';
+
 mixin TizenRequiredArtifacts on FlutterCommand {
   @override
   Future<Set<DevelopmentArtifact>> get requiredArtifacts async =>
@@ -39,9 +44,8 @@ class TizenDevelopmentArtifact implements DevelopmentArtifact {
   static const DevelopmentArtifact tizen = TizenDevelopmentArtifact('tizen');
 }
 
-/// Extends [FlutterCache] to register [TizenEngineArtifacts].
-class TizenFlutterCache extends FlutterCache {
-  TizenFlutterCache({
+class TizenCache extends FlutterCache {
+  TizenCache({
     required Logger logger,
     required FileSystem fileSystem,
     required Platform platform,
@@ -54,7 +58,15 @@ class TizenFlutterCache extends FlutterCache {
           osUtils: osUtils,
         ) {
     registerArtifact(TizenEngineArtifacts(
-      this,
+      cache: this,
+      logger: logger,
+      fileSystem: fileSystem,
+      platform: platform,
+      osUtils: osUtils,
+      processManager: processManager,
+    ));
+    registerArtifact(TizenEmbedderArtifacts(
+      cache: this,
       logger: logger,
       fileSystem: fileSystem,
       platform: platform,
@@ -64,27 +76,33 @@ class TizenFlutterCache extends FlutterCache {
   }
 }
 
-class TizenEngineArtifacts extends EngineCachedArtifact {
-  TizenEngineArtifacts(
-    Cache cache, {
+abstract class TizenCachedArtifacts extends EngineCachedArtifact {
+  TizenCachedArtifacts(
+    String stampName,
+    String repoName, {
+    required Cache cache,
     required Logger logger,
     required FileSystem fileSystem,
     required Platform platform,
     required OperatingSystemUtils osUtils,
     required ProcessManager processManager,
-  })  : _logger = logger,
+  })  : _repoName = repoName,
+        _logger = logger,
         _fileSystem = fileSystem,
         _platform = platform,
         _osUtils = osUtils,
         _processUtils =
             ProcessUtils(processManager: processManager, logger: logger),
-        super('tizen-sdk', cache, TizenDevelopmentArtifact.tizen);
+        super(stampName, cache, TizenDevelopmentArtifact.tizen);
 
+  final String _repoName;
   final Logger _logger;
   final FileSystem _fileSystem;
   final Platform _platform;
   final OperatingSystemUtils _osUtils;
   final ProcessUtils _processUtils;
+
+  static const String kGithubBaseUrl = 'https://github.com';
 
   /// A replacement for [Cache._artifactUpdater] to work with
   /// https://github.com/flutter/flutter/pull/94178.
@@ -100,10 +118,117 @@ class TizenEngineArtifacts extends EngineCachedArtifact {
       allowedBaseUrls: <String>[
         cache.storageBaseUrl,
         cache.cipdBaseUrl,
-        engineBaseUrl,
+        kGithubBaseUrl,
       ],
     );
   }();
+
+  String get shortVersion {
+    if (version == null) {
+      throwToolExit('Could not determine artifact revision.');
+    }
+    return version!.length > 7 ? version!.substring(0, 7) : version!;
+  }
+
+  @override
+  List<String> getLicenseDirs() => const <String>[];
+
+  @override
+  List<String> getPackageDirs() => const <String>[];
+
+  /// See: [EngineCachedArtifact.updateInner] in `cache.dart`
+  @override
+  Future<void> updateInner(
+    ArtifactUpdater updater,
+    FileSystem fileSystem,
+    OperatingSystemUtils operatingSystemUtils,
+  ) async {
+    final String downloadUrl =
+        '$kGithubBaseUrl/$_repoName/releases/download/$shortVersion';
+
+    for (final List<String> toolsDir in getBinaryDirs()) {
+      final String cacheDir = toolsDir[0];
+      final String urlPath = toolsDir[1];
+      final Directory artifactDir = location.childDirectory(cacheDir);
+
+      await artifactUpdater.downloadZipArchive(
+        'Downloading $cacheDir tools...',
+        Uri.parse('$downloadUrl/$urlPath'),
+        artifactDir,
+      );
+
+      _makeFilesExecutable(artifactDir, operatingSystemUtils);
+    }
+  }
+
+  Future<void> _downloadArtifactsFromGithub(
+    OperatingSystemUtils operatingSystemUtils,
+    String githubRunId,
+  ) async {
+    _logger.printStatus('Downloading Tizen artifacts from GitHub Actions...');
+    if (operatingSystemUtils.which('gh') == null) {
+      throwToolExit(
+          'GitHub CLI not found. Please install it first: https://cli.github.com');
+    }
+    for (final List<String> toolsDir in getBinaryDirs()) {
+      final String cacheDir = toolsDir[0];
+      final String urlPath = toolsDir[1];
+      final Directory artifactDir = location.childDirectory(cacheDir);
+      final Status status =
+          _logger.startProgress('Downloading $cacheDir tools...');
+      try {
+        if (artifactDir.existsSync()) {
+          artifactDir.deleteSync(recursive: true);
+        }
+        artifactDir.createSync(recursive: true);
+        final RunResult result = await _processUtils.run(<String>[
+          'gh',
+          'run',
+          'download',
+          '-R',
+          _repoName,
+          '-n',
+          basenameWithoutExtension(urlPath),
+          '-D',
+          artifactDir.path,
+          githubRunId,
+        ]);
+        if (result.exitCode != 0) {
+          throwToolExit(
+            'Failed to download Tizen artifact from GitHub Actions.\n\n'
+            '$result',
+          );
+        }
+      } finally {
+        status.stop();
+      }
+      _makeFilesExecutable(artifactDir, operatingSystemUtils);
+    }
+  }
+
+  /// Source: [EngineCachedArtifact._makeFilesExecutable] in `cache.dart`
+  void _makeFilesExecutable(
+    Directory dir,
+    OperatingSystemUtils operatingSystemUtils,
+  ) {
+    operatingSystemUtils.chmod(dir, 'a+r,a+x');
+    for (final File file in dir.listSync(recursive: true).whereType<File>()) {
+      if (file.basename == 'gen_snapshot') {
+        operatingSystemUtils.chmod(file, 'a+r,a+x');
+      }
+    }
+  }
+}
+
+class TizenEngineArtifacts extends TizenCachedArtifacts {
+  TizenEngineArtifacts({
+    required super.cache,
+    required super.logger,
+    required super.fileSystem,
+    required super.platform,
+    required super.osUtils,
+    required super.processManager,
+  }) : super(kTizenEngineStampName, kTizenEngineRepoName);
 
   /// See: [Cache.getVersionFor] in `cache.dart`
   @override
@@ -119,31 +244,38 @@ class TizenEngineArtifacts extends EngineCachedArtifact {
         : null;
   }
 
-  /// Source: [Cache.storageBaseUrl] in `cache.dart`
-  String get engineBaseUrl {
-    final String? overrideUrl = _platform.environment['TIZEN_ENGINE_BASE_URL'];
-    if (overrideUrl == null) {
-      return 'https://github.com/flutter-tizen/engine/releases';
+  @override
+  bool isUpToDateInner(FileSystem fileSystem) {
+    // Download always happens if the following variable is set.
+    if (_platform.environment['GITHUB_ENGINE_RUN_ID'] != null) {
+      return false;
     }
-    try {
-      Uri.parse(overrideUrl);
-    } on FormatException catch (err) {
-      throwToolExit('"TIZEN_ENGINE_BASE_URL" contains an invalid URI:\n$err');
+    return super.isUpToDateInner(fileSystem);
+  }
+
+  @override
+  Future<void> updateInner(
+    ArtifactUpdater updater,
+    FileSystem fileSystem,
+    OperatingSystemUtils operatingSystemUtils,
+  ) {
+    final String? githubRunId = _platform.environment['GITHUB_ENGINE_RUN_ID'];
+    if (githubRunId != null) {
+      return _downloadArtifactsFromGithub(operatingSystemUtils, githubRunId);
     }
-    return overrideUrl;
+    return super.updateInner(updater, fileSystem, operatingSystemUtils);
   }
 
   @override
   List<List<String>> getBinaryDirs() {
     return <List<String>>[
-      <String>['tizen-common', 'tizen-common.zip'],
-      <String>['tizen-x86-debug', 'tizen-x86-debug.zip'],
       <String>['tizen-arm-debug', 'tizen-arm-debug.zip'],
       <String>['tizen-arm-profile', 'tizen-arm-profile.zip'],
       <String>['tizen-arm-release', 'tizen-arm-release.zip'],
       <String>['tizen-arm64-debug', 'tizen-arm64-debug.zip'],
       <String>['tizen-arm64-profile', 'tizen-arm64-profile.zip'],
       <String>['tizen-arm64-release', 'tizen-arm64-release.zip'],
+      <String>['tizen-x86-debug', 'tizen-x86-debug.zip'],
       if (_platform.isWindows)
         ..._binaryDirsForHostPlatform('windows-x64')
       else if (_platform.isMacOS)
@@ -173,114 +305,63 @@ class TizenEngineArtifacts extends EngineCachedArtifact {
       ],
     ];
   }
+}
+
+class TizenEmbedderArtifacts extends TizenCachedArtifacts {
+  TizenEmbedderArtifacts({
+    required super.cache,
+    required super.logger,
+    required super.fileSystem,
+    required super.platform,
+    required super.osUtils,
+    required super.processManager,
+  }) : super(kTizenEmbedderStampName, kTizenEmbedderRepoName);
 
   @override
-  List<String> getLicenseDirs() => const <String>[];
-
-  @override
-  List<String> getPackageDirs() => const <String>[];
+  String? get version {
+    final File versionFile = _fileSystem
+        .directory(Cache.flutterRoot)
+        .parent
+        .childDirectory('bin')
+        .childDirectory('internal')
+        .childFile('embedder.version');
+    return versionFile.existsSync()
+        ? versionFile.readAsStringSync().trim()
+        : null;
+  }
 
   @override
   bool isUpToDateInner(FileSystem fileSystem) {
-    // Download always happens, if the following variable is set.
-    if (_platform.environment['TIZEN_ENGINE_GITHUB_RUN_ID'] != null) {
+    // Download always happens if the following variable is set.
+    if (_platform.environment['GITHUB_EMBEDDER_RUN_ID'] != null) {
       return false;
     }
     return super.isUpToDateInner(fileSystem);
   }
 
-  /// See: [EngineCachedArtifact.updateInner] in `cache.dart`
   @override
   Future<void> updateInner(
-    ArtifactUpdater artifactUpdater,
+    ArtifactUpdater updater,
     FileSystem fileSystem,
     OperatingSystemUtils operatingSystemUtils,
-  ) async {
-    final String? githubRunId =
-        _platform.environment['TIZEN_ENGINE_GITHUB_RUN_ID'];
-    if (githubRunId != null) {
-      await _downloadArtifactsFromGithub(operatingSystemUtils, githubRunId);
-    } else {
-      if (version == null) {
-        throwToolExit('Could not determine Tizen engine revision.');
-      }
-      await _downloadArtifactsFromUrl(
-          operatingSystemUtils, '$engineBaseUrl/download/$version');
-    }
-  }
-
-  Future<void> _downloadArtifactsFromUrl(
-    OperatingSystemUtils operatingSystemUtils,
-    String downloadUrl,
-  ) async {
-    for (final List<String> toolsDir in getBinaryDirs()) {
-      final String cacheDir = toolsDir[0];
-      final String urlPath = toolsDir[1];
-      final Directory artifactDir = location.childDirectory(cacheDir);
-      await artifactUpdater.downloadZipArchive(
-        'Downloading $cacheDir tools...',
-        Uri.parse('$downloadUrl/$urlPath'),
-        artifactDir,
-      );
-      _makeFilesExecutable(artifactDir, operatingSystemUtils);
-    }
-  }
-
-  Future<void> _downloadArtifactsFromGithub(
-    OperatingSystemUtils operatingSystemUtils,
-    String githubRunId,
-  ) async {
-    _logger.printStatus(
-        'Downloading Tizen engine artifacts from GitHub Actions...');
-    if (operatingSystemUtils.which('gh') == null) {
-      throwToolExit(
-          'GitHub CLI not found. Please install it first: https://cli.github.com');
-    }
-    for (final List<String> toolsDir in getBinaryDirs()) {
-      final String cacheDir = toolsDir[0];
-      final String urlPath = toolsDir[1];
-      final Directory artifactDir = location.childDirectory(cacheDir);
-      final Status status =
-          _logger.startProgress('Downloading $cacheDir tools...');
-      try {
-        if (artifactDir.existsSync()) {
-          artifactDir.deleteSync(recursive: true);
-        }
-        artifactDir.createSync(recursive: true);
-        final RunResult result = await _processUtils.run(<String>[
-          'gh',
-          'run',
-          'download',
-          '-R',
-          'flutter-tizen/engine',
-          '-n',
-          basenameWithoutExtension(urlPath),
-          '-D',
-          artifactDir.path,
-          githubRunId,
-        ]);
-        if (result.exitCode != 0) {
-          throwToolExit(
-            'Failed to download Tizen engine artifact from GitHub Actions.\n\n'
-            '$result',
-          );
-        }
-      } finally {
-        status.stop();
-      }
-      _makeFilesExecutable(artifactDir, operatingSystemUtils);
-    }
-  }
-
-  void _makeFilesExecutable(
-    Directory dir,
-    OperatingSystemUtils operatingSystemUtils,
   ) {
-    operatingSystemUtils.chmod(dir, 'a+r,a+x');
-    for (final File file in dir.listSync(recursive: true).whereType<File>()) {
-      if (file.basename == 'gen_snapshot') {
-        operatingSystemUtils.chmod(file, 'a+r,a+x');
-      }
+    final String? githubRunId = _platform.environment['GITHUB_EMBEDDER_RUN_ID'];
+    if (githubRunId != null) {
+      return _downloadArtifactsFromGithub(operatingSystemUtils, githubRunId);
     }
+    return super.updateInner(updater, fileSystem, operatingSystemUtils);
+  }
+
+  @override
+  List<List<String>> getBinaryDirs() {
+    return <List<String>>[
+      <String>['tizen-common', 'tizen-common.zip'],
+      <String>['tizen-arm/5.5', 'tizen-5.5-arm.zip'],
+      <String>['tizen-arm/6.5', 'tizen-6.5-arm.zip'],
+      <String>['tizen-arm64/5.5', 'tizen-5.5-arm64.zip'],
+      <String>['tizen-arm64/6.5', 'tizen-6.5-arm64.zip'],
+      <String>['tizen-x86/5.5', 'tizen-5.5-x86.zip'],
+      <String>['tizen-x86/6.5', 'tizen-6.5-x86.zip'],
+    ];
   }
 }

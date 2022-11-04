@@ -163,7 +163,7 @@ Future<void> main(List<String> args) async {
             platform: globals.platform,
             logger: globals.logger,
           ),
-      Cache: () => TizenFlutterCache(
+      Cache: () => TizenCache(
             fileSystem: globals.fs,
             logger: globals.logger,
             platform: globals.platform,

@@ -9,8 +9,6 @@ import 'package:flutter_tools/src/runner/flutter_command.dart';
 
 import '../tizen_cache.dart';
 
-const String kTizenStampName = 'tizen-sdk';
-
 class TizenPrecacheCommand extends PrecacheCommand {
   TizenPrecacheCommand({
     super.verboseHelp,
@@ -52,7 +50,8 @@ class TizenPrecacheCommand extends PrecacheCommand {
 
     if (includeAllPlatforms || includeDefaults || includeTizen) {
       if (boolArg('force') ?? false) {
-        _cache.setStampFor(kTizenStampName, '');
+        _cache.setStampFor(kTizenEngineStampName, '');
+        _cache.setStampFor(kTizenEmbedderStampName, '');
       }
       await _cache.updateAll(<DevelopmentArtifact>{
         TizenDevelopmentArtifact.tizen,
@@ -63,12 +62,16 @@ class TizenPrecacheCommand extends PrecacheCommand {
     _cache.releaseLock();
 
     if (includeAllPlatforms || includeDefaults || _includeOtherPlatforms) {
-      // If the '--force' option is used, the super.runCommand() will delete
-      // the tizen's stamp file. It should be restored.
-      final String? tizenStamp = _cache.getStampFor(kTizenStampName);
+      // If the --force option is set, super.runCommand() will delete all
+      // Tizen stamp files. They must be restored.
+      final String? engineStamp = _cache.getStampFor(kTizenEngineStampName);
+      final String? embedderStamp = _cache.getStampFor(kTizenEmbedderStampName);
       final FlutterCommandResult result = await super.runCommand();
-      if (tizenStamp != null) {
-        _cache.setStampFor(kTizenStampName, tizenStamp);
+      if (engineStamp != null) {
+        _cache.setStampFor(kTizenEngineStampName, engineStamp);
+      }
+      if (embedderStamp != null) {
+        _cache.setStampFor(kTizenEmbedderStampName, embedderStamp);
       }
       return result;
     }

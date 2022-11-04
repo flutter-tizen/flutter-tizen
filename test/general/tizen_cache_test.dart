@@ -36,7 +36,7 @@ void main() {
 
   testWithoutContext('gen_snapshot artifacts for host platform (Windows)', () {
     final TizenEngineArtifacts artifacts = TizenEngineArtifacts(
-      cache,
+      cache: cache,
       logger: BufferLogger.test(),
       fileSystem: fileSystem,
       platform: FakePlatform(operatingSystem: 'windows'),
@@ -69,7 +69,7 @@ void main() {
 
   testWithoutContext('Makes gen_snapshot binaries executable', () async {
     final TizenEngineArtifacts artifacts = TizenEngineArtifacts(
-      cache,
+      cache: cache,
       logger: BufferLogger.test(),
       fileSystem: fileSystem,
       platform: FakePlatform(),
@@ -100,11 +100,11 @@ void main() {
 
   testWithoutContext('Fails if GitHub CLI is not installed', () async {
     final TizenEngineArtifacts artifacts = TizenEngineArtifacts(
-      cache,
+      cache: cache,
       logger: BufferLogger.test(),
       fileSystem: fileSystem,
       platform: FakePlatform(
-        environment: <String, String>{'TIZEN_ENGINE_GITHUB_RUN_ID': '1234'},
+        environment: <String, String>{'GITHUB_ENGINE_RUN_ID': '1234'},
       ),
       osUtils: FakeOperatingSystemUtils(),
       processManager: FakeProcessManager.any(),

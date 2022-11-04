@@ -63,13 +63,15 @@ void main() {
     final CommandRunner<void> runner = createTestCommandRunner(command);
     await runner.run(<String>['precache', '--force']);
 
-    expect(cache.tizenStamp, equals(''));
+    expect(cache.engineStamp, isEmpty);
+    expect(cache.embedderStamp, isEmpty);
   });
 }
 
 class _FakeCache extends Fake implements Cache {
   Set<DevelopmentArtifact> artifacts = <DevelopmentArtifact>{};
-  String tizenStamp;
+  String engineStamp;
+  String embedderStamp;
 
   @override
   bool includeAllPlatforms = false;
@@ -85,13 +87,20 @@ class _FakeCache extends Fake implements Cache {
 
   @override
   String getStampFor(String artifactName) {
-    return artifactName == kTizenStampName ? tizenStamp : null;
+    if (artifactName == kTizenEngineStampName) {
+      return engineStamp;
+    } else if (artifactName == kTizenEmbedderStampName) {
+      return embedderStamp;
+    }
+    return null;
   }
 
   @override
   void setStampFor(String artifactName, String version) {
-    if (artifactName == kTizenStampName) {
-      tizenStamp = version;
+    if (artifactName == kTizenEngineStampName) {
+      engineStamp = version;
+    } else if (artifactName == kTizenEmbedderStampName) {
+      embedderStamp = version;
     }
   }
 
