@@ -25,7 +25,7 @@
 
    You have to close and reopen any existing console windows for this change to take effect.
 
-1. Verify that the `fluter-tizen` command is available by running:
+1. Verify that the `flutter-tizen` command is available by running:
 
    ```powershell
    where.exe flutter-tizen
