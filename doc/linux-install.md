@@ -30,7 +30,7 @@
 
    You have to run `source ~/.bashrc` or open a new terminal window for this change to take effect.
 
-1. Verify that the `fluter-tizen` command is available by running:
+1. Verify that the `flutter-tizen` command is available by running:
 
    ```sh
    which flutter-tizen
