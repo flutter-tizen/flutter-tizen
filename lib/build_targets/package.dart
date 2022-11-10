@@ -90,23 +90,22 @@ class DotnetTpk extends TizenPackage {
       resDir.childDirectory('flutter_assets'),
     );
 
-    final BuildMode buildMode = buildInfo.buildInfo.mode;
-    final String buildConfig = getBuildConfig(buildMode);
-    final Directory engineDir =
-        getEngineArtifactsDirectory(buildInfo.targetArch, buildMode);
-    final Directory commonDir = engineDir.parent.childDirectory('tizen-common');
-
     final TizenManifest tizenManifest =
         TizenManifest.parseFromXml(tizenProject.manifestFile);
     final String profile = buildInfo.deviceProfile;
     final String? apiVersion = tizenManifest.apiVersion;
-    final String nuiSuffix = supportsNui(profile, apiVersion) ? '_nui' : '';
+
+    final BuildMode buildMode = buildInfo.buildInfo.mode;
+    final String buildConfig = getBuildConfig(buildMode);
+
+    final Directory engineDir =
+        getEngineArtifactsDirectory(buildInfo.targetArch, buildMode);
+    final Directory embedderDir =
+        getEmbedderArtifactsDirectory(apiVersion, buildInfo.targetArch);
 
     final File engineBinary = engineDir.childFile('libflutter_engine.so');
-    final File embedder =
-        engineDir.childFile('libflutter_tizen_$profile$nuiSuffix.so');
-    final File icuData =
-        commonDir.childDirectory('icu').childFile('icudtl.dat');
+    final File embedder = embedderDir.childFile('libflutter_tizen_$profile.so');
+    final File icuData = engineDir.childFile('icudtl.dat');
 
     engineBinary.copySync(libDir.childFile(engineBinary.basename).path);
     // The embedder so name is statically defined in C# code and cannot be
@@ -241,17 +240,22 @@ class NativeTpk extends TizenPackage {
       resDir.childDirectory('flutter_assets'),
     );
 
+    final TizenManifest tizenManifest =
+        TizenManifest.parseFromXml(tizenProject.manifestFile);
+    final String profile = buildInfo.deviceProfile;
+    final String? apiVersion = tizenManifest.apiVersion;
+
     final BuildMode buildMode = buildInfo.buildInfo.mode;
     final String buildConfig = getBuildConfig(buildMode);
+
     final Directory engineDir =
         getEngineArtifactsDirectory(buildInfo.targetArch, buildMode);
-    final Directory commonDir = engineDir.parent.childDirectory('tizen-common');
+    final Directory embedderDir =
+        getEmbedderArtifactsDirectory(apiVersion, buildInfo.targetArch);
 
     final File engineBinary = engineDir.childFile('libflutter_engine.so');
-    final File embedder =
-        engineDir.childFile('libflutter_tizen_${buildInfo.deviceProfile}.so');
-    final File icuData =
-        commonDir.childDirectory('icu').childFile('icudtl.dat');
+    final File embedder = embedderDir.childFile('libflutter_tizen_$profile.so');
+    final File icuData = engineDir.childFile('icudtl.dat');
 
     engineBinary.copySync(libDir.childFile(engineBinary.basename).path);
     embedder.copySync(libDir.childFile(embedder.basename).path);
@@ -281,14 +285,12 @@ class NativeTpk extends TizenPackage {
     }
 
     // Prepare for build.
+    final Directory commonDir = getCommonArtifactsDirectory();
     final Directory clientWrapperDir =
         commonDir.childDirectory('cpp_client_wrapper');
     final Directory publicDir = commonDir.childDirectory('public');
 
     assert(tizenSdk != null);
-    final TizenManifest tizenManifest =
-        TizenManifest.parseFromXml(tizenProject.manifestFile);
-    final String profile = buildInfo.deviceProfile;
     final Rootstrap rootstrap = tizenSdk!.getFlutterRootstrap(
       profile: profile,
       apiVersion: tizenManifest.apiVersion,
@@ -436,22 +438,20 @@ class DotnetModule extends TizenPackage {
       resDir.childDirectory('flutter_assets'),
     );
 
-    final BuildMode buildMode = buildInfo.buildInfo.mode;
-    final Directory engineDir =
-        getEngineArtifactsDirectory(buildInfo.targetArch, buildMode);
-    final Directory commonDir = engineDir.parent.childDirectory('tizen-common');
-
     final TizenManifest tizenManifest =
         TizenManifest.parseFromXml(tizenProject.manifestFile);
     final String profile = buildInfo.deviceProfile;
     final String? apiVersion = tizenManifest.apiVersion;
-    final String nuiSuffix = supportsNui(profile, apiVersion) ? '_nui' : '';
+
+    final BuildMode buildMode = buildInfo.buildInfo.mode;
+    final Directory engineDir =
+        getEngineArtifactsDirectory(buildInfo.targetArch, buildMode);
+    final Directory embedderDir =
+        getEmbedderArtifactsDirectory(apiVersion, buildInfo.targetArch);
 
     final File engineBinary = engineDir.childFile('libflutter_engine.so');
-    final File embedder =
-        engineDir.childFile('libflutter_tizen_$profile$nuiSuffix.so');
-    final File icuData =
-        commonDir.childDirectory('icu').childFile('icudtl.dat');
+    final File embedder = embedderDir.childFile('libflutter_tizen_$profile.so');
+    final File icuData = engineDir.childFile('icudtl.dat');
 
     engineBinary.copySync(libDir.childFile(engineBinary.basename).path);
     // The embedder so name is statically defined in C# code and cannot be
@@ -524,15 +524,19 @@ class NativeModule extends TizenPackage {
       resDir.childDirectory('flutter_assets'),
     );
 
+    final TizenManifest tizenManifest =
+        TizenManifest.parseFromXml(tizenProject.manifestFile);
+    final String profile = buildInfo.deviceProfile;
+    final String? apiVersion = tizenManifest.apiVersion;
+
     final Directory engineDir =
         getEngineArtifactsDirectory(buildInfo.targetArch, buildMode);
-    final Directory commonDir = engineDir.parent.childDirectory('tizen-common');
+    final Directory embedderDir =
+        getEmbedderArtifactsDirectory(apiVersion, buildInfo.targetArch);
 
     final File engineBinary = engineDir.childFile('libflutter_engine.so');
-    final File embedder =
-        engineDir.childFile('libflutter_tizen_${buildInfo.deviceProfile}.so');
-    final File icuData =
-        commonDir.childDirectory('icu').childFile('icudtl.dat');
+    final File embedder = embedderDir.childFile('libflutter_tizen_$profile.so');
+    final File icuData = engineDir.childFile('icudtl.dat');
 
     engineBinary.copySync(libDir.childFile(engineBinary.basename).path);
     embedder.copySync(libDir.childFile(embedder.basename).path);
@@ -564,6 +568,7 @@ class NativeModule extends TizenPackage {
       copyDirectory(pluginsLibDir, libDir);
     }
 
+    final Directory commonDir = getCommonArtifactsDirectory();
     final Directory clientWrapperDir =
         commonDir.childDirectory('cpp_client_wrapper');
     final Directory publicDir = commonDir.childDirectory('public');

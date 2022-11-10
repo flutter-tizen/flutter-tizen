@@ -75,10 +75,8 @@ class NativeEmbedding extends Target {
 
     final BuildMode buildMode = buildInfo.buildInfo.mode;
     final String buildConfig = getBuildConfig(buildMode);
-    final Directory engineDir =
-        getEngineArtifactsDirectory(buildInfo.targetArch, buildMode);
-    final Directory commonDir = engineDir.parent.childDirectory('tizen-common');
 
+    final Directory commonDir = getCommonArtifactsDirectory();
     final Directory clientWrapperDir =
         commonDir.childDirectory('cpp_client_wrapper');
     final Directory publicDir = commonDir.childDirectory('public');

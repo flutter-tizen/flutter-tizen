@@ -430,11 +430,11 @@ void _installFakeEngineArtifacts(Directory engineArtifactDir) {
     engineArtifactDir.childDirectory(directory).createSync(recursive: true);
   }
   for (final String file in <String>[
-    'tizen-common/icu/icudtl.dat',
+    'tizen-arm/5.5/libflutter_tizen_common.so',
+    'tizen-arm-debug/icudtl.dat',
     'tizen-arm-debug/libflutter_engine.so',
-    'tizen-arm-debug/libflutter_tizen_common.so',
+    'tizen-arm-release/icudtl.dat',
     'tizen-arm-release/libflutter_engine.so',
-    'tizen-arm-release/libflutter_tizen_common.so',
   ]) {
     engineArtifactDir.childFile(file).createSync(recursive: true);
   }
