@@ -1,8 +1,32 @@
 name: Release
 
-on: [workflow_dispatch]
+on: [pull_request, workflow_dispatch]
 
 jobs:
+  pub:
+    runs-on: ubuntu-latest
+    if: ${{ github.repository_owner == 'flutter-tizen' }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - name: Install credentials
+        run: echo '${{ secrets.PUB_CREDENTIALS }}' > $PUB_CACHE/credentials.json
+      - name: Dry run on pull request
+        if: ${{ github.event_name == 'pull_request' }}
+        run: |
+          for package in $(find packages/* -maxdepth 0 -type d); do
+            flutter pub publish --dry-run -C $package
+          done
+      - name: Try publish
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        timeout-minutes: 2
+        run: |
+          for package in $(find packages/* -maxdepth 0 -type d); do
+            flutter pub publish -f -C $package || true
+          done
+
   nuget:
     runs-on: ubuntu-latest
     if: ${{ github.repository_owner == 'flutter-tizen' }}
@@ -11,10 +35,13 @@ jobs:
       - uses: actions/setup-dotnet@v2
         with:
           dotnet-version: '6.0.x'
-      - name: Build and push
+      - name: Build
+        working-directory: embedding/csharp/Tizen.Flutter.Embedding
+        run: dotnet build -c Release
+      - name: Try publish
+        if: ${{ github.event_name == 'workflow_dispatch' }}
         working-directory: embedding/csharp/Tizen.Flutter.Embedding
         run: |
-          dotnet build -c Release
           dotnet nuget push bin/Release/*.nupkg \
             -s https://api.nuget.org/v3/index.json \
             -k ${{ secrets.NUGET_APIKEY }} \
