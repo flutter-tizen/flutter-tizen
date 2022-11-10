@@ -1,0 +1,12 @@
+name: flutter_tizen
+description: Tizen utilities for Dart and Flutter.
+version: 0.1.0
+homepage: https://github.com/flutter-tizen/flutter-tizen/tree/master/packages/flutter_tizen
+
+environment:
+  sdk: ">=2.18.0 <3.0.0"
+  flutter: ">=3.3.0"
+
+dependencies:
+  flutter:
+    sdk: flutter

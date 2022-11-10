@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest package="org.tizen.flutter_tizen_example" version="1.0.0" api-version="4.0" xmlns="http://tizen.org/ns/packages">
+    <profile name="common"/>
+    <ui-application appid="org.tizen.flutter_tizen_example" exec="Runner.dll" type="dotnet" multiple="false" taskmanage="true" nodisplay="false">
+        <label>flutter_tizen_example</label>
+        <icon>ic_launcher.png</icon>
+        <metadata key="http://tizen.org/metadata/prefer_dotnet_aot" value="true"/>
+    </ui-application>
+    <feature name="http://tizen.org/feature/screen.size.all"/>
+</manifest>
