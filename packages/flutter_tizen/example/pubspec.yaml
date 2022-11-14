@@ -1,0 +1,19 @@
+name: flutter_tizen_example
+publish_to: "none"
+
+dependencies:
+  flutter_tizen:
+    path: ../
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  integration_test:
+    sdk: flutter
+  integration_test_tizen: ^2.0.1
+
+environment:
+  sdk: ">=2.18.0 <3.0.0"
+  flutter: ">=3.3.0"
