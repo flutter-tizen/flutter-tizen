@@ -9,15 +9,19 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
 import '../services/platform_views.dart';
 
+/// Source: [_PlatformViewState] flutter/packages/flutter/lib/src/rendering/platform_view.dart
 enum _PlatformViewState {
   uninitialized,
   resizing,
   ready,
 }
 
+/// A render object for an Tizen view.
+///
+/// Source: [RenderAndroidView] flutter/packages/flutter/lib/src/rendering/platform_view.dart
 class RenderTizenView extends PlatformViewRenderBox {
   RenderTizenView({
-    required TizenViewController viewController,
+    required TextureTizenViewController viewController,
     required PlatformViewHitTestBehavior hitTestBehavior,
     required Set<Factory<OneSequenceGestureRecognizer>> gestureRecognizers,
     Clip clipBehavior = Clip.hardEdge,
@@ -41,12 +45,12 @@ class RenderTizenView extends PlatformViewRenderBox {
   Size? _currentTextureSize;
 
   @override
-  TizenViewController get controller => _viewController;
+  TextureTizenViewController get controller => _viewController;
 
-  TizenViewController _viewController;
+  TextureTizenViewController _viewController;
 
   @override
-  set controller(TizenViewController viewController) {
+  set controller(TextureTizenViewController viewController) {
     assert(_viewController != null);
     assert(viewController != null);
     if (_viewController == viewController) {

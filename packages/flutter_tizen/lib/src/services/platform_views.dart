@@ -7,6 +7,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
 
+/// Source: [_AndroidViewState] flutter/lib/src/services/platform_views.dart
 enum _TizenViewState {
   waitingForSize,
   creating,
@@ -14,8 +15,11 @@ enum _TizenViewState {
   disposed,
 }
 
-class TizenViewController extends PlatformViewController {
-  TizenViewController._({
+/// Controls an Tizen view that is rendered as a texture.
+///
+/// Source: [TextureAndroidViewController] flutter/lib/src/services/platform_views.dart
+class TextureTizenViewController extends PlatformViewController {
+  TextureTizenViewController._({
     required this.viewId,
     required String viewType,
     required TextDirection layoutDirection,
@@ -110,7 +114,7 @@ class TizenViewController extends PlatformViewController {
     }
 
     assert(!size.isEmpty,
-        'trying to create $TizenViewController without setting a valid size.');
+        'trying to create $TextureTizenViewController without setting a valid size.');
 
     final Map<String, dynamic> args = <String, dynamic>{
       'id': viewId,
@@ -240,6 +244,9 @@ class TizenViewController extends PlatformViewController {
   }
 }
 
+/// Provides access to the platform views service on Tizen.
+///
+/// Source: [PlatformViewsService] flutter/lib/src/services/platform_views.dart
 class PlatformViewsServiceTizen {
   PlatformViewsServiceTizen._() {
     SystemChannels.platform_views.setMethodCallHandler(_onMethodCall);
@@ -264,7 +271,7 @@ class PlatformViewsServiceTizen {
 
   final Map<int, VoidCallback> _focusCallbacks = <int, VoidCallback>{};
 
-  static TizenViewController initTizenView({
+  static TextureTizenViewController initTizenView({
     required int id,
     required String viewType,
     required TextDirection layoutDirection,
@@ -277,7 +284,7 @@ class PlatformViewsServiceTizen {
     assert(layoutDirection != null);
     assert(creationParams == null || creationParamsCodec != null);
 
-    final TizenViewController controller = TizenViewController._(
+    final TextureTizenViewController controller = TextureTizenViewController._(
       viewId: id,
       viewType: viewType,
       layoutDirection: layoutDirection,

@@ -12,6 +12,9 @@ import 'package:flutter/widgets.dart';
 import '../rendering/platform_view.dart';
 import '../services/platform_views.dart';
 
+/// Embeds an Tizen view in the Widget hierarchy.
+//
+/// Source: [AndroidView] in flutter/lib/src/widgets/platform_view.dart
 class TizenView extends StatefulWidget {
   const TizenView({
     super.key,
@@ -40,9 +43,12 @@ class TizenView extends StatefulWidget {
   State<TizenView> createState() => _TizenViewState();
 }
 
+/// A state object for an Tizen view.
+///
+/// Source: [_AndroidViewState] in flutter/lib/src/widgets/platform_view.dart
 class _TizenViewState extends State<TizenView> {
   int? _id;
-  late TizenViewController _controller;
+  late TextureTizenViewController _controller;
   TextDirection? _layoutDirection;
   bool _initialized = false;
   FocusNode? _focusNode;
@@ -55,7 +61,7 @@ class _TizenViewState extends State<TizenView> {
     return Focus(
       focusNode: _focusNode,
       onFocusChange: _onFocusChange,
-      child: _TizenPlatformTextureView(
+      child: _TizenPlatformView(
         controller: _controller,
         hitTestBehavior: widget.hitTestBehavior,
         gestureRecognizers: widget.gestureRecognizers ?? _emptyRecognizersSet,
@@ -160,8 +166,11 @@ class _TizenViewState extends State<TizenView> {
   }
 }
 
-class _TizenPlatformTextureView extends LeafRenderObjectWidget {
-  const _TizenPlatformTextureView({
+/// A render object widget for an Tizen view.
+///
+/// Source: [_AndroidPlatformView] in flutter/lib/src/widgets/platform_view.dart
+class _TizenPlatformView extends LeafRenderObjectWidget {
+  const _TizenPlatformView({
     required this.controller,
     required this.hitTestBehavior,
     required this.gestureRecognizers,
@@ -170,7 +179,7 @@ class _TizenPlatformTextureView extends LeafRenderObjectWidget {
         assert(hitTestBehavior != null),
         assert(gestureRecognizers != null);
 
-  final TizenViewController controller;
+  final TextureTizenViewController controller;
   final PlatformViewHitTestBehavior hitTestBehavior;
   final Set<Factory<OneSequenceGestureRecognizer>> gestureRecognizers;
   final Clip clipBehavior;
