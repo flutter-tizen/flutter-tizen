@@ -4,6 +4,7 @@
 
 // ignore_for_file: public_member_api_docs
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
 
@@ -15,17 +16,13 @@ enum _TizenViewState {
   disposed,
 }
 
-/// Controls an Tizen view that is rendered as a texture.
-///
-/// Source: [TextureAndroidViewController] flutter/lib/src/services/platform_views.dart
-class TextureTizenViewController extends PlatformViewController {
-  TextureTizenViewController._({
+abstract class TizenViewController extends PlatformViewController {
+  TizenViewController._({
     required this.viewId,
     required String viewType,
     required TextDirection layoutDirection,
     dynamic creationParams,
     MessageCodec<dynamic>? creationParamsCodec,
-    bool waitingForSize = true,
   })  : assert(viewId != null),
         assert(viewType != null),
         assert(layoutDirection != null),
@@ -33,10 +30,7 @@ class TextureTizenViewController extends PlatformViewController {
         _viewType = viewType,
         _layoutDirection = layoutDirection,
         _creationParams = creationParams,
-        _creationParamsCodec = creationParamsCodec,
-        _state = waitingForSize
-            ? _TizenViewState.waitingForSize
-            : _TizenViewState.creating;
+        _creationParamsCodec = creationParamsCodec;
 
   @override
   final int viewId;
@@ -45,7 +39,7 @@ class TextureTizenViewController extends PlatformViewController {
 
   TextDirection _layoutDirection;
 
-  _TizenViewState _state;
+  _TizenViewState _state = _TizenViewState.waitingForSize;
 
   final dynamic _creationParams;
 
@@ -54,110 +48,56 @@ class TextureTizenViewController extends PlatformViewController {
   final List<PlatformViewCreatedCallback> _platformViewCreatedCallbacks =
       <PlatformViewCreatedCallback>[];
 
-  static int pointerAction(int pointerId, int action) {
-    return ((pointerId << 8) & 0xff00) | (action & 0xff);
-  }
+  Future<void> _sendDisposeMessage();
 
-  int? _textureId;
+  bool get _createRequiresSize;
 
-  int? get textureId => _textureId;
+  Future<void> _sendCreateMessage({required covariant Size? size});
 
-  Offset _off = Offset.zero;
-
-  Future<Size> setSize(Size size) async {
-    assert(_state != _TizenViewState.disposed,
-        'Tizen view is disposed. View id: $viewId');
-    assert(_state != _TizenViewState.waitingForSize,
-        'Tizen view must have an initial size. View id: $viewId');
-    assert(size != null);
-    assert(!size.isEmpty);
-
-    final Map<Object?, Object?>? meta =
-        await SystemChannels.platform_views.invokeMapMethod<Object?, Object?>(
-      'resize',
-      <String, dynamic>{
-        'id': viewId,
-        'width': size.width,
-        'height': size.height,
-      },
-    );
-    assert(meta != null);
-    assert(meta!.containsKey('width'));
-    assert(meta!.containsKey('height'));
-    return Size(meta!['width']! as double, meta['height']! as double);
-  }
-
-  Future<void> setOffset(Offset off) async {
-    if (off == _off) {
-      return;
-    }
-
-    if (_state != _TizenViewState.created) {
-      return;
-    }
-
-    _off = off;
-
-    await SystemChannels.platform_views.invokeMethod<void>(
-      'offset',
-      <String, dynamic>{
-        'id': viewId,
-        'top': off.dy,
-        'left': off.dx,
-      },
-    );
-  }
-
-  Future<void> _sendCreateMessage({Size? size}) async {
-    if (size == null) {
-      return;
-    }
-
-    assert(!size.isEmpty,
-        'trying to create $TextureTizenViewController without setting a valid size.');
-
-    final Map<String, dynamic> args = <String, dynamic>{
-      'id': viewId,
-      'viewType': _viewType,
-      'width': size.width,
-      'height': size.height,
-      'direction': _layoutDirection == TextDirection.ltr ? 0 : 1,
-    };
-    if (_creationParams != null) {
-      final ByteData paramsByteData =
-          _creationParamsCodec!.encodeMessage(_creationParams)!;
-      args['params'] = Uint8List.view(
-        paramsByteData.buffer,
-        0,
-        paramsByteData.lengthInBytes,
-      );
-    }
-    _textureId =
-        await SystemChannels.platform_views.invokeMethod<int>('create', args);
-  }
-
-  Future<void> _sendDisposeMessage() {
-    return SystemChannels.platform_views
-        .invokeMethod<void>('dispose', <String, dynamic>{
-      'id': viewId,
-      'hybrid': false,
-    });
-  }
+  Future<Size> _sendResizeMessage(Size size);
 
   @override
   Future<void> create({Size? size}) async {
     assert(_state != _TizenViewState.disposed,
         'trying to create a disposed Tizen view');
-    await _sendCreateMessage(size: size);
+    assert(_state == _TizenViewState.waitingForSize,
+        'Tizen view is already sized. View id: $viewId');
 
+    if (_createRequiresSize && size == null) {
+      // Wait for a setSize call.
+      return;
+    }
+
+    _state = _TizenViewState.creating;
+    await _sendCreateMessage(size: size);
     _state = _TizenViewState.created;
+
     for (final PlatformViewCreatedCallback callback
         in _platformViewCreatedCallbacks) {
       callback(viewId);
     }
   }
 
-  bool get isCreated => _state == _TizenViewState.created;
+  Future<Size> setSize(Size size) async {
+    assert(_state != _TizenViewState.disposed,
+        'Tizen view is disposed. View id: $viewId');
+    if (_state == _TizenViewState.waitingForSize) {
+      // Either `create` hasn't been called, or it couldn't run due to missing
+      // size information, so create the view now.
+      await create(size: size);
+      return size;
+    } else {
+      return _sendResizeMessage(size);
+    }
+  }
+
+  Future<void> setOffset(Offset off);
+
+  int? get textureId;
+
+  Future<void> sendTouchEvent(Map<String, dynamic> args) async {
+    await SystemChannels.platform_views.invokeMethod<dynamic>('touch', args);
+  }
 
   void addOnPlatformViewCreatedListener(PlatformViewCreatedCallback listener) {
     assert(listener != null);
@@ -170,6 +110,10 @@ class TextureTizenViewController extends PlatformViewController {
     assert(_state != _TizenViewState.disposed);
     _platformViewCreatedCallbacks.remove(listener);
   }
+
+  @visibleForTesting
+  List<PlatformViewCreatedCallback> get createdCallbacks =>
+      _platformViewCreatedCallbacks;
 
   Future<void> setLayoutDirection(TextDirection layoutDirection) async {
     assert(_state != _TizenViewState.disposed,
@@ -209,8 +153,8 @@ class TextureTizenViewController extends PlatformViewController {
     } else {
       throw UnimplementedError('Not Implemented');
     }
-    await SystemChannels.platform_views
-        .invokeMethod<dynamic>('touch', <String, dynamic>{
+
+    final Map<String, dynamic> args = <String, dynamic>{
       'id': viewId,
       'event': <dynamic>[
         eventType,
@@ -220,7 +164,8 @@ class TextureTizenViewController extends PlatformViewController {
         event.localDelta.dx,
         event.localDelta.dy,
       ]
-    });
+    };
+    await sendTouchEvent(args);
   }
 
   @override
@@ -242,6 +187,109 @@ class TextureTizenViewController extends PlatformViewController {
     _state = _TizenViewState.disposed;
     PlatformViewsServiceTizen._instance._focusCallbacks.remove(viewId);
   }
+}
+
+/// Controls an Tizen view that is composed using a GL texture.
+/// This controller is created from the [PlatformViewsServiceTizen.initTizenView] factory,
+/// Source: [TextureAndroidViewController] and [AndroidViewController] flutter/lib/src/services/platform_views.dart
+class TextureTizenViewController extends TizenViewController {
+  TextureTizenViewController._({
+    required super.viewId,
+    required super.viewType,
+    required super.layoutDirection,
+    super.creationParams,
+    super.creationParamsCodec,
+  }) : super._();
+
+  int? _textureId;
+
+  @override
+  int? get textureId => _textureId;
+
+  Offset _off = Offset.zero;
+
+  @override
+  Future<Size> _sendResizeMessage(Size size) async {
+    assert(_state != _TizenViewState.waitingForSize,
+        'Tizen view must have an initial size. View id: $viewId');
+    assert(size != null);
+    assert(!size.isEmpty);
+
+    final Map<Object?, Object?>? meta =
+        await SystemChannels.platform_views.invokeMapMethod<Object?, Object?>(
+      'resize',
+      <String, dynamic>{
+        'id': viewId,
+        'width': size.width,
+        'height': size.height,
+      },
+    );
+    assert(meta != null);
+    assert(meta!.containsKey('width'));
+    assert(meta!.containsKey('height'));
+    return Size(meta!['width']! as double, meta['height']! as double);
+  }
+
+  @override
+  Future<void> setOffset(Offset off) async {
+    if (off == _off) {
+      return;
+    }
+
+    if (_state != _TizenViewState.created) {
+      return;
+    }
+
+    _off = off;
+
+    await SystemChannels.platform_views.invokeMethod<void>(
+      'offset',
+      <String, dynamic>{
+        'id': viewId,
+        'top': off.dy,
+        'left': off.dx,
+      },
+    );
+  }
+
+  @override
+  bool get _createRequiresSize => true;
+
+  @override
+  Future<void> _sendCreateMessage({required Size size}) async {
+    assert(!size.isEmpty,
+        'trying to create $TextureTizenViewController without setting a valid size.');
+
+    final Map<String, dynamic> args = <String, dynamic>{
+      'id': viewId,
+      'viewType': _viewType,
+      'width': size.width,
+      'height': size.height,
+      'direction': _layoutDirection == TextDirection.ltr ? 0 : 1,
+    };
+    if (_creationParams != null) {
+      final ByteData paramsByteData =
+          _creationParamsCodec!.encodeMessage(_creationParams)!;
+      args['params'] = Uint8List.view(
+        paramsByteData.buffer,
+        0,
+        paramsByteData.lengthInBytes,
+      );
+    }
+    _textureId =
+        await SystemChannels.platform_views.invokeMethod<int>('create', args);
+  }
+
+  @override
+  Future<void> _sendDisposeMessage() {
+    return SystemChannels.platform_views
+        .invokeMethod<void>('dispose', <String, dynamic>{
+      'id': viewId,
+      'hybrid': false,
+    });
+  }
+
+  bool get isCreated => _state == _TizenViewState.created;
 }
 
 /// Provides access to the platform views service on Tizen.

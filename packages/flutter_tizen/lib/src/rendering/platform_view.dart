@@ -7,6 +7,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/scheduler.dart';
+
 import '../services/platform_views.dart';
 
 /// Source: [_PlatformViewState] flutter/packages/flutter/lib/src/rendering/platform_view.dart
@@ -44,6 +46,8 @@ class RenderTizenView extends PlatformViewRenderBox {
 
   Size? _currentTextureSize;
 
+  bool _isDisposed = false;
+
   @override
   TextureTizenViewController get controller => _viewController;
 
@@ -51,12 +55,14 @@ class RenderTizenView extends PlatformViewRenderBox {
 
   @override
   set controller(TextureTizenViewController viewController) {
+    assert(!_isDisposed);
     assert(_viewController != null);
     assert(viewController != null);
     if (_viewController == viewController) {
       return;
     }
     _viewController.removeOnPlatformViewCreatedListener(_onPlatformViewCreated);
+    super.controller = controller;
     _viewController = viewController;
     _sizePlatformView();
     if (_viewController.isCreated) {
@@ -77,6 +83,7 @@ class RenderTizenView extends PlatformViewRenderBox {
   }
 
   void _onPlatformViewCreated(int id) {
+    assert(!_isDisposed);
     markNeedsSemanticsUpdate();
   }
 
@@ -111,11 +118,9 @@ class RenderTizenView extends PlatformViewRenderBox {
     Size targetSize;
     do {
       targetSize = size;
-      if (_viewController.isCreated) {
-        _currentTextureSize = await _viewController.setSize(targetSize);
-      } else {
-        await _viewController.create(size: targetSize);
-        _currentTextureSize = targetSize;
+      _currentTextureSize = await _viewController.setSize(targetSize);
+      if (_isDisposed) {
+        return;
       }
     } while (size != targetSize);
 
@@ -125,8 +130,9 @@ class RenderTizenView extends PlatformViewRenderBox {
 
   @override
   void paint(PaintingContext context, Offset offset) {
-    if (_viewController.textureId == null || _currentTextureSize == null)
+    if (_viewController.textureId == null || _currentTextureSize == null) {
       return;
+    }
 
     final bool isTextureLargerThanWidget =
         _currentTextureSize!.width > size.width ||
@@ -151,7 +157,9 @@ class RenderTizenView extends PlatformViewRenderBox {
 
   @override
   void dispose() {
+    _isDisposed = true;
     _clipRectLayer.layer = null;
+    _viewController.removeOnPlatformViewCreatedListener(_onPlatformViewCreated);
     super.dispose();
   }
 
