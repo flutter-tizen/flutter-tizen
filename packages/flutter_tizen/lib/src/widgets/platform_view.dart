@@ -13,7 +13,7 @@ import 'package:flutter/widgets.dart';
 import '../rendering/platform_view.dart';
 import '../services/platform_views.dart';
 
-/// Embeds an Tizen view in the Widget hierarchy.
+/// Embeds a Tizen view in the Widget hierarchy.
 //
 /// Source: [AndroidView] in flutter/lib/src/widgets/platform_view.dart
 class TizenView extends StatefulWidget {
@@ -44,7 +44,7 @@ class TizenView extends StatefulWidget {
   State<TizenView> createState() => _TizenViewState();
 }
 
-/// A state object for an Tizen view.
+/// A state object for a Tizen view.
 ///
 /// Source: [_AndroidViewState] in flutter/lib/src/widgets/platform_view.dart
 class _TizenViewState extends State<TizenView> {
@@ -167,7 +167,7 @@ class _TizenViewState extends State<TizenView> {
   }
 }
 
-/// A render object widget for an Tizen view.
+/// A render object widget for a Tizen view.
 ///
 /// Source: [_AndroidPlatformView] in flutter/lib/src/widgets/platform_view.dart
 class _TizenPlatformView extends LeafRenderObjectWidget {

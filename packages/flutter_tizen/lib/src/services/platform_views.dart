@@ -16,6 +16,9 @@ enum _TizenViewState {
   disposed,
 }
 
+/// Controls a Tizen view that is composed using a GL texture.
+//
+/// Source: [AndroidViewController] flutter/lib/src/services/platform_views.dart
 abstract class TizenViewController extends PlatformViewController {
   TizenViewController._({
     required this.viewId,
@@ -189,9 +192,11 @@ abstract class TizenViewController extends PlatformViewController {
   }
 }
 
-/// Controls an Tizen view that is composed using a GL texture.
+/// Controls a Tizen view that is composed using a GL texture.
+///
 /// This controller is created from the [PlatformViewsServiceTizen.initTizenView] factory,
-/// Source: [TextureAndroidViewController] and [AndroidViewController] flutter/lib/src/services/platform_views.dart
+///
+/// Source: [TextureAndroidViewController] flutter/lib/src/services/platform_views.dart
 class TextureTizenViewController extends TizenViewController {
   TextureTizenViewController._({
     required super.viewId,

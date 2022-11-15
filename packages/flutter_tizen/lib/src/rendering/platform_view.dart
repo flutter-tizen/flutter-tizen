@@ -18,7 +18,7 @@ enum _PlatformViewState {
   ready,
 }
 
-/// A render object for an Tizen view.
+/// A render object for a Tizen view.
 ///
 /// Source: [RenderAndroidView] flutter/packages/flutter/lib/src/rendering/platform_view.dart
 class RenderTizenView extends PlatformViewRenderBox {
