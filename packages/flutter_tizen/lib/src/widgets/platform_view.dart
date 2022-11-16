@@ -29,7 +29,8 @@ class TizenView extends StatefulWidget {
     this.clipBehavior = Clip.hardEdge,
   })  : assert(viewType != null),
         assert(hitTestBehavior != null),
-        assert(creationParams == null || creationParamsCodec != null);
+        assert(creationParams == null || creationParamsCodec != null),
+        assert(clipBehavior != null);
 
   final String viewType;
   final PlatformViewCreatedCallback? onPlatformViewCreated;
@@ -178,7 +179,8 @@ class _TizenPlatformView extends LeafRenderObjectWidget {
     this.clipBehavior = Clip.hardEdge,
   })  : assert(controller != null),
         assert(hitTestBehavior != null),
-        assert(gestureRecognizers != null);
+        assert(gestureRecognizers != null),
+        assert(clipBehavior != null);
 
   final TextureTizenViewController controller;
   final PlatformViewHitTestBehavior hitTestBehavior;
