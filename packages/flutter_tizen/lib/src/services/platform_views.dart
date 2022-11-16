@@ -192,9 +192,9 @@ abstract class TizenViewController extends PlatformViewController {
   }
 }
 
-/// Controls a Tizen view that is composed using a GL texture.
+/// Controls a Tizen view that is rendered as a texture.
 ///
-/// This controller is created from the [PlatformViewsServiceTizen.initTizenView] factory,
+/// This controller is typically created with [PlatformViewsServiceTizen.initTizenView].
 ///
 /// Source: [TextureAndroidViewController] in flutter/src/services/platform_views.dart
 class TextureTizenViewController extends TizenViewController {
