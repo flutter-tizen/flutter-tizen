@@ -8,7 +8,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
 
-/// Source: [_AndroidViewState] flutter/lib/src/services/platform_views.dart
+/// Source: [_AndroidViewState] in flutter/src/services/platform_views.dart
 enum _TizenViewState {
   waitingForSize,
   creating,
@@ -18,7 +18,7 @@ enum _TizenViewState {
 
 /// Controls a Tizen view that is composed using a GL texture.
 //
-/// Source: [AndroidViewController] flutter/lib/src/services/platform_views.dart
+/// Source: [AndroidViewController] in flutter/src/services/platform_views.dart
 abstract class TizenViewController extends PlatformViewController {
   TizenViewController._({
     required this.viewId,
@@ -196,7 +196,7 @@ abstract class TizenViewController extends PlatformViewController {
 ///
 /// This controller is created from the [PlatformViewsServiceTizen.initTizenView] factory,
 ///
-/// Source: [TextureAndroidViewController] flutter/lib/src/services/platform_views.dart
+/// Source: [TextureAndroidViewController] in flutter/src/services/platform_views.dart
 class TextureTizenViewController extends TizenViewController {
   TextureTizenViewController._({
     required super.viewId,
@@ -299,7 +299,7 @@ class TextureTizenViewController extends TizenViewController {
 
 /// Provides access to the platform views service on Tizen.
 ///
-/// Source: [PlatformViewsService] flutter/lib/src/services/platform_views.dart
+/// Source: [PlatformViewsService] in flutter/src/services/platform_views.dart
 class PlatformViewsServiceTizen {
   PlatformViewsServiceTizen._() {
     SystemChannels.platform_views.setMethodCallHandler(_onMethodCall);

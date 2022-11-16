@@ -10,7 +10,7 @@ import 'package:flutter/rendering.dart';
 
 import '../services/platform_views.dart';
 
-/// Source: [_PlatformViewState] flutter/packages/flutter/lib/src/rendering/platform_view.dart
+/// Source: [_PlatformViewState] in flutter/src/rendering/platform_view.dart
 enum _PlatformViewState {
   uninitialized,
   resizing,
@@ -19,7 +19,7 @@ enum _PlatformViewState {
 
 /// A render object for a Tizen view.
 ///
-/// Source: [RenderAndroidView] flutter/packages/flutter/lib/src/rendering/platform_view.dart
+/// Source: [RenderAndroidView] in flutter/src/rendering/platform_view.dart
 class RenderTizenView extends PlatformViewRenderBox {
   RenderTizenView({
     required TextureTizenViewController viewController,

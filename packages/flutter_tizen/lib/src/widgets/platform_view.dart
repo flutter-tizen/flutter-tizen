@@ -15,7 +15,7 @@ import '../services/platform_views.dart';
 
 /// Embeds a Tizen view in the Widget hierarchy.
 //
-/// Source: [AndroidView] in flutter/lib/src/widgets/platform_view.dart
+/// Source: [AndroidView] in flutter/src/widgets/platform_view.dart
 class TizenView extends StatefulWidget {
   const TizenView({
     super.key,
@@ -46,7 +46,7 @@ class TizenView extends StatefulWidget {
 
 /// A state object for a Tizen view.
 ///
-/// Source: [_AndroidViewState] in flutter/lib/src/widgets/platform_view.dart
+/// Source: [_AndroidViewState] in flutter/src/widgets/platform_view.dart
 class _TizenViewState extends State<TizenView> {
   int? _id;
   late TextureTizenViewController _controller;
@@ -169,7 +169,7 @@ class _TizenViewState extends State<TizenView> {
 
 /// A render object widget for a Tizen view.
 ///
-/// Source: [_AndroidPlatformView] in flutter/lib/src/widgets/platform_view.dart
+/// Source: [_AndroidPlatformView] in flutter/src/widgets/platform_view.dart
 class _TizenPlatformView extends LeafRenderObjectWidget {
   const _TizenPlatformView({
     required this.controller,
