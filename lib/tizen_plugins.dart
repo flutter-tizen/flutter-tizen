@@ -276,9 +276,12 @@ const List<String> _kKnownPlugins = <String>[
   'camera',
   'connectivity_plus',
   'device_info_plus',
+  'flutter_app_badger',
+  'flutter_secure_storage',
   'flutter_tts',
   'geolocator',
   'google_maps_flutter',
+  'google_sign_in',
   'image_picker',
   'integration_test',
   'network_info_plus',
@@ -286,13 +289,10 @@ const List<String> _kKnownPlugins = <String>[
   'path_provider',
   'permission_handler',
   'sensors_plus',
-  'share_plus',
   'shared_preferences',
   'sqflite',
   'url_launcher',
-  'video_player',
   'wakelock',
-  'webview_flutter',
 ];
 
 /// This function is expected to be called whenever
