@@ -23,7 +23,7 @@ enum class FlutterRendererType {
 };
 
 enum class FlutterExternalOutputType {
-  // No use external output.
+  // No external output.
   kNone,
   // Display to the HDMI external output.
   kHDMI,

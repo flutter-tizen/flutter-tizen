@@ -27,7 +27,7 @@ namespace Tizen.Flutter.Embedding
     public enum FlutterExternalOutputType
     {
         /// <summary>
-        /// No use external output.
+        /// No external output.
         /// </summary>
         None = 0,
         /// <summary>
@@ -117,6 +117,7 @@ namespace Tizen.Flutter.Embedding
         /// The external output type of the engine. Defaults to None.
         /// </summary>
         protected FlutterExternalOutputType ExternalOutputType { get; set; } = FlutterExternalOutputType.None;
+
         public override void Run(string[] args)
         {
             // Log any unhandled exception.
