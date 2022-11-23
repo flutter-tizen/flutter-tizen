@@ -44,8 +44,8 @@ jobs:
           path: flutter-tizen
       - name: Install Tizen Studio
         run: |
-          sudo apt install -y pciutils zip libncurses5 python libpython2.7 make gettext
-          curl http://download.tizen.org/sdk/Installer/tizen-studio_4.6/web-cli_Tizen_Studio_4.6_ubuntu-64.bin -o install.bin
+          sudo apt install -y libncurses5 python2.7 libpython2.7 gettext
+          curl http://download.tizen.org/sdk/Installer/tizen-studio_5.0/web-cli_Tizen_Studio_5.0_ubuntu-64.bin -o install.bin
           chmod a+x install.bin
           ./install.bin --accept-license $HOME/tizen-studio
           rm install.bin
