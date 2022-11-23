@@ -120,7 +120,7 @@ class FlutterApp : public flutter::PluginRegistry {
   // Defaults to kEGL. If the profile is wearable, defaults to kEvasGL.
   FlutterRendererType renderer_type_ = FlutterRendererType::kEGL;
 
-  // The external output type of the engine.
+  // The external output type of the window.
   //
   // Defaults to kNone.
   FlutterExternalOutputType external_output_type_ =

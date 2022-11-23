@@ -114,7 +114,7 @@ namespace Tizen.Flutter.Embedding
         protected FlutterRendererType RendererType { get; set; } = FlutterRendererType.EGL;
 
         /// <summary>
-        /// The external output type of the engine. Defaults to None.
+        /// The external output type of the window. Defaults to None.
         /// </summary>
         protected FlutterExternalOutputType ExternalOutputType { get; set; } = FlutterExternalOutputType.None;
 
