@@ -18,10 +18,9 @@
 // Displays a Flutter screen in a Tizen application.
 class ElmFlutterView {
  public:
-  explicit ElmFlutterView(Evas_Object *parent) : parent_(parent) {}
-
-  explicit ElmFlutterView(Evas_Object *parent, int32_t initial_width,
-                          int32_t initial_height)
+  // Creates an |ElmFlutterView| with the given arguments.
+  explicit ElmFlutterView(Evas_Object *parent, int32_t initial_width = 0,
+                          int32_t initial_height = 0)
       : parent_(parent),
         initial_width_(initial_width),
         initial_height_(initial_height) {}

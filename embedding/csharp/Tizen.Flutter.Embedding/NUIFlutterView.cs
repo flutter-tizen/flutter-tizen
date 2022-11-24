@@ -67,10 +67,10 @@ namespace Tizen.Flutter.Embedding
 
             var nativeImageQueue =
                 new NativeImageQueue((uint)size.Width, (uint)size.Height, NativeImageQueue.ColorFormat.RGBA8888);
-            var nativeImageQueueRef = GetFieldValue<HandleRef>(nativeImageQueue, typeof(Tizen.NUI.Disposable), "swigCPtr");
+            var nativeImageQueueRef = GetFieldValue<HandleRef>(nativeImageQueue, typeof(Disposable), "swigCPtr");
             SetImage(nativeImageQueue.GenerateUrl().ToString());
 
-            var imageViewRef = GetFieldValue<HandleRef>(this, typeof(Tizen.NUI.BaseHandle), "swigCPtr");
+            var imageViewRef = GetFieldValue<HandleRef>(this, typeof(BaseHandle), "swigCPtr");
 
             var viewProperties = new FlutterDesktopViewProperties
             {

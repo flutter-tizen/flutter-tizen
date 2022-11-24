@@ -83,6 +83,9 @@ namespace Tizen.Flutter.Embedding
             }
         }
 
+        /// <summary>
+        /// Writes a value.
+        /// </summary>
         protected internal void WriteValue(BinaryWriter writer, object value)
         {
             if (value == null)
@@ -195,6 +198,9 @@ namespace Tizen.Flutter.Embedding
             }
         }
 
+        /// <summary>
+        /// Reads a value.
+        /// </summary>
         protected internal object ReadValue(BinaryReader reader)
         {
             if (!reader.BaseStream.HasRemaining())

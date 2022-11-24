@@ -11,10 +11,16 @@ namespace Tizen.Flutter.Embedding
     /// </summary>
     public class MissingPluginException : Exception
     {
+        /// <summary>
+        /// Creates a <see cref="MissingPluginException"/>.
+        /// </summary>
         public MissingPluginException() : base()
         {
         }
 
+        /// <summary>
+        /// Creates a <see cref="MissingPluginException"/> with a specified error message.
+        /// </summary>
         public MissingPluginException(string message) : base(message)
         {
         }

@@ -6,7 +6,7 @@ using System.IO;
 
 namespace Tizen.Flutter.Embedding.Common
 {
-    public static class StreamExtensions
+    internal static class StreamExtensions
     {
         public static bool HasRemaining(this Stream stream)
         {

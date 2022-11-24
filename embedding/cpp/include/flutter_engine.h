@@ -18,10 +18,13 @@ class FlutterEngine : public flutter::PluginRegistry {
  public:
   virtual ~FlutterEngine();
 
+  // Creates a |FlutterEngine| with an optional entrypoint name and entrypoint
+  // arguments.
   static std::unique_ptr<FlutterEngine> Create(
       const std::string& dart_entrypoint = "",
       const std::vector<std::string>& dart_entrypoint_args = {});
 
+  // Creates a FlutterEngine with the given arguments.
   static std::unique_ptr<FlutterEngine> Create(
       const std::string& assets_path, const std::string& icu_data_path,
       const std::string& aot_library_path,

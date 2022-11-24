@@ -15,11 +15,17 @@ namespace Tizen.Flutter.Embedding
     /// </summary>
     public class FlutterEngine : IPluginRegistry
     {
+        /// <summary>
+        /// Creates a <see cref="FlutterEngine"/> with an optional entrypoint name and entrypoint arguments.
+        /// </summary>
         public FlutterEngine(string dartEntrypoint = "", List<string> dartEntrypointArgs = null)
             : this("../res/flutter_assets", "../res/icudtl.dat", "../lib/libapp.so", dartEntrypoint, dartEntrypointArgs)
         {
         }
 
+        /// <summary>
+        /// Creates a <see cref="FlutterEngine"/> with the given arguments.
+        /// </summary>
         public FlutterEngine(
             string assetsPath, string icuDataPath, string aotLibraryPath, string dartEntrypoint = "",
             List<string> dartEntrypointArgs = null)
@@ -139,6 +145,7 @@ namespace Tizen.Flutter.Embedding
             }
         }
 
+        /// <InheritDoc/>
         public FlutterDesktopPluginRegistrar GetRegistrarForPlugin(string pluginName)
         {
             if (IsValid)
@@ -148,6 +155,9 @@ namespace Tizen.Flutter.Embedding
             return new FlutterDesktopPluginRegistrar();
         }
 
+        /// <summary>
+        /// Returns the messenger associated with the engine.
+        /// </summary>
         public FlutterDesktopMessenger GetMessenger()
         {
             if (IsValid)

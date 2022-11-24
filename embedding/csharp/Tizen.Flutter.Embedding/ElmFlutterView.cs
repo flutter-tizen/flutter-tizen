@@ -14,11 +14,13 @@ namespace Tizen.Flutter.Embedding
     /// </summary>
     class EvasObjectImpl : EvasObject
     {
+        /// <InheritDoc/>
         public EvasObjectImpl(EvasObject parent, IntPtr handle) : base(parent)
         {
             Handle = handle;
         }
 
+        /// <InheritDoc/>
         protected override IntPtr CreateHandle(EvasObject parent)
         {
             return Handle;
@@ -50,11 +52,10 @@ namespace Tizen.Flutter.Embedding
         /// </summary>
         private FlutterDesktopView _flutterView;
 
-        public ElmFlutterView(EvasObject parent) : this(parent, 0, 0)
-        {
-        }
-
-        public ElmFlutterView(EvasObject parent, int initialWidth, int initialHeight)
+        /// <summary>
+        /// Creates an <see cref="ElmFlutterView"/> with the given arguments.
+        /// </summary>
+        public ElmFlutterView(EvasObject parent, int initialWidth = 0, int initialHeight = 0)
         {
             _parent = parent;
             _initialWidth = initialWidth;
