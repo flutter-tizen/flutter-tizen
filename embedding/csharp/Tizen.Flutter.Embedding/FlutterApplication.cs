@@ -24,6 +24,18 @@ namespace Tizen.Flutter.Embedding
         EGL,
     }
 
+    public enum FlutterExternalOutputType
+    {
+        /// <summary>
+        /// No external output.
+        /// </summary>
+        None = 0,
+        /// <summary>
+        /// Display to the HDMI external output.
+        /// </summary>
+        HDMI,
+    }
+
     /// <summary>
     /// The app base class for headed Flutter execution.
     /// </summary>
@@ -101,6 +113,11 @@ namespace Tizen.Flutter.Embedding
         /// </summary>
         protected FlutterRendererType RendererType { get; set; } = FlutterRendererType.EGL;
 
+        /// <summary>
+        /// The external output type of the window. Defaults to None.
+        /// </summary>
+        protected FlutterExternalOutputType ExternalOutputType { get; set; } = FlutterExternalOutputType.None;
+
         public override void Run(string[] args)
         {
             // Log any unhandled exception.
@@ -138,6 +155,11 @@ namespace Tizen.Flutter.Embedding
                 throw new Exception("FlutterRendererType.kEGL is not supported by this profile.");
             }
 #endif
+            if (RendererType == FlutterRendererType.EGL && ExternalOutputType != FlutterExternalOutputType.None)
+            {
+                throw new Exception("External output is not supported by FlutterRendererType::kEGL type renderer.");
+            }
+
             var windowProperties = new FlutterDesktopWindowProperties
             {
                 x = WindowOffsetX,
@@ -148,6 +170,7 @@ namespace Tizen.Flutter.Embedding
                 focusable = IsWindowFocusable,
                 top_level = IsTopLevel,
                 renderer_type = (FlutterDesktopRendererType)RendererType,
+                external_output_type = (FlutterDesktopExternalOutputType)ExternalOutputType,
             };
 
             View = FlutterDesktopViewCreateFromNewWindow(ref windowProperties, Engine.Engine);

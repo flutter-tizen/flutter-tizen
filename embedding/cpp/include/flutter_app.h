@@ -22,6 +22,13 @@ enum class FlutterRendererType {
   kEGL,
 };
 
+enum class FlutterExternalOutputType {
+  // No external output.
+  kNone,
+  // Display to the HDMI external output.
+  kHDMI,
+};
+
 // The app base class for headed Flutter execution.
 class FlutterApp : public flutter::PluginRegistry {
  public:
@@ -112,6 +119,12 @@ class FlutterApp : public flutter::PluginRegistry {
   //
   // Defaults to kEGL. If the profile is wearable, defaults to kEvasGL.
   FlutterRendererType renderer_type_ = FlutterRendererType::kEGL;
+
+  // The external output type of the window.
+  //
+  // Defaults to kNone.
+  FlutterExternalOutputType external_output_type_ =
+      FlutterExternalOutputType::kNone;
 
  private:
   // The optional entrypoint in the Dart project.

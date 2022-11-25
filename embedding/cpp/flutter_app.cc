@@ -25,6 +25,14 @@ bool FlutterApp::OnCreate() {
   }
 #endif
 
+  if (renderer_type_ == FlutterRendererType::kEGL &&
+      external_output_type_ != FlutterExternalOutputType::kNone) {
+    TizenLog::Error(
+        "External output is not supported by FlutterRendererType::kEGL type "
+        "renderer.");
+    return false;
+  }
+
   FlutterDesktopWindowProperties window_prop = {};
   window_prop.x = window_offset_x_;
   window_prop.y = window_offset_y_;
@@ -35,6 +43,8 @@ bool FlutterApp::OnCreate() {
   window_prop.top_level = is_top_level_;
   window_prop.renderer_type =
       static_cast<FlutterDesktopRendererType>(renderer_type_);
+  window_prop.external_output_type =
+      static_cast<FlutterDesktopExternalOutputType>(external_output_type_);
 
   view_ = FlutterDesktopViewCreateFromNewWindow(window_prop,
                                                 engine_->RelinquishEngine());
