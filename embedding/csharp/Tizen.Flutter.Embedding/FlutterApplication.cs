@@ -24,6 +24,9 @@ namespace Tizen.Flutter.Embedding
         EGL,
     }
 
+    /// <summary>
+    /// Enumeration for the external output type of the window.
+    /// </summary>
     public enum FlutterExternalOutputType
     {
         /// <summary>
