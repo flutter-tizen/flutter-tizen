@@ -53,9 +53,16 @@ namespace Tizen.Flutter.Embedding
         private FlutterDesktopView _flutterView;
 
         /// <summary>
-        /// Creates an <see cref="ElmFlutterView"/> with the given arguments.
+        /// Creates an <see cref="ElmFlutterView"/>.
         /// </summary>
-        public ElmFlutterView(EvasObject parent, int initialWidth = 0, int initialHeight = 0)
+        public ElmFlutterView(EvasObject parent) : this(parent, 0, 0)
+        {
+        }
+
+        /// <summary>
+        /// Creates an <see cref="ElmFlutterView"/> with initial width and height.
+        /// </summary>
+        public ElmFlutterView(EvasObject parent, int initialWidth, int initialHeight)
         {
             _parent = parent;
             _initialWidth = initialWidth;
