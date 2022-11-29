@@ -122,7 +122,7 @@ namespace Tizen.Flutter.Embedding
         /// <summary>
         /// Registers a method call handler on this channel.
         /// </summary>
-        /// <param name="handler">An asynchronous callback function to handle the <see cref="MethodCall">.</param>
+        /// <param name="handler">An asynchronous callback function to handle the <see cref="MethodCall"/>.</param>
         public void SetMethodCallHandler(Func<MethodCall, Task<object>> handler)
         {
             if (handler == null)
@@ -154,7 +154,7 @@ namespace Tizen.Flutter.Embedding
         /// <summary>
         /// Registers a method call handler on this channel.
         /// </summary>
-        /// <param name="handler">A callback function to handle the <see cref="MethodCall">.</param>
+        /// <param name="handler">A callback function to handle the <see cref="MethodCall"/>.</param>
         public void SetMethodCallHandler(Func<MethodCall, object> handler)
         {
             if (handler == null)

@@ -13,6 +13,9 @@ namespace Tizen.Flutter.Embedding
     /// </remarks>
     public interface IFlutterPluginBinding
     {
+        /// <summary>
+        /// A binary messenger to communicate with the Flutter engine.
+        /// </summary>
         IBinaryMessenger BinaryMessenger { get; }
     }
 

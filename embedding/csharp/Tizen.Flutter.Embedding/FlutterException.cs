@@ -11,14 +11,23 @@ namespace Tizen.Flutter.Embedding
     /// </summary>
     public class FlutterException : Exception
     {
+        /// <summary>
+        /// Creates a <see cref="FlutterException"/> with the given properties.
+        /// </summary>
         public FlutterException(string code, string message, object details) : base(message)
         {
             Code = code;
             Details = details;
         }
 
+        /// <summary>
+        /// The error code.
+        /// </summary>
         public string Code { get; }
 
+        /// <summary>
+        /// The error details.
+        /// </summary>
         public object Details { get; }
     }
 }

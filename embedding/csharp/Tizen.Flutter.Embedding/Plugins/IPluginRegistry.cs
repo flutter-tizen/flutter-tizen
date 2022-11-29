@@ -4,6 +4,8 @@
 
 namespace Tizen.Flutter.Embedding
 {
+    /// <summary>
+    /// </summary>
     public interface IPluginRegistry
     {
         /// <summary>

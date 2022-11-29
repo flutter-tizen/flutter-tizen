@@ -10,9 +10,9 @@ using System.Text;
 namespace Tizen.Flutter.Embedding
 {
     /// <summary>
-    /// Re-allocates an array of managed strings for unmanaged access.
+    /// Re-allocates a collection of managed strings for unmanaged access.
     /// </summary>
-    public sealed class StringArray : IDisposable
+    internal sealed class StringArray : IDisposable
     {
         private readonly List<GCHandle> _handles = new List<GCHandle>();
 
@@ -39,6 +39,7 @@ namespace Tizen.Flutter.Embedding
         /// </summary>
         public IntPtr Handle => _handles.Count > 0 ? _handles[Length].AddrOfPinnedObject() : IntPtr.Zero;
 
+        /// <InheritDoc/>
         public void Dispose()
         {
             foreach (var handle in _handles)

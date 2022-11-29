@@ -28,6 +28,7 @@ namespace Tizen.Flutter.Embedding
         /// </summary>
         internal FlutterEngine Engine { get; private set; } = null;
 
+        /// <InheritDoc/>
         public override void Run(string[] args)
         {
             // Log any unhandled exception.
@@ -40,6 +41,7 @@ namespace Tizen.Flutter.Embedding
             base.Run(args);
         }
 
+        /// <InheritDoc/>
         public FlutterDesktopPluginRegistrar GetRegistrarForPlugin(string pluginName)
         {
             if (IsRunning)
@@ -49,6 +51,7 @@ namespace Tizen.Flutter.Embedding
             return new FlutterDesktopPluginRegistrar();
         }
 
+        /// <InheritDoc/>
         protected override void OnCreate()
         {
             base.OnCreate();
@@ -65,6 +68,7 @@ namespace Tizen.Flutter.Embedding
             }
         }
 
+        /// <InheritDoc/>
         protected override void OnTerminate()
         {
             base.OnTerminate();
@@ -77,6 +81,7 @@ namespace Tizen.Flutter.Embedding
             Engine = null;
         }
 
+        /// <InheritDoc/>
         protected override void OnAppControlReceived(AppControlReceivedEventArgs e)
         {
             Debug.Assert(IsRunning);
@@ -84,6 +89,7 @@ namespace Tizen.Flutter.Embedding
             Engine.NotifyAppControl(e.ReceivedAppControl);
         }
 
+        /// <InheritDoc/>
         protected override void OnLowMemory(LowMemoryEventArgs e)
         {
             base.OnLowMemory(e);
@@ -93,6 +99,7 @@ namespace Tizen.Flutter.Embedding
             Engine.NotifyLowMemoryWarning();
         }
 
+        /// <InheritDoc/>
         protected override void OnLocaleChanged(LocaleChangedEventArgs e)
         {
             base.OnLocaleChanged(e);
@@ -102,6 +109,7 @@ namespace Tizen.Flutter.Embedding
             Engine.NotifyLocaleChange();
         }
 
+        /// <InheritDoc/>
         protected override void OnRegionFormatChanged(RegionFormatChangedEventArgs e)
         {
             base.OnRegionFormatChanged(e);

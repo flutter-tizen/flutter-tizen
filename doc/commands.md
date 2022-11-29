@@ -242,7 +242,6 @@ The following commands from the [Flutter CLI](https://flutter.dev/docs/reference
 The following commands from the Flutter CLI are not supported by flutter-tizen.
 
 - `assemble`
-- `attach`
 - `bash-completion`
 - `channel`
 - `custom-devices`
