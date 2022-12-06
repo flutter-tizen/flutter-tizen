@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @dart = 2.8
-
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -20,8 +18,8 @@ import '../src/common.dart';
 import '../src/context.dart';
 
 void main() {
-  BufferLogger logger;
-  Device device;
+  late BufferLogger logger;
+  late Device device;
 
   setUp(() {
     logger = BufferLogger.test();
@@ -114,10 +112,10 @@ class _FakeNoResponseSocket extends _FakeSocket {
 
   @override
   StreamSubscription<Uint8List> listen(
-    void Function(Uint8List data) onData, {
-    Function onError,
-    void Function() onDone,
-    bool cancelOnError,
+    void Function(Uint8List event)? onData, {
+    Function? onError,
+    void Function()? onDone,
+    bool? cancelOnError,
   }) {
     const Stream<Uint8List> stream = Stream<Uint8List>.empty();
     return stream.listen(
@@ -136,10 +134,10 @@ class _FakeWorkingSocket extends _FakeSocket {
 
   @override
   StreamSubscription<Uint8List> listen(
-    void Function(Uint8List data) onData, {
-    Function onError,
-    void Function() onDone,
-    bool cancelOnError,
+    void Function(Uint8List event)? onData, {
+    Function? onError,
+    void Function()? onDone,
+    bool? cancelOnError,
   }) {
     const Utf8Encoder encoder = Utf8Encoder();
     final Stream<Uint8List> stream = Stream<Uint8List>.fromIterable(<Uint8List>[

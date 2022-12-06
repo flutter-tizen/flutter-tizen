@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @dart = 2.8
-
 import 'package:file/memory.dart';
 import 'package:flutter_tizen/tizen_sdk.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
@@ -15,11 +13,11 @@ import '../src/context.dart';
 import '../src/fake_process_manager.dart';
 
 void main() {
-  FileSystem fileSystem;
-  BufferLogger logger;
-  FakeProcessManager processManager;
-  Directory projectDir;
-  TizenSdk tizenSdk;
+  late FileSystem fileSystem;
+  late BufferLogger logger;
+  late FakeProcessManager processManager;
+  late Directory projectDir;
+  late TizenSdk tizenSdk;
 
   setUp(() {
     fileSystem = MemoryFileSystem.test();
@@ -35,8 +33,7 @@ void main() {
     );
   });
 
-  testUsingContext('TizenSdk.locateSdk scans the default path on macOS',
-      () async {
+  testUsingContext('TizenSdk.locateSdk scans the default path on macOS', () {
     expect(TizenSdk.locateSdk(), isNotNull);
   }, overrides: <Type, Generator>{
     FileSystem: () => fileSystem,
@@ -47,8 +44,7 @@ void main() {
         ),
   });
 
-  testUsingContext('TizenSdk.locateSdk scans the default path on Windows',
-      () async {
+  testUsingContext('TizenSdk.locateSdk scans the default path on Windows', () {
     expect(TizenSdk.locateSdk(), isNotNull);
   }, overrides: <Type, Generator>{
     FileSystem: () => fileSystem,
@@ -59,7 +55,7 @@ void main() {
         ),
   });
 
-  testWithoutContext('TizenSdk.sdkVersion can parse version file', () async {
+  testWithoutContext('TizenSdk.sdkVersion can parse version file', () {
     expect(tizenSdk.sdkVersion, isNull);
 
     tizenSdk.directory.childFile('sdk.version')
@@ -70,8 +66,7 @@ void main() {
   });
 
   testWithoutContext(
-      'TizenSdk.securityProfiles returns null if manifest file is missing',
-      () async {
+      'TizenSdk.securityProfiles returns null if manifest file is missing', () {
     final Directory dataDir = fileSystem.systemTempDirectory
         .createTempSync('tizen-studio-data')
       ..createSync(recursive: true);
@@ -84,10 +79,11 @@ void main() {
 
   testUsingContext(
       'TizenSdk.getPathVariable prepends msys2 directory to PATH on Windows',
-      () async {
-    final TizenSdk tizenSdk = TizenSdk.locateSdk();
+      () {
+    final TizenSdk? tizenSdk = TizenSdk.locateSdk();
     expect(tizenSdk, isNotNull);
-    expect(tizenSdk.getPathVariable(), equals('/tools/msys2/usr/bin;/my/path'));
+    expect(
+        tizenSdk!.getPathVariable(), equals('/tools/msys2/usr/bin;/my/path'));
   }, overrides: <Type, Generator>{
     FileSystem: () => fileSystem,
     ProcessManager: () => FakeProcessManager.any(),
@@ -200,7 +196,6 @@ void main() {
 
     await tizenSdk.package(
       projectDir.path,
-      type: 'tpk',
       reference: '/path/to/reference/project',
       sign: 'test_profile',
     );
@@ -209,8 +204,7 @@ void main() {
   });
 
   testWithoutContext(
-      'TizenSdk.getFlutterRootstrap fails if IoT Headed SDK is missing',
-      () async {
+      'TizenSdk.getFlutterRootstrap fails if IoT Headed SDK is missing', () {
     expect(
       () => tizenSdk.getFlutterRootstrap(
         profile: 'common',
@@ -226,7 +220,7 @@ void main() {
 
   testWithoutContext(
       'TizenSdk.getFlutterRootstrap falls back to Wearable SDK if TV SDK is missing',
-      () async {
+      () {
     tizenSdk.platformsDirectory
         .childDirectory('tizen-4.0')
         .childDirectory('wearable')
@@ -256,13 +250,14 @@ void main() {
 </profiles>
 ''');
 
-    final SecurityProfiles profiles = SecurityProfiles.parseFromXml(xmlFile);
-    expect(profiles.profiles, isNotEmpty);
+    final SecurityProfiles? profiles = SecurityProfiles.parseFromXml(xmlFile);
+    expect(profiles, isNotNull);
+    expect(profiles!.profiles, isNotEmpty);
     expect(profiles.active, equals('test_profile'));
   });
 
   testUsingContext('SecurityProfiles.parseFromXml fails on corrupted input',
-      () async {
+      () {
     final File xmlFile = fileSystem.file('profiles.xml')
       ..createSync(recursive: true)
       ..writeAsStringSync('INVALID_XML');
@@ -273,7 +268,7 @@ void main() {
     Logger: () => logger,
   });
 
-  testWithoutContext('parseIniFile can parse properties from file', () async {
+  testWithoutContext('parseIniFile can parse properties from file', () {
     final File file = fileSystem.file('test_file.ini');
     file.writeAsStringSync('''
 AAA=aaa

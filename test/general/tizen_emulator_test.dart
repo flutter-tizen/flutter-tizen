@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @dart = 2.8
-
 import 'package:file/memory.dart';
 import 'package:flutter_tizen/tizen_doctor.dart';
 import 'package:flutter_tizen/tizen_emulator.dart';
@@ -18,9 +16,9 @@ import '../src/fake_tizen_sdk.dart';
 import '../src/fakes.dart';
 
 void main() {
-  FileSystem fileSystem;
-  FakeProcessManager processManager;
-  FakeTizenSdk tizenSdk;
+  late FileSystem fileSystem;
+  late FakeProcessManager processManager;
+  late FakeTizenSdk tizenSdk;
 
   setUp(() {
     fileSystem = MemoryFileSystem.test();
@@ -29,7 +27,7 @@ void main() {
   });
 
   group('TizenEmulatorManager', () {
-    TizenEmulatorManager manager;
+    late TizenEmulatorManager manager;
 
     setUp(() {
       manager = TizenEmulatorManager(
@@ -173,7 +171,7 @@ entry_3
       expect(parsed.length, equals(3));
       expect(parsed.keys.first, equals('entry_1'));
 
-      final Map<String, String> first = parsed['entry_1'];
+      final Map<String, String> first = parsed['entry_1']!;
       expect(first.length, equals(2));
       expect(first['key_1'], equals('value_1'));
     });

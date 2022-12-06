@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @dart = 2.8
-
 import 'package:file/memory.dart';
 import 'package:flutter_tizen/tizen_cache.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
@@ -17,8 +15,8 @@ import '../src/context.dart';
 import '../src/fakes.dart';
 
 void main() {
-  FileSystem fileSystem;
-  Cache cache;
+  late FileSystem fileSystem;
+  late Cache cache;
 
   setUpAll(() {
     Cache.flutterRoot = 'flutter';
@@ -122,7 +120,7 @@ void main() {
 }
 
 class _FakeArtifactUpdater extends Fake implements ArtifactUpdater {
-  void Function(String, Uri, Directory) onDownload;
+  void Function(String, Uri, Directory)? onDownload;
 
   @override
   Future<void> downloadZipArchive(

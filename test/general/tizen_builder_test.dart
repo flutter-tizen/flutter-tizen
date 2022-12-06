@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @dart = 2.8
-
 import 'package:file/memory.dart';
 import 'package:file_testing/file_testing.dart';
 import 'package:flutter_tizen/tizen_build_info.dart';
@@ -18,7 +16,6 @@ import 'package:flutter_tools/src/build_system/build_system.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/project.dart';
 import 'package:flutter_tools/src/reporting/reporting.dart';
-import 'package:meta/meta.dart';
 
 import '../src/common.dart';
 import '../src/context.dart';
@@ -33,11 +30,11 @@ const String _kTizenManifestContents = '''
 ''';
 
 void main() {
-  FileSystem fileSystem;
-  BufferLogger logger;
-  Platform platform;
-  FlutterProject project;
-  TizenBuildInfo tizenBuildInfo;
+  late FileSystem fileSystem;
+  late BufferLogger logger;
+  late Platform platform;
+  late FlutterProject project;
+  late TizenBuildInfo tizenBuildInfo;
 
   setUpAll(() {
     Cache.disableLocking();
@@ -220,21 +217,17 @@ void main() {
 
 class _FakeSizeAnalyzer extends SizeAnalyzer {
   _FakeSizeAnalyzer({
-    @required FileSystem fileSystem,
-    @required Logger logger,
-  }) : super(
-          fileSystem: fileSystem,
-          logger: logger,
-          flutterUsage: TestUsage(),
-        );
+    required super.fileSystem,
+    required super.logger,
+  }) : super(flutterUsage: TestUsage());
 
   @override
-  Future<Map<String, Object>> analyzeAotSnapshot({
-    @required Directory outputDirectory,
-    @required File aotSnapshot,
-    @required File precompilerTrace,
-    @required String type,
-    String excludePath,
+  Future<Map<String, Object?>> analyzeAotSnapshot({
+    required Directory outputDirectory,
+    required File aotSnapshot,
+    required File precompilerTrace,
+    required String type,
+    String? excludePath,
   }) async {
     return <String, Object>{};
   }

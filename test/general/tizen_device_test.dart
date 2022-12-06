@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @dart = 2.8
-
 import 'package:file/memory.dart';
 import 'package:flutter_tizen/tizen_device.dart';
 import 'package:flutter_tizen/tizen_tpk.dart';
@@ -22,8 +20,8 @@ import '../src/fake_tizen_sdk.dart';
 const String _kDeviceId = 'TestDeviceId';
 
 TizenDevice _createTizenDevice({
-  ProcessManager processManager,
-  FileSystem fileSystem,
+  ProcessManager? processManager,
+  FileSystem? fileSystem,
 }) {
   fileSystem ??= MemoryFileSystem.test();
   return TizenDevice(
@@ -41,8 +39,8 @@ List<String> _sdbCommand(List<String> args) {
 }
 
 void main() {
-  FileSystem fileSystem;
-  FakeProcessManager processManager;
+  late FileSystem fileSystem;
+  late FakeProcessManager processManager;
 
   setUp(() {
     processManager = FakeProcessManager.empty();
@@ -100,7 +98,7 @@ void main() {
       tpk,
       prebuiltApplication: true,
       debuggingOptions: DebuggingOptions.enabled(BuildInfo.debug),
-      platformArgs: <String, dynamic>{},
+      platformArgs: <String, Object>{},
     );
 
     expect(launchResult.started, isTrue);
@@ -141,7 +139,7 @@ void main() {
   });
 
   testWithoutContext(
-      'TizenDevice.isSupported returns true for supported devices', () async {
+      'TizenDevice.isSupported returns true for supported devices', () {
     final TizenDevice wearableDevice = _createTizenDevice(
       processManager: processManager,
       fileSystem: fileSystem,
@@ -176,8 +174,7 @@ void main() {
   });
 
   testWithoutContext(
-      'TizenDevice.isSupported returns false for unsupported devices',
-      () async {
+      'TizenDevice.isSupported returns false for unsupported devices', () {
     final TizenDevice mobileDevice = _createTizenDevice(
       processManager: processManager,
       fileSystem: fileSystem,
@@ -222,5 +219,5 @@ class _FakeTizenManifest extends Fake implements TizenManifest {
   String applicationId = 'TestApplication';
 
   @override
-  String apiVersion;
+  String? apiVersion;
 }

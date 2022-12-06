@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @dart = 2.8
-
 import 'package:file/memory.dart';
 import 'package:file_testing/file_testing.dart';
 import 'package:flutter_tizen/build_targets/application.dart';
@@ -18,10 +16,10 @@ import '../../src/common.dart';
 import '../../src/context.dart';
 
 void main() {
-  FileSystem fileSystem;
-  FakeProcessManager processManager;
-  Logger logger;
-  Artifacts artifacts;
+  late FileSystem fileSystem;
+  late FakeProcessManager processManager;
+  late Logger logger;
+  late Artifacts artifacts;
 
   setUp(() {
     fileSystem = MemoryFileSystem.test();
