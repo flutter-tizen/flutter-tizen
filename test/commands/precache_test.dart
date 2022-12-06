@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @dart = 2.8
-
 import 'package:args/command_runner.dart';
 import 'package:flutter_tizen/commands/precache.dart';
 import 'package:flutter_tizen/tizen_cache.dart';
@@ -17,8 +15,8 @@ import '../src/fakes.dart';
 import '../src/test_flutter_command_runner.dart';
 
 void main() {
-  _FakeCache cache;
-  TizenPrecacheCommand command;
+  late _FakeCache cache;
+  late TizenPrecacheCommand command;
 
   setUp(() {
     cache = _FakeCache();
@@ -70,14 +68,14 @@ void main() {
 
 class _FakeCache extends Fake implements Cache {
   Set<DevelopmentArtifact> artifacts = <DevelopmentArtifact>{};
-  String engineStamp;
-  String embedderStamp;
+  String? engineStamp;
+  String? embedderStamp;
 
   @override
   bool includeAllPlatforms = false;
 
   @override
-  Set<String> platformOverrideArtifacts = <String>{};
+  Set<String>? platformOverrideArtifacts = <String>{};
 
   @override
   Future<void> lock() async {}
@@ -86,7 +84,7 @@ class _FakeCache extends Fake implements Cache {
   void releaseLock() {}
 
   @override
-  String getStampFor(String artifactName) {
+  String? getStampFor(String artifactName) {
     if (artifactName == kTizenEngineStampName) {
       return engineStamp;
     } else if (artifactName == kTizenEmbedderStampName) {

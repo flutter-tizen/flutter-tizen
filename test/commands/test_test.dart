@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @dart = 2.8
-
 import 'dart:async';
 
 import 'package:args/command_runner.dart';
@@ -11,6 +9,9 @@ import 'package:file/memory.dart';
 import 'package:flutter_tizen/commands/test.dart';
 import 'package:flutter_tizen/tizen_cache.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
+import 'package:flutter_tools/src/base/logger.dart';
+import 'package:flutter_tools/src/base/terminal.dart';
+import 'package:flutter_tools/src/base/user_messages.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/device.dart';
 import 'package:flutter_tools/src/test/test_wrapper.dart';
@@ -20,10 +21,10 @@ import '../src/fake_devices.dart';
 import '../src/test_flutter_command_runner.dart';
 
 void main() {
-  FileSystem fileSystem;
-  File pubspecFile;
-  File packageConfigFile;
-  DeviceManager deviceManager;
+  late FileSystem fileSystem;
+  late File pubspecFile;
+  late File packageConfigFile;
+  late DeviceManager deviceManager;
 
   setUpAll(() {
     Cache.disableLocking();
@@ -156,7 +157,12 @@ void main() {
 }
 
 class _FakeDeviceManager extends DeviceManager {
-  _FakeDeviceManager(this._devices);
+  _FakeDeviceManager(this._devices)
+      : super(
+          logger: BufferLogger.test(),
+          terminal: Terminal.test(),
+          userMessages: UserMessages(),
+        );
 
   final List<Device> _devices;
 
@@ -168,7 +174,7 @@ class _FakeDeviceManager extends DeviceManager {
 }
 
 class _FakeTestWrapper implements TestWrapper {
-  List<String> lastArgs;
+  List<String> lastArgs = <String>[];
 
   @override
   Future<void> main(List<String> args) async {

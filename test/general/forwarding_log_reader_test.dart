@@ -112,7 +112,7 @@ class _FakeNoResponseSocket extends _FakeSocket {
 
   @override
   StreamSubscription<Uint8List> listen(
-    void Function(Uint8List event)? onData, {
+    void Function(Uint8List data)? onData, {
     Function? onError,
     void Function()? onDone,
     bool? cancelOnError,
@@ -134,7 +134,7 @@ class _FakeWorkingSocket extends _FakeSocket {
 
   @override
   StreamSubscription<Uint8List> listen(
-    void Function(Uint8List event)? onData, {
+    void Function(Uint8List data)? onData, {
     Function? onError,
     void Function()? onDone,
     bool? cancelOnError,
