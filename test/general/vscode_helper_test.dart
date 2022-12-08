@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @dart = 2.8
-
 import 'package:file/memory.dart';
 import 'package:file_testing/file_testing.dart';
 import 'package:flutter_tizen/vscode_helper.dart';
@@ -35,15 +33,15 @@ const String _kEmptyLaunchJson = r'''
 }''';
 
 void main() {
-  FileSystem fileSystem;
-  FlutterProject project;
+  late FileSystem fileSystem;
+  late FlutterProject project;
 
   setUp(() {
     fileSystem = MemoryFileSystem.test();
     project = FlutterProject.fromDirectoryTest(fileSystem.currentDirectory);
   });
 
-  testWithoutContext('Can create launch.json file', () async {
+  testWithoutContext('Can create launch.json file', () {
     final File launchJsonFile =
         project.directory.childDirectory('.vscode').childFile('launch.json');
     expect(launchJsonFile, isNot(exists));
@@ -54,7 +52,7 @@ void main() {
     expect(launchJsonFile.readAsStringSync(), equals(_kLaunchJson));
   });
 
-  testWithoutContext('Can update launch.json file', () async {
+  testWithoutContext('Can update launch.json file', () {
     final File launchJsonFile =
         project.directory.childDirectory('.vscode').childFile('launch.json');
     launchJsonFile.createSync(recursive: true);

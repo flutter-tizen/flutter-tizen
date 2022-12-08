@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @dart = 2.8
-
 import 'package:file/memory.dart';
 import 'package:file_testing/file_testing.dart';
 import 'package:flutter_tizen/build_targets/plugins.dart';
@@ -21,13 +19,13 @@ import '../../src/context.dart';
 import '../../src/fake_tizen_sdk.dart';
 
 void main() {
-  FileSystem fileSystem;
-  FakeProcessManager processManager;
-  Logger logger;
-  Artifacts artifacts;
-  Directory pluginDir;
-  Directory projectDir;
-  Cache cache;
+  late FileSystem fileSystem;
+  late FakeProcessManager processManager;
+  late Logger logger;
+  late Artifacts artifacts;
+  late Cache cache;
+  late Directory pluginDir;
+  late Directory projectDir;
 
   setUpAll(() {
     Cache.disableLocking();
@@ -38,6 +36,10 @@ void main() {
     processManager = FakeProcessManager.empty();
     logger = BufferLogger.test();
     artifacts = Artifacts.test();
+    cache = Cache.test(
+      fileSystem: fileSystem,
+      processManager: FakeProcessManager.any(),
+    );
 
     pluginDir = fileSystem.directory('/some_native_plugin');
     pluginDir.childFile('pubspec.yaml')
@@ -92,17 +94,7 @@ dependencies:
 </manifest>
 ''');
 
-    cache = Cache.test(
-      fileSystem: fileSystem,
-      processManager: FakeProcessManager.any(),
-    );
-    final Directory engineArtifactDir = cache.getArtifactDirectory('engine');
-    engineArtifactDir
-        .childDirectory('tizen-common/cpp_client_wrapper')
-        .createSync(recursive: true);
-    engineArtifactDir
-        .childDirectory('tizen-common/public')
-        .createSync(recursive: true);
+    _installFakeEngineArtifacts(cache.getArtifactDirectory('engine'));
   });
 
   testUsingContext('Can build staticLib project', () async {
@@ -223,4 +215,13 @@ dependencies:
     Cache: () => cache,
     TizenSdk: () => FakeTizenSdk(fileSystem),
   });
+}
+
+void _installFakeEngineArtifacts(Directory engineArtifactDir) {
+  for (final String directory in <String>[
+    'tizen-common/cpp_client_wrapper/include',
+    'tizen-common/public',
+  ]) {
+    engineArtifactDir.childDirectory(directory).createSync(recursive: true);
+  }
 }

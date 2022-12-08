@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @dart = 2.8
-
 import 'package:file/memory.dart';
 import 'package:file_testing/file_testing.dart';
 import 'package:flutter_tizen/tizen_project.dart';
@@ -15,8 +13,8 @@ import '../src/common.dart';
 import '../src/context.dart';
 
 void main() {
-  FileSystem fileSystem;
-  TizenProject project;
+  late FileSystem fileSystem;
+  late TizenProject project;
 
   setUp(() {
     fileSystem = MemoryFileSystem.test();
@@ -68,7 +66,7 @@ void main() {
     );
   });
 
-  testUsingContext('Can clean C# project', () async {
+  testUsingContext('Can clean C# project', () {
     project.manifestFile.createSync(recursive: true);
     project.editableDirectory
         .childFile('Runner.csproj')
@@ -86,7 +84,7 @@ void main() {
     expect(objDir, isNot(exists));
   });
 
-  testUsingContext('Can clean C++ project', () async {
+  testUsingContext('Can clean C++ project', () {
     project.manifestFile.createSync(recursive: true);
     expect(project.isDotnet, isFalse);
 
@@ -102,7 +100,7 @@ void main() {
     expect(releaseDir, isNot(exists));
   });
 
-  testUsingContext('Can clean multi app project', () async {
+  testUsingContext('Can clean multi app project', () {
     project.uiAppDirectory.createSync(recursive: true);
     project.uiManifestFile.createSync(recursive: true);
     project.serviceAppDirectory.createSync(recursive: true);

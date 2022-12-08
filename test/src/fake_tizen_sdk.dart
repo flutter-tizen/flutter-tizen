@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @dart = 2.8
-
 import 'dart:io';
 
 import 'package:flutter_tizen/tizen_sdk.dart';
@@ -11,7 +9,6 @@ import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/base/platform.dart';
 import 'package:flutter_tools/src/base/process.dart';
-import 'package:meta/meta.dart';
 import 'package:test/test.dart';
 
 import 'fake_process_manager.dart';
@@ -19,10 +16,10 @@ import 'fake_process_manager.dart';
 class FakeTizenSdk extends TizenSdk {
   FakeTizenSdk(
     this._fileSystem, {
-    Logger logger,
-    Platform platform,
-    ProcessManager processManager,
-    String securityProfile,
+    Logger? logger,
+    Platform? platform,
+    ProcessManager? processManager,
+    String? securityProfile,
   })  : _securityProfile = securityProfile,
         super(
           _fileSystem.directory('/tizen-studio'),
@@ -32,7 +29,7 @@ class FakeTizenSdk extends TizenSdk {
         );
 
   final FileSystem _fileSystem;
-  final String _securityProfile;
+  final String? _securityProfile;
 
   @override
   File get sdb => super.sdb..createSync(recursive: true);
@@ -48,16 +45,17 @@ class FakeTizenSdk extends TizenSdk {
     String workingDirectory, {
     Map<String, Object> build = const <String, Object>{},
     Map<String, Object> method = const <String, Object>{},
-    String output,
+    String? output,
     Map<String, Object> package = const <String, Object>{},
-    String sign,
+    String? sign,
   }) async {
-    final List<String> buildConfigs = method['configs'] as List<String>;
+    final List<String>? buildConfigs = method['configs'] as List<String>?;
+    expect(buildConfigs, isNotNull);
     expect(buildConfigs, isNotEmpty);
 
     final Directory projectDir = _fileSystem.directory(workingDirectory);
     projectDir
-        .childFile('${buildConfigs.first}/app.tpk')
+        .childFile('${buildConfigs!.first}/app.tpk')
         .createSync(recursive: true);
 
     return RunResult(ProcessResult(0, 0, '', ''), <String>['build-app']);
@@ -66,19 +64,19 @@ class FakeTizenSdk extends TizenSdk {
   @override
   Future<RunResult> buildNative(
     String workingDirectory, {
-    @required String configuration,
-    @required String arch,
-    String compiler,
+    required String configuration,
+    required String arch,
+    String? compiler,
     List<String> predefines = const <String>[],
     List<String> extraOptions = const <String>[],
-    String rootstrap,
+    String? rootstrap,
   }) async {
     final Directory projectDir = _fileSystem.directory(workingDirectory);
     final Map<String, String> projectDef =
         parseIniFile(projectDir.childFile('project_def.prop'));
 
-    final String libName = projectDef['APPNAME'];
-    final String libType = projectDef['type'];
+    final String? libName = projectDef['APPNAME'];
+    final String? libType = projectDef['type'];
     expect(libName, isNotNull);
     expect(libType, isNotNull);
 
@@ -97,9 +95,9 @@ class FakeTizenSdk extends TizenSdk {
 
   @override
   Rootstrap getFlutterRootstrap({
-    @required String profile,
-    @required String apiVersion,
-    @required String arch,
+    required String profile,
+    String? apiVersion,
+    required String arch,
   }) {
     return Rootstrap('rootstrap', directory.childDirectory('rootstrap'));
   }

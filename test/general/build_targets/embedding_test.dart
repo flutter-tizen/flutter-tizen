@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @dart = 2.8
-
 import 'package:file/memory.dart';
 import 'package:file_testing/file_testing.dart';
 import 'package:flutter_tizen/build_targets/embedding.dart';
@@ -21,9 +19,9 @@ import '../../src/context.dart';
 import '../../src/fake_tizen_sdk.dart';
 
 void main() {
-  FileSystem fileSystem;
-  FakeProcessManager processManager;
-  Cache cache;
+  late FileSystem fileSystem;
+  late FakeProcessManager processManager;
+  late Cache cache;
 
   setUpAll(() {
     Cache.flutterRoot = 'flutter';

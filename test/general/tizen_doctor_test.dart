@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @dart = 2.8
-
 import 'package:file/memory.dart';
 import 'package:flutter_tizen/tizen_doctor.dart';
 import 'package:flutter_tizen/tizen_sdk.dart';
@@ -19,8 +17,8 @@ import '../src/context.dart';
 import '../src/fakes.dart';
 
 void main() {
-  FileSystem fileSystem;
-  BufferLogger logger;
+  late FileSystem fileSystem;
+  late BufferLogger logger;
 
   setUpAll(() {
     Cache.flutterRoot = 'flutter';
@@ -128,5 +126,5 @@ class _FakeTizenSdk extends TizenSdk {
         );
 
   @override
-  String sdkVersion = '4.0';
+  String? sdkVersion = '4.0';
 }

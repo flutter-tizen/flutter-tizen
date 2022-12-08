@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @dart = 2.8
-
 import 'package:file/memory.dart';
 import 'package:flutter_tizen/tizen_device_discovery.dart';
 import 'package:flutter_tizen/tizen_doctor.dart';
@@ -17,9 +15,9 @@ import '../src/fake_tizen_sdk.dart';
 import '../src/fakes.dart';
 
 void main() {
-  FileSystem fileSystem;
-  FakeProcessManager processManager;
-  TizenDeviceDiscovery discovery;
+  late FileSystem fileSystem;
+  late FakeProcessManager processManager;
+  late TizenDeviceDiscovery discovery;
 
   setUp(() {
     fileSystem = MemoryFileSystem.test();

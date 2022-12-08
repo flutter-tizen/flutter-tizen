@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @dart = 2.8
-
 import 'package:file/memory.dart';
 import 'package:file_testing/file_testing.dart';
 import 'package:flutter_tizen/build_targets/package.dart';
@@ -40,13 +38,13 @@ Build succeeded.
 ''';
 
 void main() {
-  FileSystem fileSystem;
-  FakeProcessManager processManager;
-  BufferLogger logger;
-  Artifacts artifacts;
-  Cache cache;
-  OperatingSystemUtils osUtils;
-  Directory projectDir;
+  late FileSystem fileSystem;
+  late FakeProcessManager processManager;
+  late BufferLogger logger;
+  late Artifacts artifacts;
+  late Cache cache;
+  late OperatingSystemUtils osUtils;
+  late Directory projectDir;
 
   setUpAll(() {
     Cache.disableLocking();

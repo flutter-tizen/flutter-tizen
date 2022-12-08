@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @dart = 2.8
-
 import 'package:file/memory.dart';
 import 'package:flutter_tizen/tizen_tpk.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
@@ -14,16 +12,15 @@ import '../src/common.dart';
 import '../src/context.dart';
 
 void main() {
-  FileSystem fileSystem;
-  BufferLogger logger;
+  late FileSystem fileSystem;
+  late BufferLogger logger;
 
   setUp(() {
     fileSystem = MemoryFileSystem.test();
     logger = BufferLogger.test();
   });
 
-  testWithoutContext('TizenTpk.fromProject fails if manifest is invalid',
-      () async {
+  testWithoutContext('TizenTpk.fromProject fails if manifest is invalid', () {
     final FlutterProject project =
         FlutterProject.fromDirectoryTest(fileSystem.currentDirectory);
     fileSystem.file('tizen/tizen-manifest.xml').createSync(recursive: true);
@@ -34,7 +31,7 @@ void main() {
 
   testWithoutContext(
       'TizenManifest.parseFromXml can parse manifest that has no profile value',
-      () async {
+      () {
     final File xmlFile = fileSystem.file('tizen-manifest.xml')
       ..createSync(recursive: true)
       ..writeAsStringSync('''
@@ -53,7 +50,7 @@ void main() {
   });
 
   testUsingContext('TizenManifest.parseFromXml can parse multi-app manifest',
-      () async {
+      () {
     final File xmlFile = fileSystem.file('tizen-manifest.xml')
       ..createSync(recursive: true)
       ..writeAsStringSync('''
@@ -74,7 +71,7 @@ void main() {
   });
 
   testWithoutContext('Signature.parseFromXml can parse multi-line signature',
-      () async {
+      () {
     final File xmlFile = fileSystem.file('author-signature.xml')
       ..createSync(recursive: true)
       ..writeAsStringSync('''
@@ -87,7 +84,8 @@ CCCC
 </Signature>
 ''');
 
-    final Signature signature = Signature.parseFromXml(xmlFile);
-    expect(signature.signatureValue, equals('AAAABBBBCCCC'));
+    final Signature? signature = Signature.parseFromXml(xmlFile);
+    expect(signature, isNotNull);
+    expect(signature!.signatureValue, equals('AAAABBBBCCCC'));
   });
 }

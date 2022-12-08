@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @dart = 2.8
-
 import 'dart:convert';
 import 'dart:io';
 
@@ -29,9 +27,9 @@ const String _kNoPlatformsMessage =
     "You've created a plugin project that doesn't yet support any platforms.";
 
 void main() {
-  Directory tempDir;
-  Directory projectDir;
-  BufferLogger logger;
+  late Directory tempDir;
+  late Directory projectDir;
+  late BufferLogger logger;
 
   setUpAll(() {
     Cache.disableLocking();

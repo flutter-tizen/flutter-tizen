@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @dart = 2.8
-
 import 'package:args/command_runner.dart';
 import 'package:file/memory.dart';
 import 'package:file_testing/file_testing.dart';
@@ -17,10 +15,10 @@ import '../src/context.dart';
 import '../src/test_flutter_command_runner.dart';
 
 void main() {
-  FileSystem fileSystem;
-  FlutterProject project;
-  File pubspecFile;
-  File packageConfigFile;
+  late FileSystem fileSystem;
+  late FlutterProject project;
+  late File pubspecFile;
+  late File packageConfigFile;
 
   setUpAll(() {
     Cache.disableLocking();
@@ -275,7 +273,7 @@ class _DummyFlutterCommand extends FlutterCommand with DartPluginRegistry {
   String name = 'dummy';
 
   @override
-  String description;
+  String description = '';
 
   @override
   Future<FlutterCommandResult> runCommand() async {
