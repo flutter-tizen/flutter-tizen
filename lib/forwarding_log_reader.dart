@@ -56,7 +56,7 @@ class ForwardingLogReader extends DeviceLogReader {
   @override
   Stream<String> get logLines => _linesController.stream;
 
-  final RegExp _logFormat = RegExp(r'^(\[[IWEF]\]).+');
+  final RegExp _logFormat = RegExp(r'^(\[[IWEF]\]).*');
 
   String _colorizePrefix(String message) {
     final Match? match = _logFormat.firstMatch(message);
@@ -79,10 +79,16 @@ class ForwardingLogReader extends DeviceLogReader {
     return message.replaceFirst(prefix, globals.terminal.color(prefix, color));
   }
 
-  final List<String> _filteredTexts = <String>[
+  final List<RegExp> _filteredTexts = <RegExp>[
     // Issue: https://github.com/flutter-tizen/engine/issues/91
-    'xkbcommon: ERROR:',
-    "couldn't find a Compose file for locale",
+    RegExp('xkbcommon: ERROR:'),
+    RegExp("couldn't find a Compose file for locale"),
+    // Issue: https://github.com/flutter-tizen/engine/issues/348
+    RegExp(r'\[WARN\].+wl_egl_window.+already rotated'),
+    // Thread added[0xfabcde, pid:12345 tid: 12345] to display:0xfbcdef, threads_cnt=1
+    // Thread removed[0xfabcde pid:12345 tid: 12345] from display:0xfbcdef, threads_cnt=0
+    RegExp('Thread added.+ to display:'),
+    RegExp('Thread removed.+ from display:'),
   ];
 
   Future<Socket?> _connectAndListen() async {
@@ -108,7 +114,7 @@ class ForwardingLogReader extends DeviceLogReader {
         }
         for (final String line in LineSplitter.split(response)) {
           if (line.isEmpty ||
-              _filteredTexts.any((String text) => line.contains(text))) {
+              _filteredTexts.any((RegExp re) => re.hasMatch(line))) {
             continue;
           }
           _linesController.add(_colorizePrefix(line));
