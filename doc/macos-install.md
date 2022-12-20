@@ -2,10 +2,16 @@
 
 ## System requirements
 
-- Operating system: macOS (x64)
+- Operating system: macOS
+   - The [Rosetta translation environment](https://developer.apple.com/documentation/apple-silicon/about-the-rosetta-translation-environment) must be available if you're installing on an [Apple Silicon](https://support.apple.com/en-us/HT211814) Mac.<p>
+     ```sh
+     sudo softwareupdate --install-rosetta --agree-to-license
+     ```
 - Tools:
   - [Tizen Studio](install-tizen-sdk.md) (4.0 or later)
+    - Tizen Emulator is not available on an Apple Silicon Mac as of Tizen Studio 5.0.
   - [.NET SDK](https://docs.microsoft.com/en-us/dotnet/core/install/macos) (3.0 or later)
+  - `git` (either [standalone](https://git-scm.com/download/mac) or integrated with [Xcode](https://developer.apple.com/xcode))
 
 ## Installing flutter-tizen
 
