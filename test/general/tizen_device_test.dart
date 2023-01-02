@@ -13,6 +13,7 @@ import 'package:flutter_tools/src/device_port_forwarder.dart';
 import 'package:test/fake.dart';
 
 import '../src/common.dart';
+import '../src/context.dart';
 import '../src/fake_devices.dart';
 import '../src/fake_process_manager.dart';
 import '../src/fake_tizen_sdk.dart';
@@ -22,12 +23,13 @@ const String _kDeviceId = 'TestDeviceId';
 TizenDevice _createTizenDevice({
   ProcessManager? processManager,
   FileSystem? fileSystem,
+  Logger? logger,
 }) {
   fileSystem ??= MemoryFileSystem.test();
   return TizenDevice(
     _kDeviceId,
     modelId: 'TestModel',
-    logger: BufferLogger.test(),
+    logger: logger ?? BufferLogger.test(),
     processManager: processManager ?? FakeProcessManager.any(),
     tizenSdk: FakeTizenSdk(fileSystem),
     fileSystem: fileSystem,
@@ -41,10 +43,12 @@ List<String> _sdbCommand(List<String> args) {
 void main() {
   late FileSystem fileSystem;
   late FakeProcessManager processManager;
+  late BufferLogger logger;
 
   setUp(() {
     processManager = FakeProcessManager.empty();
     fileSystem = MemoryFileSystem.test();
+    logger = BufferLogger.test();
   });
 
   testWithoutContext('TizenDevice.startApp succeeds in debug mode', () async {
@@ -103,6 +107,75 @@ void main() {
 
     expect(launchResult.started, isTrue);
     expect(launchResult.hasObservatory, isTrue);
+    expect(processManager, hasNoRemainingExpectations);
+  });
+
+  testWithoutContext(
+      'TizenDevice.installApp uninstalls and reinstalls TPK if installation fails',
+      () async {
+    final TizenDevice device = _createTizenDevice(
+      processManager: processManager,
+      fileSystem: fileSystem,
+      logger: logger,
+    );
+    final TizenTpk tpk = TizenTpk(
+      applicationPackage: fileSystem.file('app.tpk')..createSync(),
+      manifest: _FakeTizenManifest(),
+    );
+
+    processManager.addCommands(<FakeCommand>[
+      FakeCommand(
+        command: _sdbCommand(<String>['capability']),
+        stdout: <String>[
+          'cpu_arch:armv7',
+          'secure_protocol:disabled',
+          'platform_version:4.0',
+        ].join('\n'),
+      ),
+      FakeCommand(
+        command: _sdbCommand(<String>['shell', 'app_launcher', '-l']),
+        stdout: '''
+Application List for user 5001
+User's Application
+  Name    AppID
+=================================================
+'TestApp'     'TestApplication'
+''',
+      ),
+      FakeCommand(
+        command: _sdbCommand(<String>[
+          'pull',
+          '/opt/usr/apps/TestPackage/author-signature.xml',
+          '/.tmp_rand0/rand0/author-signature.xml',
+        ]),
+        onRun: () {
+          fileSystem
+              .file('/.tmp_rand0/rand0/author-signature.xml')
+              .createSync(recursive: true);
+        },
+      ),
+      FakeCommand(
+        command: _sdbCommand(<String>['install', 'app.tpk']),
+        stdout: '''
+__return_cb req_id[1] pkg_type[tpk] pkgid[TestPackage] key[install_percent] val[25]
+__return_cb req_id[1] pkg_type[tpk] pkgid[TestPackage] key[error] val[-11]
+__return_cb req_id[1] pkg_type[tpk] pkgid[TestPackage] key[end] val[fail]
+processing result : Author certificate not match [-11] failed
+''',
+      ),
+      FakeCommand(
+        command: _sdbCommand(<String>['uninstall', 'TestPackage']),
+        stdout: '''
+__return_cb req_id[1] pkg_type[tpk] pkgid[TestPackage] key[install_percent] val[100]
+__return_cb req_id[1] pkg_type[tpk] pkgid[TestPackage] key[end] val[ok]
+''',
+      ),
+      FakeCommand(command: _sdbCommand(<String>['install', 'app.tpk'])),
+    ]);
+
+    expect(await device.installApp(tpk), isTrue);
+    expect(logger.errorText, contains('Installing TPK failed'));
+    expect(logger.statusText, contains('Uninstalling old version...'));
     expect(processManager, hasNoRemainingExpectations);
   });
 
@@ -206,6 +279,61 @@ void main() {
     ));
     expect(tvDevice.deviceProfile, equals('tv'));
     expect(tvDevice.isSupported(), isFalse);
+  });
+
+  testWithoutContext(
+      'TizenDevicePortForwarder.forwardedPorts can list forwarded ports', () {
+    final TizenDevicePortForwarder forwarder = TizenDevicePortForwarder(
+      device: _createTizenDevice(
+        processManager: processManager,
+        fileSystem: fileSystem,
+      ),
+      logger: logger,
+    );
+    processManager.addCommands(<FakeCommand>[
+      FakeCommand(
+        command: _sdbCommand(<String>['forward', '--list']),
+        stdout: '''
+List of port forwarding
+SERIAL                  LOCAL           REMOTE
+TestDeviceId            tcp:2345        tcp:1234
+''',
+      ),
+    ]);
+
+    final List<ForwardedPort> forwardedPorts = forwarder.forwardedPorts;
+    expect(forwardedPorts, hasLength(1));
+    expect(forwardedPorts.first.hostPort, equals(2345));
+    expect(forwardedPorts.first.devicePort, equals(1234));
+    expect(processManager, hasNoRemainingExpectations);
+  });
+
+  testUsingContext('TizenDevice.dispose disposes the port forwarder', () async {
+    final TizenDevice device = _createTizenDevice(
+      processManager: processManager,
+      fileSystem: fileSystem,
+    );
+    processManager.addCommands(<FakeCommand>[
+      FakeCommand(
+        command: _sdbCommand(<String>['forward', 'tcp:2345', 'tcp:1234']),
+      ),
+      FakeCommand(
+        command: _sdbCommand(<String>['forward', '--list']),
+        stdout: '''
+List of port forwarding
+SERIAL                  LOCAL           REMOTE
+TestDeviceId            tcp:2345        tcp:1234
+''',
+      ),
+      FakeCommand(
+        command: _sdbCommand(<String>['forward', '--remove', 'tcp:2345']),
+      ),
+    ]);
+
+    await device.portForwarder.forward(1234, hostPort: 2345);
+    await device.dispose();
+
+    expect(processManager, hasNoRemainingExpectations);
   });
 }
 
