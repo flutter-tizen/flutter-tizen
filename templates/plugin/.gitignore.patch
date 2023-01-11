@@ -1,0 +1,17 @@
+diff --git a/packages/flutter_tools/templates/plugin_shared/.gitignore.tmpl b/packages/flutter_tools/templates/plugin_shared/.gitignore.tmpl
+index 96486fd930..d87f6f0606 100644
+--- a/packages/flutter_tools/templates/plugin_shared/.gitignore.tmpl
++++ b/packages/flutter_tools/templates/plugin_shared/.gitignore.tmpl
+@@ -16,10 +16,8 @@ migrate_working_dir/
+ *.iws
+ .idea/
+ 
+-# The .vscode folder contains launch configuration and tasks you configure in
+-# VS Code which you may wish to be included in version control, so this line
+-# is commented out by default.
+-#.vscode/
++# VS Code related
++.vscode/
+ 
+ # Flutter/Dart/Pub related
+ # Libraries should not include pubspec.lock, per https://dart.dev/guides/libraries/private-files#pubspeclock.
