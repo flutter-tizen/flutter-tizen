@@ -290,16 +290,14 @@ __return_cb req_id[1] pkg_type[tpk] pkgid[TestPackage] key[end] val[ok]
       ),
       logger: logger,
     );
-    processManager.addCommands(<FakeCommand>[
-      FakeCommand(
-        command: _sdbCommand(<String>['forward', '--list']),
-        stdout: '''
+    processManager.addCommand(FakeCommand(
+      command: _sdbCommand(<String>['forward', '--list']),
+      stdout: '''
 List of port forwarding
 SERIAL                  LOCAL           REMOTE
 TestDeviceId            tcp:2345        tcp:1234
 ''',
-      ),
-    ]);
+    ));
 
     final List<ForwardedPort> forwardedPorts = forwarder.forwardedPorts;
     expect(forwardedPorts, hasLength(1));
