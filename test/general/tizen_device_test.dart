@@ -69,7 +69,7 @@ void main() {
         stdout: <String>[
           'cpu_arch:armv7',
           'secure_protocol:disabled',
-          'platform_version:4.0',
+          'platform_version:5.5',
         ].join('\n'),
       ),
       FakeCommand(
@@ -111,7 +111,7 @@ void main() {
   });
 
   testWithoutContext(
-      'TizenDevice.installApp uninstalls and reinstalls TPK if installation fails',
+      'TizenDevice.installApp warns if the device API version is lower than the package API version',
       () async {
     final TizenDevice device = _createTizenDevice(
       processManager: processManager,
@@ -130,6 +130,42 @@ void main() {
           'cpu_arch:armv7',
           'secure_protocol:disabled',
           'platform_version:4.0',
+        ].join('\n'),
+      ),
+      FakeCommand(
+        command: _sdbCommand(<String>['shell', 'app_launcher', '-l']),
+      ),
+      FakeCommand(command: _sdbCommand(<String>['install', 'app.tpk'])),
+    ]);
+
+    expect(await device.installApp(tpk), isTrue);
+    expect(
+      logger.warningText,
+      contains('Warning: The package API version (5.5) is greater than'),
+    );
+    expect(processManager, hasNoRemainingExpectations);
+  });
+
+  testWithoutContext(
+      'TizenDevice.installApp uninstalls and reinstalls TPK if installation fails',
+      () async {
+    final TizenDevice device = _createTizenDevice(
+      processManager: processManager,
+      fileSystem: fileSystem,
+      logger: logger,
+    );
+    final TizenTpk tpk = TizenTpk(
+      applicationPackage: fileSystem.file('app.tpk')..createSync(),
+      manifest: _FakeTizenManifest(),
+    );
+
+    processManager.addCommands(<FakeCommand>[
+      FakeCommand(
+        command: _sdbCommand(<String>['capability']),
+        stdout: <String>[
+          'cpu_arch:armv7',
+          'secure_protocol:disabled',
+          'platform_version:5.5',
         ].join('\n'),
       ),
       FakeCommand(
@@ -196,7 +232,7 @@ __return_cb req_id[1] pkg_type[tpk] pkgid[TestPackage] key[end] val[ok]
         stdout: <String>[
           'cpu_arch:x86',
           'secure_protocol:enabled',
-          'platform_version:4.0',
+          'platform_version:5.5',
         ].join('\n'),
       ),
       FakeCommand(command: _sdbCommand(<String>['shell', '0', 'applist'])),
@@ -345,5 +381,5 @@ class _FakeTizenManifest extends Fake implements TizenManifest {
   String applicationId = 'TestApplication';
 
   @override
-  String? apiVersion;
+  String? apiVersion = '5.5';
 }
