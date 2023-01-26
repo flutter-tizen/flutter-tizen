@@ -9,12 +9,16 @@ import 'package:flutter_tizen/tizen_build_info.dart';
 import 'package:flutter_tizen/tizen_builder.dart';
 import 'package:flutter_tools/src/base/analyze_size.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
+import 'package:flutter_tools/src/base/logger.dart';
+import 'package:flutter_tools/src/build_system/build_system.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/project.dart';
 import 'package:test/fake.dart';
 
 import '../src/common.dart';
 import '../src/context.dart';
+import '../src/fakes.dart';
+import '../src/test_build_system.dart';
 import '../src/test_flutter_command_runner.dart';
 
 void main() {
@@ -35,8 +39,15 @@ void main() {
 
   group('BuildTpkCommand', () {
     testUsingContext('Device profile must be specified', () async {
-      final TizenBuildCommand command = TizenBuildCommand();
+      final TizenBuildCommand command = TizenBuildCommand(
+        fileSystem: fileSystem,
+        buildSystem: TestBuildSystem.all(BuildResult(success: true)),
+        osUtils: FakeOperatingSystemUtils(),
+        logger: BufferLogger.test(),
+        androidSdk: FakeAndroidSdk(),
+      );
       final CommandRunner<void> runner = createTestCommandRunner(command);
+
       await expectLater(
         () => runner.run(<String>['build', 'tpk', '--no-pub']),
         throwsToolExit(),
@@ -47,8 +58,15 @@ void main() {
     });
 
     testUsingContext('Cannot build for x86 in release mode', () async {
-      final TizenBuildCommand command = TizenBuildCommand();
+      final TizenBuildCommand command = TizenBuildCommand(
+        fileSystem: fileSystem,
+        buildSystem: TestBuildSystem.all(BuildResult(success: true)),
+        osUtils: FakeOperatingSystemUtils(),
+        logger: BufferLogger.test(),
+        androidSdk: FakeAndroidSdk(),
+      );
       final CommandRunner<void> runner = createTestCommandRunner(command);
+
       await expectLater(
         () => runner.run(<String>[
           'build',
@@ -65,12 +83,16 @@ void main() {
     });
 
     testUsingContext('Can compute build info', () async {
-      final TizenBuildCommand command = TizenBuildCommand();
-      final CommandRunner<void> runner = createTestCommandRunner(command);
-
+      final TizenBuildCommand command = TizenBuildCommand(
+        fileSystem: fileSystem,
+        buildSystem: TestBuildSystem.all(BuildResult(success: true)),
+        osUtils: FakeOperatingSystemUtils(),
+        logger: BufferLogger.test(),
+        androidSdk: FakeAndroidSdk(),
+      );
       fileSystem.file('test_main.dart').createSync(recursive: true);
 
-      await runner.run(<String>[
+      await createTestCommandRunner(command).run(<String>[
         'build',
         'tpk',
         '--no-pub',
@@ -91,10 +113,15 @@ void main() {
 
   group('BuildModuleCommand', () {
     testUsingContext('Can compute build info', () async {
-      final TizenBuildCommand command = TizenBuildCommand();
-      final CommandRunner<void> runner = createTestCommandRunner(command);
+      final TizenBuildCommand command = TizenBuildCommand(
+        fileSystem: fileSystem,
+        buildSystem: TestBuildSystem.all(BuildResult(success: true)),
+        osUtils: FakeOperatingSystemUtils(),
+        logger: BufferLogger.test(),
+        androidSdk: FakeAndroidSdk(),
+      );
 
-      await runner.run(<String>[
+      await createTestCommandRunner(command).run(<String>[
         'build',
         'module',
         '--no-pub',

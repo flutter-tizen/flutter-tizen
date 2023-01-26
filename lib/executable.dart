@@ -121,7 +121,14 @@ Future<void> main(List<String> args) async {
       SymbolizeCommand(stdio: globals.stdio, fileSystem: globals.fs),
       // Commands extended for Tizen.
       TizenAttachCommand(verboseHelp: verboseHelp),
-      TizenBuildCommand(verboseHelp: verboseHelp),
+      TizenBuildCommand(
+        verboseHelp: verboseHelp,
+        fileSystem: globals.fs,
+        buildSystem: globals.buildSystem,
+        osUtils: globals.os,
+        logger: globals.logger,
+        androidSdk: globals.androidSdk,
+      ),
       TizenCleanCommand(verbose: verbose),
       TizenCreateCommand(verboseHelp: verboseHelp),
       TizenDriveCommand(
