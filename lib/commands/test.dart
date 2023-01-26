@@ -26,6 +26,7 @@ class TizenTestCommand extends TestCommand with TizenRequiredArtifacts {
     super.verboseHelp,
     super.testWrapper,
     FlutterTestRunner? testRunner,
+    super.verbose,
   }) : super(testRunner: testRunner ?? TizenTestRunner());
 
   @override

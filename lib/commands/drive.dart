@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/commands/drive.dart';
 
 import '../tizen_cache.dart';
@@ -13,7 +12,8 @@ class TizenDriveCommand extends DriveCommand
   TizenDriveCommand({
     super.verboseHelp,
     required super.fileSystem,
-    required Logger super.logger,
+    required super.logger,
     required super.platform,
+    required super.signals,
   });
 }

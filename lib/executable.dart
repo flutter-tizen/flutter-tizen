@@ -103,7 +103,14 @@ Future<void> main(List<String> args) async {
         logger: globals.logger,
         processManager: globals.processManager,
         artifacts: globals.artifacts!,
-        allProjectValidators: <ProjectValidator>[],
+        allProjectValidators: <ProjectValidator>[
+          GeneralInfoProjectValidator(),
+          VariableDumpMachineProjectValidator(
+            logger: globals.logger,
+            fileSystem: globals.fs,
+            platform: globals.platform,
+          ),
+        ],
       ),
       ConfigCommand(verboseHelp: verboseHelp),
       DaemonCommand(hidden: !verboseHelp),
@@ -114,13 +121,25 @@ Future<void> main(List<String> args) async {
       GenerateLocalizationsCommand(
         fileSystem: globals.fs,
         logger: globals.logger,
+        artifacts: globals.artifacts!,
+        processManager: globals.processManager,
       ),
-      InstallCommand(),
+      InstallCommand(verboseHelp: verboseHelp),
       PackagesCommand(),
-      ScreenshotCommand(),
+      ScreenshotCommand(fs: globals.fs),
       SymbolizeCommand(stdio: globals.stdio, fileSystem: globals.fs),
       // Commands extended for Tizen.
-      TizenAttachCommand(verboseHelp: verboseHelp),
+      TizenAttachCommand(
+        verboseHelp: verboseHelp,
+        artifacts: globals.artifacts,
+        stdio: globals.stdio,
+        logger: globals.logger,
+        terminal: globals.terminal,
+        signals: globals.signals,
+        platform: globals.platform,
+        processInfo: globals.processInfo,
+        fileSystem: globals.fs,
+      ),
       TizenBuildCommand(
         verboseHelp: verboseHelp,
         fileSystem: globals.fs,
@@ -136,6 +155,7 @@ Future<void> main(List<String> args) async {
         fileSystem: globals.fs,
         logger: globals.logger,
         platform: globals.platform,
+        signals: globals.signals,
       ),
       TizenPrecacheCommand(
         verboseHelp: verboseHelp,
@@ -145,7 +165,7 @@ Future<void> main(List<String> args) async {
         featureFlags: featureFlags,
       ),
       TizenRunCommand(verboseHelp: verboseHelp),
-      TizenTestCommand(verboseHelp: verboseHelp),
+      TizenTestCommand(verboseHelp: verboseHelp, verbose: verbose),
     ],
     verbose: verbose,
     verboseHelp: verboseHelp,
@@ -230,6 +250,7 @@ Future<void> main(List<String> args) async {
             usage: globals.flutterUsage,
           ),
     },
+    shutdownHooks: globals.shutdownHooks,
   );
 }
 
