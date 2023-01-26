@@ -10,8 +10,6 @@ import 'package:flutter_tizen/commands/test.dart';
 import 'package:flutter_tizen/tizen_cache.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/base/logger.dart';
-import 'package:flutter_tools/src/base/terminal.dart';
-import 'package:flutter_tools/src/base/user_messages.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/device.dart';
 import 'package:flutter_tools/src/test/test_wrapper.dart';
@@ -157,12 +155,7 @@ void main() {
 }
 
 class _FakeDeviceManager extends DeviceManager {
-  _FakeDeviceManager(this._devices)
-      : super(
-          logger: BufferLogger.test(),
-          terminal: Terminal.test(),
-          userMessages: UserMessages(),
-        );
+  _FakeDeviceManager(this._devices) : super(logger: BufferLogger.test());
 
   final List<Device> _devices;
 

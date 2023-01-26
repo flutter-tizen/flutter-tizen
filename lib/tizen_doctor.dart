@@ -28,6 +28,7 @@ class TizenDoctorValidatorsProvider implements DoctorValidatorsProvider {
   List<DoctorValidator> get validators {
     final List<DoctorValidator> validators =
         DoctorValidatorsProvider.defaultInstance.validators;
+    assert(validators.first is FlutterValidator);
     return <DoctorValidator>[
       validators.first,
       tizenValidator!,
@@ -111,7 +112,7 @@ class TizenValidator extends DoctorValidator {
       version.frameworkCommitDate,
     )));
     messages.add(ValidationMessage(
-        _userMessages.engineRevision(version.engineRevision)));
+        _userMessages.engineRevision(version.engineRevisionShort)));
 
     if (_tizenSdk == null) {
       messages.add(const ValidationMessage.error(
