@@ -59,6 +59,9 @@ class ForwardingLogReader extends DeviceLogReader {
   final RegExp _logFormat = RegExp(r'^(\[[IWEF]\]).*');
 
   String _colorizePrefix(String message) {
+    if (!globals.terminal.supportsColor) {
+      return message;
+    }
     final Match? match = _logFormat.firstMatch(message);
     if (match == null) {
       return message;
