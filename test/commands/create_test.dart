@@ -20,6 +20,7 @@ import 'package:pubspec_parse/pubspec_parse.dart';
 import '../src/common.dart';
 import '../src/context.dart';
 import '../src/fake_http_client.dart';
+import '../src/fakes.dart';
 import '../src/pubspec_schema.dart';
 import '../src/test_flutter_command_runner.dart';
 
@@ -270,13 +271,14 @@ void main() {
     expect(projectDir.childFile('lib/main.dart'), exists);
     expect(projectDir.childFile('.tizen/Runner.csproj'), exists);
   }, overrides: <Type, Generator>{
-    Pub: () => TizenPub(
+    Pub: () => TizenPub.test(
           fileSystem: globals.fs,
-          logger: globals.logger,
+          logger: logger,
           processManager: globals.processManager,
           platform: globals.platform,
           botDetector: globals.botDetector,
           usage: globals.flutterUsage,
+          stdio: FakeStdio(),
         ),
   });
 
@@ -293,13 +295,14 @@ void main() {
     expect(projectDir.childFile('lib/main.dart'), exists);
     expect(projectDir.childFile('.tizen/project_def.prop'), exists);
   }, overrides: <Type, Generator>{
-    Pub: () => TizenPub(
+    Pub: () => TizenPub.test(
           fileSystem: globals.fs,
-          logger: globals.logger,
+          logger: logger,
           processManager: globals.processManager,
           platform: globals.platform,
           botDetector: globals.botDetector,
           usage: globals.flutterUsage,
+          stdio: FakeStdio(),
         ),
   });
 }
