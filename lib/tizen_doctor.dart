@@ -23,7 +23,7 @@ TizenWorkflow? get tizenWorkflow => context.get<TizenWorkflow>();
 TizenValidator? get tizenValidator => context.get<TizenValidator>();
 
 /// See: [_DefaultDoctorValidatorsProvider] in `doctor.dart`
-class TizenDoctorValidatorsProvider extends DoctorValidatorsProvider {
+class TizenDoctorValidatorsProvider implements DoctorValidatorsProvider {
   @override
   List<DoctorValidator> get validators {
     final List<DoctorValidator> validators =
