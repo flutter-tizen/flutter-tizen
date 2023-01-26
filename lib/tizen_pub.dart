@@ -42,8 +42,6 @@ class TizenPub implements Pub {
     String? directory,
     MessageFilter? filter,
     String failureMessage = 'pub failed',
-    required bool retry,
-    bool? showTraceForErrors,
   }) {
     return _pub.batch(
       arguments,
@@ -51,19 +49,16 @@ class TizenPub implements Pub {
       directory: directory,
       filter: filter,
       failureMessage: failureMessage,
-      retry: retry,
-      showTraceForErrors: showTraceForErrors,
     );
   }
 
   @override
   Future<void> get({
     required PubContext context,
-    String? directory,
+    required FlutterProject project,
     bool skipIfAbsent = false,
     bool upgrade = false,
     bool offline = false,
-    bool generateSyntheticPackage = false,
     String? flutterRootOverride,
     bool checkUpToDate = false,
     bool shouldSkipThirdPartyGenerator = true,
@@ -71,17 +66,16 @@ class TizenPub implements Pub {
   }) async {
     await _pub.get(
       context: context,
-      directory: directory,
+      project: project,
       skipIfAbsent: skipIfAbsent,
       upgrade: upgrade,
       offline: offline,
-      generateSyntheticPackage: generateSyntheticPackage,
       flutterRootOverride: flutterRootOverride,
       checkUpToDate: checkUpToDate,
       shouldSkipThirdPartyGenerator: shouldSkipThirdPartyGenerator,
       printProgress: printProgress,
     );
-    await _postPub(directory);
+    await _postPub(project);
   }
 
   @override
@@ -99,16 +93,16 @@ class TizenPub implements Pub {
       touchesPackageConfig: touchesPackageConfig,
       generateSyntheticPackage: generateSyntheticPackage,
     );
-    await _postPub(directory);
+    final FlutterProject project = directory == null
+        ? FlutterProject.current()
+        : FlutterProject.fromDirectory(_fileSystem.directory(directory));
+    await _postPub(project);
   }
 
   /// A hack which enables Tizen plugin injection based on the fact that either
   /// [Pub.get] or [Pub.interactively] is always called before
   /// [FlutterProject.ensureReadyForPlatformSpecificTooling] is called.
-  Future<void> _postPub(String? directory) async {
-    final FlutterProject project = directory == null
-        ? FlutterProject.current()
-        : FlutterProject.fromDirectory(_fileSystem.directory(directory));
+  Future<void> _postPub(FlutterProject project) async {
     return ensureReadyForTizenTooling(project);
   }
 }
