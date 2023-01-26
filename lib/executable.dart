@@ -196,6 +196,7 @@ Future<void> main(List<String> args) async {
             platform: globals.platform,
             osUtils: globals.os,
             processManager: globals.processManager,
+            projectFactory: globals.projectFactory,
           ),
       DeviceManager: () => TizenDeviceManager(),
       DoctorValidatorsProvider: () => TizenDoctorValidatorsProvider(),
