@@ -79,20 +79,14 @@ Future<void> main(List<String> args) async {
   final bool daemon = args.contains('daemon');
   final bool runMachine = args.contains('--machine') && args.contains('run');
 
-  final bool hasSpecifiedDeviceId =
-      args.contains('-d') || args.contains('--device-id');
-
-  args = <String>[
-    '--suppress-analytics', // Suppress flutter analytics by default.
-    '--no-version-check',
-    if (!hasSpecifiedDeviceId) ...<String>['--device-id', 'tizen'],
-    ...args,
-  ];
-
   Cache.flutterRoot = join(rootPath, 'flutter');
 
   await runner.run(
-    args,
+    <String>[
+      '--suppress-analytics',
+      '--no-version-check',
+      ...args,
+    ],
     () => <FlutterCommand>[
       // Commands directly from flutter_tools.
       AnalyzeCommand(
