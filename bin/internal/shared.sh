@@ -97,7 +97,7 @@ function update_flutter_tizen() {
 }
 
 function exec_snapshot() {
-  "$DART_EXE" --disable-dart-dev \
-              --packages="$ROOT_DIR/.dart_tool/package_config.json" \
-              "$SNAPSHOT_PATH" "$@"
+  exec "$DART_EXE" --disable-dart-dev \
+                   --packages="$ROOT_DIR/.dart_tool/package_config.json" \
+                   "$SNAPSHOT_PATH" "$@"
 }
