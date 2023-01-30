@@ -110,7 +110,7 @@ GOTO :EOF
                         --snapshot="%snapshot_path%" ^
                         --packages="%ROOT_DIR%\.dart_tool\package_config.json" ^
                         "%ROOT_DIR%\bin\flutter_tizen.dart" || (
-        ECHO Error: Unable to compile the snapshot. 1>&2
+        ECHO Error: Unable to create a flutter-tizen snapshot. 1>&2
         EXIT /B 1
       )
 
