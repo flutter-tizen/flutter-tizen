@@ -55,12 +55,13 @@ abstract class TizenViewController extends PlatformViewController {
 
   bool get _createRequiresSize;
 
-  Future<void> _sendCreateMessage({required covariant Size? size});
+  Future<void> _sendCreateMessage(
+      {required covariant Size? size, Offset? position});
 
   Future<Size> _sendResizeMessage(Size size);
 
   @override
-  Future<void> create({Size? size}) async {
+  Future<void> create({Size? size, Offset? position}) async {
     assert(_state != _TizenViewState.disposed,
         'trying to create a disposed Tizen view');
     assert(_state == _TizenViewState.waitingForSize,
@@ -72,7 +73,7 @@ abstract class TizenViewController extends PlatformViewController {
     }
 
     _state = _TizenViewState.creating;
-    await _sendCreateMessage(size: size);
+    await _sendCreateMessage(size: size, position: position);
     _state = _TizenViewState.created;
 
     for (final PlatformViewCreatedCallback callback
@@ -261,7 +262,10 @@ class TextureTizenViewController extends TizenViewController {
   bool get _createRequiresSize => true;
 
   @override
-  Future<void> _sendCreateMessage({required Size size}) async {
+  Future<void> _sendCreateMessage({
+    required Size size,
+    Offset? position,
+  }) async {
     assert(!size.isEmpty,
         'trying to create $TextureTizenViewController without setting a valid size.');
 
@@ -271,6 +275,8 @@ class TextureTizenViewController extends TizenViewController {
       'width': size.width,
       'height': size.height,
       'direction': _layoutDirection == TextDirection.ltr ? 0 : 1,
+      if (position != null) 'left': position.dx,
+      if (position != null) 'top': position.dy,
     };
     if (_creationParams != null) {
       final ByteData paramsByteData =
