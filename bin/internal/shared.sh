@@ -19,7 +19,7 @@ unset CDPATH
 FLUTTER_REPO="https://github.com/flutter/flutter.git"
 
 if [[ -z "$BIN_DIR" ]]; then
-  echo "BIN_DIR is not set."
+  >&2 echo "BIN_DIR is not set."
   exit 1
 fi
 ROOT_DIR="$(cd "${BIN_DIR}/.." ; pwd -P)"
@@ -31,7 +31,7 @@ DART_EXE="$FLUTTER_DIR/bin/cache/dart-sdk/bin/dart"
 
 function update_flutter() {
   if [[ -e "$FLUTTER_DIR" && ! -d "$FLUTTER_DIR/.git" ]]; then
-    echo "$FLUTTER_DIR is not a git directory. Remove it and try again."
+    >&2 echo "$FLUTTER_DIR is not a git directory. Remove it and try again."
     exit 1
   fi
 
@@ -57,8 +57,8 @@ function update_flutter() {
   fi
 
   if [[ "$version" != "$(git rev-parse HEAD)" ]]; then
-    echo "Something went wrong when upgrading the Flutter SDK." \
-         "Remove directory $FLUTTER_DIR and try again."
+    >&2 echo "Something went wrong while upgrading the Flutter SDK."
+    >&2 echo "Remove the directory $FLUTTER_DIR and try again."
     exit 1
   fi
 
@@ -97,7 +97,7 @@ function update_flutter_tizen() {
 }
 
 function exec_snapshot() {
-  "$DART_EXE" --disable-dart-dev \
-              --packages="$ROOT_DIR/.dart_tool/package_config.json" \
-              "$SNAPSHOT_PATH" "$@"
+  exec "$DART_EXE" --disable-dart-dev \
+                   --packages="$ROOT_DIR/.dart_tool/package_config.json" \
+                   "$SNAPSHOT_PATH" "$@"
 }

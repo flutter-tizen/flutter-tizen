@@ -4,7 +4,6 @@
 // found in the LICENSE file.
 
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:file/file.dart';
@@ -381,7 +380,7 @@ class TizenDevice extends Device {
     }
 
     final List<String> engineArgs = <String>[
-      '--enable-dart-profiling',
+      if (debuggingOptions.enableDartProfiling) '--enable-dart-profiling',
       if (traceStartup) '--trace-startup',
       if (route != null) ...<String>['--route', route],
       if (debuggingOptions.enableSoftwareRendering)
@@ -473,7 +472,7 @@ class TizenDevice extends Device {
   }
 
   @override
-  Future<bool> stopApp(TizenTpk app, {String? userIdentifier}) async {
+  Future<bool> stopApp(TizenTpk? app, {String? userIdentifier}) async {
     if (app == null) {
       return false;
     }

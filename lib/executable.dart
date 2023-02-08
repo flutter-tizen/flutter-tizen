@@ -79,20 +79,14 @@ Future<void> main(List<String> args) async {
   final bool daemon = args.contains('daemon');
   final bool runMachine = args.contains('--machine') && args.contains('run');
 
-  final bool hasSpecifiedDeviceId =
-      args.contains('-d') || args.contains('--device-id');
-
-  args = <String>[
-    '--suppress-analytics', // Suppress flutter analytics by default.
-    '--no-version-check',
-    if (!hasSpecifiedDeviceId) ...<String>['--device-id', 'tizen'],
-    ...args,
-  ];
-
   Cache.flutterRoot = join(rootPath, 'flutter');
 
   await runner.run(
-    args,
+    <String>[
+      '--suppress-analytics',
+      '--no-version-check',
+      ...args,
+    ],
     () => <FlutterCommand>[
       // Commands directly from flutter_tools.
       AnalyzeCommand(
@@ -103,7 +97,14 @@ Future<void> main(List<String> args) async {
         logger: globals.logger,
         processManager: globals.processManager,
         artifacts: globals.artifacts!,
-        allProjectValidators: <ProjectValidator>[],
+        allProjectValidators: <ProjectValidator>[
+          GeneralInfoProjectValidator(),
+          VariableDumpMachineProjectValidator(
+            logger: globals.logger,
+            fileSystem: globals.fs,
+            platform: globals.platform,
+          ),
+        ],
       ),
       ConfigCommand(verboseHelp: verboseHelp),
       DaemonCommand(hidden: !verboseHelp),
@@ -114,14 +115,33 @@ Future<void> main(List<String> args) async {
       GenerateLocalizationsCommand(
         fileSystem: globals.fs,
         logger: globals.logger,
+        artifacts: globals.artifacts!,
+        processManager: globals.processManager,
       ),
-      InstallCommand(),
+      InstallCommand(verboseHelp: verboseHelp),
       PackagesCommand(),
-      ScreenshotCommand(),
+      ScreenshotCommand(fs: globals.fs),
       SymbolizeCommand(stdio: globals.stdio, fileSystem: globals.fs),
       // Commands extended for Tizen.
-      TizenAttachCommand(verboseHelp: verboseHelp),
-      TizenBuildCommand(verboseHelp: verboseHelp),
+      TizenAttachCommand(
+        verboseHelp: verboseHelp,
+        artifacts: globals.artifacts,
+        stdio: globals.stdio,
+        logger: globals.logger,
+        terminal: globals.terminal,
+        signals: globals.signals,
+        platform: globals.platform,
+        processInfo: globals.processInfo,
+        fileSystem: globals.fs,
+      ),
+      TizenBuildCommand(
+        verboseHelp: verboseHelp,
+        fileSystem: globals.fs,
+        buildSystem: globals.buildSystem,
+        osUtils: globals.os,
+        logger: globals.logger,
+        androidSdk: globals.androidSdk,
+      ),
       TizenCleanCommand(verbose: verbose),
       TizenCreateCommand(verboseHelp: verboseHelp),
       TizenDriveCommand(
@@ -129,6 +149,7 @@ Future<void> main(List<String> args) async {
         fileSystem: globals.fs,
         logger: globals.logger,
         platform: globals.platform,
+        signals: globals.signals,
       ),
       TizenPrecacheCommand(
         verboseHelp: verboseHelp,
@@ -138,7 +159,7 @@ Future<void> main(List<String> args) async {
         featureFlags: featureFlags,
       ),
       TizenRunCommand(verboseHelp: verboseHelp),
-      TizenTestCommand(verboseHelp: verboseHelp),
+      TizenTestCommand(verboseHelp: verboseHelp, verbose: verbose),
     ],
     verbose: verbose,
     verboseHelp: verboseHelp,
@@ -169,6 +190,7 @@ Future<void> main(List<String> args) async {
             platform: globals.platform,
             osUtils: globals.os,
             processManager: globals.processManager,
+            projectFactory: globals.projectFactory,
           ),
       DeviceManager: () => TizenDeviceManager(),
       DoctorValidatorsProvider: () => TizenDoctorValidatorsProvider(),
@@ -223,6 +245,7 @@ Future<void> main(List<String> args) async {
             usage: globals.flutterUsage,
           ),
     },
+    shutdownHooks: globals.shutdownHooks,
   );
 }
 

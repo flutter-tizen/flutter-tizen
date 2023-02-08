@@ -5,7 +5,18 @@
 import 'package:flutter_tools/src/commands/attach.dart';
 
 class TizenAttachCommand extends AttachCommand {
-  TizenAttachCommand({super.verboseHelp, super.hotRunnerFactory});
+  TizenAttachCommand({
+    super.verboseHelp,
+    super.hotRunnerFactory,
+    required super.artifacts,
+    required super.stdio,
+    required super.logger,
+    required super.terminal,
+    required super.signals,
+    required super.platform,
+    required super.processInfo,
+    required super.fileSystem,
+  });
 
   @override
   String get description => '${super.description}\n\n'

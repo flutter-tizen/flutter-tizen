@@ -14,6 +14,7 @@ import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/project.dart';
 import 'package:flutter_tools/src/runner/flutter_command.dart';
 import 'package:flutter_tools/src/test/runner.dart';
+import 'package:flutter_tools/src/test/test_time_recorder.dart';
 import 'package:flutter_tools/src/test/test_wrapper.dart';
 import 'package:flutter_tools/src/test/watcher.dart';
 import 'package:package_config/package_config.dart';
@@ -26,6 +27,7 @@ class TizenTestCommand extends TestCommand with TizenRequiredArtifacts {
     super.verboseHelp,
     super.testWrapper,
     FlutterTestRunner? testRunner,
+    super.verbose,
   }) : super(testRunner: testRunner ?? TizenTestRunner());
 
   @override
@@ -129,6 +131,7 @@ void main() {
     int? totalShards,
     Device? integrationTestDevice,
     String? integrationTestUserIdentifier,
+    TestTimeRecorder? testTimeRecorder,
   }) async {
     if (isIntegrationTest) {
       testFiles = await _generateEntrypointWrappers(testFiles);
@@ -162,6 +165,7 @@ void main() {
       totalShards: totalShards,
       integrationTestDevice: integrationTestDevice,
       integrationTestUserIdentifier: integrationTestUserIdentifier,
+      testTimeRecorder: testTimeRecorder,
     );
   }
 }

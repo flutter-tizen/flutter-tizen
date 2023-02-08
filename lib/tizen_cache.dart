@@ -51,6 +51,7 @@ class TizenCache extends FlutterCache {
     required Platform platform,
     required OperatingSystemUtils osUtils,
     required ProcessManager processManager,
+    required super.projectFactory,
   }) : super(
           logger: logger,
           fileSystem: fileSystem,

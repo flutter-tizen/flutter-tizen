@@ -16,7 +16,7 @@ class TizenPrecacheCommand extends PrecacheCommand {
     required super.platform,
     required super.logger,
     required super.featureFlags,
-  })  : _cache = cache!,
+  })  : _cache = cache,
         _platform = platform {
     argParser.addFlag(
       'tizen',

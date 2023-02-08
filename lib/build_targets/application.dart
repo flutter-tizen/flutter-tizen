@@ -14,6 +14,7 @@ import 'package:flutter_tools/src/build_system/targets/android.dart';
 import 'package:flutter_tools/src/build_system/targets/assets.dart';
 import 'package:flutter_tools/src/build_system/targets/common.dart';
 import 'package:flutter_tools/src/build_system/targets/icon_tree_shaker.dart';
+import 'package:flutter_tools/src/build_system/targets/shader_compiler.dart';
 
 import '../tizen_build_info.dart';
 import 'plugins.dart';
@@ -77,6 +78,7 @@ abstract class TizenAssetBundle extends Target {
       environment,
       outputDirectory,
       targetPlatform: TargetPlatform.android,
+      shaderTarget: ShaderTarget.sksl,
     );
     final DepfileService depfileService = DepfileService(
       fileSystem: environment.fileSystem,

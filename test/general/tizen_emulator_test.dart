@@ -42,7 +42,6 @@ void main() {
         dummyAndroidWorkflow: AndroidWorkflow(
           androidSdk: null,
           featureFlags: TestFeatureFlags(),
-          operatingSystemUtils: FakeOperatingSystemUtils(),
         ),
       );
     });

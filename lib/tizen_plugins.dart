@@ -163,7 +163,7 @@ List<String> _findDartEntrypoints(File dartFile) {
   if (parsed is ParsedUnitResult) {
     for (final FunctionDeclaration function
         in parsed.unit.declarations.whereType<FunctionDeclaration>()) {
-      if (function.name.name == 'main') {
+      if (function.name.lexeme == 'main') {
         continue;
       }
       for (final Annotation annotation in function.metadata) {
@@ -174,7 +174,7 @@ List<String> _findDartEntrypoints(File dartFile) {
         if (arguments != null &&
             arguments.arguments.isNotEmpty &&
             arguments.arguments.first.toSource().contains('vm:entry-point')) {
-          names.add(function.name.name);
+          names.add(function.name.lexeme);
         }
       }
     }

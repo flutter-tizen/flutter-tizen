@@ -4,6 +4,7 @@
 
 import 'package:flutter_tools/src/android/build_validation.dart';
 import 'package:flutter_tools/src/base/common.dart';
+import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/build_info.dart';
 import 'package:flutter_tools/src/commands/build.dart';
 import 'package:flutter_tools/src/commands/build_apk.dart';
@@ -16,18 +17,26 @@ import '../tizen_cache.dart';
 import '../tizen_plugins.dart';
 
 class TizenBuildCommand extends BuildCommand {
-  TizenBuildCommand({bool verboseHelp = false})
-      : super(verboseHelp: verboseHelp) {
-    addSubcommand(BuildTpkCommand(verboseHelp: verboseHelp));
-    addSubcommand(BuildModuleCommand(verboseHelp: verboseHelp));
+  TizenBuildCommand({
+    required super.fileSystem,
+    required super.buildSystem,
+    required super.osUtils,
+    required Logger logger,
+    required super.androidSdk,
+    bool verboseHelp = false,
+  }) : super(logger: logger, verboseHelp: verboseHelp) {
+    addSubcommand(BuildTpkCommand(logger: logger, verboseHelp: verboseHelp));
+    addSubcommand(BuildModuleCommand(logger: logger, verboseHelp: verboseHelp));
   }
 }
 
 class BuildTpkCommand extends BuildSubCommand
     with DartPluginRegistry, TizenRequiredArtifacts {
   /// See: [BuildApkCommand] in `build_apk.dart`
-  BuildTpkCommand({required bool verboseHelp})
-      : super(verboseHelp: verboseHelp) {
+  BuildTpkCommand({
+    required super.logger,
+    required bool verboseHelp,
+  }) : super(verboseHelp: verboseHelp) {
     addCommonDesktopBuildOptions(verboseHelp: verboseHelp);
     argParser.addOption(
       'target-arch',
@@ -85,8 +94,10 @@ class BuildTpkCommand extends BuildSubCommand
 
 class BuildModuleCommand extends BuildSubCommand
     with DartPluginRegistry, TizenRequiredArtifacts {
-  BuildModuleCommand({required bool verboseHelp})
-      : super(verboseHelp: verboseHelp) {
+  BuildModuleCommand({
+    required super.logger,
+    required bool verboseHelp,
+  }) : super(verboseHelp: verboseHelp) {
     addBuildModeFlags(verboseHelp: verboseHelp);
     addDartObfuscationOption();
     addEnableExperimentation(hide: !verboseHelp);

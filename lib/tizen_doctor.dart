@@ -23,11 +23,12 @@ TizenWorkflow? get tizenWorkflow => context.get<TizenWorkflow>();
 TizenValidator? get tizenValidator => context.get<TizenValidator>();
 
 /// See: [_DefaultDoctorValidatorsProvider] in `doctor.dart`
-class TizenDoctorValidatorsProvider extends DoctorValidatorsProvider {
+class TizenDoctorValidatorsProvider implements DoctorValidatorsProvider {
   @override
   List<DoctorValidator> get validators {
     final List<DoctorValidator> validators =
         DoctorValidatorsProvider.defaultInstance.validators;
+    assert(validators.first is FlutterValidator);
     return <DoctorValidator>[
       validators.first,
       tizenValidator!,
@@ -111,7 +112,7 @@ class TizenValidator extends DoctorValidator {
       version.frameworkCommitDate,
     )));
     messages.add(ValidationMessage(
-        _userMessages.engineRevision(version.engineRevision)));
+        _userMessages.engineRevision(version.engineRevisionShort)));
 
     if (_tizenSdk == null) {
       messages.add(const ValidationMessage.error(

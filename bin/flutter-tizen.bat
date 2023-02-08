@@ -14,19 +14,6 @@ REM --------------------------------------------------------------------------
 
 SETLOCAL ENABLEDELAYEDEXPANSION
 
-REM Detect which PowerShell executable is available on the Host
-REM PowerShell version <= 5: PowerShell.exe
-REM PowerShell version >= 6: pwsh.exe
-WHERE /Q pwsh.exe && (
-  SET powershell_exe=pwsh.exe
-) || WHERE /Q PowerShell.exe && (
-  SET powershell_exe=PowerShell.exe
-) || (
-  ECHO Error: PowerShell executable not found.                        1>&2
-  ECHO        Either pwsh.exe or PowerShell.exe must be in your PATH. 1>&2
-  EXIT 1
-)
-
 FOR %%i IN ("%~dp0..") DO SET ROOT_DIR=%%~fi
 
 SET shared_bin=%ROOT_DIR%\bin\internal\shared.bat
