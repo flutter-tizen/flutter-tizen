@@ -315,6 +315,15 @@ class NativeTpk extends TizenPackage {
     }
     buildDir.createSync(recursive: true);
 
+    if (tizenProject.isMultiApp) {
+      final Directory serviceBuildDir =
+          tizenProject.serviceAppDirectory.childDirectory(buildConfig);
+      if (serviceBuildDir.existsSync()) {
+        serviceBuildDir.deleteSync(recursive: true);
+      }
+      serviceBuildDir.createSync(recursive: true);
+    }
+
     // The output TPK is signed with an active profile unless otherwise
     // specified.
     String? securityProfile = buildInfo.securityProfile;

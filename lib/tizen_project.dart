@@ -60,7 +60,6 @@ class TizenProject extends FlutterProjectPlatform {
   @visibleForTesting
   Directory get uiAppDirectory => editableDirectory.childDirectory('ui');
 
-  @visibleForTesting
   Directory get serviceAppDirectory =>
       editableDirectory.childDirectory('service');
 
