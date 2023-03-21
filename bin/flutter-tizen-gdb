@@ -23,243 +23,241 @@ from traceback import format_exc
 
 
 class TizenDevice:
-    def __init__(self, id, model=''):
-        self.id = id
-        self.model = model
-        self.forwarded_ports = set()
-        self.capabilities = dict()
+  def __init__(self, id, model=''):
+    self.id = id
+    self.model = model
+    self.forwarded_ports = set()
+    self.capabilities = dict()
 
-        raw = self.sdb_run(['capability']).stdout
-        for line in raw.splitlines():
-            if ':' in line:
-                tuple = line.strip().partition(':')
-                self.capabilities[tuple[0]] = tuple[-1]
+    raw = self.sdb_run(['capability']).stdout
+    for line in raw.splitlines():
+      if ':' in line:
+        tuple = line.strip().partition(':')
+        self.capabilities[tuple[0]] = tuple[-1]
 
-    def __enter__(self):
-        return self
+  def __enter__(self):
+    return self
 
-    def __exit__(self, exception_type, exception_value, traceback):
-        for port in self.forwarded_ports.copy():
-            self.unforward_port(port)
+  def __exit__(self, exception_type, exception_value, traceback):
+    for port in self.forwarded_ports.copy():
+      self.unforward_port(port)
 
-    def sdb_run(self, args, checked=True):
-        return subprocess.run(
-            ['sdb', '-s', self.id] + args, encoding='utf-8',
-            stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-            check=checked)
+  def sdb_run(self, args, checked=True):
+    return subprocess.run(
+        ['sdb', '-s', self.id] + args, encoding='utf-8',
+        stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        check=checked)
 
-    def sdb_start(self, args):
-        return subprocess.Popen(
-            ['sdb', '-s', self.id] + args, encoding='utf-8',
-            stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  def sdb_start(self, args):
+    return subprocess.Popen(
+        ['sdb', '-s', self.id] + args, encoding='utf-8',
+        stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-    def uses_secure_protocol(self):
-        return self.capabilities.get('secure_protocol') == 'enabled'
+  def uses_secure_protocol(self):
+    return self.capabilities.get('secure_protocol') == 'enabled'
 
-    def forward_port(self, host_port, device_port):
-        self.sdb_run(['forward', f'tcp:{host_port}', f'tcp:{device_port}'])
-        self.forwarded_ports.add(host_port)
+  def forward_port(self, host_port, device_port):
+    self.sdb_run(['forward', f'tcp:{host_port}', f'tcp:{device_port}'])
+    self.forwarded_ports.add(host_port)
 
-    def unforward_port(self, host_port):
-        self.sdb_run(['forward', '--remove', f'tcp:{host_port}'])
-        self.forwarded_ports.remove(host_port)
+  def unforward_port(self, host_port):
+    self.sdb_run(['forward', '--remove', f'tcp:{host_port}'])
+    self.forwarded_ports.remove(host_port)
 
-    def get_architecture(self):
-        cpu_arch = self.capabilities.get('cpu_arch')
-        if cpu_arch == 'x86':
-            return 'x86'
-        elif self.uses_secure_protocol():
-            return 'arm' if cpu_arch == 'armv7l' else 'arm64'
-        else:
-            raw = self.sdb_run(['shell', 'ls', '/usr/lib64']).stdout
-            return 'arm' if 'No such file or directory' in raw else 'arm64'
+  def get_architecture(self):
+    cpu_arch = self.capabilities.get('cpu_arch')
+    if cpu_arch == 'x86':
+      return 'x86'
+    elif self.uses_secure_protocol():
+      return 'arm' if cpu_arch == 'armv7l' else 'arm64'
+    else:
+      raw = self.sdb_run(['shell', 'ls', '/usr/lib64']).stdout
+      return 'arm' if 'No such file or directory' in raw else 'arm64'
 
 
 def find_target_device():
-    raw = subprocess.run(['sdb', 'devices'], encoding='utf-8',
-                         stdout=subprocess.PIPE).stdout
-    lines = [line for line in raw.splitlines() if not line.startswith('* ')]
-    if len(lines) <= 1:
-        return None
-
-    devices = []
-    for line in lines[1:]:
-        split = re.split(r'\s{2,}|\t', line.strip())
-        if len(split) < 3:
-            continue
-        id = split[0]
-        state = split[1]
-        model = split[2]
-        if state == 'device':
-            devices.append(TizenDevice(id, model))
-
-    if len(devices) == 1:
-        return devices[0]
-
-    print('Multiple devices found:')
-    for index in range(len(devices)):
-        device = devices[index]
-        print(f'[{index + 1}] {device.id} - {device.model}')
-    choice = input(f'Choose a device [1-{len(devices)}]: ')
-
-    if choice.isdigit() and int(choice) <= len(devices):
-        return devices[int(choice) - 1]
+  raw = subprocess.run(['sdb', 'devices'], encoding='utf-8',
+                       stdout=subprocess.PIPE).stdout
+  lines = [line for line in raw.splitlines() if not line.startswith('* ')]
+  if len(lines) <= 1:
     return None
+
+  devices = []
+  for line in lines[1:]:
+    split = re.split(r'\s{2,}|\t', line.strip())
+    if len(split) < 3:
+      continue
+    id = split[0]
+    state = split[1]
+    model = split[2]
+    if state == 'device':
+      devices.append(TizenDevice(id, model))
+
+  if len(devices) == 1:
+    return devices[0]
+
+  print('Multiple devices found:')
+  for index in range(len(devices)):
+    device = devices[index]
+    print(f'[{index + 1}] {device.id} - {device.model}')
+  choice = input(f'Choose a device [1-{len(devices)}]: ')
+
+  if choice.isdigit() and int(choice) <= len(devices):
+    return devices[int(choice) - 1]
+  return None
 
 
 def locate_tizen_sdk():
-    if 'TIZEN_SDK' in os.environ:
-        return Path(os.environ['TIZEN_SDK'])
-    sdb_path = shutil.which('sdb')
-    if sdb_path and Path(sdb_path).parent.name == 'tools':
-        return Path(sdb_path).parent.parent
-    if os.name == 'nt':
-        sdk_dir = Path(os.environ['SystemDrive']) / 'tizen-studio'
-    else:
-        sdk_dir = Path.home() / 'tizen-studio'
-    if sdk_dir.is_dir():
-        return sdk_dir
-    sys.exit('Unable to locate Tizen SDK.')
+  if 'TIZEN_SDK' in os.environ:
+    return Path(os.environ['TIZEN_SDK'])
+  sdb_path = shutil.which('sdb')
+  if sdb_path and Path(sdb_path).parent.name == 'tools':
+    return Path(sdb_path).parent.parent
+  if os.name == 'nt':
+    sdk_dir = Path(os.environ['SystemDrive']) / 'tizen-studio'
+  else:
+    sdk_dir = Path.home() / 'tizen-studio'
+  if sdk_dir.is_dir():
+    return sdk_dir
+  sys.exit('Unable to locate Tizen SDK.')
 
 
 def get_gdb_path(tizen_sdk_dir: Path, arch):
-    if arch == 'arm':
-        target_triple = 'arm-linux-gnueabi'
-    elif arch == 'arm64':
-        target_triple = 'aarch64-linux-gnu'
-    else:
-        target_triple = 'i586-linux-gnueabi'
-    gdb_name = f'{target_triple}-gdb'
-    gdb_path = tizen_sdk_dir / 'tools' / f'{gdb_name}-8.3.1' / 'bin' / gdb_name
-    if os.name == 'nt':
-        gdb_path = gdb_path.with_suffix('.exe')
-    assert gdb_path.is_file(), f'{gdb_path} does not exist.'
-    return gdb_path
+  if arch == 'arm':
+    target_triple = 'arm-linux-gnueabi'
+  elif arch == 'arm64':
+    target_triple = 'aarch64-linux-gnu'
+  else:
+    target_triple = 'i586-linux-gnueabi'
+  gdb_name = f'{target_triple}-gdb'
+  gdb_path = tizen_sdk_dir / 'tools' / f'{gdb_name}-8.3.1' / 'bin' / gdb_name
+  if os.name == 'nt':
+    gdb_path = gdb_path.with_suffix('.exe')
+  assert gdb_path.is_file(), f'{gdb_path} does not exist.'
+  return gdb_path
 
 
 def find_project():
-    current_dir = Path.cwd()
-    if not (current_dir / 'pubspec.yaml').is_file():
-        sys.exit('No pubspec.yaml file found.')
-    tizen_dir = current_dir / 'tizen'
-    if not (tizen_dir / 'tizen-manifest.xml').is_file():
-        sys.exit('This project is not configured for Tizen.')
-    if not (tizen_dir / 'project_def.prop').is_file():
-        sys.exit('Not supported app language.')
-    return current_dir
+  current_dir = Path.cwd()
+  if not (current_dir / 'pubspec.yaml').is_file():
+    sys.exit('No pubspec.yaml file found.')
+  tizen_dir = current_dir / 'tizen'
+  if not (tizen_dir / 'tizen-manifest.xml').is_file():
+    sys.exit('This project is not configured for Tizen.')
+  if not (tizen_dir / 'project_def.prop').is_file():
+    sys.exit('Not supported app language.')
+  return current_dir
 
 
 def find_free_port():
-    with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as sock:
-        sock.bind(('', 0))
-        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        return sock.getsockname()[1]
+  with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as sock:
+    sock.bind(('', 0))
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    return sock.getsockname()[1]
 
 
 def find_app_id(project_dir: Path):
-    # Assume that the app ID is identical to the package ID.
-    tpk_name = None
-    tpk_dir = project_dir / 'build' / 'tizen' / 'tpk'
-    for child in tpk_dir.iterdir():
-        if child.suffix == '.tpk':
-            tpk_name = child.stem
-    if not tpk_name:
-        sys.exit('TPK file not found.')
-    return tpk_name.rpartition('-')[0]
+  # Assume that the app ID is identical to the package ID.
+  tpk_name = None
+  tpk_dir = project_dir / 'build' / 'tizen' / 'tpk'
+  for child in tpk_dir.iterdir():
+    if child.suffix == '.tpk':
+      tpk_name = child.stem
+  if not tpk_name:
+    sys.exit('TPK file not found.')
+  return tpk_name.rpartition('-')[0]
 
 
 def find_pid(device: TizenDevice, app_id):
-    raw = device.sdb_run(['shell', 'app_launcher', '-S']).stdout
-    for line in raw.splitlines():
-        match = re.match(app_id + r' \(([0-9]+)\)', line.strip())
-        if match:
-            return match.group(1)
-    return None
+  raw = device.sdb_run(['shell', 'app_launcher', '-S']).stdout
+  for line in raw.splitlines():
+    match = re.match(app_id + r' \(([0-9]+)\)', line.strip())
+    if match:
+      return match.group(1)
+  return None
 
 
 def install_gdb_server(device: TizenDevice, tizen_sdk_dir: Path):
-    device_arch = device.get_architecture()
-    if device_arch == 'arm':
-        arch = 'armel'
-    elif device_arch == 'arm64':
-        arch = 'aarch64'
-    else:
-        arch = 'i386'
-    # gdbserver 8.3.1 is unstable on arm. Default to gdbserver 7.8.1.
-    tar_name = f'gdbserver_7.8.1_{arch}.tar'
-    tar_path = tizen_sdk_dir / 'tools' / 'on-demand' / tar_name
-    assert tar_path.is_file(), f'{tar_path} does not exist.'
+  device_arch = device.get_architecture()
+  if device_arch == 'arm':
+    arch = 'armel'
+  elif device_arch == 'arm64':
+    arch = 'aarch64'
+  else:
+    arch = 'i386'
+  # gdbserver 8.3.1 is unstable on arm. Default to gdbserver 7.8.1.
+  tar_name = f'gdbserver_7.8.1_{arch}.tar'
+  tar_path = tizen_sdk_dir / 'tools' / 'on-demand' / tar_name
+  assert tar_path.is_file(), f'{tar_path} does not exist.'
 
-    remote_dir = '/home/owner/share/tmp/sdk_tools/gdbserver'
-    result = device.sdb_run(['shell', 'mkdir', '-p', remote_dir]).stdout
-    assert not result.strip(), result
+  remote_dir = '/home/owner/share/tmp/sdk_tools/gdbserver'
+  result = device.sdb_run(['shell', 'mkdir', '-p', remote_dir]).stdout
+  assert not result.strip(), result
 
-    with tempfile.TemporaryDirectory() as temp_dir:
-        with tarfile.open(tar_path) as tar_file:
-            tar_file.extractall(path=temp_dir)
-        real_gdbserver = Path(temp_dir) / 'gdbserver' / 'gdbserver'
-        real_gdbserver = real_gdbserver.rename(
-            real_gdbserver.parent / 'gdbserver_real')
-        result = device.sdb_run(['push', real_gdbserver, remote_dir]).stdout
-        assert 'file(s) pushed' in result, result
-
-    # This fake gdbserver script terminates any running gdbserver before
-    # invoking the real gdbserver.
-    fake_gdbserver = Path(__file__).parent / 'internal' / 'gdbserver'
-    result = device.sdb_run(['push', fake_gdbserver, remote_dir]).stdout
+  with tempfile.TemporaryDirectory() as temp_dir:
+    with tarfile.open(tar_path) as tar_file:
+      tar_file.extractall(path=temp_dir)
+    real_gdbserver = Path(temp_dir) / 'gdbserver' / 'gdbserver'
+    real_gdbserver = real_gdbserver.rename(
+        real_gdbserver.parent / 'gdbserver_real')
+    result = device.sdb_run(['push', real_gdbserver, remote_dir]).stdout
     assert 'file(s) pushed' in result, result
+
+  # This fake gdbserver script terminates any running gdbserver before
+  # invoking the real gdbserver.
+  fake_gdbserver = Path(__file__).parent / 'internal' / 'gdbserver'
+  result = device.sdb_run(['push', fake_gdbserver, remote_dir]).stdout
+  assert 'file(s) pushed' in result, result
 
 
 def readline_from(proc: subprocess.Popen):
-    if os.name == 'nt':
-        # select() is not supported on Windows.
-        line = proc.stdout.readline()
+  if os.name == 'nt':
+    # select() is not supported on Windows.
+    line = proc.stdout.readline()
+  else:
+    fds = [proc.stdout.fileno(), proc.stderr.fileno()]
+    fd = select.select(fds, [], [])[0][0]
+    if fd == proc.stdout.fileno():
+      line = proc.stdout.readline()
     else:
-        fds = [proc.stdout.fileno(), proc.stderr.fileno()]
-        fd = select.select(fds, [], [])[0][0]
-        if fd == proc.stdout.fileno():
-            line = proc.stdout.readline()
-        else:
-            line = proc.stderr.readline()
-            if not proc.poll():
-                raise Exception(line)
-    return line.strip()
+      line = proc.stderr.readline()
+      if not proc.poll():
+        raise Exception(line)
+  return line.strip()
 
 
 def start_gdb_server(device: TizenDevice, app_id, debug_port, pid, launched: threading.Event):
-    args = [
-        'shell', 'launch_debug', app_id,
-        '__AUL_SDK__', 'ATTACH',
-        '__LAUNCH_APP_MODE__', 'SYNC',
-        '__DLP_GDBSERVER_PATH__', '/home/owner/share/tmp/sdk_tools/gdbserver/gdbserver',
-        '__DLP_ATTACH_ARG__', f'--attach,:{debug_port},{pid}']
-    try:
-        with device.sdb_start(args) as proc:
-            while not proc.poll():
-                line = readline_from(proc)
-                if not line:
-                    continue
-                print(line)
-                if 'Listening on port' in line:
-                    launched.set()
-                elif line.startswith((
-                        'Detaching from process', 'GDBserver exiting',
-                        'No program to debug.')):
-                    os.kill(os.getpid(), signal.SIGINT)
-                    break
-                elif line.startswith((
-                        'Failed to send launch request', "Can't bind address",
-                        'Cannot attach to process')):
-                    if not proc.poll():
-                        proc.terminate()
-                    raise Exception(line)
-    except Exception:
-        sys.stderr.write(format_exc())
-        os.kill(os.getpid(), signal.SIGINT)
+  args = [
+      'shell', 'launch_debug', app_id,
+      '__AUL_SDK__', 'ATTACH',
+      '__LAUNCH_APP_MODE__', 'SYNC',
+      '__DLP_GDBSERVER_PATH__', '/home/owner/share/tmp/sdk_tools/gdbserver/gdbserver',
+      '__DLP_ATTACH_ARG__', f'--attach,:{debug_port},{pid}']
+  try:
+    with device.sdb_start(args) as proc:
+      while not proc.poll():
+        line = readline_from(proc)
+        if not line:
+          continue
+        print(line)
+        if 'Listening on port' in line:
+          launched.set()
+        elif line.startswith(('Detaching from process', 'GDBserver exiting',
+                              'No program to debug.')):
+          os.kill(os.getpid(), signal.SIGINT)
+          break
+        elif line.startswith(('Failed to send launch request', "Can't bind address",
+                              'Cannot attach to process')):
+          if not proc.poll():
+            proc.terminate()
+          raise Exception(line)
+  except Exception:
+    sys.stderr.write(format_exc())
+    os.kill(os.getpid(), signal.SIGINT)
 
 
 def print_help():
-    print('''
+  print('''
 Available commands:
 
 r Run GDB client
@@ -272,30 +270,30 @@ For detailed usage, see: https://github.com/flutter-tizen/flutter-tizen/wiki/Deb
 
 
 def run_gdb_client(gdb_path: Path, program: Path, args):
-    # Temporarily disable the SIGINT handler.
-    sigint_handler = signal.signal(signal.SIGINT, signal.SIG_IGN)
+  # Temporarily disable the SIGINT handler.
+  sigint_handler = signal.signal(signal.SIGINT, signal.SIG_IGN)
 
-    # os.execv() and subprocess.run(list) are not portable.
-    command = [str(gdb_path), str(program)] + args
-    subprocess.run(' '.join([f'"{arg}"' for arg in command]), shell=True)
+  # os.execv() and subprocess.run(list) are not portable.
+  command = [str(gdb_path), str(program)] + args
+  subprocess.run(' '.join([f'"{arg}"' for arg in command]), shell=True)
 
-    # Restore the handler.
-    signal.signal(signal.SIGINT, sigint_handler)
+  # Restore the handler.
+  signal.signal(signal.SIGINT, sigint_handler)
 
 
 def find_parent_project(project_dir: Path):
-    if project_dir.name == 'example':
-        parent_dir = project_dir.parent
-        if (parent_dir / 'pubspec.yaml').is_file():
-            return parent_dir
-    return None
+  if project_dir.name == 'example':
+    parent_dir = project_dir.parent
+    if (parent_dir / 'pubspec.yaml').is_file():
+      return parent_dir
+  return None
 
 
 def print_launch_json(project_dir: Path, program: Path, debugger: Path, port, load_all_symbols):
-    if find_parent_project(project_dir):
-        project_dir = find_parent_project(project_dir)
+  if find_parent_project(project_dir):
+    project_dir = find_parent_project(project_dir)
 
-    launch_json = f'''
+  launch_json = f'''
 {{
     "version": "0.2.0",
     "configurations": [
@@ -317,142 +315,143 @@ def print_launch_json(project_dir: Path, program: Path, debugger: Path, port, lo
     ]
 }}
 '''
-    print(launch_json)
+  print(launch_json)
 
 
 def run(device: TizenDevice, debug_port=None):
-    tizen_sdk_dir = locate_tizen_sdk()
-    gdb_path = get_gdb_path(tizen_sdk_dir, device.get_architecture())
+  tizen_sdk_dir = locate_tizen_sdk()
+  gdb_path = get_gdb_path(tizen_sdk_dir, device.get_architecture())
 
-    project_dir = find_project()
-    program = project_dir / 'build' / 'tizen' / 'tpk' / 'tpkroot' / 'bin' / 'runner'
-    if not program.is_file():
-        sys.exit('Could not find the runner executable.\n'
-                 'Make sure the app has been built and installed to your device.')
+  project_dir = find_project()
+  program = project_dir / 'build' / 'tizen' / 'tpk' / 'tpkroot' / 'bin' / 'runner'
+  if not program.is_file():
+    sys.exit('Could not find the runner executable.\n'
+             'Make sure the app has been built and installed to your device.')
 
-    already_running = debug_port is not None
-    if not already_running:
-        debug_port = find_free_port()
-        device.forward_port(debug_port, debug_port)
+  already_running = debug_port is not None
+  if not already_running:
+    debug_port = find_free_port()
+    device.forward_port(debug_port, debug_port)
 
-        app_id = find_app_id(project_dir)
-        pid = find_pid(device, app_id)
-        if not pid:
-            sys.exit('The app is not running.')
+    app_id = find_app_id(project_dir)
+    pid = find_pid(device, app_id)
+    if not pid:
+      sys.exit('The app is not running.')
 
-        install_gdb_server(device, tizen_sdk_dir)
+    install_gdb_server(device, tizen_sdk_dir)
 
-        launched = threading.Event()
-        server_thread = threading.Thread(
-            target=start_gdb_server,
-            args=[device, app_id, debug_port, pid, launched], daemon=True)
-        server_thread.start()
-        launched.wait()
+    launched = threading.Event()
+    server_thread = threading.Thread(
+        target=start_gdb_server,
+        args=[device, app_id, debug_port, pid, launched], daemon=True)
+    server_thread.start()
+    launched.wait()
 
-    print(f'gdbserver is listening for debug connection on port {debug_port}.')
-    print_help()
+  print(f'gdbserver is listening for debug connection on port {debug_port}.')
+  print_help()
 
-    while True:
-        choice = input('Enter a command: ')
+  while True:
+    choice = input('Enter a command: ')
 
-        if choice == 'h' or choice == 'H' or choice == '?':
-            print_help()
-        elif choice == 'r' or choice == 'R':
-            if already_running:
-                args = ['-ex', f'target remote :{debug_port}']
-            else:
-                args = ['-ex', 'set auto-solib-add off',
-                        '-ex', f'target remote :{debug_port}',
-                        '-ex', 'share libc.so',
-                        '-ex', 'share libflutter*']
-            run_gdb_client(gdb_path, program, args)
-            break
-        elif choice == 'p' or choice == 'P':
-            print_launch_json(project_dir, program, gdb_path,
-                              debug_port, already_running)
-        elif choice == 'v' or choice == 'V':
-            if find_parent_project(project_dir):
-                subprocess.run(['code', '..'])
-            else:
-                subprocess.run(['code', '.'])
-        elif choice == 'q' or choice == 'Q':
-            break
+    if choice == 'h' or choice == 'H' or choice == '?':
+      print_help()
+    elif choice == 'r' or choice == 'R':
+      if already_running:
+        args = ['-ex', f'target remote :{debug_port}']
+      else:
+        args = ['-ex', 'set auto-solib-add off',
+                '-ex', f'target remote :{debug_port}',
+                '-ex', 'share libc.so',
+                '-ex', 'share libflutter*']
+      run_gdb_client(gdb_path, program, args)
+      break
+    elif choice == 'p' or choice == 'P':
+      print_launch_json(project_dir, program, gdb_path,
+                        debug_port, already_running)
+    elif choice == 'v' or choice == 'V':
+      if find_parent_project(project_dir):
+        subprocess.run(['code', '..'])
+      else:
+        subprocess.run(['code', '.'])
+    elif choice == 'q' or choice == 'Q':
+      break
 
 
 def download_archive(message: str, url: str, location: Path):
-    with tempfile.TemporaryDirectory() as temp_dir:
-        temp_file = Path(temp_dir) / f'{location.name}.zip'
-        with urllib.request.urlopen(url) as context, temp_file.open(mode='wb') as file:
-            length = context.getheader('content-length')
-            total = f' of {int(length) / 1024 / 1024:.1f}' if length else ''
-            received = 0
-            while True:
-                buffer = context.read(64 * 1024)
-                if not buffer:
-                    break
-                received += file.write(buffer)
-                print(f'{message} {received / 1024 / 1024:.1f}{total} MB\r', end='')
-            print(f'{message} Done' + ' ' * 20)
+  with tempfile.TemporaryDirectory() as temp_dir:
+    temp_file = Path(temp_dir) / f'{location.name}.zip'
+    with urllib.request.urlopen(url) as context, temp_file.open(mode='wb') as file:
+      length = context.getheader('content-length')
+      total = f' of {int(length) / 1024 / 1024:.1f}' if length else ''
+      received = 0
+      while True:
+        buffer = context.read(64 * 1024)
+        if not buffer:
+          break
+        received += file.write(buffer)
+        print(f'{message} {received / 1024 / 1024:.1f}{total} MB\r', end='')
+      print(f'{message} Done' + ' ' * 20)
 
-        with zipfile.ZipFile(temp_file, 'r') as archive:
-            archive.extractall(location)
+    with zipfile.ZipFile(temp_file, 'r') as archive:
+      archive.extractall(location)
 
 
 def download_symbols(device: TizenDevice):
-    version_file = Path(__file__).parent / 'internal' / 'embedder.version'
-    with version_file.open() as file:
-        version = file.readline().strip()[:7]
-    if len(version) != 7:
-        sys.exit('The embedder version file is invalid.')
+  version_file = Path(__file__).parent / 'internal' / 'embedder.version'
+  with version_file.open() as file:
+    version = file.readline().strip()[:7]
+  if len(version) != 7:
+    sys.exit('The embedder version file is invalid.')
 
-    base_url = 'https://github.com/flutter-tizen/embedder/releases'
-    device_arch = device.get_architecture()
-    for api_level in ['5.5', '6.5']:
-        # Any existing files will be overwritten.
-        location = Path('symbols') / f'tizen-{api_level}-{device_arch}'
-        location.mkdir(parents=True, exist_ok=True)
+  base_url = 'https://github.com/flutter-tizen/embedder/releases'
+  device_arch = device.get_architecture()
+  for api_level in ['5.5', '6.5']:
+    # Any existing files will be overwritten.
+    location = Path('symbols') / f'tizen-{api_level}-{device_arch}'
+    location.mkdir(parents=True, exist_ok=True)
 
-        basename = f'tizen-{api_level}-{device_arch}_symbols'
-        url = f'{base_url}/download/{version}/{basename}.zip'
+    basename = f'tizen-{api_level}-{device_arch}_symbols'
+    url = f'{base_url}/download/{version}/{basename}.zip'
 
-        try:
-            download_archive(f'Downloading {basename}...', url, location)
-        except:
-            sys.exit(f'Failed to download a file from: {url}')
+    try:
+      download_archive(f'Downloading {basename}...', url, location)
+    except:
+      sys.exit(f'Failed to download a file from: {url}')
 
-    print('The downloaded symbols can be found at "symbols/".')
+  print('The downloaded symbols can be found at "symbols/".')
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description='Tool for starting GDB server and client to debug a native app on a Tizen device.')
-    parser.add_argument('-d', '--device-id', metavar='SERIAL', type=str,
-                        help='Target device ID.')
-    parser.add_argument('-p', '--debug-port', metavar='PORT', type=int,
-                        help='Connects to an already running gdbserver on the specified port.')
-    parser.add_argument('--download-symbols', action='store_true',
-                        help='Downloads embedder debug symbols.')
-    args = parser.parse_args()
+  parser = argparse.ArgumentParser(
+    description='Tool for starting GDB server and client to debug a native app on a Tizen device.')
+  parser.add_argument('-d', '--device-id', metavar='SERIAL', type=str,
+                      help='Target device ID.')
+  parser.add_argument('-p', '--debug-port', metavar='PORT', type=int,
+                      help='Connects to an already running gdbserver on the specified port.')
+  parser.add_argument('--download-symbols', action='store_true',
+                      help='Downloads embedder debug symbols.')
+  args = parser.parse_args()
 
-    try:
-        if args.device_id:
-            device = TizenDevice(args.device_id)
-        else:
-            device = find_target_device()
+  try:
+    if args.device_id:
+      device = TizenDevice(args.device_id)
+    else:
+      device = find_target_device()
 
-        if not device:
-            sys.exit('No target device found.')
-        elif device.uses_secure_protocol():
-            sys.exit('Not supported device.')
+    if not device:
+      sys.exit('No target device found.')
+    elif device.uses_secure_protocol():
+      sys.exit('Not supported device.')
 
-        with device:
-            if args.download_symbols:
-                download_symbols(device)
-            else:
-                run(device, args.debug_port)
-    except (ProcessLookupError, KeyboardInterrupt):
-        print()
+    with device:
+      if args.download_symbols:
+        download_symbols(device)
+      else:
+        run(device, args.debug_port)
+  except (ProcessLookupError, KeyboardInterrupt):
+    print()
 
 
+# Execute only if run as a script.
 if __name__ == '__main__':
-    main()
+  main()
