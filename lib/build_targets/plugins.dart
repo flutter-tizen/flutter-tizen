@@ -99,6 +99,13 @@ class NativePlugins extends Target {
         commonDir.childDirectory('cpp_client_wrapper');
     final Directory publicDir = commonDir.childDirectory('public');
 
+    final Directory dartSdkDir = getDartSdkDirectory();
+    dartSdkDir
+        .childDirectory('include')
+        .listSync(recursive: true)
+        .whereType<File>()
+        .forEach(inputs.add);
+
     assert(tizenSdk != null);
     final Rootstrap rootstrap = tizenSdk!.getFlutterRootstrap(
       profile: profile,
@@ -132,6 +139,7 @@ class NativePlugins extends Target {
           if (!plugin.isSharedLib) '-fPIC',
           '-I${clientWrapperDir.childDirectory('include').path.toPosixPath()}',
           '-I${publicDir.path.toPosixPath()}',
+          '-I${dartSdkDir.parent.path.toPosixPath()}',
           if (plugin.isSharedLib) ...<String>[
             '-l${getLibNameForFileName(embedder.basename)}',
             '-L${embedderDir.path.toPosixPath()}',

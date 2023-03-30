@@ -56,6 +56,10 @@ Directory getCommonArtifactsDirectory() {
       .childDirectory('tizen-common');
 }
 
+Directory getDartSdkDirectory() {
+  return globals.cache.getCacheDir('dart-sdk');
+}
+
 /// Removes the "lib" prefix and file extension from [name] and returns.
 String getLibNameForFileName(String name) {
   if (name.startsWith('lib')) {
