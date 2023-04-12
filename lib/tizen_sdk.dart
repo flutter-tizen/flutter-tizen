@@ -184,6 +184,7 @@ class TizenSdk {
       ],
       environment: <String, String>{
         'PATH': getPathVariable(),
+        'USER_CPP_OPTS': '-std=c++17',
       },
     );
   }
@@ -215,6 +216,7 @@ class TizenSdk {
       ],
       environment: <String, String>{
         'PATH': getPathVariable(),
+        'USER_CPP_OPTS': '-std=c++17',
       },
     );
   }
@@ -328,19 +330,11 @@ class TizenSdk {
   <rootstrap id="$flutterRootstrapId" name="Flutter" version="Tizen $apiVersion" architecture="$buildArch" path="${rootstrap.rootDirectory.path}" supportToolchainType="tizen.core">
     <property key="DEV_PACKAGE_CONFIG_PATH" value="${configFile.path}"/>
     <property key="LINKER_MISCELLANEOUS_OPTION" value="${linkerFlags.join(' ')}"/>
-    <property key="COMPILER_MISCELLANEOUS_OPTION" value="-std=c++17"/>
+    <property key="COMPILER_MISCELLANEOUS_OPTION" value=""/>
     <toolchain name="gcc" version="$defaultGccVersion"/>
   </rootstrap>
 </extension>
 ''');
-
-    // Remove files created by previous versions of the flutter-tizen tool.
-    final Iterable<File> manifests = pluginsDir.listSync().whereType<File>();
-    for (final File file in manifests) {
-      if (file.basename.endsWith('.flutter.xml')) {
-        file.deleteSync();
-      }
-    }
 
     return Rootstrap(flutterRootstrapId, rootstrap.rootDirectory);
   }
