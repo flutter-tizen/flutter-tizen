@@ -44,7 +44,7 @@ type = staticLib
 ''');
     embeddingDir.childFile('include/flutter.h').createSync(recursive: true);
 
-    _installFakeEngineArtifacts(cache.getArtifactDirectory('engine'));
+    _createFakeIncludeDirs(cache);
   });
 
   testUsingContext('Build succeeds', () async {
@@ -74,7 +74,11 @@ type = staticLib
   });
 }
 
-void _installFakeEngineArtifacts(Directory engineArtifactDir) {
+void _createFakeIncludeDirs(Cache cache) {
+  final Directory dartSdkDir = cache.getCacheDir('dart-sdk');
+  dartSdkDir.childDirectory('include').createSync(recursive: true);
+
+  final Directory engineArtifactDir = cache.getArtifactDirectory('engine');
   for (final String directory in <String>[
     'tizen-common/cpp_client_wrapper/include',
     'tizen-common/public',

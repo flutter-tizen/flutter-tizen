@@ -86,9 +86,8 @@ class NativeEmbedding extends Target {
         .forEach(inputs.add);
     publicDir.listSync(recursive: true).whereType<File>().forEach(inputs.add);
 
-    final Directory dartSdkIncludeDir =
-        getDartSdkDirectory().childDirectory('include');
-    dartSdkIncludeDir
+    getDartSdkDirectory()
+        .childDirectory('include')
         .listSync(recursive: true)
         .whereType<File>()
         .forEach(inputs.add);
