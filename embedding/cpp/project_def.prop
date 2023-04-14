@@ -8,6 +8,8 @@ profile = common-4.0
 
 USER_INC_DIRS = include \
     ../../flutter/bin/cache/artifacts/engine/tizen-common/cpp_client_wrapper/include \
-    ../../flutter/bin/cache/artifacts/engine/tizen-common/public
+    ../../flutter/bin/cache/artifacts/engine/tizen-common/public \
+    ../../flutter/bin/cache/dart-sdk/include
 USER_SRCS = *.cc \
-    ../../flutter/bin/cache/artifacts/engine/tizen-common/cpp_client_wrapper/*.cc
+    ../../flutter/bin/cache/artifacts/engine/tizen-common/cpp_client_wrapper/*.cc \
+    ../../flutter/bin/cache/dart-sdk/include/dart_api_dl.c

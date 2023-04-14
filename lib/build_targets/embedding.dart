@@ -86,6 +86,13 @@ class NativeEmbedding extends Target {
         .forEach(inputs.add);
     publicDir.listSync(recursive: true).whereType<File>().forEach(inputs.add);
 
+    final Directory dartSdkIncludeDir =
+        getDartSdkDirectory().childDirectory('include');
+    dartSdkIncludeDir
+        .listSync(recursive: true)
+        .whereType<File>()
+        .forEach(inputs.add);
+
     assert(tizenSdk != null);
     String? apiVersion;
     if (tizenProject.manifestFile.existsSync()) {
