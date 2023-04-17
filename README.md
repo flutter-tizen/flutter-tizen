@@ -58,10 +58,9 @@ flutter-tizen run --release
 #### Platform integration
 
 - [Flutter plugins for Tizen](https://github.com/flutter-tizen/plugins)
-- [Writing a new plugin to use platform features](doc/develop-plugin.md)
 - [Dart bindings for Tizen APIs](https://github.com/flutter-tizen/tizen_interop)
 
-#### Others
+#### Miscellaneous
 
 - [Publishing apps on Samsung Galaxy Store and TV Seller Office](doc/publish-app.md)
 - [Wiki](https://github.com/flutter-tizen/flutter-tizen/wiki)
