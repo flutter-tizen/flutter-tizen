@@ -6,13 +6,13 @@
 
 An extension to the [Flutter SDK](https://github.com/flutter/flutter) for building Flutter applications for Tizen devices.
 
-_Flutter and the related logo are trademarks of Google LLC. We are not endorsed by or affiliated with Google LLC._
+_Flutter and the related logo are trademarks of Google LLC. This project is sponsored and maintained by Samsung Research._
 
 ## Supported devices
 
-- **Galaxy Watch**: Tizen 4.0 (2018) or later
-- **Smart TV**: [Tizen 6.0 (2021) or later](https://developer.samsung.com/smarttv/develop/specifications/tv-model-groups.html) (older models are not supported due to [security reasons](https://github.com/flutter-tizen/flutter-tizen/wiki/Limitations#tv-limitations))
-- **IoT (RPi 3/4)**: Tizen 5.5 (2020) or later
+- **Galaxy Watch**: Tizen 5.5 or later
+- **Smart TV**: [Tizen 6.0 (2021) or later](https://developer.samsung.com/smarttv/develop/specifications/tv-model-groups.html)
+- **IoT (RPi 3/4)**: Tizen 5.5 or later
 
 ## Installation
 
@@ -22,15 +22,16 @@ _Flutter and the related logo are trademarks of Google LLC. We are not endorsed 
 
 ## Usage
 
-`flutter-tizen` substitutes the original [`flutter`](https://flutter.dev/docs/reference/flutter-cli) CLI command. Only the command line interface is supported.
+`flutter-tizen` substitutes the original [`flutter`](https://docs.flutter.dev/reference/flutter-cli) CLI command. Only the command line interface is supported.
 
 ```sh
-# Inspect the installed tooling and connected devices.
+# Inspect the installed tooling and list all connected devices.
 flutter-tizen doctor -v
 flutter-tizen devices
 
-# Set up a new project in the current directory, or add Tizen files if a Flutter project already exists.
-flutter-tizen create .
+# Set up a new app project, or add Tizen files if the project already exists.
+flutter-tizen create myapp
+cd myapp
 
 # Build the project and run on a Tizen device (either in debug or release mode).
 flutter-tizen run
@@ -52,15 +53,14 @@ flutter-tizen run --release
 
 - [Getting started](doc/get-started.md)
 - [Debugging apps](doc/debug-app.md)
-- [Flutter Docs](https://flutter.dev/docs)
+- [Flutter Docs](https://docs.flutter.dev)
 
-#### Accessing Tizen native APIs
+#### Platform integration
 
-- [A list of Flutter plugins available for Tizen](https://github.com/flutter-tizen/plugins)
-- [Writing a new plugin to use platform features](doc/develop-plugin.md)
+- [Flutter plugins for Tizen](https://github.com/flutter-tizen/plugins)
 - [Dart bindings for Tizen APIs](https://github.com/flutter-tizen/tizen_interop)
 
-#### Others
+#### Miscellaneous
 
 - [Publishing apps on Samsung Galaxy Store and TV Seller Office](doc/publish-app.md)
 - [Wiki](https://github.com/flutter-tizen/flutter-tizen/wiki)
@@ -71,4 +71,4 @@ If you run into any problem, post an [issue](../../issues) in this repository to
 
 ## Contribution
 
-This project is community-driven and we welcome all your contribution and feedbacks. Consider filing an [issue](../../issues) or [pull request](../../pulls) to make this project better.
+This project is community-driven and we welcome all your contributions and feedback. Consider filing an [issue](../../issues) or [pull request](../../pulls) to make this project better.
