@@ -14,17 +14,12 @@ USER_UNDEFS =
 USER_CPP_DEFS = TIZEN_DEPRECATION DEPRECATION_WARNING
 USER_CPP_UNDEFS =
 
-# Compiler/linker flags
-USER_CFLAGS_MISC =
-USER_CPPFLAGS_MISC = -c -fmessage-length=0
-USER_LFLAGS = -Wl,-E
-
-# Libraries and objects
-USER_LIB_DIRS = lib
-USER_LIBS =
-USER_OBJS =
-
 # User includes
-USER_INC_DIRS = inc ../flutter src
+USER_INC_DIRS = inc flutter src
 USER_INC_FILES =
 USER_CPP_INC_FILES =
+
+# Linker options
+USER_LIB_DIRS = lib
+USER_LIBS =
+USER_LFLAGS = -Wl,-E
