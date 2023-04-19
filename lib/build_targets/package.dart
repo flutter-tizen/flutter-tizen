@@ -290,6 +290,8 @@ class NativeTpk extends TizenPackage {
         commonDir.childDirectory('cpp_client_wrapper');
     final Directory publicDir = commonDir.childDirectory('public');
 
+    final Directory dartSdkDir = getDartSdkDirectory();
+
     assert(tizenSdk != null);
     final Rootstrap rootstrap = tizenSdk!.getFlutterRootstrap(
       profile: profile,
@@ -353,6 +355,7 @@ class NativeTpk extends TizenPackage {
       '"-Wl,--unresolved-symbols=ignore-in-shared-libs"',
       '-I${clientWrapperDir.childDirectory('include').path.toPosixPath()}',
       '-I${publicDir.path.toPosixPath()}',
+      '-I${dartSdkDir.childDirectory('include').path.toPosixPath()}',
       '-I${embeddingDir.childDirectory('include').path.toPosixPath()}',
       embeddingLib.path.toPosixPath(),
       '-L${libDir.path.toPosixPath()}',
