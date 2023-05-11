@@ -7,6 +7,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/scheduler.dart';
 
 import '../services/platform_views.dart';
 
@@ -39,6 +40,7 @@ class RenderTizenView extends PlatformViewRenderBox {
     updateGestureRecognizers(gestureRecognizers);
     _viewController.addOnPlatformViewCreatedListener(_onPlatformViewCreated);
     this.hitTestBehavior = hitTestBehavior;
+    _setOffset();
   }
 
   _PlatformViewState _state = _PlatformViewState.uninitialized;
@@ -125,6 +127,17 @@ class RenderTizenView extends PlatformViewRenderBox {
 
     _state = _PlatformViewState.ready;
     markNeedsPaint();
+  }
+
+  void _setOffset() {
+    SchedulerBinding.instance.addPostFrameCallback((_) async {
+      if (!_isDisposed) {
+        if (attached) {
+          await _viewController.setOffset(localToGlobal(Offset.zero));
+        }
+        _setOffset();
+      }
+    });
   }
 
   @override
