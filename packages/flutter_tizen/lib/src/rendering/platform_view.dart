@@ -135,6 +135,7 @@ class RenderTizenView extends PlatformViewRenderBox {
         if (attached) {
           await _viewController.setOffset(localToGlobal(Offset.zero));
         }
+        // Schedule a new post frame callback.
         _setOffset();
       }
     });
