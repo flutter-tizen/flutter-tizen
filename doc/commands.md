@@ -135,14 +135,6 @@ The following commands from the [Flutter CLI](https://flutter.dev/docs/reference
   flutter-tizen emulators --launch T-samsung-6.0-x86
   ```
 
-- ### `format`
-
-  Format Dart files. Identical to `flutter format`.
-
-  ```sh
-  flutter-tizen format foo.dart
-  ```
-
 - ### `gen-l10n`
 
   Generate [localizations](https://flutter.dev/docs/development/accessibility-and-localization/internationalization) for the Flutter project. Identical to `flutter gen-l10n`.

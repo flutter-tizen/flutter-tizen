@@ -22,7 +22,6 @@ import 'package:flutter_tools/src/commands/daemon.dart';
 import 'package:flutter_tools/src/commands/devices.dart';
 import 'package:flutter_tools/src/commands/doctor.dart';
 import 'package:flutter_tools/src/commands/emulators.dart';
-import 'package:flutter_tools/src/commands/format.dart';
 import 'package:flutter_tools/src/commands/generate_localizations.dart';
 import 'package:flutter_tools/src/commands/install.dart';
 import 'package:flutter_tools/src/commands/packages.dart';
@@ -105,13 +104,13 @@ Future<void> main(List<String> args) async {
             platform: globals.platform,
           ),
         ],
+        suppressAnalytics: globals.flutterUsage.suppressAnalytics,
       ),
       ConfigCommand(verboseHelp: verboseHelp),
       DaemonCommand(hidden: !verboseHelp),
       DevicesCommand(verboseHelp: verboseHelp),
       DoctorCommand(verbose: verbose),
       EmulatorsCommand(),
-      FormatCommand(verboseHelp: verboseHelp),
       GenerateLocalizationsCommand(
         fileSystem: globals.fs,
         logger: globals.logger,
