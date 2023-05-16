@@ -380,10 +380,10 @@ class TizenDevice extends Device {
     _logger.printTrace('$this startApp');
 
     final DeviceLogReader logReader = await getLogReader();
-    ProtocolDiscovery? observatoryDiscovery;
+    ProtocolDiscovery? vmServiceDiscovery;
 
     if (debuggingOptions.debuggingEnabled) {
-      observatoryDiscovery = ProtocolDiscovery.observatory(
+      vmServiceDiscovery = ProtocolDiscovery.vmService(
         logReader,
         portForwarder: portForwarder,
         hostPort: debuggingOptions.hostVmServicePort,
@@ -458,15 +458,15 @@ class TizenDevice extends Device {
     }
 
     // Wait for the service protocol port here. This will complete once the
-    // device has printed "Observatory is listening on...".
-    _logger.printTrace('Waiting for observatory port to be available...');
+    // device has printed "VM Service is listening on...".
+    _logger.printTrace('Waiting for VM Service port to be available...');
 
     try {
-      Uri? observatoryUri;
+      Uri? vmServiceUri;
       if (debuggingOptions.buildInfo.isDebug ||
           debuggingOptions.buildInfo.isProfile) {
-        observatoryUri = await observatoryDiscovery?.uri;
-        if (observatoryUri == null) {
+        vmServiceUri = await vmServiceDiscovery?.uri;
+        if (vmServiceUri == null) {
           _logger.printError(
             'Error waiting for a debug connection: '
             'The log reader stopped unexpectedly',
@@ -474,15 +474,15 @@ class TizenDevice extends Device {
           return LaunchResult.failed();
         }
         if (!prebuiltApplication) {
-          updateLaunchJsonFile(FlutterProject.current(), observatoryUri);
+          updateLaunchJsonFile(FlutterProject.current(), vmServiceUri);
         }
       }
-      return LaunchResult.succeeded(observatoryUri: observatoryUri);
+      return LaunchResult.succeeded(vmServiceUri: vmServiceUri);
     } on Exception catch (error) {
       _logger.printError('Error waiting for a debug connection: $error');
       return LaunchResult.failed();
     } finally {
-      await observatoryDiscovery?.cancel();
+      await vmServiceDiscovery?.cancel();
     }
   }
 

@@ -4,7 +4,7 @@
 
 1. Make sure your Tizen device meets the minimum version [requirement](../README.md#supported-devices).
 
-   Note: To see which version of Tizen your device runs on, [connect the device](configure-device.md) to your PC, run `sdb capability`, and find the `platform_version` value.
+   Note: To see which version of Tizen your device is running, [connect the device](configure-device.md) to your PC, run `sdb capability`, and find the `platform_version` value.
 
    ```
    $ sdb capability
@@ -75,22 +75,24 @@ After the app build completes, you'll see the starter app on your device.
 
 ![Starter app](images/starter-app.png)
 
+Note: If the app installation fails with an error, make sure you have created a valid certificate profile in _Certificate Manager_. For more information, refer to [TPK installation troubleshooting](https://github.com/flutter-tizen/flutter-tizen/wiki/TPK-installation-troubleshooting).
+
 ## Try hot reload
 
 Flutter's ability to reload the code of a live running app without restarting or losing app state is called [Stateful Hot Reload](https://flutter.dev/docs/development/tools/hot-reload). After launching an app using the `run` command, you will see this help message:
 
 ```
-Waiting for Tizen SM-R800 to report its views...                    11ms
 Syncing files to device Tizen SM-R800...                           516ms
 
 Flutter run key commands.
 r Hot reload. 🔥🔥🔥
 R Hot restart.
-h Repeat this help message.
+h List all available interactive commands.
 d Detach (terminate "flutter run" but leave application running).
 c Clear the screen
 q Quit (terminate the application on the device).
-An Observatory debugger and profiler on Tizen SM-R800 is available at: http://127.0.0.1:34025/wG7X7TSM38k=/
+
+A Dart VM Service on Tizen SM-R800 is available at: http://127.0.0.1:34025/wG7X7TSM38k=/
 ```
 
 Simply make any change to the app source (`lib/main.dart`), type `r`, and check if the change is made to the running app.

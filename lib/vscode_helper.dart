@@ -23,12 +23,12 @@ String _processJson(String jsonString) {
       .trim();
 }
 
-void updateLaunchJsonFile(FlutterProject project, Uri observatoryUri) {
+void updateLaunchJsonFile(FlutterProject project, Uri vmServiceUri) {
   if (project.directory.basename == 'example') {
     final FlutterProject parentProject =
         FlutterProject.fromDirectory(project.directory.parent);
     if (parentProject.pubspecFile.existsSync()) {
-      updateLaunchJsonFile(parentProject, observatoryUri);
+      updateLaunchJsonFile(parentProject, vmServiceUri);
     }
   }
 
@@ -68,7 +68,7 @@ void updateLaunchJsonFile(FlutterProject project, Uri observatoryUri) {
     config['cwd'] = project.hasExampleApp
         ? r'${workspaceFolder}/example'
         : r'${workspaceFolder}';
-    config['vmServiceUri'] = observatoryUri.toString();
+    config['vmServiceUri'] = vmServiceUri.toString();
   }
 
   const JsonEncoder encoder = JsonEncoder.withIndent('    ');

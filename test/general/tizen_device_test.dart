@@ -94,7 +94,8 @@ void main() {
     ]);
 
     final FakeDeviceLogReader deviceLogReader = FakeDeviceLogReader();
-    deviceLogReader.addLine('Observatory listening on http://127.0.0.1:12345');
+    deviceLogReader
+        .addLine('The Dart VM service is listening on http://127.0.0.1:12345');
     device.setLogReader(deviceLogReader);
     device.portForwarder = const NoOpDevicePortForwarder();
 
@@ -106,7 +107,7 @@ void main() {
     );
 
     expect(launchResult.started, isTrue);
-    expect(launchResult.hasObservatory, isTrue);
+    expect(launchResult.hasVmService, isTrue);
     expect(processManager, hasNoRemainingExpectations);
   });
 

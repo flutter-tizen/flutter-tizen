@@ -20,6 +20,6 @@ class TizenAttachCommand extends AttachCommand {
 
   @override
   String get description => '${super.description}\n\n'
-      'For attaching to Tizen devices, the observatory URL must be provided, e.g.\n'
+      'For attaching to Tizen devices, the VM Service URL must be provided, e.g.\n'
       r'`$ flutter attach --debug-url=http://127.0.0.1:43000/Swm0bjIe0ks=/`';
 }
