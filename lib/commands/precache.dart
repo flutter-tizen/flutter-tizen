@@ -28,9 +28,9 @@ class TizenPrecacheCommand extends PrecacheCommand {
   final Platform _platform;
 
   bool get _includeOtherPlatforms {
-    final bool includeAndroid = boolArg('android') ?? false;
+    final bool includeAndroid = boolArg('android');
     bool explicitlySelected(String name) =>
-        argResults!.wasParsed(name) && boolArg(name)!;
+        argResults!.wasParsed(name) && boolArg(name);
     return includeAndroid ||
         DevelopmentArtifact.values
             .map((DevelopmentArtifact artifact) => artifact.name)
@@ -39,8 +39,8 @@ class TizenPrecacheCommand extends PrecacheCommand {
 
   @override
   Future<FlutterCommandResult> runCommand() async {
-    final bool includeAllPlatforms = boolArg('all-platforms') ?? false;
-    final bool includeTizen = boolArg('tizen') ?? false;
+    final bool includeAllPlatforms = boolArg('all-platforms');
+    final bool includeTizen = boolArg('tizen');
     final bool includeDefaults = !includeTizen && !_includeOtherPlatforms;
 
     // Re-lock the cache.
@@ -49,7 +49,7 @@ class TizenPrecacheCommand extends PrecacheCommand {
     }
 
     if (includeAllPlatforms || includeDefaults || includeTizen) {
-      if (boolArg('force') ?? false) {
+      if (boolArg('force')) {
         _cache.setStampFor(kTizenEngineStampName, '');
         _cache.setStampFor(kTizenEmbedderStampName, '');
       }

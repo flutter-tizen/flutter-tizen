@@ -163,7 +163,9 @@ class _FakeDeviceManager extends DeviceManager {
   List<DeviceDiscovery> get deviceDiscoverers => <DeviceDiscovery>[];
 
   @override
-  Future<List<Device>> getAllConnectedDevices() async => _devices;
+  Future<List<Device>> getAllDevices({DeviceDiscoveryFilter? filter}) async {
+    return _devices;
+  }
 }
 
 class _FakeTestWrapper implements TestWrapper {

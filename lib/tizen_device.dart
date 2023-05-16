@@ -415,7 +415,8 @@ class TizenDevice extends Device {
         '--dump-skp-on-shader-compilation',
       if (debuggingOptions.cacheSkSL) '--cache-sksl',
       if (debuggingOptions.purgePersistentCache) '--purge-persistent-cache',
-      if (debuggingOptions.enableImpeller) '--enable-impeller',
+      if (debuggingOptions.enableImpeller == ImpellerStatus.enabled)
+        '--enable-impeller',
       if (debuggingOptions.debuggingEnabled) ...<String>[
         '--enable-checked-mode',
         if (debuggingOptions.startPaused) '--start-paused',

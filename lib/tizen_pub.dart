@@ -23,8 +23,7 @@ class TizenPub implements Pub {
     required Platform platform,
     required BotDetector botDetector,
     required Usage usage,
-  })  : _fileSystem = fileSystem,
-        _pub = Pub(
+  }) : _pub = Pub(
           fileSystem: fileSystem,
           logger: logger,
           processManager: processManager,
@@ -42,7 +41,7 @@ class TizenPub implements Pub {
     required BotDetector botDetector,
     required Usage usage,
     required Stdio stdio,
-  })  : _fileSystem = fileSystem,
+  }) :
         // ignore: invalid_use_of_visible_for_testing_member
         _pub = Pub.test(
           fileSystem: fileSystem,
@@ -54,7 +53,6 @@ class TizenPub implements Pub {
           stdio: stdio,
         );
 
-  final FileSystem _fileSystem;
   final Pub _pub;
 
   @override
@@ -78,24 +76,22 @@ class TizenPub implements Pub {
   Future<void> get({
     required PubContext context,
     required FlutterProject project,
-    bool skipIfAbsent = false,
     bool upgrade = false,
     bool offline = false,
     String? flutterRootOverride,
     bool checkUpToDate = false,
     bool shouldSkipThirdPartyGenerator = true,
-    bool printProgress = true,
+    PubOutputMode outputMode = PubOutputMode.all,
   }) async {
     await _pub.get(
       context: context,
       project: project,
-      skipIfAbsent: skipIfAbsent,
       upgrade: upgrade,
       offline: offline,
       flutterRootOverride: flutterRootOverride,
       checkUpToDate: checkUpToDate,
       shouldSkipThirdPartyGenerator: shouldSkipThirdPartyGenerator,
-      printProgress: printProgress,
+      outputMode: outputMode,
     );
     await _postPub(project);
   }
@@ -103,22 +99,25 @@ class TizenPub implements Pub {
   @override
   Future<void> interactively(
     List<String> arguments, {
-    String? directory,
-    required Stdio stdio,
+    FlutterProject? project,
+    required PubContext context,
+    required String command,
     bool touchesPackageConfig = false,
     bool generateSyntheticPackage = false,
+    PubOutputMode outputMode = PubOutputMode.all,
   }) async {
     await _pub.interactively(
       arguments,
-      directory: directory,
-      stdio: stdio,
+      project: project,
+      context: context,
+      command: command,
       touchesPackageConfig: touchesPackageConfig,
       generateSyntheticPackage: generateSyntheticPackage,
+      outputMode: outputMode,
     );
-    final FlutterProject project = directory == null
-        ? FlutterProject.current()
-        : FlutterProject.fromDirectory(_fileSystem.directory(directory));
-    await _postPub(project);
+    if (project != null) {
+      await _postPub(project);
+    }
   }
 
   /// A hack which enables Tizen plugin injection based on the fact that either
