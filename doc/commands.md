@@ -116,7 +116,7 @@ The following commands from the [Flutter CLI](https://flutter.dev/docs/reference
 
 - ### `drive`
 
-  Run integration tests for the project on an attached device. For detailed usage, see [`integration_test`](https://github.com/flutter/flutter/tree/master/packages/integration_test).
+  Run integration tests for the project on a connected device. For detailed usage, see [`integration_test`](https://github.com/flutter/flutter/tree/master/packages/integration_test).
 
   ```sh
   # Launch "integration_test/foo_test.dart" on a Tizen device.
@@ -145,7 +145,7 @@ The following commands from the [Flutter CLI](https://flutter.dev/docs/reference
 
 - ### `install`
 
-  Install a Flutter app on an attached device.
+  Install a Flutter app on a connected device.
 
   ```sh
   # Install "build/tizen/tpk/*.tpk" on a Tizen device.

@@ -35,10 +35,10 @@
 
 1. Launch an emulator or connect your Tizen device.
 
-   - To launch an emulator instance, use either **Emulator Manager** or the [`flutter-tizen emulators`](commands.md#emulators) command.
+   - To launch an emulator instance, use either _Emulator Manager_ or the [`flutter-tizen emulators`](commands.md#emulators) command.
    - To connect a Tizen device to your PC, read the instructions in [Configuring Tizen devices for development](configure-device.md).
 
-   You can use the `devices` command to list all attached devices.
+   You can use the `devices` command to list all connected devices.
 
    ```
    $ flutter-tizen devices
