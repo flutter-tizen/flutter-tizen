@@ -80,7 +80,7 @@ void main() {
     FileSystem: () => fileSystem,
     ProcessManager: () => FakeProcessManager.any(),
     DeviceManager: () => deviceManager,
-  });
+  }, testOn: 'posix');
 
   testUsingContext('Can generate entrypoint wrapper for integration test',
       () async {
@@ -137,7 +137,7 @@ dependencies:
 
     final File generatedEntrypoint =
         fileSystem.file('/.tmp_rand0/rand0/some_integration_test.dart');
-    expect(testWrapper.lastArgs, contains(generatedEntrypoint.path));
+    expect(testWrapper.lastArgs, contains(generatedEntrypoint.uri.toString()));
     expect(generatedEntrypoint.readAsStringSync(), contains('''
 import 'file:///integration_test/some_integration_test.dart' as entrypoint;
 import 'package:some_dart_plugin/some_dart_plugin.dart';
@@ -151,7 +151,7 @@ void main() {
     FileSystem: () => fileSystem,
     ProcessManager: () => FakeProcessManager.any(),
     DeviceManager: () => deviceManager,
-  });
+  }, testOn: 'posix');
 }
 
 class _FakeDeviceManager extends DeviceManager {
@@ -164,6 +164,10 @@ class _FakeDeviceManager extends DeviceManager {
 
   @override
   Future<List<Device>> getAllDevices({DeviceDiscoveryFilter? filter}) async {
+    if (filter?.deviceConnectionInterface ==
+        DeviceConnectionInterface.wireless) {
+      return <Device>[];
+    }
     return _devices;
   }
 }
