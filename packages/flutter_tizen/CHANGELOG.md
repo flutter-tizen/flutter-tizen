@@ -1,3 +1,7 @@
+## 0.2.2
+
+* Add setOffset to PostFrameCallback.
+
 ## 0.2.1
 
 * Update for Flutter 3.7.
