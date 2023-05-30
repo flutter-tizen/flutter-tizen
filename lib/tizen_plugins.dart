@@ -150,11 +150,11 @@ mixin DartPluginRegistry on FlutterCommand {
 /// from [dartFile] and returns their names.
 List<String> _findDartEntrypoints(File dartFile) {
   final String path = dartFile.absolute.path;
-  final FileSystemEntity dartSdk =
-      globals.artifacts!.getHostArtifact(HostArtifact.engineDartSdkPath);
+  final String dartSdkPath =
+      globals.artifacts!.getArtifactPath(Artifact.engineDartSdkPath);
   final AnalysisContextCollection collection = AnalysisContextCollection(
     includedPaths: <String>[path],
-    sdkPath: dartSdk.absolute.path,
+    sdkPath: dartSdkPath,
   );
   final AnalysisContext context = collection.contextFor(path);
   final SomeParsedUnitResult parsed =

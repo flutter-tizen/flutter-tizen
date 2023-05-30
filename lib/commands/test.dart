@@ -48,8 +48,7 @@ class TizenTestRunner implements FlutterTestRunner {
   bool isIntegrationTest = false;
 
   /// See: [_generateEntrypointWithPluginRegistrant] in `tizen_plugins.dart`
-  Future<List<String>> _generateEntrypointWrappers(
-      List<String> testFiles) async {
+  Future<List<Uri>> _generateEntrypointWrappers(List<Uri> testFiles) async {
     final FlutterProject project = FlutterProject.current();
     final PackageConfig packageConfig = await loadPackageConfigWithLogging(
       project.packageConfigFile,
@@ -59,9 +58,9 @@ class TizenTestRunner implements FlutterTestRunner {
         await findTizenPlugins(project, dartOnly: true);
     final Directory runnerDir = globals.fs.systemTempDirectory.createTempSync();
 
-    final List<String> newTestFiles = <String>[];
+    final List<Uri> newTestFiles = <Uri>[];
     for (final File testFile
-        in testFiles.map((String path) => globals.fs.file(path))) {
+        in testFiles.map((Uri uri) => globals.fs.file(uri))) {
       final Uri testFileUri = testFile.absolute.uri;
       final LanguageVersion languageVersion = determineLanguageVersion(
         testFile,
@@ -96,7 +95,7 @@ void main() {
         context,
         newTestFile,
       );
-      newTestFiles.add(newTestFile.absolute.path);
+      newTestFiles.add(newTestFile.absolute.uri);
     }
     return newTestFiles;
   }
@@ -104,13 +103,13 @@ void main() {
   @override
   Future<int> runTests(
     TestWrapper testWrapper,
-    List<String> testFiles, {
+    List<Uri> testFiles, {
     required DebuggingOptions debuggingOptions,
     List<String> names = const <String>[],
     List<String> plainNames = const <String>[],
     String? tags,
     String? excludeTags,
-    bool enableObservatory = false,
+    bool enableVmService = false,
     bool ipv6 = false,
     bool machine = false,
     String? precompiledDillPath,
@@ -125,6 +124,7 @@ void main() {
     bool web = false,
     String? randomSeed,
     String? reporter,
+    String? fileReporter,
     String? timeout,
     bool runSkipped = false,
     int? shardIndex,
@@ -144,7 +144,7 @@ void main() {
       plainNames: plainNames,
       tags: tags,
       excludeTags: excludeTags,
-      enableObservatory: enableObservatory,
+      enableVmService: enableVmService,
       ipv6: ipv6,
       machine: machine,
       precompiledDillPath: precompiledDillPath,
@@ -159,6 +159,7 @@ void main() {
       web: web,
       randomSeed: randomSeed,
       reporter: reporter,
+      fileReporter: fileReporter,
       timeout: timeout,
       runSkipped: runSkipped,
       shardIndex: shardIndex,

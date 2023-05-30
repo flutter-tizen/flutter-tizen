@@ -106,7 +106,7 @@ class TizenAotElf extends AotElfBase {
   @override
   List<Source> get inputs => <Source>[
         const Source.pattern('{BUILD_DIR}/app.dill'),
-        const Source.hostArtifact(HostArtifact.engineDartBinary),
+        const Source.artifact(Artifact.engineDartBinary),
         const Source.artifact(Artifact.skyEnginePath),
         Source.artifact(Artifact.genSnapshot,
             platform: targetPlatform, mode: buildMode),

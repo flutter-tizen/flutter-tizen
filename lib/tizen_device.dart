@@ -8,6 +8,7 @@ import 'dart:io';
 
 import 'package:file/file.dart';
 import 'package:flutter_tools/src/android/android_device.dart';
+import 'package:flutter_tools/src/application_package.dart';
 import 'package:flutter_tools/src/base/common.dart';
 import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/base/process.dart';
@@ -166,7 +167,10 @@ class TizenDevice extends Device {
 
   /// See: [AndroidDevice.isAppInstalled] in `android_device.dart`
   @override
-  Future<bool> isAppInstalled(TizenTpk app, {String? userIdentifier}) async {
+  Future<bool> isAppInstalled(
+    covariant TizenTpk app, {
+    String? userIdentifier,
+  }) async {
     try {
       final List<String> command = usesSecureProtocol
           ? <String>['shell', '0', 'applist']
@@ -206,14 +210,17 @@ class TizenDevice extends Device {
 
   /// Source: [AndroidDevice.isLatestBuildInstalled] in `android_device.dart`
   @override
-  Future<bool> isLatestBuildInstalled(TizenTpk app) async {
+  Future<bool> isLatestBuildInstalled(covariant TizenTpk app) async {
     final String? installed = await _getDeviceAppSignature(app);
     return installed != null && installed == app.signature?.signatureValue;
   }
 
   /// Source: [AndroidDevice.installApp] in `android_device.dart`
   @override
-  Future<bool> installApp(TizenTpk app, {String? userIdentifier}) async {
+  Future<bool> installApp(
+    covariant TizenTpk app, {
+    String? userIdentifier,
+  }) async {
     final bool wasInstalled = await isAppInstalled(app);
     if (wasInstalled) {
       if (await isLatestBuildInstalled(app)) {
@@ -292,7 +299,10 @@ class TizenDevice extends Device {
   }
 
   @override
-  Future<bool> uninstallApp(TizenTpk app, {String? userIdentifier}) async {
+  Future<bool> uninstallApp(
+    covariant TizenTpk app, {
+    String? userIdentifier,
+  }) async {
     final RunResult result =
         await runSdbAsync(<String>['uninstall', app.id], checked: false);
     if (result.exitCode != 0 || !result.stdout.contains('val[ok]')) {
@@ -320,7 +330,7 @@ class TizenDevice extends Device {
   /// Source: [AndroidDevice.startApp] in `android_device.dart`
   @override
   Future<LaunchResult> startApp(
-    TizenTpk package, {
+    covariant TizenTpk? package, {
     String? mainPath,
     String? route,
     required DebuggingOptions debuggingOptions,
@@ -352,6 +362,10 @@ class TizenDevice extends Device {
       // activity name from the tpk.
       package = TizenTpk.fromProject(project);
     }
+    // There was a failure parsing the project information.
+    if (package == null) {
+      throwToolExit('Problem building Tizen application: see above error(s).');
+    }
 
     _logger.printTrace("Stopping app '${package.name}' on $name.");
     if (await isAppInstalled(package)) {
@@ -366,10 +380,10 @@ class TizenDevice extends Device {
     _logger.printTrace('$this startApp');
 
     final DeviceLogReader logReader = await getLogReader();
-    ProtocolDiscovery? observatoryDiscovery;
+    ProtocolDiscovery? vmServiceDiscovery;
 
     if (debuggingOptions.debuggingEnabled) {
-      observatoryDiscovery = ProtocolDiscovery.observatory(
+      vmServiceDiscovery = ProtocolDiscovery.vmService(
         logReader,
         portForwarder: portForwarder,
         hostPort: debuggingOptions.hostVmServicePort,
@@ -401,7 +415,8 @@ class TizenDevice extends Device {
         '--dump-skp-on-shader-compilation',
       if (debuggingOptions.cacheSkSL) '--cache-sksl',
       if (debuggingOptions.purgePersistentCache) '--purge-persistent-cache',
-      if (debuggingOptions.enableImpeller) '--enable-impeller',
+      if (debuggingOptions.enableImpeller == ImpellerStatus.enabled)
+        '--enable-impeller',
       if (debuggingOptions.debuggingEnabled) ...<String>[
         '--enable-checked-mode',
         if (debuggingOptions.startPaused) '--start-paused',
@@ -443,15 +458,15 @@ class TizenDevice extends Device {
     }
 
     // Wait for the service protocol port here. This will complete once the
-    // device has printed "Observatory is listening on...".
-    _logger.printTrace('Waiting for observatory port to be available...');
+    // device has printed "VM Service is listening on...".
+    _logger.printTrace('Waiting for VM Service port to be available...');
 
     try {
-      Uri? observatoryUri;
+      Uri? vmServiceUri;
       if (debuggingOptions.buildInfo.isDebug ||
           debuggingOptions.buildInfo.isProfile) {
-        observatoryUri = await observatoryDiscovery?.uri;
-        if (observatoryUri == null) {
+        vmServiceUri = await vmServiceDiscovery?.uri;
+        if (vmServiceUri == null) {
           _logger.printError(
             'Error waiting for a debug connection: '
             'The log reader stopped unexpectedly',
@@ -459,20 +474,23 @@ class TizenDevice extends Device {
           return LaunchResult.failed();
         }
         if (!prebuiltApplication) {
-          updateLaunchJsonFile(FlutterProject.current(), observatoryUri);
+          updateLaunchJsonFile(FlutterProject.current(), vmServiceUri);
         }
       }
-      return LaunchResult.succeeded(observatoryUri: observatoryUri);
+      return LaunchResult.succeeded(vmServiceUri: vmServiceUri);
     } on Exception catch (error) {
       _logger.printError('Error waiting for a debug connection: $error');
       return LaunchResult.failed();
     } finally {
-      await observatoryDiscovery?.cancel();
+      await vmServiceDiscovery?.cancel();
     }
   }
 
   @override
-  Future<bool> stopApp(TizenTpk? app, {String? userIdentifier}) async {
+  Future<bool> stopApp(
+    covariant TizenTpk? app, {
+    String? userIdentifier,
+  }) async {
     if (app == null) {
       return false;
     }
@@ -497,7 +515,7 @@ class TizenDevice extends Device {
   /// Source: [AndroidDevice.getLogReader] in `android_device.dart`
   @override
   FutureOr<DeviceLogReader> getLogReader({
-    TizenTpk? app,
+    ApplicationPackage? app,
     bool includePastLogs = false,
   }) async {
     return _logReader ??= await ForwardingLogReader.createLogReader(this);
