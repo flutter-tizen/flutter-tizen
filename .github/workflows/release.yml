@@ -13,8 +13,8 @@ jobs:
           channel: stable
       - name: Install credentials
         run: |
-          mkdir -p $PUB_CACHE
-          echo '${{ secrets.PUB_CREDENTIALS }}' > $PUB_CACHE/credentials.json
+          mkdir -p $HOME/.config/dart
+          echo '${{ secrets.PUB_CREDENTIALS }}' > $HOME/.config/dart/pub-credentials.json
       - name: Dry run on pull request
         if: ${{ github.event_name == 'pull_request' }}
         run: |
