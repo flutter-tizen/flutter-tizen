@@ -396,6 +396,9 @@ class NativeTpk extends TizenPackage {
         'targets': <String>['b1'],
       },
       sign: securityProfile,
+      environment: <String, String>{
+        'FLUTTER_BUILD_DIR': environment.buildDir.path.toPosixPath(),
+      },
     );
     if (result.exitCode != 0) {
       throwToolExit('Failed to build native application:\n$result');

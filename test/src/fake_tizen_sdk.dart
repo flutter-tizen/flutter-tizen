@@ -48,6 +48,7 @@ class FakeTizenSdk extends TizenSdk {
     String? output,
     Map<String, Object> package = const <String, Object>{},
     String? sign,
+    Map<String, String> environment = const <String, String>{},
   }) async {
     final List<String>? buildConfigs = method['configs'] as List<String>?;
     expect(buildConfigs, isNotNull);
@@ -70,6 +71,7 @@ class FakeTizenSdk extends TizenSdk {
     List<String> predefines = const <String>[],
     List<String> extraOptions = const <String>[],
     String? rootstrap,
+    Map<String, String> environment = const <String, String>{},
   }) async {
     final Directory projectDir = _fileSystem.directory(workingDirectory);
     final Map<String, String> projectDef =
