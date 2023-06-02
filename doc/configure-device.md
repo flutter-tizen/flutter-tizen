@@ -46,9 +46,9 @@
 
 ## Raspberry Pi
 
-### Install Tizen OS on Raspberry Pi 3/4
+### Install Tizen OS on Raspberry Pi 4
 
-You need a Linux PC (for flashing), a Raspberry Pi 3 or 4 board, and a micro SD card with a minimum capacity of 8 GB.
+You need a Linux PC (for flashing), a Raspberry Pi 4 board, and a micro SD card with a minimum capacity of 8 GB.
 
 1. Insert an SD card to your PC, and **format** the disk.
 
@@ -65,10 +65,12 @@ You need a Linux PC (for flashing), a Raspberry Pi 3 or 4 board, and a micro SD 
    └─sdc1        8:33   1  29.3G  0 part
    ```
 
-1. Download a flashing script (`sd_fusing_rpi3.sh`) from one of the following URLs. The same script can be used for both Pi 3 and 4.
+1. Download a flashing script (`sd_fusing_rpi3.sh`) from one of the following URLs.
 
    - https://git.tizen.org/cgit/platform/kernel/u-boot/plain/scripts/tizen/sd_fusing_rpi3.sh?h=tizen
    - https://review.tizen.org/git/?p=platform/kernel/u-boot.git;a=blob_plain;f=scripts/tizen/sd_fusing_rpi3.sh;hb=refs/heads/tizen
+
+   Note: You may notice that the repository also contains a script for Pi 4 (`sd_fusing_rpi4.sh`). Do not use it.
 
 1. Re-partition the SD card (replace `/dev/sdc` with your own device name):
 
@@ -87,10 +89,10 @@ You need a Linux PC (for flashing), a Raspberry Pi 3 or 4 board, and a micro SD 
    End /dev/sdc format
    ```
 
-1. Download a Tizen OS image. Visit the links below and download two `.tar.gz` files (boot and headed).
+1. Download a Tizen OS image. Visit the links below and download two `.tar.gz` files.
 
-   - Pi 3: [tizen-boot-arm64-rpi3](http://download.tizen.org/releases/milestone/TIZEN/Tizen/Tizen-Unified/latest/images/standard/tizen-boot-arm64-rpi3) / [tizen-headed-aarch64](http://download.tizen.org/releases/milestone/TIZEN/Tizen/Tizen-Unified/latest/images/standard/tizen-headed-aarch64)
-   - Pi 4: [tizen-boot-arm64-rpi4](http://download.tizen.org/releases/milestone/TIZEN/Tizen/Tizen-Unified/latest/images/standard/tizen-boot-arm64-rpi4) / [tizen-headed-aarch64](http://download.tizen.org/releases/milestone/TIZEN/Tizen/Tizen-Unified/latest/images/standard/tizen-headed-aarch64)
+   - [tizen-boot-arm64-rpi4](http://download.tizen.org/releases/milestone/TIZEN/Tizen/Tizen-Unified/latest/images/standard/tizen-boot-arm64-rpi4)
+   - [tizen-headed-aarch64](http://download.tizen.org/releases/milestone/TIZEN/Tizen/Tizen-Unified/latest/images/standard/tizen-headed-aarch64)
 
 1. Flash the image to the SD card. For example:
 
