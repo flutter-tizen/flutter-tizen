@@ -259,7 +259,7 @@ __return_cb req_id[1] pkg_type[tpk] pkgid[TestPackage] key[end] val[ok]
       stdout: <String>[
         'cpu_arch:armv7',
         'secure_protocol:disabled',
-        'platform_version:4.0',
+        'platform_version:5.5',
         'profile_name:wearable'
       ].join('\n'),
     ));
