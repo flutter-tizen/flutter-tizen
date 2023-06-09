@@ -143,7 +143,7 @@ class NativePlugins extends Target {
         ],
         rootstrap: rootstrap.id,
         environment: <String, String>{
-          'FLUTTER_BUILD_DIR': environment.buildDir.path.toPosixPath(),
+          'FLUTTER_BUILD_DIR': environment.buildDir.path.toPosixPath(''),
         },
       );
       if (result.exitCode != 0) {

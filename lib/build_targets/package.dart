@@ -397,7 +397,7 @@ class NativeTpk extends TizenPackage {
       },
       sign: securityProfile,
       environment: <String, String>{
-        'FLUTTER_BUILD_DIR': environment.buildDir.path.toPosixPath(),
+        'FLUTTER_BUILD_DIR': environment.buildDir.path.toPosixPath(''),
       },
     );
     if (result.exitCode != 0) {
