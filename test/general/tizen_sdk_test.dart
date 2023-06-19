@@ -112,6 +112,11 @@ void main() {
         '--',
         projectDir.path,
       ],
+      environment: const <String, String>{
+        'PATH': '',
+        'USER_CPP_OPTS': '-std=c++17',
+        'test_key': 'test_value',
+      },
     ));
 
     await tizenSdk.buildApp(
@@ -137,6 +142,7 @@ void main() {
         'targets': <String>['test_build'],
       },
       sign: 'test_profile',
+      environment: <String, String>{'test_key': 'test_value'},
     );
 
     expect(processManager, hasNoRemainingExpectations);
@@ -163,6 +169,11 @@ void main() {
         '--',
         projectDir.path,
       ],
+      environment: const <String, String>{
+        'PATH': '',
+        'USER_CPP_OPTS': '-std=c++17',
+        'test_key': 'test_value',
+      },
     ));
 
     await tizenSdk.buildNative(
@@ -173,6 +184,7 @@ void main() {
       predefines: <String>['ABC'],
       extraOptions: <String>['def', 'ghi'],
       rootstrap: 'test_rootstrap',
+      environment: <String, String>{'test_key': 'test_value'},
     );
 
     expect(processManager, hasNoRemainingExpectations);

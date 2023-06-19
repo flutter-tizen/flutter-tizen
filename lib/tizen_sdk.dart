@@ -150,6 +150,7 @@ class TizenSdk {
     String? output,
     Map<String, Object> package = const <String, Object>{},
     String? sign,
+    Map<String, String> environment = const <String, String>{},
   }) {
     String stringify(Object argument) {
       if (argument is String) {
@@ -185,6 +186,7 @@ class TizenSdk {
       environment: <String, String>{
         'PATH': getPathVariable(),
         'USER_CPP_OPTS': '-std=c++17',
+        ...environment,
       },
     );
   }
@@ -197,6 +199,7 @@ class TizenSdk {
     List<String> predefines = const <String>[],
     List<String> extraOptions = const <String>[],
     String? rootstrap,
+    Map<String, String> environment = const <String, String>{},
   }) {
     return _processUtils.run(
       <String>[
@@ -217,6 +220,7 @@ class TizenSdk {
       environment: <String, String>{
         'PATH': getPathVariable(),
         'USER_CPP_OPTS': '-std=c++17',
+        ...environment,
       },
     );
   }
