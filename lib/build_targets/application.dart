@@ -53,7 +53,7 @@ abstract class TizenAssetBundle extends Target {
     if (buildModeEnvironment == null) {
       throw MissingDefineException(kBuildMode, name);
     }
-    final BuildMode buildMode = getBuildModeForName(buildModeEnvironment);
+    final BuildMode buildMode = BuildMode.fromCliName(buildModeEnvironment);
     final Directory outputDirectory = environment.buildDir
         .childDirectory('flutter_assets')
       ..createSync(recursive: true);
