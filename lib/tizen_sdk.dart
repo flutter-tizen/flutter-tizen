@@ -211,7 +211,7 @@ class TizenSdk {
         arch,
         '-c',
         compiler ?? defaultNativeCompiler,
-        for (String macro in predefines) ...<String>['-d', macro],
+        for (final String macro in predefines) ...<String>['-d', macro],
         if (extraOptions.isNotEmpty) ...<String>['-e', extraOptions.join(' ')],
         if (rootstrap != null) ...<String>['-r', rootstrap],
         '--',

@@ -264,7 +264,7 @@ USER_LIBS = pthread ${userLibs.join(' ')}
           // Forces plugin entrypoints to be exported, because unreferenced
           // objects are not included in the output shared object by default.
           // Another option is to use the -Wl,--[no-]whole-archive flag.
-          for (String className in pluginClasses)
+          for (final String className in pluginClasses)
             '-Wl,--undefined=${className}RegisterWithRegistrar',
         ],
         rootstrap: rootstrap.id,

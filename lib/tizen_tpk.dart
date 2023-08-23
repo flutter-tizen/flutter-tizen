@@ -213,7 +213,7 @@ class Signature {
           'No element named SignatureValue found in ${xmlFile.basename}.');
       return null;
     }
-    return Signature(values.first.text.replaceAll(RegExp(r'\s+'), ''));
+    return Signature(values.first.innerText.replaceAll(RegExp(r'\s+'), ''));
   }
 
   final String signatureValue;
