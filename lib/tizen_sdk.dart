@@ -256,7 +256,7 @@ class TizenSdk {
       // Note: The tv-samsung rootstrap is not publicly available.
       profile = 'tv-samsung';
     }
-    apiVersion ??= '4.0';
+    apiVersion ??= '5.5';
 
     double versionToDouble(String versionString) {
       final double? version = double.tryParse(versionString);
@@ -315,7 +315,7 @@ class TizenSdk {
         .childDirectory('info')
         .childFile('${rootstrap.id}.dev.xml');
 
-    // libstdc++ shipped with Tizen 4.0 and 5.5 is not compatible with C++17.
+    // libstdc++ shipped with Tizen 5.5 is not compatible with C++17.
     // Original PR: https://github.com/flutter-tizen/flutter-tizen/pull/106
     final List<String> linkerFlags = <String>[];
     if (versionToDouble(apiVersion) < 6.0) {

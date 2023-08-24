@@ -15,7 +15,7 @@ After installing Tizen Studio, the _Package Manager_ window will automatically p
   - _[Tizen SDK tools] - [Native CLI]_
   - _[Tizen SDK tools] - [Native toolchain] - [Gcc 9.2 toolchain]_
   - _[Tizen SDK tools] - [Baseline SDK] - [Certificate Manager]_
-  - _[4.0 Wearable] - [Advanced] - [Native app. development (CLI)]_
+  - _[5.5 Wearable] - [Advanced] - [Native app. development (CLI)]_
   - _[Extension SDK] - [Samsung Certificate Extension]_
 - **Optional**
   - _[5.5 Wearable] - [Emulator]_

@@ -4,7 +4,7 @@
 
 APPNAME = embedding_cpp
 type = staticLib
-profile = common-4.0
+profile = common-5.5
 
 USER_INC_DIRS = include \
     ../../flutter/bin/cache/artifacts/engine/tizen-common/cpp_client_wrapper/include \

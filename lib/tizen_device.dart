@@ -546,9 +546,7 @@ class TizenDevice extends Device {
     if (platformVersion == null) {
       return false;
     }
-    if (deviceProfile == 'wearable') {
-      return platformVersion >= Version(4, 0, 0);
-    } else if (deviceProfile == 'tv') {
+    if (deviceProfile == 'tv') {
       return platformVersion >= Version(6, 0, 0);
     }
     return platformVersion >= Version(5, 5, 0);
