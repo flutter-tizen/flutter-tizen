@@ -47,7 +47,7 @@ GOTO :EOF
       IF !version! NEQ !revision! (
         git reset --hard
         git clean -xdf
-        git fetch "%flutter_repo%" "!version!"
+        git fetch --tags "%flutter_repo%" "!version!"
         git checkout FETCH_HEAD
 
         REM Invalidate the cache.
@@ -83,7 +83,7 @@ GOTO :EOF
   SET stamp_path=%ROOT_DIR%\bin\cache\flutter-tizen.stamp
 
   SETLOCAL
-    IF NOT EXIST "%snapshot_path%" GOTO do_update_snapshot   
+    IF NOT EXIST "%snapshot_path%" GOTO do_update_snapshot
     IF NOT EXIST "%stamp_path%" GOTO do_update_snapshot
     SET /P stamp_value=<"%stamp_path%"
     IF !revision! NEQ !stamp_value! GOTO do_update_snapshot

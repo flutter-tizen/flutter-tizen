@@ -49,7 +49,7 @@ function update_flutter() {
   if [[ "$version" != "$(git rev-parse HEAD)" ]]; then
     git reset --hard
     git clean -xdf
-    git fetch "$FLUTTER_REPO" "$version"
+    git fetch --tags "$FLUTTER_REPO" "$version"
     git checkout FETCH_HEAD
 
     # Invalidate the cache.
@@ -67,7 +67,7 @@ function update_flutter() {
 
   # Invalidate the flutter cache.
   local stamp_path="$FLUTTER_DIR/bin/cache/flutter_tools.stamp"
-  if [[ ! -f "$stamp_path" || "$version" != "$(cat "$stamp_path")" ]]; then
+  if [[ ! -f "$stamp_path" || "$(cat "$stamp_path")" != "$version"* ]]; then
     "$FLUTTER_EXE" > /dev/null
   fi
 }
@@ -78,7 +78,7 @@ function update_flutter_tizen() {
   local revision="$(git --git-dir="$ROOT_DIR/.git" rev-parse HEAD)"
   local stamp_path="$ROOT_DIR/bin/cache/flutter-tizen.stamp"
 
-  if [[ ! -f "$SNAPSHOT_PATH" || ! -s "$stamp_path" || "$revision" != "$(cat "$stamp_path")" 
+  if [[ ! -f "$SNAPSHOT_PATH" || ! -s "$stamp_path" || "$revision" != "$(cat "$stamp_path")"
         || "$ROOT_DIR/pubspec.yaml" -nt "$ROOT_DIR/pubspec.lock" ]]; then
     echo "Running pub upgrade..."
     (cd "$ROOT_DIR" && "$FLUTTER_EXE" pub upgrade) || {
