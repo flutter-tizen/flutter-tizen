@@ -63,10 +63,11 @@ GOTO :EOF
     POPD
 
     REM Invalidate the flutter cache.  
+    SET compilekey="%version%:"
     SET stamp_path=%flutter_dir%\bin\cache\flutter_tools.stamp
     IF NOT EXIST "%stamp_path%" GOTO do_flutter_version
     SET /P stamp=<"%stamp_path%"
-    IF !version! NEQ !stamp! GOTO do_flutter_version
+    IF !compilekey! NEQ !stamp! GOTO do_flutter_version
 
     EXIT /B
     :do_flutter_version

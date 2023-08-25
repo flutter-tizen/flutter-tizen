@@ -66,8 +66,9 @@ function update_flutter() {
   unset GIT_WORK_TREE
 
   # Invalidate the flutter cache.
+  local compilekey="$version:"
   local stamp_path="$FLUTTER_DIR/bin/cache/flutter_tools.stamp"
-  if [[ ! -f "$stamp_path" || "$(cat "$stamp_path")" != "$version"* ]]; then
+  if [[ ! -f "$stamp_path" || "$compilekey" != "$(cat "$stamp_path")" ]]; then
     "$FLUTTER_EXE" > /dev/null
   fi
 }
