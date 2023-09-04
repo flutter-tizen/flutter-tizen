@@ -79,7 +79,7 @@ class TizenCreateCommand extends CreateCommand {
     FlutterProjectType? template;
     final String? templateArgument = stringArg('template');
     if (templateArgument != null) {
-      template = stringToProjectType(templateArgument);
+      template = FlutterProjectType.fromCliName(templateArgument);
     }
     if (projectDir.existsSync() && projectDir.listSync().isNotEmpty) {
       template = determineTemplateType();

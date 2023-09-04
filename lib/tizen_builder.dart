@@ -95,7 +95,7 @@ class TizenBuilder {
         ? DotnetTpk(tizenBuildInfo)
         : NativeTpk(tizenBuildInfo);
 
-    final String buildModeName = getNameForBuildMode(buildInfo.mode);
+    final String buildModeName = buildInfo.modeName;
     final Status status = globals.logger.startProgress(
         'Building a Tizen application in $buildModeName mode...');
     try {
@@ -229,7 +229,7 @@ class TizenBuilder {
         ? DotnetModule(tizenBuildInfo)
         : NativeModule(tizenBuildInfo);
 
-    final String buildModeName = getNameForBuildMode(buildInfo.mode);
+    final String buildModeName = buildInfo.modeName;
     final Status status = globals.logger.startProgress(
         'Building a Tizen application in $buildModeName mode...');
     try {

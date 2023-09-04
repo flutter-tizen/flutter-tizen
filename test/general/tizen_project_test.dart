@@ -61,7 +61,7 @@ void main() {
     final XmlDocument xmlDocument =
         XmlDocument.parse(userFile.readAsStringSync());
     expect(
-      xmlDocument.findAllElements('FlutterEmbeddingPath').first.text,
+      xmlDocument.findAllElements('FlutterEmbeddingPath').first.innerText,
       endsWith('Tizen.Flutter.Embedding.csproj'),
     );
   });

@@ -39,6 +39,7 @@ class TizenEmulatorManager extends EmulatorManager {
           tizenWorkflow: tizenWorkflow,
         ),
         super(
+          java: null,
           androidSdk: null,
           androidWorkflow: dummyAndroidWorkflow ?? androidWorkflow!,
         );

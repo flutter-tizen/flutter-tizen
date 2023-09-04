@@ -417,6 +417,8 @@ class TizenDevice extends Device {
       if (debuggingOptions.purgePersistentCache) '--purge-persistent-cache',
       if (debuggingOptions.enableImpeller == ImpellerStatus.enabled)
         '--enable-impeller',
+      if (debuggingOptions.enableVulkanValidation) '--enable-vulkan-validation',
+      if (debuggingOptions.impellerForceGL) '--impeller-force-gl',
       if (debuggingOptions.debuggingEnabled) ...<String>[
         '--enable-checked-mode',
         if (debuggingOptions.startPaused) '--start-paused',

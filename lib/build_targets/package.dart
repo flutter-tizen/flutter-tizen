@@ -360,10 +360,10 @@ class NativeTpk extends TizenPackage {
       embeddingLib.path.toPosixPath(),
       '-L${libDir.path.toPosixPath()}',
       '-lflutter_tizen_$profile',
-      for (String lib in embeddingDependencies) '-l$lib',
+      for (final String lib in embeddingDependencies) '-l$lib',
       '-I${tizenProject.managedDirectory.path.toPosixPath()}',
       '-I${pluginsDir.childDirectory('include').path.toPosixPath()}',
-      for (String lib in pluginLibs) '-l$lib',
+      for (final String lib in pluginLibs) '-l$lib',
     ];
 
     // Build the app.
