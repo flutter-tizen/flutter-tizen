@@ -144,6 +144,7 @@ class NativePlugins extends Target {
         rootstrap: rootstrap.id,
         environment: <String, String>{
           'FLUTTER_BUILD_DIR': environment.buildDir.path.toPosixPath(''),
+          'API_VERSION': apiVersion ?? '',
         },
       );
       if (result.exitCode != 0) {
@@ -198,10 +199,13 @@ class NativePlugins extends Target {
       // Copy user libraries.
       // TODO(swift-kim): Remove user libs support for staticLib projects.
       final Directory pluginLibDir = plugin.directory.childDirectory('lib');
+      final String buildArch = getTizenBuildArch(buildInfo.targetArch);
       final List<Directory> pluginLibDirs = <Directory>[
-        pluginLibDir.childDirectory(buildInfo.targetArch),
-        pluginLibDir.childDirectory(getTizenBuildArch(buildInfo.targetArch)),
         pluginLibDir,
+        pluginLibDir.childDirectory(buildInfo.targetArch),
+        pluginLibDir.childDirectory(buildArch),
+        if (apiVersion != null)
+          pluginLibDir.childDirectory(buildArch).childDirectory(apiVersion),
       ];
       for (final Directory directory
           in pluginLibDirs.where((Directory dir) => dir.existsSync())) {

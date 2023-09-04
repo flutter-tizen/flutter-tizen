@@ -181,7 +181,7 @@ dependencies:
     TizenSdk: () => FakeTizenSdk(fileSystem),
   });
 
-  testUsingContext('Can link to user libraries', () async {
+  testUsingContext('Can link and copy user libraries', () async {
     final Environment environment = Environment.test(
       projectDir,
       fileSystem: fileSystem,
@@ -191,6 +191,18 @@ dependencies:
     );
     pluginDir.childFile('tizen/lib/libstatic.a').createSync(recursive: true);
     pluginDir.childFile('tizen/lib/libshared.so').createSync(recursive: true);
+    pluginDir
+        .childFile('tizen/lib/armel/libshared_arm.so')
+        .createSync(recursive: true);
+    pluginDir
+        .childFile('tizen/lib/i586/libshared_x86.so')
+        .createSync(recursive: true);
+    pluginDir
+        .childFile('tizen/lib/armel/4.0/libshared_40.so')
+        .createSync(recursive: true);
+    pluginDir
+        .childFile('tizen/lib/armel/5.0/libshared_50.so')
+        .createSync(recursive: true);
 
     await NativePlugins(const TizenBuildInfo(
       BuildInfo.release,
@@ -202,12 +214,16 @@ dependencies:
         environment.buildDir.childDirectory('tizen_plugins');
     expect(outputDir.childFile('lib/libstatic.a'), isNot(exists));
     expect(outputDir.childFile('lib/libshared.so'), exists);
+    expect(outputDir.childFile('lib/libshared_arm.so'), exists);
+    expect(outputDir.childFile('lib/libshared_x86.so'), isNot(exists));
+    expect(outputDir.childFile('lib/libshared_40.so'), exists);
+    expect(outputDir.childFile('lib/libshared_50.so'), isNot(exists));
 
     final Map<String, String> projectDef =
         parseIniFile(outputDir.childFile('project_def.prop'));
     expect(
       projectDef['USER_LIBS'],
-      contains('some_native_plugin static shared'),
+      contains('some_native_plugin static shared shared_arm shared_40'),
     );
   }, overrides: <Type, Generator>{
     FileSystem: () => fileSystem,
