@@ -98,7 +98,7 @@ class ForwardingLogReader extends DeviceLogReader {
     globals.printTrace('Connecting to localhost:$hostPort...');
     Socket? socket = await _socketFactory('localhost', hostPort);
 
-    const Utf8Decoder decoder = Utf8Decoder();
+    const Utf8Decoder decoder = Utf8Decoder(allowMalformed: true);
     final Completer<void> completer = Completer<void>();
 
     socket.listen(
