@@ -129,7 +129,44 @@ class DotnetTpk extends TizenPackage {
       copyDirectory(pluginsLibDir, libDir);
     }
 
-    // Run the .NET build.
+    assert(tizenSdk != null);
+    // The output TPK is signed with an active profile unless otherwise
+    // specified.
+    String? securityProfile = buildInfo.securityProfile;
+    final SecurityProfiles? securityProfiles = tizenSdk!.securityProfiles;
+    if (securityProfile != null) {
+      if (securityProfiles == null ||
+          !securityProfiles.contains(securityProfile)) {
+        throwToolExit('The profile $securityProfile does not exist.');
+      }
+    }
+    if (securityProfile == null && securityProfiles != null) {
+      securityProfile = securityProfiles.active;
+    }
+    if (securityProfile != null) {
+      environment.logger
+          .printStatus('The $securityProfile profile is used for signing.');
+    } else {
+      throwToolExit(
+        'No certificate profile found. You can create one using the Certificate Manager.\n'
+        'https://github.com/flutter-tizen/flutter-tizen/blob/master/doc/install-tizen-sdk.md#create-a-tizen-certificate',
+      );
+    }
+
+    File locateTpk(String stdout) {
+      // "Runner -> /path/to/project/tizen/bin/Debug/tizen40/com.example.app-1.0.0.tpk"
+      final Match? match = RegExp(' -> (.+.tpk)').firstMatch(stdout);
+      if (match == null) {
+        throwToolExit('Unable to locate the output TPK:\n$stdout');
+      }
+      final File tpkFile = environment.fileSystem.file(match.group(1));
+      if (!tpkFile.existsSync()) {
+        throwToolExit(
+            'Build succeeded but the expected TPK not found:\n$stdout');
+      }
+      return tpkFile;
+    }
+
     if (dotnetCli == null) {
       throwToolExit(
         'Unable to locate .NET CLI executable.\n'
@@ -147,45 +184,40 @@ class DotnetTpk extends TizenPackage {
     if (result.exitCode != 0) {
       throwToolExit('Failed to build .NET application:\n$result');
     }
+    final File outputTpk = locateTpk(result.stdout);
 
-    // "Runner -> /path/to/project/tizen/bin/Debug/tizen40/com.example.app-1.0.0.tpk"
-    final Match? match = RegExp(' -> (.+.tpk)').firstMatch(result.stdout);
-    if (match == null) {
-      throwToolExit('Unable to locate the output TPK:\n${result.stdout}');
-    }
-    final File outputTpk = environment.fileSystem.file(match.group(1));
-    if (!outputTpk.existsSync()) {
-      throwToolExit(
-          'Build succeeded but the expected TPK not found:\n${result.stdout}');
-    }
-
-    assert(tizenSdk != null);
-    // build-task-tizen signs the output TPK with a dummy profile by default.
-    // We need to re-generate the TPK by signing with a correct profile.
-    String? securityProfile = buildInfo.securityProfile;
-    final SecurityProfiles? securityProfiles = tizenSdk!.securityProfiles;
-    if (securityProfile != null) {
-      if (securityProfiles == null ||
-          !securityProfiles.contains(securityProfile)) {
-        throwToolExit('The profile $securityProfile does not exist.');
+    if (tizenProject.isMultiApp) {
+      // Build the service app.
+      RunResult result = await _processUtils.run(<String>[
+        dotnetCli!.path,
+        'build',
+        '-c',
+        buildConfig,
+        '/p:DefineConstants=${profile.toUpperCase()}_PROFILE',
+        tizenProject.serviceAppDirectory.path,
+      ]);
+      if (result.exitCode != 0) {
+        throwToolExit('Failed to build .NET service application:\n$result');
       }
-    }
-    if (securityProfile == null && securityProfiles != null) {
-      securityProfile = securityProfiles.active;
-    }
-    if (securityProfile != null) {
-      environment.logger
-          .printStatus('The $securityProfile profile is used for signing.');
+      final File serviceOutputTpk = locateTpk(result.stdout);
+
+      // Merge two TPKs into a single package.
+      result = await tizenSdk!.package(
+        outputTpk.path,
+        reference: serviceOutputTpk.path,
+        sign: securityProfile,
+      );
+      if (result.exitCode != 0) {
+        throwToolExit('Failed to create a TPK:\n$result');
+      }
+    } else {
+      // build-task-tizen signs the output TPK with a dummy profile by default.
+      // We need to regenerate the TPK by signing it with a valid profile.
       final RunResult result =
           await tizenSdk!.package(outputTpk.path, sign: securityProfile);
       if (result.exitCode != 0) {
         throwToolExit('Failed to sign the TPK:\n$result');
       }
-    } else {
-      environment.logger.printStatus(
-        'The TPK was signed with the default certificate. You can create one using Certificate Manager.\n'
-        'https://github.com/flutter-tizen/flutter-tizen/blob/master/doc/install-tizen-sdk.md#create-a-tizen-certificate',
-      );
     }
 
     // Copy the TPK and tpkroot to the output directory.
@@ -344,7 +376,7 @@ class NativeTpk extends TizenPackage {
           .printStatus('The $securityProfile profile is used for signing.');
     } else {
       throwToolExit(
-        'Native TPKs cannot be built without a valid certificate. You can create one using Certificate Manager.\n'
+        'No certificate profile found. You can create one using the Certificate Manager.\n'
         'https://github.com/flutter-tizen/flutter-tizen/blob/master/doc/install-tizen-sdk.md#create-a-tizen-certificate',
       );
     }

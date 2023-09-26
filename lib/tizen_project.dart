@@ -121,6 +121,13 @@ class TizenProject extends FlutterProjectPlatform {
     }
     if (existsSync() && isDotnet) {
       updateDotnetUserProjectFile(projectFile!);
+      if (isMultiApp) {
+        final File? serviceProjectFile =
+            findDotnetProjectFile(serviceAppDirectory);
+        if (serviceProjectFile != null && serviceProjectFile.existsSync()) {
+          updateDotnetUserProjectFile(serviceProjectFile);
+        }
+      }
     }
   }
 

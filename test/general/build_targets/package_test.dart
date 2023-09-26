@@ -153,9 +153,7 @@ void main() {
       TizenSdk: () => FakeTizenSdk(fileSystem, securityProfile: 'test_profile'),
     });
 
-    testUsingContext(
-        'Use the default certificate if no security profile is found',
-        () async {
+    testUsingContext('Build fails if no security profile is found', () async {
       final Environment environment = Environment.test(
         projectDir,
         outputDir: projectDir.childDirectory('out'),
@@ -186,15 +184,13 @@ void main() {
         stdout: kMsbuildOutput,
       ));
 
-      await DotnetTpk(const TizenBuildInfo(
-        BuildInfo.release,
-        targetArch: 'arm',
-        deviceProfile: 'common',
-      )).build(environment);
-
-      expect(
-        logger.statusText,
-        contains('The TPK was signed with the default certificate.'),
+      await expectLater(
+        () => DotnetTpk(const TizenBuildInfo(
+          BuildInfo.release,
+          targetArch: 'arm',
+          deviceProfile: 'common',
+        )).build(environment),
+        throwsToolExit(message: 'No certificate profile found.'),
       );
     }, overrides: <Type, Generator>{
       FileSystem: () => fileSystem,
@@ -289,9 +285,7 @@ type = app
           targetArch: 'arm',
           deviceProfile: 'common',
         )).build(environment),
-        throwsToolExit(
-          message: 'Native TPKs cannot be built without a valid certificate.',
-        ),
+        throwsToolExit(message: 'No certificate profile found.'),
       );
     }, overrides: <Type, Generator>{
       FileSystem: () => fileSystem,
