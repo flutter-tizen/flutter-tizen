@@ -107,21 +107,6 @@ void main() {
     expect(projectDir.childFile('tizen/tizen-manifest.xml'), exists);
   }, overrides: <Type, Generator>{});
 
-  testUsingContext('Cannot create a C# multi app project', () async {
-    final TizenCreateCommand command = TizenCreateCommand();
-    final CommandRunner<void> runner = createTestCommandRunner(command);
-    await expectLater(
-      () => runner.run(<String>[
-        'create',
-        '--no-pub',
-        '--platforms=tizen',
-        '--app-type=multi',
-        projectDir.path,
-      ]),
-      throwsToolExit(message: 'Could not locate a template:'),
-    );
-  }, overrides: <Type, Generator>{});
-
   testUsingContext('Can create a C++ multi app project', () async {
     final TizenCreateCommand command = TizenCreateCommand();
     final CommandRunner<void> runner = createTestCommandRunner(command);
