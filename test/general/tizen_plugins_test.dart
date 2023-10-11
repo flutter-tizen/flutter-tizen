@@ -75,6 +75,7 @@ dependencies:
     expect(generatedMain, exists);
     expect(generatedMain.readAsStringSync(), contains('''
 import 'package:some_dart_plugin/some_dart_plugin.dart';
+import 'package:flutter/src/dart_plugin_registrant.dart';
 
 @pragma('vm:entry-point')
 class _PluginRegistrant {

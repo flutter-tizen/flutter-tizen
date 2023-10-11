@@ -34,6 +34,7 @@ void main() {
   late BufferLogger logger;
   late Platform platform;
   late FlutterProject project;
+  late List<String> dartDefines;
   late TizenBuildInfo tizenBuildInfo;
 
   setUpAll(() {
@@ -42,6 +43,7 @@ void main() {
 
   setUp(() {
     fileSystem = MemoryFileSystem.test();
+    fileSystem.file('main.dart').createSync();
     fileSystem.file('pubspec.yaml').createSync();
     fileSystem.file('.dart_tool/package_config.json')
       ..createSync(recursive: true)
@@ -50,8 +52,16 @@ void main() {
     platform = FakePlatform(environment: <String, String>{'HOME': '/'});
     project = FlutterProject.fromDirectoryTest(fileSystem.currentDirectory);
 
-    tizenBuildInfo = const TizenBuildInfo(
-      BuildInfo.debug,
+    dartDefines = <String>[];
+    tizenBuildInfo = TizenBuildInfo(
+      BuildInfo(
+        BuildMode.release,
+        null,
+        trackWidgetCreation: true,
+        dartDefines: dartDefines,
+        treeShakeIcons: false,
+        codeSizeDirectory: 'code_size_analysis',
+      ),
       targetArch: 'arm',
       deviceProfile: 'common',
     );
@@ -126,6 +136,7 @@ void main() {
         logger.statusText,
         contains('Built build/tizen/tpk/package_id-1.0.0.tpk (0.0MB).'),
       );
+      expect(dartDefines, contains('flutter.dart_plugin_registrant=main.dart'));
     }, overrides: <Type, Generator>{
       FileSystem: () => fileSystem,
       ProcessManager: () => FakeProcessManager.any(),
@@ -146,19 +157,9 @@ void main() {
         ..createSync(recursive: true)
         ..writeAsStringSync(_kTizenManifestContents);
 
-      const BuildInfo buildInfo = BuildInfo(
-        BuildMode.release,
-        null,
-        treeShakeIcons: false,
-        codeSizeDirectory: 'code_size_analysis',
-      );
       await TizenBuilder().buildTpk(
         project: project,
-        tizenBuildInfo: const TizenBuildInfo(
-          buildInfo,
-          targetArch: 'arm',
-          deviceProfile: 'wearable',
-        ),
+        tizenBuildInfo: tizenBuildInfo,
         targetFile: 'main.dart',
         sizeAnalyzer: _FakeSizeAnalyzer(fileSystem: fileSystem, logger: logger),
       );
@@ -205,6 +206,7 @@ void main() {
       );
 
       expect(logger.statusText, contains('Built build/tizen/module.'));
+      expect(dartDefines, contains('flutter.dart_plugin_registrant=main.dart'));
     }, overrides: <Type, Generator>{
       FileSystem: () => fileSystem,
       ProcessManager: () => FakeProcessManager.any(),
