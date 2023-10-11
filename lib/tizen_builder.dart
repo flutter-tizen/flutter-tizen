@@ -19,9 +19,12 @@ import 'package:flutter_tools/src/build_system/build_system.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/commands/assemble.dart';
 import 'package:flutter_tools/src/commands/build_ios_framework.dart';
+import 'package:flutter_tools/src/compile.dart';
+import 'package:flutter_tools/src/dart/package_map.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/linux/build_linux.dart';
 import 'package:flutter_tools/src/project.dart';
+import 'package:package_config/package_config.dart';
 
 import 'build_targets/package.dart';
 import 'tizen_build_info.dart';
@@ -38,6 +41,7 @@ TizenBuilder? get tizenBuilder => context.get<TizenBuilder>();
 /// - [BuildIOSFrameworkCommand._produceAppFramework] in `build_ios_framework.dart` (build target)
 /// - [AssembleCommand.runCommand] in `assemble.dart` (performance measurement)
 /// - [buildLinux] in `build_linux.dart` (code size)
+/// - [KernelCompiler.compile] in `compile.dart` (Dart plugin registrant)
 class TizenBuilder {
   TizenBuilder();
 
@@ -65,6 +69,23 @@ class TizenBuilder {
     final BuildInfo buildInfo = tizenBuildInfo.buildInfo;
     final String targetPlatform = getNameForTargetPlatform(
         getTargetPlatformForArch(tizenBuildInfo.targetArch));
+
+    // The generated main contains the Dart plugin registrant.
+    final File dartPluginRegistrant = globals.fs.file(targetFile);
+    final PackageConfig packageConfig = await loadPackageConfigWithLogging(
+      project.packageConfigFile,
+      logger: globals.logger,
+    );
+    String? dartPluginRegistrantUri;
+    if (dartPluginRegistrant.existsSync()) {
+      final Uri dartPluginRegistrantFileUri = dartPluginRegistrant.uri;
+      dartPluginRegistrantUri =
+          packageConfig.toPackageUri(dartPluginRegistrantFileUri)?.toString() ??
+              dartPluginRegistrantFileUri.toString();
+    }
+    // See the engine's FindAndInvokeDartPluginRegistrant() in `dart_plugin_registrant.cc`.
+    buildInfo.dartDefines
+        .add('flutter.dart_plugin_registrant=$dartPluginRegistrantUri');
 
     final Environment environment = Environment(
       projectDir: project.directory,
@@ -200,6 +221,21 @@ class TizenBuilder {
     final BuildInfo buildInfo = tizenBuildInfo.buildInfo;
     final String targetPlatform = getNameForTargetPlatform(
         getTargetPlatformForArch(tizenBuildInfo.targetArch));
+
+    final File dartPluginRegistrant = globals.fs.file(targetFile);
+    final PackageConfig packageConfig = await loadPackageConfigWithLogging(
+      project.packageConfigFile,
+      logger: globals.logger,
+    );
+    String? dartPluginRegistrantUri;
+    if (dartPluginRegistrant.existsSync()) {
+      final Uri dartPluginRegistrantFileUri = dartPluginRegistrant.uri;
+      dartPluginRegistrantUri =
+          packageConfig.toPackageUri(dartPluginRegistrantFileUri)?.toString() ??
+              dartPluginRegistrantFileUri.toString();
+    }
+    buildInfo.dartDefines
+        .add('flutter.dart_plugin_registrant=$dartPluginRegistrantUri');
 
     final Environment environment = Environment(
       projectDir: project.directory,

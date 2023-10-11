@@ -194,11 +194,13 @@ const String _generatedMainTemplate = '''
 // ignore_for_file: directives_ordering
 // ignore_for_file: lines_longer_than_80_chars
 // ignore_for_file: unnecessary_cast
+// ignore_for_file: unused_import
 
 import '{{mainImport}}' as entrypoint;
 {{#plugins}}
 import 'package:{{name}}/{{name}}.dart';
 {{/plugins}}
+import 'package:flutter/src/dart_plugin_registrant.dart';
 
 @pragma('vm:entry-point')
 class _PluginRegistrant {
