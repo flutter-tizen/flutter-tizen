@@ -15,9 +15,85 @@ import 'package:flutter_tools/src/build_system/targets/assets.dart';
 import 'package:flutter_tools/src/build_system/targets/common.dart';
 import 'package:flutter_tools/src/build_system/targets/icon_tree_shaker.dart';
 import 'package:flutter_tools/src/build_system/targets/shader_compiler.dart';
+import 'package:flutter_tools/src/compile.dart';
+import 'package:flutter_tools/src/dart/package_map.dart';
+import 'package:package_config/src/package_config.dart';
 
 import '../tizen_build_info.dart';
 import 'plugins.dart';
+
+class TizenKernelSnapshot extends KernelSnapshot {
+  const TizenKernelSnapshot();
+
+  /// Source: [KernelSnapshot.build] in `common.dart`
+  @override
+  Future<void> build(Environment environment) async {
+    final KernelCompiler compiler = KernelCompiler(
+      fileSystem: environment.fileSystem,
+      logger: environment.logger,
+      processManager: environment.processManager,
+      artifacts: environment.artifacts,
+      fileSystemRoots: <String>[],
+    );
+    final String? buildModeEnvironment = environment.defines[kBuildMode];
+    if (buildModeEnvironment == null) {
+      throw MissingDefineException(kBuildMode, 'kernel_snapshot');
+    }
+    final BuildMode buildMode = BuildMode.fromCliName(buildModeEnvironment);
+    final String targetFile = environment.defines[kTargetFile] ??
+        environment.fileSystem.path.join('lib', 'main.dart');
+    final File packagesFile = environment.projectDir
+        .childDirectory('.dart_tool')
+        .childFile('package_config.json');
+    final String targetFileAbsolute =
+        environment.fileSystem.file(targetFile).absolute.path;
+    // everything besides 'false' is considered to be enabled.
+    final bool trackWidgetCreation =
+        environment.defines[kTrackWidgetCreation] != 'false';
+
+    // This configuration is all optional.
+    final List<String> extraFrontEndOptions =
+        decodeCommaSeparated(environment.defines, kExtraFrontEndOptions);
+    final List<String>? fileSystemRoots =
+        environment.defines[kFileSystemRoots]?.split(',');
+    final String? fileSystemScheme = environment.defines[kFileSystemScheme];
+
+    final PackageConfig packageConfig = await loadPackageConfigWithLogging(
+      packagesFile,
+      logger: environment.logger,
+    );
+
+    final CompilerOutput? output = await compiler.compile(
+      sdkRoot: environment.artifacts.getArtifactPath(
+        Artifact.flutterPatchedSdkPath,
+        mode: buildMode,
+      ),
+      aot: buildMode.isPrecompiled,
+      buildMode: buildMode,
+      trackWidgetCreation:
+          trackWidgetCreation && buildMode != BuildMode.release,
+      outputFilePath: environment.buildDir.childFile('app.dill').path,
+      initializeFromDill: buildMode.isPrecompiled
+          ? null
+          : environment.buildDir.childFile('app.dill').path,
+      packagesPath: packagesFile.path,
+      linkPlatformKernelIn: buildMode.isPrecompiled,
+      mainPath: targetFileAbsolute,
+      depFilePath: environment.buildDir.childFile('kernel_snapshot.d').path,
+      extraFrontEndOptions: extraFrontEndOptions,
+      fileSystemRoots: fileSystemRoots,
+      fileSystemScheme: fileSystemScheme,
+      dartDefines: decodeDartDefines(environment.defines, kDartDefines),
+      packageConfig: packageConfig,
+      buildDir: environment.buildDir,
+      targetOS: 'linux',
+      checkDartPluginRegistry: environment.generateDartPluginRegistry,
+    );
+    if (output == null || output.errorCount != 0) {
+      throw Exception();
+    }
+  }
+}
 
 /// Prepares the pre-built Flutter bundle.
 ///
@@ -44,7 +120,7 @@ abstract class TizenAssetBundle extends Target {
 
   @override
   List<Target> get dependencies => const <Target>[
-        KernelSnapshot(),
+        TizenKernelSnapshot(),
       ];
 
   @override
@@ -119,7 +195,7 @@ class TizenAotElf extends AotElfBase {
 
   @override
   List<Target> get dependencies => const <Target>[
-        KernelSnapshot(),
+        TizenKernelSnapshot(),
       ];
 }
 
