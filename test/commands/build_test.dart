@@ -33,6 +33,9 @@ void main() {
     fileSystem = MemoryFileSystem.test();
     fileSystem.file('lib/main.dart').createSync(recursive: true);
     fileSystem.file('pubspec.yaml').createSync(recursive: true);
+    fileSystem.file('.dart_tool/package_config.json')
+      ..createSync(recursive: true)
+      ..writeAsStringSync('{"configVersion": 2, "packages": []}');
 
     tizenBuilder = _FakeTizenBuilder();
   });

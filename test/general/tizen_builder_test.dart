@@ -34,7 +34,6 @@ void main() {
   late BufferLogger logger;
   late Platform platform;
   late FlutterProject project;
-  late List<String> dartDefines;
   late TizenBuildInfo tizenBuildInfo;
 
   setUpAll(() {
@@ -52,13 +51,11 @@ void main() {
     platform = FakePlatform(environment: <String, String>{'HOME': '/'});
     project = FlutterProject.fromDirectoryTest(fileSystem.currentDirectory);
 
-    dartDefines = <String>[];
-    tizenBuildInfo = TizenBuildInfo(
+    tizenBuildInfo = const TizenBuildInfo(
       BuildInfo(
         BuildMode.release,
         null,
         trackWidgetCreation: true,
-        dartDefines: dartDefines,
         treeShakeIcons: false,
         codeSizeDirectory: 'code_size_analysis',
       ),
@@ -136,7 +133,6 @@ void main() {
         logger.statusText,
         contains('Built build/tizen/tpk/package_id-1.0.0.tpk (0.0MB).'),
       );
-      expect(dartDefines, contains('flutter.dart_plugin_registrant=main.dart'));
     }, overrides: <Type, Generator>{
       FileSystem: () => fileSystem,
       ProcessManager: () => FakeProcessManager.any(),
@@ -206,7 +202,6 @@ void main() {
       );
 
       expect(logger.statusText, contains('Built build/tizen/module.'));
-      expect(dartDefines, contains('flutter.dart_plugin_registrant=main.dart'));
     }, overrides: <Type, Generator>{
       FileSystem: () => fileSystem,
       ProcessManager: () => FakeProcessManager.any(),
