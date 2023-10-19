@@ -42,6 +42,7 @@ void main() {
 
   setUp(() {
     fileSystem = MemoryFileSystem.test();
+    fileSystem.file('main.dart').createSync();
     fileSystem.file('pubspec.yaml').createSync();
     fileSystem.file('.dart_tool/package_config.json')
       ..createSync(recursive: true)
@@ -51,7 +52,13 @@ void main() {
     project = FlutterProject.fromDirectoryTest(fileSystem.currentDirectory);
 
     tizenBuildInfo = const TizenBuildInfo(
-      BuildInfo.debug,
+      BuildInfo(
+        BuildMode.release,
+        null,
+        trackWidgetCreation: true,
+        treeShakeIcons: false,
+        codeSizeDirectory: 'code_size_analysis',
+      ),
       targetArch: 'arm',
       deviceProfile: 'common',
     );
@@ -146,19 +153,9 @@ void main() {
         ..createSync(recursive: true)
         ..writeAsStringSync(_kTizenManifestContents);
 
-      const BuildInfo buildInfo = BuildInfo(
-        BuildMode.release,
-        null,
-        treeShakeIcons: false,
-        codeSizeDirectory: 'code_size_analysis',
-      );
       await TizenBuilder().buildTpk(
         project: project,
-        tizenBuildInfo: const TizenBuildInfo(
-          buildInfo,
-          targetArch: 'arm',
-          deviceProfile: 'wearable',
-        ),
+        tizenBuildInfo: tizenBuildInfo,
         targetFile: 'main.dart',
         sizeAnalyzer: _FakeSizeAnalyzer(fileSystem: fileSystem, logger: logger),
       );

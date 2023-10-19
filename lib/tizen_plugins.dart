@@ -10,8 +10,10 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:file/file.dart';
 import 'package:flutter_tools/src/artifacts.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
+import 'package:flutter_tools/src/build_info.dart';
 import 'package:flutter_tools/src/build_system/targets/web.dart';
 import 'package:flutter_tools/src/cache.dart';
+import 'package:flutter_tools/src/compile.dart';
 import 'package:flutter_tools/src/dart/language_version.dart';
 import 'package:flutter_tools/src/dart/package_map.dart';
 import 'package:flutter_tools/src/flutter_plugins.dart';
@@ -144,6 +146,37 @@ mixin DartPluginRegistry on FlutterCommand {
 
   @override
   String get targetFile => _targetFile ?? super.targetFile;
+
+  /// See: [KernelCompiler.compile] in `compile.dart`
+  @override
+  Future<BuildInfo> getBuildInfo({
+    BuildMode? forcedBuildMode,
+    File? forcedTargetFile,
+  }) async {
+    final BuildInfo buildInfo = await super.getBuildInfo(
+      forcedBuildMode: forcedBuildMode,
+      forcedTargetFile: forcedTargetFile,
+    );
+
+    // The generated main contains the Dart plugin registrant.
+    final File dartPluginRegistrant = globals.fs.file(targetFile);
+    final PackageConfig packageConfig = await loadPackageConfigWithLogging(
+      FlutterProject.current().packageConfigFile,
+      logger: globals.logger,
+    );
+    String? dartPluginRegistrantUri;
+    if (dartPluginRegistrant.existsSync()) {
+      final Uri dartPluginRegistrantFileUri = dartPluginRegistrant.uri;
+      dartPluginRegistrantUri =
+          packageConfig.toPackageUri(dartPluginRegistrantFileUri)?.toString() ??
+              dartPluginRegistrantFileUri.toString();
+    }
+    // See the engine's FindAndInvokeDartPluginRegistrant().
+    buildInfo.dartDefines
+        .add('flutter.dart_plugin_registrant=$dartPluginRegistrantUri');
+
+    return buildInfo;
+  }
 }
 
 /// Finds entry point functions annotated with `@pragma('vm:entry-point')`
@@ -194,11 +227,13 @@ const String _generatedMainTemplate = '''
 // ignore_for_file: directives_ordering
 // ignore_for_file: lines_longer_than_80_chars
 // ignore_for_file: unnecessary_cast
+// ignore_for_file: unused_import
 
 import '{{mainImport}}' as entrypoint;
 {{#plugins}}
 import 'package:{{name}}/{{name}}.dart';
 {{/plugins}}
+import 'package:flutter/src/dart_plugin_registrant.dart';
 
 @pragma('vm:entry-point')
 class _PluginRegistrant {
