@@ -32,12 +32,13 @@ void main() {
     packageConfigFile = fileSystem.file('.dart_tool/package_config.json')
       ..createSync(recursive: true);
     fileSystem.file('lib/main.dart').createSync(recursive: true);
-    fileSystem.file('tizen/tizen-manifest.xml').createSync(recursive: true);
   });
 
   testUsingContext('Generates Dart plugin registrant', () async {
     final _DummyFlutterCommand command = _DummyFlutterCommand();
     final CommandRunner<void> runner = createTestCommandRunner(command);
+
+    fileSystem.file('tizen/tizen-manifest.xml').createSync(recursive: true);
 
     final Directory pluginDir = fileSystem.directory('/some_dart_plugin');
     pluginDir.childFile('pubspec.yaml')
@@ -91,6 +92,8 @@ class _PluginRegistrant {
   }, testOn: 'posix');
 
   testUsingContext('Generates native plugin registrant for C++', () async {
+    fileSystem.file('tizen/tizen-manifest.xml').createSync(recursive: true);
+
     final Directory pluginDir = fileSystem.directory('/some_native_plugin');
     pluginDir.childFile('pubspec.yaml')
       ..createSync(recursive: true)
@@ -141,6 +144,8 @@ void RegisterPlugins(flutter::PluginRegistry *registry) {
 
   testUsingContext('Generates native plugin registrant for C#', () async {
     fileSystem.file('tizen/Runner.csproj').createSync(recursive: true);
+    fileSystem.file('tizen/tizen-manifest.xml').createSync(recursive: true);
+
     final Directory pluginDir = fileSystem.directory('/some_native_plugin');
     pluginDir.childFile('pubspec.yaml')
       ..createSync(recursive: true)
@@ -200,8 +205,10 @@ internal class GeneratedPluginRegistrant
     ProcessManager: () => FakeProcessManager.any(),
   }, testOn: 'posix');
 
-  testUsingContext('Generates dotnet plugin registrant for C#', () async {
+  testUsingContext('Generates .NET plugin registrant for C#', () async {
     fileSystem.file('tizen/Runner.csproj').createSync(recursive: true);
+    fileSystem.file('tizen/tizen-manifest.xml').createSync(recursive: true);
+
     final Directory pluginDir = fileSystem.directory('/some_dotnet_plugin');
     pluginDir.childFile('pubspec.yaml')
       ..createSync(recursive: true)
@@ -259,6 +266,62 @@ internal class GeneratedPluginRegistrant
   </ItemGroup>
 </Project>
 '''));
+  }, overrides: <Type, Generator>{
+    FileSystem: () => fileSystem,
+    ProcessManager: () => FakeProcessManager.any(),
+  }, testOn: 'posix');
+
+  testUsingContext('Generates .NET plugin registrants for C# multi', () async {
+    fileSystem.file('tizen/ui/Runner.csproj').createSync(recursive: true);
+    fileSystem.file('tizen/ui/tizen-manifest.xml').createSync(recursive: true);
+    fileSystem
+        .file('tizen/service/RunnerService.csproj')
+        .createSync(recursive: true);
+    fileSystem
+        .file('tizen/service/tizen-manifest.xml')
+        .createSync(recursive: true);
+
+    final Directory pluginDir = fileSystem.directory('/some_dotnet_plugin');
+    pluginDir.childFile('pubspec.yaml')
+      ..createSync(recursive: true)
+      ..writeAsStringSync('''
+flutter:
+  plugin:
+    platforms:
+      tizen:
+        namespace: Some.Plugin.Namespace
+        pluginClass: SomeDotnetPlugin
+        fileName: SomeDotnetPlugin.csproj
+''');
+    pubspecFile.writeAsStringSync('''
+dependencies:
+  some_dotnet_plugin:
+    path: ${pluginDir.path}
+''');
+    packageConfigFile.writeAsStringSync('''
+{
+  "configVersion": 2,
+  "packages": [
+    {
+      "name": "some_dotnet_plugin",
+      "rootUri": "${pluginDir.uri}",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    }
+  ]
+}
+''');
+    await injectTizenPlugins(project);
+
+    final List<File> intermediateFiles = <File>[
+      fileSystem.file('tizen/ui/flutter/GeneratedPluginRegistrant.cs'),
+      fileSystem.file('tizen/ui/obj/Runner.csproj.flutter.targets'),
+      fileSystem.file('tizen/service/flutter/GeneratedPluginRegistrant.cs'),
+      fileSystem.file('tizen/service/obj/RunnerService.csproj.flutter.targets'),
+    ];
+    for (final File file in intermediateFiles) {
+      expect(file, exists);
+    }
   }, overrides: <Type, Generator>{
     FileSystem: () => fileSystem,
     ProcessManager: () => FakeProcessManager.any(),
