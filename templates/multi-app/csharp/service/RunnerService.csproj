@@ -9,8 +9,4 @@
     <ProjectReference Include="$(FlutterEmbeddingPath)" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Compile Include="..\ui\flutter\*.cs" />
-  </ItemGroup>
-
 </Project>

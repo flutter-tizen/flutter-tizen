@@ -51,9 +51,6 @@ class TizenProject extends FlutterProjectPlatform {
   Directory get ephemeralDirectory =>
       managedDirectory.childDirectory('ephemeral');
 
-  /// The intermediate output directory in the project that is managed by dotnet.
-  Directory get intermediateDirectory => hostAppRoot.childDirectory('obj');
-
   bool get isMultiApp =>
       uiAppDirectory.existsSync() && serviceAppDirectory.existsSync();
 
