@@ -32,7 +32,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-dotnet@v2
         with:
-          dotnet-version: '5.0.x'
+          dotnet-version: '6.0.x'
       - name: Run tests
         run: dotnet test embedding/csharp
 
@@ -44,8 +44,9 @@ jobs:
           path: flutter-tizen
       - name: Install Tizen Studio
         run: |
-          sudo apt install -y libncurses5 python2.7 libpython2.7 gettext
-          curl http://download.tizen.org/sdk/Installer/tizen-studio_5.1/web-cli_Tizen_Studio_5.1_ubuntu-64.bin -o install.bin
+          sudo apt install -y libncurses5 python2.7 libpython2.7 gettext \
+            libkf5itemmodels5 libkf5kiowidgets5 libkchart2
+          curl http://download.tizen.org/sdk/Installer/tizen-studio_5.5/web-cli_Tizen_Studio_5.5_ubuntu-64.bin -o install.bin
           chmod a+x install.bin
           ./install.bin --accept-license $HOME/tizen-studio
           rm install.bin
