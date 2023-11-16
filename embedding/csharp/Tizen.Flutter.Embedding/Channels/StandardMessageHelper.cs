@@ -60,7 +60,7 @@ namespace Tizen.Flutter.Embedding
             {
                 stream.WriteByte(Convert.ToByte(size));
             }
-            else if (size <= 0xffff)
+            else if (size <= Int16.MaxValue)
             {
                 stream.WriteByte(254);
                 WriteBytes(stream, BitConverter.GetBytes(Convert.ToInt16(size)));
