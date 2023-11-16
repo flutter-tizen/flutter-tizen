@@ -56,7 +56,7 @@ namespace Tizen.Flutter.Embedding
             {
                 throw new ArgumentException("value can not be negative.", nameof(size));
             }
-            if (size < 254)
+            if (size < byte.MaxValue)
             {
                 stream.WriteByte(Convert.ToByte(size));
             }
