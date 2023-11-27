@@ -543,6 +543,16 @@ void _writeTizenPluginRegistrant(
       context,
       project.managedDirectory.childFile('GeneratedPluginRegistrant.cs'),
     );
+    if (project.isMultiApp) {
+      // TODO(swift-kim): Use a single plugin registrant for both projects.
+      renderTemplateToFile(
+        _csharpPluginRegistryTemplate,
+        context,
+        project.serviceAppDirectory
+            .childDirectory('flutter')
+            .childFile('GeneratedPluginRegistrant.cs'),
+      );
+    }
   } else {
     renderTemplateToFile(
       _cppPluginRegistryTemplate,
@@ -574,20 +584,41 @@ void _writeIntermediateDotnetFiles(
   TizenProject project,
   List<TizenPlugin> dotnetPlugins,
 ) {
-  final String projectFileName = project.projectFile!.basename;
   final Map<String, Object> context = <String, Object>{
     'dotnetPlugins': dotnetPlugins.map((TizenPlugin plugin) => plugin.toMap()),
   };
+
+  final String projectFileName = project.projectFile!.basename;
+  final Directory intermediateDirectory =
+      project.hostAppRoot.childDirectory('obj');
   renderTemplateToFile(
     _intermediateDotnetPropsTemplate,
     context,
-    project.intermediateDirectory.childFile('$projectFileName.flutter.props'),
+    intermediateDirectory.childFile('$projectFileName.flutter.props'),
   );
   renderTemplateToFile(
     _intermediateDotnetTargetsTemplate,
     context,
-    project.intermediateDirectory.childFile('$projectFileName.flutter.targets'),
+    intermediateDirectory.childFile('$projectFileName.flutter.targets'),
   );
+
+  if (project.isMultiApp) {
+    final File? serviceProjectFile =
+        findDotnetProjectFile(project.serviceAppDirectory);
+    final String projectFileName = serviceProjectFile!.basename;
+    final Directory intermediateDirectory =
+        project.serviceAppDirectory.childDirectory('obj');
+    renderTemplateToFile(
+      _intermediateDotnetPropsTemplate,
+      context,
+      intermediateDirectory.childFile('$projectFileName.flutter.props'),
+    );
+    renderTemplateToFile(
+      _intermediateDotnetTargetsTemplate,
+      context,
+      intermediateDirectory.childFile('$projectFileName.flutter.targets'),
+    );
+  }
 }
 
 /// Source: [_renderTemplateToFile] in `flutter_plugins.dart`
