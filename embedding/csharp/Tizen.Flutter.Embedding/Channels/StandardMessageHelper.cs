@@ -54,7 +54,7 @@ namespace Tizen.Flutter.Embedding
         {
             if (size < 0)
             {
-                throw new ArgumentException("value can not be negative.", nameof(size));
+                throw new ArgumentException("value can not be negative", nameof(size));
             }
             if (size < 254)
             {
@@ -68,7 +68,7 @@ namespace Tizen.Flutter.Embedding
             else
             {
                 stream.WriteByte(255);
-                WriteBytes(stream, BitConverter.GetBytes(Convert.ToUInt32(size)));
+                WriteBytes(stream, BitConverter.GetBytes(size));
             }
         }
 
@@ -85,7 +85,7 @@ namespace Tizen.Flutter.Embedding
             }
             else if (value == 254)
             {
-                return reader.ReadInt16();
+                return reader.ReadUInt16();
             }
             else
             {
