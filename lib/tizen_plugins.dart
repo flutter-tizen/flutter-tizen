@@ -548,8 +548,7 @@ void _writeTizenPluginRegistrant(
       renderTemplateToFile(
         _csharpPluginRegistryTemplate,
         context,
-        project.serviceAppDirectory
-            .childDirectory('flutter')
+        project.serviceManagedDirectory
             .childFile('GeneratedPluginRegistrant.cs'),
       );
     }

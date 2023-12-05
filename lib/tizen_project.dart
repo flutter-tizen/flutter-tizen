@@ -45,6 +45,9 @@ class TizenProject extends FlutterProjectPlatform {
   /// creation should live here.
   Directory get managedDirectory => hostAppRoot.childDirectory('flutter');
 
+  Directory get serviceManagedDirectory =>
+      serviceAppDirectory.childDirectory('flutter');
+
   /// The subdirectory of [managedDirectory] that contains files that are
   /// generated on the fly. All generated files that are not intended to be
   /// checked in should live here.
@@ -156,10 +159,17 @@ class TizenProject extends FlutterProjectPlatform {
     }
     _deleteFile(_ephemeralModuleDirectory);
     _deleteFile(managedDirectory);
+    if (isMultiApp) {
+      _deleteFile(serviceManagedDirectory);
+    }
 
     if (isDotnet) {
       _deleteFile(hostAppRoot.childDirectory('bin'));
       _deleteFile(hostAppRoot.childDirectory('obj'));
+      if (isMultiApp) {
+        _deleteFile(serviceAppDirectory.childDirectory('bin'));
+        _deleteFile(serviceAppDirectory.childDirectory('obj'));
+      }
     } else {
       _deleteFile(hostAppRoot.childDirectory('Debug'));
       _deleteFile(hostAppRoot.childDirectory('Release'));
