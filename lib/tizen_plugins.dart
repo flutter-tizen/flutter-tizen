@@ -297,7 +297,7 @@ Future<void> _generateEntrypointWithPluginRegistrant(
         dartEntrypoints.map((String name) => <String, String>{'name': name}),
     'plugins': dartPlugins.map((TizenPlugin plugin) => plugin.toMap()),
   };
-  renderTemplateToFile(
+  await renderTemplateToFile(
     _generatedMainTemplate,
     context,
     newMainFile,
@@ -365,9 +365,9 @@ Future<void> injectTizenPlugins(FlutterProject project) async {
         await findTizenPlugins(project, cppOnly: true);
     final List<TizenPlugin> dotnetPlugins =
         await findTizenPlugins(project, dotnetOnly: true);
-    _writeTizenPluginRegistrant(tizenProject, cppPlugins, dotnetPlugins);
+    await _writeTizenPluginRegistrant(tizenProject, cppPlugins, dotnetPlugins);
     if (tizenProject.isDotnet) {
-      _writeIntermediateDotnetFiles(tizenProject, dotnetPlugins);
+      await _writeIntermediateDotnetFiles(tizenProject, dotnetPlugins);
     }
   }
 }
@@ -401,7 +401,7 @@ Future<List<TizenPlugin>> findTizenPlugins(
   );
   for (final Package package in packageConfig.packages) {
     final Uri packageRoot = package.packageUriRoot.resolve('..');
-    final TizenPlugin? plugin = _pluginFromPackage(
+    final TizenPlugin? plugin = await _pluginFromPackage(
       package.name,
       packageRoot,
       fileSystem: fs,
@@ -422,21 +422,20 @@ Future<List<TizenPlugin>> findTizenPlugins(
 }
 
 /// Source: [_pluginFromPackage] in `flutter_plugins.dart`
-TizenPlugin? _pluginFromPackage(
+Future<TizenPlugin?> _pluginFromPackage(
   String name,
   Uri packageRoot, {
   FileSystem? fileSystem,
-}) {
+}) async {
   final FileSystem fs = fileSystem ?? globals.fs;
-  final String pubspecPath =
-      fs.path.fromUri(packageRoot.resolve('pubspec.yaml'));
-  if (!fs.isFileSync(pubspecPath)) {
+  final File pubspecFile = fs.file(packageRoot.resolve('pubspec.yaml'));
+  if (!pubspecFile.existsSync()) {
     return null;
   }
 
   Object? pubspec;
   try {
-    pubspec = loadYaml(fs.file(pubspecPath).readAsStringSync());
+    pubspec = loadYaml(await pubspecFile.readAsString());
   } on YamlException catch (err) {
     globals.printTrace('Failed to parse plugin manifest for $name: $err');
   }
@@ -527,25 +526,25 @@ internal class GeneratedPluginRegistrant
 ''';
 
 /// See: [writeWindowsPluginFiles] in `flutter_plugins.dart`
-void _writeTizenPluginRegistrant(
+Future<void> _writeTizenPluginRegistrant(
   TizenProject project,
   List<TizenPlugin> cppPlugins,
   List<TizenPlugin> dotnetPlugins,
-) {
+) async {
   final Map<String, Object> context = <String, Object>{
     'cppPlugins': cppPlugins.map((TizenPlugin plugin) => plugin.toMap()),
     'dotnetPlugins': dotnetPlugins.map((TizenPlugin plugin) => plugin.toMap()),
   };
 
   if (project.isDotnet) {
-    renderTemplateToFile(
+    await renderTemplateToFile(
       _csharpPluginRegistryTemplate,
       context,
       project.managedDirectory.childFile('GeneratedPluginRegistrant.cs'),
     );
     if (project.isMultiApp) {
       // TODO(swift-kim): Use a single plugin registrant for both projects.
-      renderTemplateToFile(
+      await renderTemplateToFile(
         _csharpPluginRegistryTemplate,
         context,
         project.serviceManagedDirectory
@@ -553,7 +552,7 @@ void _writeTizenPluginRegistrant(
       );
     }
   } else {
-    renderTemplateToFile(
+    await renderTemplateToFile(
       _cppPluginRegistryTemplate,
       context,
       project.managedDirectory.childFile('generated_plugin_registrant.h'),
@@ -579,10 +578,10 @@ const String _intermediateDotnetTargetsTemplate = '''
 </Project>
 ''';
 
-void _writeIntermediateDotnetFiles(
+Future<void> _writeIntermediateDotnetFiles(
   TizenProject project,
   List<TizenPlugin> dotnetPlugins,
-) {
+) async {
   final Map<String, Object> context = <String, Object>{
     'dotnetPlugins': dotnetPlugins.map((TizenPlugin plugin) => plugin.toMap()),
   };
@@ -590,12 +589,12 @@ void _writeIntermediateDotnetFiles(
   final String projectFileName = project.projectFile!.basename;
   final Directory intermediateDirectory =
       project.hostAppRoot.childDirectory('obj');
-  renderTemplateToFile(
+  await renderTemplateToFile(
     _intermediateDotnetPropsTemplate,
     context,
     intermediateDirectory.childFile('$projectFileName.flutter.props'),
   );
-  renderTemplateToFile(
+  await renderTemplateToFile(
     _intermediateDotnetTargetsTemplate,
     context,
     intermediateDirectory.childFile('$projectFileName.flutter.targets'),
@@ -607,12 +606,12 @@ void _writeIntermediateDotnetFiles(
     final String projectFileName = serviceProjectFile!.basename;
     final Directory intermediateDirectory =
         project.serviceAppDirectory.childDirectory('obj');
-    renderTemplateToFile(
+    await renderTemplateToFile(
       _intermediateDotnetPropsTemplate,
       context,
       intermediateDirectory.childFile('$projectFileName.flutter.props'),
     );
-    renderTemplateToFile(
+    await renderTemplateToFile(
       _intermediateDotnetTargetsTemplate,
       context,
       intermediateDirectory.childFile('$projectFileName.flutter.targets'),
@@ -621,9 +620,10 @@ void _writeIntermediateDotnetFiles(
 }
 
 /// Source: [_renderTemplateToFile] in `flutter_plugins.dart`
-void renderTemplateToFile(String template, Object? context, File file) {
+Future<void> renderTemplateToFile(
+    String template, Object? context, File file) async {
   final String renderedTemplate =
       globals.templateRenderer.renderString(template, context);
-  file.createSync(recursive: true);
-  file.writeAsStringSync(renderedTemplate);
+  await file.create(recursive: true);
+  await file.writeAsString(renderedTemplate);
 }

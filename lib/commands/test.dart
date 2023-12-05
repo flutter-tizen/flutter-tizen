@@ -73,7 +73,7 @@ class TizenTestRunner implements FlutterTestRunner {
         'plugins': dartPlugins.map((TizenPlugin plugin) => plugin.toMap()),
       };
       final File newTestFile = runnerDir.childFile(testFile.basename);
-      renderTemplateToFile(
+      await renderTemplateToFile(
         '''
 //
 // Generated file. Do not edit.
