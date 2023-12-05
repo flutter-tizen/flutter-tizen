@@ -104,7 +104,7 @@ class TizenBuilder {
       if (!result.success) {
         for (final ExceptionMeasurement measurement
             in result.exceptions.values) {
-          globals.printError(measurement.exception.toString());
+          globals.printError(measurement.toString());
         }
         throwToolExit('The build failed.');
       }

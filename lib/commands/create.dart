@@ -195,6 +195,7 @@ class TizenCreateCommand extends CreateCommand {
     String? gradleVersion,
     bool withPlatformChannelPluginHook = false,
     bool withFfiPluginHook = false,
+    bool withFfiPackage = false,
     bool withEmptyMain = false,
     bool ios = false,
     bool android = false,
@@ -219,6 +220,7 @@ class TizenCreateCommand extends CreateCommand {
       gradleVersion: gradleVersion,
       withPlatformChannelPluginHook: withPlatformChannelPluginHook,
       withFfiPluginHook: withFfiPluginHook,
+      withFfiPackage: withFfiPackage,
       withEmptyMain: withEmptyMain,
       ios: ios,
       android: android,
@@ -246,8 +248,8 @@ class TizenCreateCommand extends CreateCommand {
           '--app-type=$appType and --template=$template cannot be provided at the same time.');
     }
 
-    if (template == 'plugin_ffi') {
-      throwToolExit('Creating an FFI plugin project is not yet supported.');
+    if (template == 'plugin_ffi' || template == 'package_ffi') {
+      throwToolExit('Creating an FFI plugin or package is not yet supported.');
     }
 
     final String templateName = template == 'app' ? '$appType-app' : template;

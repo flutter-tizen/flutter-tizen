@@ -8,7 +8,6 @@ class TizenAttachCommand extends AttachCommand {
   TizenAttachCommand({
     super.verboseHelp,
     super.hotRunnerFactory,
-    required super.artifacts,
     required super.stdio,
     required super.logger,
     required super.terminal,
