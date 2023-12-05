@@ -67,45 +67,41 @@ void main() {
   });
 
   testUsingContext('Can clean C# project', () {
-    project.manifestFile.createSync(recursive: true);
-    project.editableDirectory
+    project.uiManifestFile.createSync(recursive: true);
+    project.uiAppDirectory
         .childFile('Runner.csproj')
         .createSync(recursive: true);
+    project.serviceManifestFile.createSync(recursive: true);
+    project.serviceAppDirectory
+        .childFile('Runner.csproj')
+        .createSync(recursive: true);
+    expect(project.isMultiApp, isTrue);
     expect(project.isDotnet, isTrue);
 
-    final Directory binDir = project.editableDirectory.childDirectory('bin')
+    final Directory uiBinDir = project.uiAppDirectory.childDirectory('bin')
       ..createSync(recursive: true);
-    final Directory objDir = project.editableDirectory.childDirectory('obj')
+    final Directory uiObjDir = project.uiAppDirectory.childDirectory('obj')
+      ..createSync(recursive: true);
+    final Directory serviceBinDir = project.serviceAppDirectory
+        .childDirectory('bin')
+      ..createSync(recursive: true);
+    final Directory serviceObjDir = project.serviceAppDirectory
+        .childDirectory('obj')
       ..createSync(recursive: true);
 
     project.clean();
 
-    expect(binDir, isNot(exists));
-    expect(objDir, isNot(exists));
+    expect(uiBinDir, isNot(exists));
+    expect(uiObjDir, isNot(exists));
+    expect(serviceBinDir, isNot(exists));
+    expect(serviceObjDir, isNot(exists));
   });
 
   testUsingContext('Can clean C++ project', () {
-    project.manifestFile.createSync(recursive: true);
-    expect(project.isDotnet, isFalse);
-
-    final Directory debugDir = project.editableDirectory.childDirectory('Debug')
-      ..createSync(recursive: true);
-    final Directory releaseDir = project.editableDirectory
-        .childDirectory('Release')
-      ..createSync(recursive: true);
-
-    project.clean();
-
-    expect(debugDir, isNot(exists));
-    expect(releaseDir, isNot(exists));
-  });
-
-  testUsingContext('Can clean multi app project', () {
-    project.uiAppDirectory.createSync(recursive: true);
     project.uiManifestFile.createSync(recursive: true);
-    project.serviceAppDirectory.createSync(recursive: true);
     project.serviceManifestFile.createSync(recursive: true);
     expect(project.isMultiApp, isTrue);
+    expect(project.isDotnet, isFalse);
 
     final Directory uiDebugDir = project.uiAppDirectory.childDirectory('Debug')
       ..createSync(recursive: true);

@@ -186,9 +186,7 @@ class TizenProject extends FlutterProjectPlatform {
       return;
     }
     final String path = file.fileSystem.path.relative(file.path);
-    final Status status = globals.logger.startProgress(
-      'Deleting $path...',
-    );
+    final Status status = globals.logger.startProgress('Deleting $path...');
     try {
       file.deleteSync(recursive: true);
     } on FileSystemException catch (error) {
