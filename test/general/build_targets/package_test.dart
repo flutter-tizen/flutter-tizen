@@ -241,16 +241,19 @@ type = app
       final File outputTpk = outputDir.childFile('package_id-1.0.0.tpk');
       expect(outputTpk, exists);
 
-      final Directory tizenDir = projectDir.childDirectory('tizen');
+      final Directory ephemeralDir =
+          projectDir.childDirectory('tizen/flutter/ephemeral');
       final Directory flutterAssetsDir =
-          tizenDir.childDirectory('res/flutter_assets');
-      final File engineBinary = tizenDir.childFile('lib/libflutter_engine.so');
+          ephemeralDir.childDirectory('res/flutter_assets');
+      final File engineBinary =
+          ephemeralDir.childFile('lib/libflutter_engine.so');
       final File embedder =
-          tizenDir.childFile('lib/libflutter_tizen_common.so');
-      final File icuData = tizenDir.childFile('res/icudtl.dat');
-      final File aotSnapshot = tizenDir.childFile('lib/libapp.so');
-      final File pluginsLib = tizenDir.childFile('lib/libflutter_plugins.so');
-      final File pluginsUserLib = tizenDir.childFile('lib/libshared.so');
+          ephemeralDir.childFile('lib/libflutter_tizen_common.so');
+      final File icuData = ephemeralDir.childFile('res/icudtl.dat');
+      final File aotSnapshot = ephemeralDir.childFile('lib/libapp.so');
+      final File pluginsLib =
+          ephemeralDir.childFile('lib/libflutter_plugins.so');
+      final File pluginsUserLib = ephemeralDir.childFile('lib/libshared.so');
 
       expect(flutterAssetsDir, exists);
       expect(engineBinary, exists);

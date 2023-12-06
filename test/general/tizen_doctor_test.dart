@@ -51,7 +51,7 @@ void main() {
 
   testUsingContext('Detects minimum required SDK version', () async {
     final _FakeTizenSdk tizenSdk = _FakeTizenSdk(fileSystem);
-    tizenSdk.sdkVersion = '3.7';
+    tizenSdk.sdkVersion = '4.5';
 
     final TizenValidator tizenValidator = TizenValidator(
       tizenSdk: tizenSdk,
@@ -126,5 +126,5 @@ class _FakeTizenSdk extends TizenSdk {
         );
 
   @override
-  String? sdkVersion = '4.0';
+  String? sdkVersion = '5.0';
 }
