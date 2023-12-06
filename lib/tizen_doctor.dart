@@ -137,7 +137,7 @@ class TizenValidator extends DoctorValidator {
     }
 
     final Version? sdkVersion = Version.parse(_tizenSdk!.sdkVersion);
-    if (sdkVersion != null && sdkVersion < Version(4, 0, 0)) {
+    if (sdkVersion != null && sdkVersion < Version(5, 0, 0)) {
       messages.add(ValidationMessage.error(
         'A newer version of Tizen Studio is required. To update, run:\n'
         '${_tizenSdk!.packageManagerCli.path} update',
@@ -161,7 +161,7 @@ class TizenValidator extends DoctorValidator {
             .stdout
             .trim(),
       );
-      if (dotnetVersion == null || dotnetVersion < Version(3, 0, 0)) {
+      if (dotnetVersion == null || dotnetVersion < Version(6, 0, 0)) {
         messages.add(const ValidationMessage.error(
           'A newer version of the .NET SDK is required.\n'
           'Install the latest release from: https://dotnet.microsoft.com/download',

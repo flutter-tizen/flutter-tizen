@@ -4,8 +4,8 @@
 
 - Operating system: Linux (x64)
 - Tools:
-  - [Tizen Studio](install-tizen-sdk.md) (4.0 or later)
-  - [.NET SDK](https://docs.microsoft.com/en-us/dotnet/core/install/linux) (3.0 or later)
+  - [Tizen Studio](install-tizen-sdk.md) (5.0 or later)
+  - [.NET SDK](https://learn.microsoft.com/en-us/dotnet/core/install/linux) (6.0 or later)
   - `bash` `curl` `file` `git` `make` `mkdir` `rm` `unzip` `which` `xz-utils` `zip`
 
 ## Installing flutter-tizen

@@ -8,9 +8,9 @@
      sudo softwareupdate --install-rosetta --agree-to-license
      ```
 - Tools:
-  - [Tizen Studio](install-tizen-sdk.md) (4.0 or later)
+  - [Tizen Studio](install-tizen-sdk.md) (5.0 or later)
     - Tizen Emulator is not available on an Apple Silicon Mac as of Tizen Studio 5.0.
-  - [.NET SDK](https://docs.microsoft.com/en-us/dotnet/core/install/macos) (3.0 or later)
+  - [.NET SDK](https://learn.microsoft.com/en-us/dotnet/core/install/macos) (6.0 or later)
   - `git` (either [standalone](https://git-scm.com/download/mac) or integrated with [Xcode](https://developer.apple.com/xcode))
 
 ## Installing flutter-tizen
