@@ -14,6 +14,7 @@ import 'package:flutter_tools/src/base/context.dart';
 import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/base/os.dart';
 import 'package:flutter_tools/src/base/template.dart';
+import 'package:flutter_tools/src/base/terminal.dart';
 import 'package:flutter_tools/src/build_system/build_system.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/commands/analyze.dart';
@@ -124,7 +125,6 @@ Future<void> main(List<String> args) async {
       // Commands extended for Tizen.
       TizenAttachCommand(
         verboseHelp: verboseHelp,
-        artifacts: globals.artifacts,
         stdio: globals.stdio,
         logger: globals.logger,
         terminal: globals.terminal,
@@ -221,6 +221,12 @@ Future<void> main(List<String> args) async {
             processManager: globals.processManager,
           ),
       TemplateRenderer: () => const MustacheTemplateRenderer(),
+      Terminal: () => AnsiTerminal(
+            stdio: globals.stdio,
+            platform: globals.platform,
+            now: DateTime.now(),
+            isCliAnimationEnabled: featureFlags.isCliAnimationEnabled,
+          ),
       TizenBuilder: () => TizenBuilder(),
       TizenSdk: () => TizenSdk.locateSdk(),
       TizenValidator: () => TizenValidator(

@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 import 'package:file/file.dart';
-import 'package:flutter_tools/src/artifacts.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/base/version.dart';
 import 'package:flutter_tools/src/build_info.dart';
@@ -30,11 +29,12 @@ String getBuildConfig(BuildMode buildMode) {
   return buildMode == BuildMode.debug ? 'Debug' : 'Release';
 }
 
-/// See: [CachedArtifacts._getEngineArtifactsPath]
 Directory getEngineArtifactsDirectory(String arch, BuildMode mode) {
-  return globals.cache
-      .getArtifactDirectory('engine')
-      .childDirectory('tizen-$arch-${mode.name}');
+  return globals.artifacts!.isLocalEngine
+      ? globals.fs.directory(globals.artifacts!.localEngineInfo!.targetOutPath)
+      : globals.cache
+          .getArtifactDirectory('engine')
+          .childDirectory('tizen-$arch-${mode.name}');
 }
 
 Directory getEmbedderArtifactsDirectory(String? apiVersion, String arch) {

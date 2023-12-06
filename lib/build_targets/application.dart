@@ -52,6 +52,8 @@ class TizenKernelSnapshot extends KernelSnapshot {
         environment.defines[kTrackWidgetCreation] != 'false';
 
     // This configuration is all optional.
+    final String? frontendServerStarterPath =
+        environment.defines[kFrontendServerStarterPath];
     final List<String> extraFrontEndOptions =
         decodeCommaSeparated(environment.defines, kExtraFrontEndOptions);
     final List<String>? fileSystemRoots =
@@ -80,6 +82,7 @@ class TizenKernelSnapshot extends KernelSnapshot {
       linkPlatformKernelIn: buildMode.isPrecompiled,
       mainPath: targetFileAbsolute,
       depFilePath: environment.buildDir.childFile('kernel_snapshot.d').path,
+      frontendServerStarterPath: frontendServerStarterPath,
       extraFrontEndOptions: extraFrontEndOptions,
       fileSystemRoots: fileSystemRoots,
       fileSystemScheme: fileSystemScheme,

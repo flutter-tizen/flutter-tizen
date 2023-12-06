@@ -118,6 +118,7 @@ abstract class TizenCachedArtifacts extends EngineCachedArtifact {
       httpClient: HttpClient(),
       allowedBaseUrls: <String>[
         cache.storageBaseUrl,
+        cache.realmlessStorageBaseUrl,
         cache.cipdBaseUrl,
         kGithubBaseUrl,
       ],
