@@ -248,17 +248,14 @@ class NativeTpk extends TizenPackage {
     final TizenProject tizenProject = TizenProject.fromFlutter(project);
 
     // Clean up the intermediate and output directories.
-    final Directory hostAppRoot = tizenProject.hostAppRoot;
-    final Directory resDir = hostAppRoot.childDirectory('res');
-    if (resDir.existsSync()) {
-      resDir.deleteSync(recursive: true);
+    final Directory ephemeralDir = tizenProject.ephemeralDirectory;
+    if (ephemeralDir.existsSync()) {
+      ephemeralDir.deleteSync(recursive: true);
     }
-    resDir.createSync(recursive: true);
-    final Directory libDir = hostAppRoot.childDirectory('lib');
-    if (libDir.existsSync()) {
-      libDir.deleteSync(recursive: true);
-    }
-    libDir.createSync(recursive: true);
+    final Directory resDir = ephemeralDir.childDirectory('res')
+      ..createSync(recursive: true);
+    final Directory libDir = ephemeralDir.childDirectory('lib')
+      ..createSync(recursive: true);
 
     final Directory outputDir = environment.outputDir;
     if (outputDir.existsSync()) {
@@ -343,7 +340,8 @@ class NativeTpk extends TizenPackage {
       'evas',
     ];
 
-    final Directory buildDir = hostAppRoot.childDirectory(buildConfig);
+    final Directory buildDir =
+        tizenProject.hostAppRoot.childDirectory(buildConfig);
     if (buildDir.existsSync()) {
       buildDir.deleteSync(recursive: true);
     }
@@ -399,7 +397,7 @@ class NativeTpk extends TizenPackage {
     ];
 
     // Build the app.
-    final RunResult result = await tizenSdk!.buildApp(
+    RunResult result = await tizenSdk!.buildApp(
       tizenProject.editableDirectory.path,
       build: <String, Object>{
         'name': 'b1',
@@ -427,7 +425,6 @@ class NativeTpk extends TizenPackage {
         'name': tizenManifest.packageId,
         'targets': <String>['b1'],
       },
-      sign: securityProfile,
       environment: <String, String>{
         'FLUTTER_BUILD_DIR': environment.buildDir.path.toPosixPath(''),
         'API_VERSION': apiVersion ?? '',
@@ -447,6 +444,17 @@ class NativeTpk extends TizenPackage {
     if (outputTpk == null) {
       throwToolExit('Build succeeded but the expected TPK not found:\n$result');
     }
+
+    // Add files from the intermediate directory and sign the TPK.
+    result = await tizenSdk!.package(
+      outputTpk.path,
+      extraDir: ephemeralDir.path,
+      sign: securityProfile,
+    );
+    if (result.exitCode != 0) {
+      throwToolExit('Failed to sign the TPK:\n$result');
+    }
+
     // Copy and rename the output TPK.
     outputTpk.copySync(outputDir.childFile(tizenProject.outputTpkName).path);
 

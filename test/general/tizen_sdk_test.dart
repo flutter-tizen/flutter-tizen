@@ -201,6 +201,8 @@ void main() {
         'test_profile',
         '-r',
         '/path/to/reference/project',
+        '-e',
+        '/path/to/extradir',
         '--',
         projectDir.path,
       ],
@@ -209,6 +211,7 @@ void main() {
     await tizenSdk.package(
       projectDir.path,
       reference: '/path/to/reference/project',
+      extraDir: '/path/to/extradir',
       sign: 'test_profile',
     );
 

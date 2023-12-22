@@ -229,6 +229,7 @@ class TizenSdk {
     String workingDirectory, {
     String type = 'tpk',
     String? reference,
+    String? extraDir,
     String? sign,
   }) {
     return _processUtils.run(<String>[
@@ -238,6 +239,7 @@ class TizenSdk {
       type,
       if (sign != null) ...<String>['-s', sign],
       if (reference != null) ...<String>['-r', reference],
+      if (extraDir != null) ...<String>['-e', extraDir],
       '--',
       workingDirectory,
     ]);
