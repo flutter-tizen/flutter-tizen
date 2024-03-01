@@ -18,6 +18,7 @@ dependencies:
   package_config:
   path:
   process:
+  unified_analytics:
   xml:
   yaml:
 
