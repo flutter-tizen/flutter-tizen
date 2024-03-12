@@ -260,6 +260,11 @@ class TizenSdk {
     }
     apiVersion ??= '5.5';
 
+    if (apiVersion == '8.0') {
+      // Note: From tizen-8.0, profile has been integrated into the `tizen`.
+      profile = 'tizen';
+    }
+
     double versionToDouble(String versionString) {
       final double? version = double.tryParse(versionString);
       if (version == null) {
@@ -271,7 +276,7 @@ class TizenSdk {
     String type = arch == 'x86' ? 'emulator' : 'device';
     if (arch == 'arm64') {
       // The arm64 build is only supported by iot-headed-6.0+ rootstraps.
-      if (profile != 'iot-headed') {
+      if (profile != 'tizen' && profile != 'iot-headed') {
         _logger.printError(
             'The arm64 build is not supported by the $profile profile.');
         profile = 'iot-headed';
