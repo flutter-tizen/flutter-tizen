@@ -260,11 +260,6 @@ class TizenSdk {
     }
     apiVersion ??= '5.5';
 
-    if (apiVersion == '8.0') {
-      // Note: From tizen-8.0, profile has been integrated into the `tizen`.
-      profile = 'tizen';
-    }
-
     double versionToDouble(String versionString) {
       final double? version = double.tryParse(versionString);
       if (version == null) {
@@ -285,6 +280,11 @@ class TizenSdk {
         apiVersion = '6.0';
       }
       type = 'device64';
+    }
+
+    if (apiVersion == '8.0') {
+      // Note: Starting with Tizen 8.0, the unified "tizen" profile is used.
+      profile = 'tizen';
     }
 
     Rootstrap getRootstrap(String profile, String apiVersion, String type) {
