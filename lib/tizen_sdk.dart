@@ -271,7 +271,7 @@ class TizenSdk {
     String type = arch == 'x86' ? 'emulator' : 'device';
     if (arch == 'arm64') {
       // The arm64 build is only supported by iot-headed-6.0+ rootstraps.
-      if (profile != 'iot-headed') {
+      if (profile != 'tizen' && profile != 'iot-headed') {
         _logger.printError(
             'The arm64 build is not supported by the $profile profile.');
         profile = 'iot-headed';
@@ -280,6 +280,11 @@ class TizenSdk {
         apiVersion = '6.0';
       }
       type = 'device64';
+    }
+
+    if (apiVersion == '8.0') {
+      // Note: Starting with Tizen 8.0, the unified "tizen" profile is used.
+      profile = 'tizen';
     }
 
     Rootstrap getRootstrap(String profile, String apiVersion, String type) {
