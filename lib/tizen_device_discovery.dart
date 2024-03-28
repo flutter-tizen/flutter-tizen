@@ -54,12 +54,12 @@ class TizenDeviceDiscovery extends PollingDeviceDiscovery {
 
   @override
   Future<List<Device>> pollingGetDevices({Duration? timeout}) async {
-    if (_tizenSdk == null || !_tizenSdk!.sdb.existsSync()) {
+    if (_tizenSdk == null || !_tizenSdk.sdb.existsSync()) {
       return <TizenDevice>[];
     }
 
     final RunResult result =
-        await _processUtils.run(<String>[_tizenSdk!.sdb.path, 'devices']);
+        await _processUtils.run(<String>[_tizenSdk.sdb.path, 'devices']);
     if (result.exitCode != 0) {
       throwToolExit('sdb failed to list attached devices:\n$result');
     }
@@ -89,7 +89,7 @@ class TizenDeviceDiscovery extends PollingDeviceDiscovery {
         modelId: deviceModel,
         logger: _logger,
         processManager: _processManager,
-        tizenSdk: _tizenSdk!,
+        tizenSdk: _tizenSdk,
         fileSystem: _fileSystem,
       );
 
@@ -114,7 +114,7 @@ class TizenDeviceDiscovery extends PollingDeviceDiscovery {
     }
 
     final RunResult result =
-        await _processUtils.run(<String>[_tizenSdk!.sdb.path, 'devices']);
+        await _processUtils.run(<String>[_tizenSdk.sdb.path, 'devices']);
     if (result.exitCode != 0) {
       return <String>[];
     }

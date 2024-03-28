@@ -88,6 +88,7 @@ class TizenBuilder {
       processManager: globals.processManager,
       platform: globals.platform,
       usage: globals.flutterUsage,
+      analytics: globals.analytics,
       generateDartPluginRegistry: false,
     );
 
@@ -136,6 +137,7 @@ class TizenBuilder {
         fileSystem: globals.fs,
         logger: globals.logger,
         flutterUsage: globals.flutterUsage,
+        analytics: globals.analytics,
       );
       final File codeSizeFile = globals.fs
           .directory(buildInfo.codeSizeDirectory)
@@ -222,6 +224,7 @@ class TizenBuilder {
       processManager: globals.processManager,
       platform: globals.platform,
       usage: globals.flutterUsage,
+      analytics: globals.analytics,
       generateDartPluginRegistry: false,
     );
 

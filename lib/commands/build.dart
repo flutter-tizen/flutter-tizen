@@ -18,11 +18,13 @@ import '../tizen_plugins.dart';
 
 class TizenBuildCommand extends BuildCommand {
   TizenBuildCommand({
+    required super.artifacts,
     required super.fileSystem,
     required super.buildSystem,
     required super.osUtils,
     required Logger logger,
     required super.androidSdk,
+    required super.processUtils,
     bool verboseHelp = false,
   }) : super(logger: logger, verboseHelp: verboseHelp) {
     addSubcommand(BuildTpkCommand(logger: logger, verboseHelp: verboseHelp));

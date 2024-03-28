@@ -410,6 +410,11 @@ class TizenDevice extends Device {
         '--trace-skia-allowlist',
         debuggingOptions.traceSkiaAllowlist!,
       ],
+      if (debuggingOptions.traceSystrace) '--trace-systrace',
+      if (debuggingOptions.traceToFile != null) ...<String>[
+        '--trace-to-file',
+        debuggingOptions.traceToFile!,
+      ],
       if (debuggingOptions.endlessTraceBuffer) '--endless-trace-buffer',
       if (debuggingOptions.dumpSkpOnShaderCompilation)
         '--dump-skp-on-shader-compilation',
@@ -418,7 +423,6 @@ class TizenDevice extends Device {
       if (debuggingOptions.enableImpeller == ImpellerStatus.enabled)
         '--enable-impeller',
       if (debuggingOptions.enableVulkanValidation) '--enable-vulkan-validation',
-      if (debuggingOptions.impellerForceGL) '--impeller-force-gl',
       if (debuggingOptions.debuggingEnabled) ...<String>[
         '--enable-checked-mode',
         if (debuggingOptions.startPaused) '--start-paused',
