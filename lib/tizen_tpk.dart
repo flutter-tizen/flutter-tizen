@@ -35,13 +35,6 @@ class TizenTpk extends ApplicationPackage
       );
     }
 
-    // We have to manually restore permissions for files zipped by
-    // build-task-tizen on Unix.
-    // Issue: https://github.com/dotnet/runtime/issues/1548
-    tempDir.listSync().whereType<File>().forEach((File file) {
-      globals.os.chmod(file, '644');
-    });
-
     final File manifestFile = tempDir.childFile('tizen-manifest.xml');
     final File signatureFile = tempDir.childFile('author-signature.xml');
 
