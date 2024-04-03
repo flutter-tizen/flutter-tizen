@@ -405,7 +405,7 @@ def download_symbols(device: TizenDevice):
 
   base_url = 'https://github.com/flutter-tizen/embedder/releases'
   device_arch = device.get_architecture()
-  for api_level in ['5.5', '6.5']:
+  for api_level in ['6.0', '6.5']:
     # Any existing files will be overwritten.
     location = Path('symbols') / f'tizen-{api_level}-{device_arch}'
     location.mkdir(parents=True, exist_ok=True)

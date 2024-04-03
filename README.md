@@ -10,9 +10,10 @@ _Flutter and the related logo are trademarks of Google LLC. This project is spon
 
 ## Supported devices
 
-- **Galaxy Watch**: Tizen 5.5 or later
 - **Smart TV**: [Tizen 6.0 (2021) or later](https://developer.samsung.com/smarttv/develop/specifications/tv-model-groups.html)
-- **IoT (RPi 3/4)**: Tizen 5.5 or later
+- **IoT (RPi 3/4)**: Tizen 6.0 or later
+
+##### NOTE: **Galaxy Watch**: Tizen 5.5 ([Supported in v3.16.2 and lower](https://github.com/flutter-tizen/flutter-tizen/tags))
 
 ## Installation
 

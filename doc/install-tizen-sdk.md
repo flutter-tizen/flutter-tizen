@@ -15,10 +15,11 @@ After installing Tizen Studio, the _Package Manager_ window will automatically p
   - _[Tizen SDK tools] - [Native CLI]_
   - _[Tizen SDK tools] - [Native toolchain] - [Gcc 9.2 toolchain]_
   - _[Tizen SDK tools] - [Baseline SDK] - [Certificate Manager]_
-  - _[5.5 Wearable] - [Advanced] - [Native app. development (CLI)]_
+  - _[Extension SDK] - [IOT-Headed-6.0] - [Advanced] - [Native app. development (CLI)]_
   - _[Extension SDK] - [Samsung Certificate Extension]_
+
 - **Optional**
-  - _[5.5 Wearable] - [Emulator]_
+  - _[8.0 Tizen] - [Emulator]_
   - _[Extension SDK] - [TV Extensions-x.x] - [Emulator]_
 
 You can also install these packages from the command line by following the instructions of `flutter-tizen doctor -v` after installing flutter-tizen.
@@ -39,7 +40,7 @@ Note: If you are using Windows on an AMD-based system, you cannot launch Tizen e
 
 ## Create a Tizen certificate
 
-To install your app on Tizen devices or publish on _Galaxy Store/TV App Store_, you need to sign the app with a valid certificate. Use _Certificate Manager_ (GUI), or the [`tizen certificate/security-profiles`](https://docs.tizen.org/application/tizen-studio/common-tools/command-line-interface) command (CLI) to create a Tizen or Samsung certificate.
+To install your app on Tizen devices or publish on _TV App Store_, you need to sign the app with a valid certificate. Use _Certificate Manager_ (GUI), or the [`tizen certificate/security-profiles`](https://docs.tizen.org/application/tizen-studio/common-tools/command-line-interface) command (CLI) to create a Tizen or Samsung certificate.
 
 ![Certificate types](images/certificate-types.png)
 
@@ -47,4 +48,4 @@ Choose Tizen certificate if you only want to test your app on emulators. Otherwi
 
 ![Specify DUIDs](images/certificate-enter-duid.png)
 
-For detailed instructions, see [Samsung Developers: Creating Certificates](https://developer.samsung.com/galaxy-watch-develop/getting-certificates/create.html).
+For detailed instructions, see [Samsung Developers: Creating Certificates](https://developer.samsung.com/smarttv/develop/getting-started/setting-up-sdk/creating-certificates.html).

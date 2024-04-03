@@ -109,7 +109,7 @@ dependencies:
     await NativePlugins(const TizenBuildInfo(
       BuildInfo.debug,
       targetArch: 'x86',
-      deviceProfile: 'wearable',
+      deviceProfile: 'common',
     )).build(environment);
 
     final Directory outputDir =
@@ -140,7 +140,7 @@ dependencies:
     await NativePlugins(const TizenBuildInfo(
       BuildInfo.debug,
       targetArch: 'x86',
-      deviceProfile: 'wearable',
+      deviceProfile: 'common',
     )).build(environment);
 
     final Directory outputDir =

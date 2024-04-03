@@ -3,7 +3,7 @@
 
 APPNAME = runner
 type = app
-profile = common-5.5
+profile = common-6.0
 
 # Source files
 USER_SRCS += src/runner.cc

@@ -45,16 +45,6 @@ namespace Tizen.Flutter.Embedding
     public class FlutterApplication : CoreUIApplication, IPluginRegistry
     {
         /// <summary>
-        /// Initialize FlutterApplication.
-        /// </summary>
-        public FlutterApplication()
-        {
-#if WEARABLE_PROFILE
-            RendererType = FlutterRendererType.EvasGL;
-#endif
-        }
-
-        /// <summary>
         /// The optional entrypoint in the Dart project. Defaults to main() if the value is empty.
         /// </summary>
         public string DartEntrypoint { get; set; } = string.Empty;
@@ -112,7 +102,7 @@ namespace Tizen.Flutter.Embedding
         protected bool IsTopLevel { get; set; } = false;
 
         /// <summary>
-        /// The renderer type of the engine. Defaults to EGL. If the profile is wearable, defaults to EvasGL.
+        /// The renderer type of the engine. Defaults to EGL.
         /// </summary>
         protected FlutterRendererType RendererType { get; set; } = FlutterRendererType.EGL;
 
@@ -155,12 +145,6 @@ namespace Tizen.Flutter.Embedding
                 throw new Exception("Could not create a Flutter engine.");
             }
 
-#if WEARABLE_PROFILE
-            if (RendererType == FlutterRendererType.EGL)
-            {
-                throw new Exception("FlutterRendererType.kEGL is not supported by this profile.");
-            }
-#endif
             if (RendererType == FlutterRendererType.EGL && ExternalOutputType != FlutterExternalOutputType.None)
             {
                 throw new Exception("External output is not supported by FlutterRendererType::kEGL type renderer.");

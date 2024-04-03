@@ -78,7 +78,7 @@ void main() {
         ],
         stdout: '''
 platform_name
-  Profile           : wearable
+  Profile           : common
   Version           : 6.0
   CPU Arch          : x86
   Skin shape        : circle

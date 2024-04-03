@@ -9,9 +9,6 @@
 - Build a release version of your app:
 
   ```sh
-  # Watch app
-  flutter-tizen build tpk --device-profile wearable
-
   # TV app
   flutter-tizen build tpk --device-profile tv
   ```
@@ -23,23 +20,6 @@
   ```sh
   flutter-tizen install
   ```
-
-## Release a watch app
-
-1. Visit [**Galaxy Store Seller Portal**](https://seller.samsungapps.com) and sign up for an account.
-1. After logging in, follow the steps in [**this PDF file**](https://developer.samsung.com/glxygames/file/8d1b5610-1a28-411b-846d-f58e15cf9711) to register an app. For more information on the registration process, read [Samsung Developers: Get Started in Galaxy Store](https://developer.samsung.com/galaxy-games/get-started-in-galaxy-store.html).
-
-Note that flutter-tizen only supports Tizen 5.5 and newer. Some Gear devices running Tizen 4.0 or earlier may not be able to run Flutter apps. You can exclude such devices from the app's compatible devices list as follows.
-
-- When adding a binary, uncheck all screen resolutions except _360x360_.
-
-  ![Resolutions](images/galaxy-store-add-binary.png)
-
-- When selecting compatible devices for the binary, uncheck all devices and add only Galaxy Watch series devices by typing _Galaxy Watch_ in the search field.
-
-  ![Device settings](images/galaxy-store-device-settings.png)
-
-The store review process may take more than 2 weeks depending on various conditions such as the number of countries selected in the **Country/Region & Price** page.
 
 ## Release a TV app
 

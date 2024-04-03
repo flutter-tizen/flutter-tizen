@@ -10,7 +10,7 @@
    $ sdb capability
    ...
    device_name:Tizen
-   platform_version:5.5
+   platform_version:6.0
    ...
    ```
 
@@ -44,8 +44,8 @@
    $ flutter-tizen devices
    2 connected devices:
 
-   Tizen SM-R800 (mobile)           • 0000d84f00006200     • flutter-tester • Tizen 5.5
-   Tizen T-samsung-5.5-x86 (mobile) • emulator-26101       • flutter-tester • Tizen 5.5 (emulator)
+   Tizen SM-R800 (mobile)           • 0000d84f00006200     • flutter-tester • Tizen 6.0
+   Tizen T-samsung-6.0-x86 (mobile) • emulator-26101       • flutter-tester • Tizen 6.0 (emulator)
    ```
 
 ## Test drive

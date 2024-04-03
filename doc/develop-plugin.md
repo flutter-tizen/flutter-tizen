@@ -19,7 +19,7 @@ This document only covers native Tizen plugins written in C++. To learn more abo
 
 A Flutter plugin may support more than one platforms. For example, each of the [Flutter 1st-party plugins](https://github.com/flutter/plugins) developed by the Flutter team supports at least two (Android, iOS) or more platforms (web, macOS, Windows, Linux), based on the team's priority and the availability of the functionality on the platforms. [Federated plugins](https://flutter.dev/docs/development/packages-and-plugins/developing-packages#federated-plugins) are a way of splitting support for different platforms into separate packages. A federated plugin consists of an app-facing package, a **platform interface package**, and platform package(s) for each platform.
 
-On the other hand, it is also possible for a plugin to support only a single particular platform, e.g. [`flutter_plugin_android_lifecycle`](https://github.com/flutter/plugins/tree/main/packages/flutter_plugin_android_lifecycle) for Android and [`wearable_rotary`](https://github.com/flutter-tizen/plugins/tree/master/packages/wearable_rotary) for Tizen. In this case, there's no need to create a platform interface package. Instead, you can put everything into a single package.
+On the other hand, it is also possible for a plugin to support only a single particular platform, e.g. [`flutter_plugin_android_lifecycle`](https://github.com/flutter/plugins/tree/main/packages/flutter_plugin_android_lifecycle) for Android and [`wearable_rotary`](https://pub.dev/packages/wearable_rotary) for Tizen. In this case, there's no need to create a platform interface package. Instead, you can put everything into a single package.
 
 ### Extending existing plugins vs. Creating new plugins
 
@@ -163,10 +163,11 @@ Types such as `flutter::MethodCall` and `flutter::EncodableValue` in the templat
 
 - C++17 standards
 - [cpp_client_wrapper](https://github.com/flutter-tizen/engine/tree/HEAD/shell/platform/common/client_wrapper/include/flutter)
-- [Tizen native APIs](https://docs.tizen.org/application/native/api/wearable/latest/index.html)
+- Tizen native APIs ([6.0/6.5/7.0](https://docs.tizen.org/application/native/api/iot-headed/latest/index.html), [8.0](https://docs.tizen.org/application/native/api/common/latest/index.html))
+
 - External native libraries, if any (static/shared)
 
-Note: The API references for Tizen TV are not publicly available. However, most of the Tizen core APIs are common to both wearable and TV profiles, so you may refer to the wearable API references when developing plugins for TV devices.
+Note: The API references for Tizen TV are not publicly available. However, most of the Tizen core APIs are common to both Iot-headed and TV profiles, so you may refer to the Iot-headed API references when developing plugins for TV devices.
 
 ### Channel types
 

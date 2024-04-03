@@ -258,7 +258,7 @@ class TizenSdk {
       // Note: The tv-samsung rootstrap is not publicly available.
       profile = 'tv-samsung';
     }
-    apiVersion ??= '5.5';
+    apiVersion ??= '6.0';
 
     double versionToDouble(String versionString) {
       final double? version = double.tryParse(versionString);
@@ -300,7 +300,7 @@ class TizenSdk {
     Rootstrap rootstrap = getRootstrap(profile, apiVersion, type);
     if (!rootstrap.isValid && profile == 'tv-samsung') {
       _logger.printTrace('TV SDK could not be found.');
-      profile = 'wearable';
+      profile = 'iot-headed';
       rootstrap = getRootstrap(profile, apiVersion, type);
     }
     if (!rootstrap.isValid) {
@@ -322,13 +322,6 @@ class TizenSdk {
         .childDirectory('info')
         .childFile('${rootstrap.id}.dev.xml');
 
-    // libstdc++ shipped with Tizen 5.5 is not compatible with C++17.
-    // Original PR: https://github.com/flutter-tizen/flutter-tizen/pull/106
-    final List<String> linkerFlags = <String>[];
-    if (versionToDouble(apiVersion) < 6.0) {
-      linkerFlags.add('-static-libstdc++');
-    }
-
     // Tizen SBI reads rootstrap definitions from this directory.
     final Directory pluginsDir = toolsDirectory
         .childDirectory('smart-build-interface')
@@ -340,7 +333,6 @@ class TizenSdk {
 <extension point="rootstrapDefinition">
   <rootstrap id="$flutterRootstrapId" name="Flutter" version="Tizen $apiVersion" architecture="$buildArch" path="${rootstrap.rootDirectory.path}" supportToolchainType="tizen.core">
     <property key="DEV_PACKAGE_CONFIG_PATH" value="${configFile.path}"/>
-    <property key="LINKER_MISCELLANEOUS_OPTION" value="${linkerFlags.join(' ')}"/>
     <property key="COMPILER_MISCELLANEOUS_OPTION" value=""/>
     <toolchain name="gcc" version="$defaultGccVersion"/>
   </rootstrap>
