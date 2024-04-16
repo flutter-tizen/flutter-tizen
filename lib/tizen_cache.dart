@@ -360,10 +360,13 @@ class TizenEmbedderArtifacts extends TizenCachedArtifacts {
       <String>['tizen-common', 'tizen-common.zip'],
       <String>['tizen-arm/5.5', 'tizen-5.5-arm.zip'],
       <String>['tizen-arm/6.5', 'tizen-6.5-arm.zip'],
+      <String>['tizen-arm/8.0', 'tizen-8-arm.zip'],
       <String>['tizen-arm64/5.5', 'tizen-5.5-arm64.zip'],
       <String>['tizen-arm64/6.5', 'tizen-6.5-arm64.zip'],
+      <String>['tizen-arm64/8.0', 'tizen-8-arm64.zip'],
       <String>['tizen-x86/5.5', 'tizen-5.5-x86.zip'],
       <String>['tizen-x86/6.5', 'tizen-6.5-x86.zip'],
+      <String>['tizen-x86/8.0', 'tizen-8-x86.zip'],
     ];
   }
 }

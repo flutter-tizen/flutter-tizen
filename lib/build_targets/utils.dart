@@ -39,10 +39,12 @@ Directory getEngineArtifactsDirectory(String arch, BuildMode mode) {
 
 Directory getEmbedderArtifactsDirectory(String? apiVersion, String arch) {
   final Version? version = Version.parse(apiVersion);
-  if (version != null && version >= Version(6, 5, 0)) {
+  if (version == null || version <= Version(6, 0, 0)) {
+    apiVersion = '5.5';
+  } else if (version >= Version(6, 5, 0) && version < Version(8, 0, 0)) {
     apiVersion = '6.5';
   } else {
-    apiVersion = '5.5';
+    apiVersion = '8.0';
   }
   return globals.cache
       .getArtifactDirectory('engine')
