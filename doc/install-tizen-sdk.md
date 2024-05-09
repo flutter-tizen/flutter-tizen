@@ -13,7 +13,6 @@ After installing Tizen Studio, the _Package Manager_ window will automatically p
 
 - **Required**
   - _[Tizen SDK tools] - [Native CLI]_
-  - _[Tizen SDK tools] - [Native toolchain] - [Gcc 9.2 toolchain]_
   - _[Tizen SDK tools] - [Baseline SDK] - [Certificate Manager]_
   - _[Extension SDK] - [IOT-Headed-6.0] - [Advanced] - [Native app. development (CLI)]_
   - _[Extension SDK] - [Samsung Certificate Extension]_

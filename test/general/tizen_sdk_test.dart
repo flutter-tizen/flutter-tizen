@@ -234,7 +234,7 @@ void main() {
   });
 
   testWithoutContext(
-      'TizenSdk.getFlutterRootstrap falls back to Iot-Headed SDK if TV SDK is missing',
+      'TizenSdk.getFlutterRootstrap falls back to IoT-Headed SDK if TV SDK is missing',
       () {
     tizenSdk.platformsDirectory
         .childDirectory('tizen-6.0')
