@@ -247,7 +247,7 @@ void main() {
       profile: 'tv',
       arch: 'arm',
     );
-    expect(rootstrap.id, equals('iot-headed-6.0-device.flutter'));
+    expect(rootstrap.id, equals('iot-headed-6.0-device.core'));
     expect(rootstrap.isValid, isTrue);
 
     expect(logger.traceText, contains('TV SDK could not be found.'));

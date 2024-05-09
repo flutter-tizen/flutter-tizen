@@ -314,32 +314,7 @@ class TizenSdk {
     }
     _logger.printTrace('Found a rootstrap: ${rootstrap.id}');
 
-    // Create a custom rootstrap definition to override the GCC version.
-    final String flutterRootstrapId =
-        rootstrap.id.replaceFirst('.core', '.flutter');
-    final String buildArch = getTizenBuildArch(arch);
-    final File configFile = rootstrap.rootDirectory.parent
-        .childDirectory('info')
-        .childFile('${rootstrap.id}.dev.xml');
-
-    // Tizen SBI reads rootstrap definitions from this directory.
-    final Directory pluginsDir = toolsDirectory
-        .childDirectory('smart-build-interface')
-        .childDirectory('plugins');
-    pluginsDir.childFile('flutter-rootstrap.xml')
-      ..createSync(recursive: true)
-      ..writeAsStringSync('''
-<?xml version="1.0"?>
-<extension point="rootstrapDefinition">
-  <rootstrap id="$flutterRootstrapId" name="Flutter" version="Tizen $apiVersion" architecture="$buildArch" path="${rootstrap.rootDirectory.path}" supportToolchainType="tizen.core">
-    <property key="DEV_PACKAGE_CONFIG_PATH" value="${configFile.path}"/>
-    <property key="COMPILER_MISCELLANEOUS_OPTION" value=""/>
-    <toolchain name="gcc" version="$defaultGccVersion"/>
-  </rootstrap>
-</extension>
-''');
-
-    return Rootstrap(flutterRootstrapId, rootstrap.rootDirectory);
+    return Rootstrap(rootstrap.id, rootstrap.rootDirectory);
   }
 }
 
