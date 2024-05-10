@@ -80,7 +80,9 @@ class TizenBuilder {
         // Used by AotElfBase to generate an AOT snapshot.
         kTargetPlatform: targetPlatform,
         ...buildInfo.toBuildSystemEnvironment(),
-        kDeviceProfile: tizenBuildInfo.deviceProfile,
+        kDeviceProfile: tizenBuildInfo.deviceProfile == 'tizen'
+            ? 'common'
+            : tizenBuildInfo.deviceProfile,
       },
       artifacts: globals.artifacts!,
       fileSystem: globals.fs,

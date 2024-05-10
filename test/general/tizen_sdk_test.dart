@@ -244,13 +244,11 @@ void main() {
         .createSync(recursive: true);
 
     final Rootstrap rootstrap = tizenSdk.getFlutterRootstrap(
-      profile: 'tv',
+      profile: 'tv-samsung',
       arch: 'arm',
     );
     expect(rootstrap.id, equals('iot-headed-6.0-device.core'));
     expect(rootstrap.isValid, isTrue);
-
-    expect(logger.traceText, contains('TV SDK could not be found.'));
   });
 
   testWithoutContext('SecurityProfiles.parseFromXml can detect active profile',

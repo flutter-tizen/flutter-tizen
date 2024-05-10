@@ -49,7 +49,7 @@ The following commands from the [Flutter CLI](https://flutter.dev/docs/reference
   flutter-tizen build tpk --device-profile tv
 
   # Build a TPK and sign with a certificate profile named "foo".
-  flutter-tizen build tpk --device-profile tv --security-profile foo
+  flutter-tizen build tpk --security-profile foo
 
   # Build a TPK for TV emulator.
   flutter-tizen build tpk --device-profile tv --debug --target-arch x86

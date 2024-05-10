@@ -250,22 +250,36 @@ class TizenSdk {
     String? apiVersion,
     required String arch,
   }) {
-    if (profile == 'common') {
-      // Note: The headless profile is not supported.
-      profile = 'iot-headed';
-    }
-    if (profile == 'tv') {
-      // Note: The tv-samsung rootstrap is not publicly available.
-      profile = 'tv-samsung';
-    }
     apiVersion ??= '6.0';
+    if (apiVersion == '5.5') {
+      throwToolExit('The $apiVersion version is not supported.');
+    }
 
-    double versionToDouble(String versionString) {
-      final double? version = double.tryParse(versionString);
-      if (version == null) {
-        throwToolExit('The API version $versionString is invalid.');
+    if (profile == 'tizen') {
+      if (apiVersion != '8.0') {
+        throwToolExit(
+            'The $apiVersion version is not supported by the tizen profile.');
       }
-      return version;
+    } else if (profile == 'common') {
+      if (apiVersion == '8.0') {
+        // Note: Starting with Tizen 8.0, the unified "tizen" profile is used.
+        profile = 'tizen';
+      } else {
+        // Note: The headless profile is not supported.
+        profile = 'iot-headed';
+      }
+    } else if (profile == 'tv' || profile == 'tv-samsung') {
+      // Note: The tv-samsung and the tv rootstrap is not publicly available.
+      if (apiVersion == '8.0') {
+        profile = 'tizen';
+      } else {
+        profile = 'iot-headed';
+      }
+    } else if (profile == 'mobile') {
+      if (apiVersion == '8.0') {
+        throwToolExit(
+            'The $apiVersion version is not supported by the mobile profile.');
+      }
     }
 
     String type = arch == 'x86' ? 'emulator' : 'device';
@@ -276,15 +290,7 @@ class TizenSdk {
             'The arm64 build is not supported by the $profile profile.');
         profile = 'iot-headed';
       }
-      if (versionToDouble(apiVersion) < 6.0) {
-        apiVersion = '6.0';
-      }
       type = 'device64';
-    }
-
-    if (apiVersion == '8.0') {
-      // Note: Starting with Tizen 8.0, the unified "tizen" profile is used.
-      profile = 'tizen';
     }
 
     Rootstrap getRootstrap(String profile, String apiVersion, String type) {
@@ -297,12 +303,7 @@ class TizenSdk {
       return Rootstrap(id, rootDir);
     }
 
-    Rootstrap rootstrap = getRootstrap(profile, apiVersion, type);
-    if (!rootstrap.isValid && profile == 'tv-samsung') {
-      _logger.printTrace('TV SDK could not be found.');
-      profile = 'iot-headed';
-      rootstrap = getRootstrap(profile, apiVersion, type);
-    }
+    final Rootstrap rootstrap = getRootstrap(profile, apiVersion, type);
     if (!rootstrap.isValid) {
       final String profileUpperCase =
           profile.toUpperCase().replaceAll('HEADED', 'Headed');

@@ -92,7 +92,8 @@ class DotnetTpk extends TizenPackage {
 
     final TizenManifest tizenManifest =
         TizenManifest.parseFromXml(tizenProject.manifestFile);
-    final String profile = buildInfo.deviceProfile;
+    final String profile =
+        buildInfo.deviceProfile == 'tizen' ? 'common' : buildInfo.deviceProfile;
     final String? apiVersion = tizenManifest.apiVersion;
 
     final BuildMode buildMode = buildInfo.buildInfo.mode;

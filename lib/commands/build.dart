@@ -49,9 +49,9 @@ class BuildTpkCommand extends BuildSubCommand
     argParser.addOption(
       'device-profile',
       abbr: 'p',
-      allowed: <String>['mobile', 'tv', 'common'],
-      help:
-          'The type of device that the app will run on. Choose "common" for IoT (Raspberry Pi) devices.',
+      defaultsTo: 'tv',
+      allowed: <String>['mobile', 'tv', 'common', 'tizen'],
+      help: 'The type of device that the app will run on.',
     );
     argParser.addOption(
       'security-profile',
@@ -70,15 +70,11 @@ class BuildTpkCommand extends BuildSubCommand
   /// See: [BuildApkCommand.runCommand] in `build_apk.dart`
   @override
   Future<FlutterCommandResult> runCommand() async {
-    final String? deviceProfile = stringArg('device-profile');
-    if (deviceProfile == null) {
-      throwToolExit('The --device-profile (-p) option is mandatory. e.g. -ptv');
-    }
     final BuildInfo buildInfo = await getBuildInfo();
     final TizenBuildInfo tizenBuildInfo = TizenBuildInfo(
       buildInfo,
       targetArch: stringArg('target-arch')!,
-      deviceProfile: deviceProfile,
+      deviceProfile: stringArg('device-profile')!,
       securityProfile: stringArg('security-profile'),
     );
     _validateBuild(tizenBuildInfo);
@@ -119,9 +115,9 @@ class BuildModuleCommand extends BuildSubCommand
     argParser.addOption(
       'device-profile',
       abbr: 'p',
-      allowed: <String>['mobile', 'tv', 'common'],
-      help:
-          'The type of device that the app will run on. Choose "common" for IoT (Raspberry Pi) devices.',
+      defaultsTo: 'tv',
+      allowed: <String>['mobile', 'tv', 'common', 'tizen'],
+      help: 'The type of device that the app will run on.',
     );
     argParser.addOption(
       'output-dir',
@@ -139,16 +135,11 @@ class BuildModuleCommand extends BuildSubCommand
 
   @override
   Future<FlutterCommandResult> runCommand() async {
-    final String? deviceProfile = stringArg('device-profile');
-    if (deviceProfile == null) {
-      // TODO(swift-kim): Consider relieving this limitation.
-      throwToolExit('The --device-profile (-p) option is mandatory. e.g. -ptv');
-    }
     final BuildInfo buildInfo = await getBuildInfo();
     final TizenBuildInfo tizenBuildInfo = TizenBuildInfo(
       buildInfo,
       targetArch: stringArg('target-arch')!,
-      deviceProfile: deviceProfile,
+      deviceProfile: stringArg('device-profile')!,
     );
     _validateBuild(tizenBuildInfo);
     displayNullSafetyMode(buildInfo);
