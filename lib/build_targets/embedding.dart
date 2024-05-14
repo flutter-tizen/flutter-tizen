@@ -100,7 +100,7 @@ class NativeEmbedding extends Target {
       apiVersion = tizenManifest.apiVersion;
       inputs.add(tizenProject.manifestFile);
     }
-    final Rootstrap rootstrap = tizenSdk!.getFlutterRootstrap(
+    final Rootstrap rootstrap = tizenSdk!.getRootstrap(
       profile: buildInfo.deviceProfile,
       apiVersion: apiVersion,
       arch: buildInfo.targetArch,

@@ -323,7 +323,7 @@ class NativeTpk extends TizenPackage {
     final Directory dartSdkDir = getDartSdkDirectory();
 
     assert(tizenSdk != null);
-    final Rootstrap rootstrap = tizenSdk!.getFlutterRootstrap(
+    final Rootstrap rootstrap = tizenSdk!.getRootstrap(
       profile: profile,
       apiVersion: tizenManifest.apiVersion,
       arch: buildInfo.targetArch,

@@ -51,7 +51,8 @@ class BuildTpkCommand extends BuildSubCommand
       abbr: 'p',
       defaultsTo: 'tv',
       allowed: <String>['mobile', 'tv', 'common', 'tizen'],
-      help: 'The type of device that the app will run on.',
+      help:
+          'The type of device that the app will run on. Choose "common" for the unified Tizen profile.',
     );
     argParser.addOption(
       'security-profile',
