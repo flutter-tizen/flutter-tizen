@@ -32,11 +32,7 @@ enum class FlutterExternalOutputType {
 // The app base class for headed Flutter execution.
 class FlutterApp : public flutter::PluginRegistry {
  public:
-  explicit FlutterApp() {
-#ifdef WEARABLE_PROFILE
-    renderer_type_ = FlutterRendererType::kEvasGL;
-#endif
-  }
+  explicit FlutterApp() {}
   virtual ~FlutterApp() {}
 
   // Called when the app is starting.
@@ -117,7 +113,7 @@ class FlutterApp : public flutter::PluginRegistry {
 
   // The renderer type of the engine.
   //
-  // Defaults to kEGL. If the profile is wearable, defaults to kEvasGL.
+  // Defaults to kEGL.
   FlutterRendererType renderer_type_ = FlutterRendererType::kEGL;
 
   // The external output type of the window.

@@ -69,7 +69,7 @@ void main() {
         stdout: <String>[
           'cpu_arch:armv7',
           'secure_protocol:disabled',
-          'platform_version:5.5',
+          'platform_version:6.0',
         ].join('\n'),
       ),
       FakeCommand(
@@ -142,7 +142,7 @@ void main() {
     expect(await device.installApp(tpk), isTrue);
     expect(
       logger.warningText,
-      contains('Warning: The package API version (5.5) is greater than'),
+      contains('Warning: The package API version (6.0) is greater than'),
     );
     expect(processManager, hasNoRemainingExpectations);
   });
@@ -166,7 +166,7 @@ void main() {
         stdout: <String>[
           'cpu_arch:armv7',
           'secure_protocol:disabled',
-          'platform_version:5.5',
+          'platform_version:6.0',
         ].join('\n'),
       ),
       FakeCommand(
@@ -233,7 +233,7 @@ __return_cb req_id[1] pkg_type[tpk] pkgid[TestPackage] key[end] val[ok]
         stdout: <String>[
           'cpu_arch:x86',
           'secure_protocol:enabled',
-          'platform_version:5.5',
+          'platform_version:6.0',
         ].join('\n'),
       ),
       FakeCommand(command: _sdbCommand(<String>['shell', '0', 'applist'])),
@@ -250,7 +250,7 @@ __return_cb req_id[1] pkg_type[tpk] pkgid[TestPackage] key[end] val[ok]
 
   testWithoutContext(
       'TizenDevice.isSupported returns true for supported devices', () {
-    final TizenDevice wearableDevice = _createTizenDevice(
+    final TizenDevice commonDevice = _createTizenDevice(
       processManager: processManager,
       fileSystem: fileSystem,
     );
@@ -259,12 +259,12 @@ __return_cb req_id[1] pkg_type[tpk] pkgid[TestPackage] key[end] val[ok]
       stdout: <String>[
         'cpu_arch:armv7',
         'secure_protocol:disabled',
-        'platform_version:5.5',
-        'profile_name:wearable'
+        'platform_version:6.0',
+        'profile_name:common'
       ].join('\n'),
     ));
-    expect(wearableDevice.deviceProfile, equals('wearable'));
-    expect(wearableDevice.isSupported(), isTrue);
+    expect(commonDevice.deviceProfile, equals('common'));
+    expect(commonDevice.isSupported(), isTrue);
 
     final TizenDevice tvDevice = _createTizenDevice(
       processManager: processManager,
@@ -382,5 +382,5 @@ class _FakeTizenManifest extends Fake implements TizenManifest {
   String applicationId = 'TestApplication';
 
   @override
-  String? apiVersion = '5.5';
+  String? apiVersion = '6.0';
 }

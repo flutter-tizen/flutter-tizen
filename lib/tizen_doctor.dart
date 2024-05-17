@@ -82,11 +82,11 @@ class TizenValidator extends DoctorValidator {
       missingPackages.add('NativeToolchain-Gcc-$gccVersion');
     }
     if (!_tizenSdk.platformsDirectory
-        .childDirectory('tizen-5.5')
-        .childDirectory('wearable')
+        .childDirectory('tizen-6.0')
+        .childDirectory('iot-headed')
         .childDirectory('rootstraps')
         .existsSync()) {
-      missingPackages.add('WEARABLE-5.5-NativeAppDevelopment-CLI');
+      missingPackages.add('IOT-Headed-6.0-NativeAppDevelopment');
     }
 
     if (missingPackages.isNotEmpty) {

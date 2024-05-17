@@ -50,7 +50,7 @@ void main() {
     await DebugTizenApplication(const TizenBuildInfo(
       BuildInfo.debug,
       targetArch: 'arm',
-      deviceProfile: 'wearable',
+      deviceProfile: 'common',
     )).build(environment);
 
     final Directory bundleDir =

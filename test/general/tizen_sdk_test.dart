@@ -234,20 +234,20 @@ void main() {
   });
 
   testWithoutContext(
-      'TizenSdk.getFlutterRootstrap falls back to Wearable SDK if TV SDK is missing',
+      'TizenSdk.getFlutterRootstrap falls back to IoT-Headed SDK if TV SDK is missing',
       () {
     tizenSdk.platformsDirectory
-        .childDirectory('tizen-5.5')
-        .childDirectory('wearable')
+        .childDirectory('tizen-6.0')
+        .childDirectory('iot-headed')
         .childDirectory('rootstraps')
-        .childDirectory('wearable-5.5-device.core')
+        .childDirectory('iot-headed-6.0-device.core')
         .createSync(recursive: true);
 
     final Rootstrap rootstrap = tizenSdk.getFlutterRootstrap(
       profile: 'tv',
       arch: 'arm',
     );
-    expect(rootstrap.id, equals('wearable-5.5-device.flutter'));
+    expect(rootstrap.id, equals('iot-headed-6.0-device.core'));
     expect(rootstrap.isValid, isTrue);
 
     expect(logger.traceText, contains('TV SDK could not be found.'));

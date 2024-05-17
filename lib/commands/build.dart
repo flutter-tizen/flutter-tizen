@@ -49,9 +49,9 @@ class BuildTpkCommand extends BuildSubCommand
     argParser.addOption(
       'device-profile',
       abbr: 'p',
-      allowed: <String>['mobile', 'wearable', 'tv', 'common'],
-      help: 'The type of device that the app will run on. Choose "wearable" '
-          'for watch devices and "common" for IoT (Raspberry Pi) devices.',
+      allowed: <String>['mobile', 'tv', 'common'],
+      help:
+          'The type of device that the app will run on. Choose "common" for IoT (Raspberry Pi) devices.',
     );
     argParser.addOption(
       'security-profile',
@@ -72,8 +72,7 @@ class BuildTpkCommand extends BuildSubCommand
   Future<FlutterCommandResult> runCommand() async {
     final String? deviceProfile = stringArg('device-profile');
     if (deviceProfile == null) {
-      throwToolExit(
-          'The --device-profile (-p) option is mandatory. e.g. -pwearable, -ptv');
+      throwToolExit('The --device-profile (-p) option is mandatory. e.g. -ptv');
     }
     final BuildInfo buildInfo = await getBuildInfo();
     final TizenBuildInfo tizenBuildInfo = TizenBuildInfo(
@@ -120,9 +119,9 @@ class BuildModuleCommand extends BuildSubCommand
     argParser.addOption(
       'device-profile',
       abbr: 'p',
-      allowed: <String>['mobile', 'wearable', 'tv', 'common'],
-      help: 'The type of device that the app will run on. Choose "wearable" '
-          'for watch devices and "common" for IoT (Raspberry Pi) devices.',
+      allowed: <String>['mobile', 'tv', 'common'],
+      help:
+          'The type of device that the app will run on. Choose "common" for IoT (Raspberry Pi) devices.',
     );
     argParser.addOption(
       'output-dir',
@@ -143,8 +142,7 @@ class BuildModuleCommand extends BuildSubCommand
     final String? deviceProfile = stringArg('device-profile');
     if (deviceProfile == null) {
       // TODO(swift-kim): Consider relieving this limitation.
-      throwToolExit(
-          'The --device-profile (-p) option is mandatory. e.g. -pwearable, -ptv');
+      throwToolExit('The --device-profile (-p) option is mandatory. e.g. -ptv');
     }
     final BuildInfo buildInfo = await getBuildInfo();
     final TizenBuildInfo tizenBuildInfo = TizenBuildInfo(

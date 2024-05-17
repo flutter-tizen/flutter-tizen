@@ -46,7 +46,7 @@ jobs:
         run: |
           sudo apt install -y libncurses5 python2.7 libpython2.7 gettext \
             libkf5itemmodels5 libkf5kiowidgets5 libkchart2
-          curl http://download.tizen.org/sdk/Installer/tizen-studio_5.5/web-cli_Tizen_Studio_5.5_ubuntu-64.bin -o install.bin
+          curl https://download.tizen.org/sdk/Installer/tizen-studio_5.6/web-cli_Tizen_Studio_5.6_ubuntu-64.bin -o install.bin
           chmod a+x install.bin
           ./install.bin --accept-license $HOME/tizen-studio
           rm install.bin
@@ -54,7 +54,7 @@ jobs:
         run: |
           $HOME/tizen-studio/package-manager/package-manager-cli.bin install \
             NativeToolchain-Gcc-9.2 \
-            WEARABLE-5.5-NativeAppDevelopment
+            IOT-Headed-6.0-NativeAppDevelopment-CLI
       - name: Create a Tizen certificate profile
         run: |
           export PATH=$PATH:$HOME/tizen-studio/tools/ide/bin
@@ -72,9 +72,9 @@ jobs:
         run: |
           flutter-tizen create --tizen-language cpp native_app
           cd native_app
-          flutter-tizen build tpk -pwearable --debug
+          flutter-tizen build tpk -pcommon --debug
       - name: Build .NET TPK
         run: |
           flutter-tizen create --tizen-language csharp dotnet_app
           cd dotnet_app
-          flutter-tizen build tpk -pwearable --debug
+          flutter-tizen build tpk -pcommon --debug
