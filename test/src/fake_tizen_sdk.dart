@@ -96,7 +96,7 @@ class FakeTizenSdk extends TizenSdk {
   }
 
   @override
-  Rootstrap getFlutterRootstrap({
+  Rootstrap getRootstrap({
     required String profile,
     String? apiVersion,
     required String arch,
