@@ -273,8 +273,13 @@ class TizenSdk {
         // Note: Starting with Tizen 8.0, the unified "tizen" profile is used.
         profile = 'tizen';
       } else {
-        // Note: The headless profile is not supported.
-        profile = 'iot-headed';
+        if (arch == 'x86') {
+          // Note: The TV emulator use mobile rootstrap.
+          profile = 'mobile';
+        } else {
+          // Note: The headless profile is not supported.
+          profile = 'iot-headed';
+        }
       }
     } else if (profile == 'tv') {
       // Note: The tv-samsung and the tv rootstrap is not publicly available.
@@ -313,7 +318,11 @@ class TizenSdk {
       if (versionToDouble(apiVersion) >= 8.0) {
         profile = 'tizen';
       } else {
-        profile = 'iot-headed';
+        if (arch == 'x86') {
+          profile = 'mobile';
+        } else {
+          profile = 'iot-headed';
+        }
       }
       rootstrap = getRootstrap(profile, apiVersion, type);
     }
