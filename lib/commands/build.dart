@@ -50,7 +50,7 @@ class BuildTpkCommand extends BuildSubCommand
       'device-profile',
       abbr: 'p',
       defaultsTo: 'tv',
-      allowed: <String>['mobile', 'tv', 'common', 'tizen'],
+      allowed: <String>['mobile', 'tv', 'common'],
       help:
           'The type of device that the app will run on. Choose "common" for the unified Tizen profile.',
     );
@@ -117,7 +117,7 @@ class BuildModuleCommand extends BuildSubCommand
       'device-profile',
       abbr: 'p',
       defaultsTo: 'tv',
-      allowed: <String>['mobile', 'tv', 'common', 'tizen'],
+      allowed: <String>['mobile', 'tv', 'common'],
       help: 'The type of device that the app will run on.',
     );
     argParser.addOption(
@@ -160,5 +160,9 @@ void _validateBuild(TizenBuildInfo tizenBuildInfo) {
   if (tizenBuildInfo.buildInfo.mode.isPrecompiled &&
       tizenBuildInfo.targetArch == 'x86') {
     throwToolExit('x86 ABI does not support AOT compilation.');
+  }
+  if (tizenBuildInfo.deviceProfile == 'common' ||
+      tizenBuildInfo.targetArch == 'x86') {
+    throwToolExit('The x86 build is not supported by the common profile.');
   }
 }

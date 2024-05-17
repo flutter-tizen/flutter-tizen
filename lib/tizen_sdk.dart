@@ -263,31 +263,20 @@ class TizenSdk {
       return version;
     }
 
-    if (profile == 'tizen') {
-      if (versionToDouble(apiVersion) < 8.0) {
-        throwToolExit(
-            'The $apiVersion version is not supported by the tizen profile.');
-      }
-    } else if (profile == 'common') {
+    if (profile == 'common') {
       if (versionToDouble(apiVersion) >= 8.0) {
         // Note: Starting with Tizen 8.0, the unified "tizen" profile is used.
         profile = 'tizen';
       } else {
-        if (arch == 'x86') {
-          // Note: The TV emulator use mobile rootstrap.
-          profile = 'mobile';
-        } else {
-          // Note: The headless profile is not supported.
-          profile = 'iot-headed';
-        }
+        // Note: The headless profile is not supported.
+        profile = 'iot-headed';
       }
     } else if (profile == 'tv') {
-      // Note: The tv-samsung and the tv rootstrap is not publicly available.
+      // Note: The tv-samsung rootstrap is not publicly available.
       profile = 'tv-samsung';
     } else if (profile == 'mobile') {
       if (versionToDouble(apiVersion) >= 8.0) {
-        throwToolExit(
-            'The $apiVersion version is not supported by the mobile profile.');
+        profile = 'tizen';
       }
     }
 
@@ -302,7 +291,8 @@ class TizenSdk {
       type = 'device64';
     }
 
-    Rootstrap getRootstrap(String profile, String apiVersion, String type) {
+    Rootstrap getTizenRootstrap(
+        String profile, String apiVersion, String type) {
       final String id = '$profile-$apiVersion-$type.core';
       final Directory rootDir = platformsDirectory
           .childDirectory('tizen-$apiVersion')
@@ -312,7 +302,7 @@ class TizenSdk {
       return Rootstrap(id, rootDir);
     }
 
-    Rootstrap rootstrap = getRootstrap(profile, apiVersion, type);
+    Rootstrap rootstrap = getTizenRootstrap(profile, apiVersion, type);
     if (!rootstrap.isValid && profile == 'tv-samsung') {
       _logger.printTrace('TV SDK could not be found.');
       if (versionToDouble(apiVersion) >= 8.0) {
@@ -324,7 +314,7 @@ class TizenSdk {
           profile = 'iot-headed';
         }
       }
-      rootstrap = getRootstrap(profile, apiVersion, type);
+      rootstrap = getTizenRootstrap(profile, apiVersion, type);
     }
 
     if (!rootstrap.isValid) {
