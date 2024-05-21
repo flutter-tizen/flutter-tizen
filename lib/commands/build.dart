@@ -161,11 +161,7 @@ void _validateBuild(TizenBuildInfo tizenBuildInfo) {
       tizenBuildInfo.targetArch == 'x86') {
     throwToolExit('x86 ABI does not support AOT compilation.');
   }
-  if (tizenBuildInfo.deviceProfile == 'common' ||
-      tizenBuildInfo.targetArch == 'x86') {
-    throwToolExit('The x86 build is not supported by the common profile.');
-  }
-  if (tizenBuildInfo.deviceProfile != 'common' ||
+  if (tizenBuildInfo.deviceProfile != 'common' &&
       tizenBuildInfo.targetArch == 'arm64') {
     throwToolExit(
         'The arm64 build is not supported by the ${tizenBuildInfo.deviceProfile} profile.');

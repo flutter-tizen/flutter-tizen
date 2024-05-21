@@ -89,14 +89,6 @@ class TizenValidator extends DoctorValidator {
       missingPackages.add('IOT-Headed-6.0-NativeAppDevelopment');
     }
 
-    if (!_tizenSdk.platformsDirectory
-        .childDirectory('tizen-6.0')
-        .childDirectory('mobile')
-        .childDirectory('rootstraps')
-        .existsSync()) {
-      missingPackages.add('MOBILE-6.0-NativeAppDevelopment');
-    }
-
     if (missingPackages.isNotEmpty) {
       messages.add(ValidationMessage.error('To install missing packages, run:\n'
           '$packageManager install ${missingPackages.join(' ')}'));

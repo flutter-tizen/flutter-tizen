@@ -19,6 +19,7 @@ After installing Tizen Studio, the _Package Manager_ window will automatically p
 
 - **Optional**
   - _[8.0 Tizen] - [Emulator]_
+  - _[6.0 Mobile] - [Advanced] - [Native app. development (CLI)]_
   - _[Extension SDK] - [TV Extensions-x.x] - [Emulator]_
 
 You can also install these packages from the command line by following the instructions of `flutter-tizen doctor -v` after installing flutter-tizen.
