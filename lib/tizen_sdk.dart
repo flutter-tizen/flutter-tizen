@@ -251,6 +251,7 @@ class TizenSdk {
     required String arch,
   }) {
     apiVersion ??= '6.0';
+
     double versionToDouble(String versionString) {
       final double? version = double.tryParse(versionString);
       if (version == null) {
@@ -260,7 +261,7 @@ class TizenSdk {
     }
 
     if (versionToDouble(apiVersion) < 6.0) {
-      throwToolExit('The $apiVersion version is not supported.');
+      throwToolExit('Not supported API version: $apiVersion');
     }
 
     if (profile == 'common') {
