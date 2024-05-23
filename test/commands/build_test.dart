@@ -55,27 +55,6 @@ void main() {
   });
 
   group('BuildTpkCommand', () {
-    testUsingContext('Device profile must be specified', () async {
-      final TizenBuildCommand command = TizenBuildCommand(
-        artifacts: artifacts,
-        fileSystem: fileSystem,
-        buildSystem: TestBuildSystem.all(BuildResult(success: true)),
-        osUtils: FakeOperatingSystemUtils(),
-        logger: BufferLogger.test(),
-        androidSdk: FakeAndroidSdk(),
-        processUtils: processUtils,
-      );
-      final CommandRunner<void> runner = createTestCommandRunner(command);
-
-      await expectLater(
-        () => runner.run(<String>['build', 'tpk', '--no-pub']),
-        throwsToolExit(),
-      );
-    }, overrides: <Type, Generator>{
-      FileSystem: () => fileSystem,
-      ProcessManager: () => processManager,
-    });
-
     testUsingContext('Cannot build for x86 in release mode', () async {
       final TizenBuildCommand command = TizenBuildCommand(
         artifacts: artifacts,

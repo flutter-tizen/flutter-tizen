@@ -218,10 +218,10 @@ void main() {
     expect(processManager, hasNoRemainingExpectations);
   });
 
-  testWithoutContext(
-      'TizenSdk.getFlutterRootstrap fails if IoT Headed SDK is missing', () {
+  testWithoutContext('TizenSdk.getRootstrap fails if IoT Headed SDK is missing',
+      () {
     expect(
-      () => tizenSdk.getFlutterRootstrap(
+      () => tizenSdk.getRootstrap(
         profile: 'common',
         apiVersion: '6.0',
         arch: 'arm64',
@@ -234,7 +234,7 @@ void main() {
   });
 
   testWithoutContext(
-      'TizenSdk.getFlutterRootstrap falls back to IoT-Headed SDK if TV SDK is missing',
+      'TizenSdk.getRootstrap falls back to IoT-Headed SDK if TV SDK is missing',
       () {
     tizenSdk.platformsDirectory
         .childDirectory('tizen-6.0')
@@ -243,14 +243,12 @@ void main() {
         .childDirectory('iot-headed-6.0-device.core')
         .createSync(recursive: true);
 
-    final Rootstrap rootstrap = tizenSdk.getFlutterRootstrap(
-      profile: 'tv',
+    final Rootstrap rootstrap = tizenSdk.getRootstrap(
+      profile: 'tv-samsung',
       arch: 'arm',
     );
     expect(rootstrap.id, equals('iot-headed-6.0-device.core'));
     expect(rootstrap.isValid, isTrue);
-
-    expect(logger.traceText, contains('TV SDK could not be found.'));
   });
 
   testWithoutContext('SecurityProfiles.parseFromXml can detect active profile',

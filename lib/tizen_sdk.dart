@@ -245,19 +245,11 @@ class TizenSdk {
     ]);
   }
 
-  Rootstrap getFlutterRootstrap({
+  Rootstrap getRootstrap({
     required String profile,
     String? apiVersion,
     required String arch,
   }) {
-    if (profile == 'common') {
-      // Note: The headless profile is not supported.
-      profile = 'iot-headed';
-    }
-    if (profile == 'tv') {
-      // Note: The tv-samsung rootstrap is not publicly available.
-      profile = 'tv-samsung';
-    }
     apiVersion ??= '6.0';
 
     double versionToDouble(String versionString) {
@@ -268,26 +260,36 @@ class TizenSdk {
       return version;
     }
 
-    String type = arch == 'x86' ? 'emulator' : 'device';
-    if (arch == 'arm64') {
-      // The arm64 build is only supported by iot-headed-6.0+ rootstraps.
-      if (profile != 'tizen' && profile != 'iot-headed') {
-        _logger.printError(
-            'The arm64 build is not supported by the $profile profile.');
+    if (versionToDouble(apiVersion) < 6.0) {
+      throwToolExit('Not supported API version: $apiVersion');
+    }
+
+    if (profile == 'common') {
+      if (versionToDouble(apiVersion) >= 8.0) {
+        // Note: Starting with Tizen 8.0, the unified "tizen" profile is used.
+        profile = 'tizen';
+      } else {
+        // Note: The headless profile is not supported.
         profile = 'iot-headed';
       }
-      if (versionToDouble(apiVersion) < 6.0) {
-        apiVersion = '6.0';
+    } else if (profile == 'tv') {
+      // Note: The tv-samsung rootstrap is not publicly available.
+      profile = 'tv-samsung';
+    } else if (profile == 'mobile') {
+      if (versionToDouble(apiVersion) >= 8.0) {
+        profile = 'tizen';
       }
+    }
+
+    String type = 'device';
+    if (arch == 'x86') {
+      type = 'emulator';
+    } else if (arch == 'arm64') {
       type = 'device64';
     }
 
-    if (apiVersion == '8.0') {
-      // Note: Starting with Tizen 8.0, the unified "tizen" profile is used.
-      profile = 'tizen';
-    }
-
-    Rootstrap getRootstrap(String profile, String apiVersion, String type) {
+    Rootstrap getTizenRootstrap(
+        String profile, String apiVersion, String type) {
       final String id = '$profile-$apiVersion-$type.core';
       final Directory rootDir = platformsDirectory
           .childDirectory('tizen-$apiVersion')
@@ -297,12 +299,21 @@ class TizenSdk {
       return Rootstrap(id, rootDir);
     }
 
-    Rootstrap rootstrap = getRootstrap(profile, apiVersion, type);
+    Rootstrap rootstrap = getTizenRootstrap(profile, apiVersion, type);
     if (!rootstrap.isValid && profile == 'tv-samsung') {
       _logger.printTrace('TV SDK could not be found.');
-      profile = 'iot-headed';
-      rootstrap = getRootstrap(profile, apiVersion, type);
+      if (versionToDouble(apiVersion) >= 8.0) {
+        profile = 'tizen';
+      } else {
+        if (arch == 'x86') {
+          profile = 'mobile';
+        } else {
+          profile = 'iot-headed';
+        }
+      }
+      rootstrap = getTizenRootstrap(profile, apiVersion, type);
     }
+
     if (!rootstrap.isValid) {
       final String profileUpperCase =
           profile.toUpperCase().replaceAll('HEADED', 'Headed');
