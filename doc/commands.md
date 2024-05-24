@@ -45,13 +45,16 @@ The following commands from the [Flutter CLI](https://flutter.dev/docs/reference
   Flutter build command. See `flutter-tizen build -h` for all available subcommands.
 
   ```sh
-  # Build a TPK for TV devices.
-  flutter-tizen build tpk --device-profile tv
+  # Build a TPK in release mode and sign with an active profile.
+  flutter-tizen build tpk
 
   # Build a TPK and sign with a certificate profile named "foo".
   flutter-tizen build tpk --security-profile foo
 
-  # Build a TPK for TV emulator.
+  # Build a TPK for a non-TV device.
+  flutter-tizen build tpk --device-profile common
+
+  # Build a TPK for a TV emulator.
   flutter-tizen build tpk --device-profile tv --debug --target-arch x86
 
   # Build a Flutter module for adding to an existing Tizen app.
