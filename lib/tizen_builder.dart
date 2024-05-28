@@ -125,7 +125,7 @@ class TizenBuilder {
       throwToolExit('The output TPK does not exist.');
     }
     final String relativeTpkPath = globals.fs.path.relative(tpkFile.path);
-    final String tpkSize = getSizeAsMB(tpkFile.lengthSync());
+    final String tpkSize = getSizeAsPlatformMB(tpkFile.lengthSync());
     globals.printStatus(
       '${globals.logger.terminal.successMark} Built $relativeTpkPath ($tpkSize).',
       color: TerminalColor.green,
