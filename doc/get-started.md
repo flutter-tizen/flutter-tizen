@@ -42,9 +42,8 @@
 
    ```
    $ flutter-tizen devices
-   1 connected devices:
-
-   Tizen T-samsung-8.0-x86 (mobile) • emulator-26101       • flutter-tester • Tizen 8.0 (emulator)
+   Found 1 connected device:
+     Tizen T-samsung-8.0-x86 (mobile) • emulator-26101 • flutter-tester • Tizen 8.0 (emulator)
    ```
 
 ## Test drive
