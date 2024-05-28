@@ -85,4 +85,8 @@ class TizenOperatingSystemUtils implements OperatingSystemUtils {
 
   @override
   List<File> whichAll(String execName) => _osUtils.whichAll(execName);
+
+  @override
+  int? getDirectorySize(Directory directory) =>
+      _osUtils.getDirectorySize(directory);
 }
