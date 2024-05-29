@@ -185,7 +185,7 @@ User's Application
           '/opt/usr/apps/TestPackage/author-signature.xml',
           '/.tmp_rand0/rand0/author-signature.xml',
         ]),
-        onRun: () {
+        onRun: (_) {
           fileSystem
               .file('/.tmp_rand0/rand0/author-signature.xml')
               .createSync(recursive: true);

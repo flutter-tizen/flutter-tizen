@@ -106,7 +106,7 @@ void main() {
           '/p:DefineConstants=COMMON_PROFILE',
           '${projectDir.path}/tizen',
         ],
-        onRun: () {
+        onRun: (_) {
           projectDir
               .childFile('tizen/bin/Release/tizen40/package_id-1.0.0.tpk')
               .createSync(recursive: true);
@@ -176,7 +176,7 @@ void main() {
           '/p:DefineConstants=COMMON_PROFILE',
           '${projectDir.path}/tizen',
         ],
-        onRun: () {
+        onRun: (_) {
           projectDir
               .childFile('tizen/bin/Release/tizen40/package_id-1.0.0.tpk')
               .createSync(recursive: true);
