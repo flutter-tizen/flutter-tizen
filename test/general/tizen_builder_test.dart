@@ -217,7 +217,7 @@ class _FakeSizeAnalyzer extends SizeAnalyzer {
   _FakeSizeAnalyzer({
     required super.fileSystem,
     required super.logger,
-  }) : super(flutterUsage: TestUsage(), analytics: NoOpAnalytics());
+  }) : super(flutterUsage: TestUsage(), analytics: const NoOpAnalytics());
 
   @override
   Future<Map<String, Object?>> analyzeAotSnapshot({
