@@ -2,7 +2,7 @@ name: flutter_tizen_example
 publish_to: "none"
 
 environment:
-  sdk: '>=3.3.0-0 <4.0.0'
+  sdk: ">=3.3.0 <4.0.0"
 
 dependencies:
   flutter_tizen:

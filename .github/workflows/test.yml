@@ -14,8 +14,7 @@ jobs:
         run: |
           git clone https://github.com/flutter/flutter.git
           cd flutter
-          git fetch https://github.com/flutter/flutter.git $(cat ../bin/internal/flutter.version)
-          git checkout FETCH_HEAD
+          git checkout $(cat ../bin/internal/flutter.version)
       - name: Run tests
         run: flutter/bin/flutter test --coverage
       - name: Report coverage

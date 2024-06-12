@@ -1,6 +1,6 @@
 ## 0.2.3
 
-* Update for SDK minimum version 3.3.0.
+* Update the minimum SDK version to 3.3.0.
 
 ## 0.2.2
 
