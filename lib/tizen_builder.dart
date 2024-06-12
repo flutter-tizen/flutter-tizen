@@ -127,7 +127,7 @@ class TizenBuilder {
     final String relativeTpkPath = globals.fs.path.relative(tpkFile.path);
     final String tpkSize = getSizeAsPlatformMB(tpkFile.lengthSync());
     globals.printStatus(
-      '${globals.logger.terminal.successMark} Built $relativeTpkPath ($tpkSize).',
+      '${globals.logger.terminal.successMark} Built $relativeTpkPath ($tpkSize)',
       color: TerminalColor.green,
     );
 
@@ -251,7 +251,7 @@ class TizenBuilder {
 
     final String relativeOutPath = globals.fs.path.relative(outputDir.path);
     globals.printStatus(
-      '${globals.logger.terminal.successMark} Built $relativeOutPath.',
+      '${globals.logger.terminal.successMark} Built $relativeOutPath',
       color: TerminalColor.green,
     );
   }

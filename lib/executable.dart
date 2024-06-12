@@ -187,6 +187,7 @@ Future<void> main(List<String> args) async {
             platform: globals.platform,
             logger: globals.logger,
           ),
+      BuildTargets: () => const BuildTargetsImpl(),
       Cache: () => TizenCache(
             fileSystem: globals.fs,
             logger: globals.logger,
@@ -204,7 +205,6 @@ Future<void> main(List<String> args) async {
             logger: globals.logger,
             processManager: globals.processManager,
           ),
-      BuildTargets: () => const BuildTargetsImpl(),
       Logger: () {
         final LoggerFactory loggerFactory = LoggerFactory(
           outputPreferences: globals.outputPreferences,

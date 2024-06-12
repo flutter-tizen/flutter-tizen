@@ -15,6 +15,7 @@ class TizenAttachCommand extends AttachCommand {
     required super.platform,
     required super.processInfo,
     required super.fileSystem,
+    super.nativeAssetsBuilder,
   });
 
   @override

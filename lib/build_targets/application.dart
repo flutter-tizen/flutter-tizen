@@ -156,6 +156,7 @@ abstract class TizenAssetBundle extends Target {
       environment,
       outputDirectory,
       targetPlatform: TargetPlatform.android,
+      flavor: environment.defines[kFlavor],
     );
     final DepfileService depfileService = DepfileService(
       fileSystem: environment.fileSystem,

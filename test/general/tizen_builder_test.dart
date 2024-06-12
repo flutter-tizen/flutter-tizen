@@ -132,7 +132,7 @@ void main() {
 
       expect(
         logger.statusText,
-        contains('Built build/tizen/tpk/package_id-1.0.0.tpk (0.0MB).'),
+        contains('Built build/tizen/tpk/package_id-1.0.0.tpk (0.0MB)'),
       );
     }, overrides: <Type, Generator>{
       FileSystem: () => fileSystem,
@@ -202,7 +202,7 @@ void main() {
         targetFile: 'main.dart',
       );
 
-      expect(logger.statusText, contains('Built build/tizen/module.'));
+      expect(logger.statusText, contains('Built build/tizen/module'));
     }, overrides: <Type, Generator>{
       FileSystem: () => fileSystem,
       ProcessManager: () => FakeProcessManager.any(),
