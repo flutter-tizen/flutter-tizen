@@ -144,15 +144,16 @@ class TizenDeviceDiscovery extends PollingDeviceDiscovery {
       final String deviceId = splitLine[0];
       final String deviceState = splitLine[1];
 
-      if (deviceState == 'unauthorized') {
-        messages.add(
-          'Device $deviceId is not authorized.\n'
-          'You might need to check your device for an authorization dialog.',
-        );
-      } else if (deviceState == 'offline') {
-        messages.add('Device $deviceId is offline.');
-      } else if (deviceState == 'unknown') {
-        messages.add('Device $deviceId is not ready.');
+      switch (deviceState) {
+        case 'unauthorized':
+          messages.add(
+            'Device $deviceId is not authorized.\n'
+            'You might need to check your device for an authorization dialog.',
+          );
+        case 'offline':
+          messages.add('Device $deviceId is offline.');
+        case 'unknown':
+          messages.add('Device $deviceId is not ready.');
       }
     }
     return messages;

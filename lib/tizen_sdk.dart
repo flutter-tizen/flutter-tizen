@@ -264,28 +264,28 @@ class TizenSdk {
       throwToolExit('Not supported API version: $apiVersion');
     }
 
-    if (profile == 'common') {
-      if (versionToDouble(apiVersion) >= 8.0) {
-        // Note: Starting with Tizen 8.0, the unified "tizen" profile is used.
-        profile = 'tizen';
-      } else {
-        profile = arch == 'x86' ? 'mobile' : 'iot-headed';
-      }
-    } else if (profile == 'tv') {
-      // Note: The tv-samsung rootstrap is not publicly available.
-      profile = 'tv-samsung';
-    } else if (profile == 'mobile') {
-      if (versionToDouble(apiVersion) >= 8.0) {
-        profile = 'tizen';
-      }
+    switch (profile) {
+      case 'common':
+        if (versionToDouble(apiVersion) >= 8.0) {
+          // Note: Starting with Tizen 8.0, the unified "tizen" profile is used.
+          profile = 'tizen';
+        } else {
+          profile = arch == 'x86' ? 'mobile' : 'iot-headed';
+        }
+      case 'tv':
+        // Note: The tv-samsung rootstrap is not publicly available.
+        profile = 'tv-samsung';
+      case 'mobile':
+        if (versionToDouble(apiVersion) >= 8.0) {
+          profile = 'tizen';
+        }
     }
 
-    String type = 'device';
-    if (arch == 'x86') {
-      type = 'emulator';
-    } else if (arch == 'arm64') {
-      type = 'device64';
-    }
+    final String type = switch (arch) {
+      'x86' => 'emulator',
+      'arm64' => 'device64',
+      _ => 'device',
+    };
 
     Rootstrap findRootstrap(String profile, String apiVersion, String type) {
       final String id = '$profile-$apiVersion-$type.core';
