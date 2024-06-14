@@ -11,6 +11,7 @@ import 'package:flutter_tools/src/dart/language_version.dart';
 import 'package:flutter_tools/src/dart/package_map.dart';
 import 'package:flutter_tools/src/device.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
+import 'package:flutter_tools/src/native_assets.dart';
 import 'package:flutter_tools/src/project.dart';
 import 'package:flutter_tools/src/runner/flutter_command.dart';
 import 'package:flutter_tools/src/test/runner.dart';
@@ -28,6 +29,7 @@ class TizenTestCommand extends TestCommand with TizenRequiredArtifacts {
     super.testWrapper,
     FlutterTestRunner? testRunner,
     super.verbose,
+    super.nativeAssetsBuilder,
   }) : super(testRunner: testRunner ?? TizenTestRunner());
 
   @override
@@ -122,6 +124,7 @@ void main() {
     String? icudtlPath,
     Directory? coverageDirectory,
     bool web = false,
+    bool useWasm = false,
     String? randomSeed,
     String? reporter,
     String? fileReporter,
@@ -132,6 +135,7 @@ void main() {
     Device? integrationTestDevice,
     String? integrationTestUserIdentifier,
     TestTimeRecorder? testTimeRecorder,
+    TestCompilerNativeAssetsBuilder? nativeAssetsBuilder,
   }) async {
     if (isIntegrationTest) {
       testFiles = await _generateEntrypointWrappers(testFiles);
@@ -157,6 +161,7 @@ void main() {
       icudtlPath: icudtlPath,
       coverageDirectory: coverageDirectory,
       web: web,
+      useWasm: useWasm,
       randomSeed: randomSeed,
       reporter: reporter,
       fileReporter: fileReporter,
@@ -167,6 +172,59 @@ void main() {
       integrationTestDevice: integrationTestDevice,
       integrationTestUserIdentifier: integrationTestUserIdentifier,
       testTimeRecorder: testTimeRecorder,
+      nativeAssetsBuilder: nativeAssetsBuilder,
+    );
+  }
+
+  @override
+  Future<int> runTestsBySpawningLightweightEngines(
+    List<Uri> testFiles, {
+    required DebuggingOptions debuggingOptions,
+    List<String> names = const <String>[],
+    List<String> plainNames = const <String>[],
+    String? tags,
+    String? excludeTags,
+    bool machine = false,
+    bool updateGoldens = false,
+    required int? concurrency,
+    String? testAssetDirectory,
+    FlutterProject? flutterProject,
+    String? icudtlPath,
+    String? randomSeed,
+    String? reporter,
+    String? fileReporter,
+    String? timeout,
+    bool runSkipped = false,
+    int? shardIndex,
+    int? totalShards,
+    TestTimeRecorder? testTimeRecorder,
+    TestCompilerNativeAssetsBuilder? nativeAssetsBuilder,
+  }) async {
+    if (isIntegrationTest) {
+      testFiles = await _generateEntrypointWrappers(testFiles);
+    }
+    return testRunner.runTestsBySpawningLightweightEngines(
+      testFiles,
+      debuggingOptions: debuggingOptions,
+      names: names,
+      plainNames: plainNames,
+      tags: tags,
+      excludeTags: excludeTags,
+      machine: machine,
+      updateGoldens: updateGoldens,
+      concurrency: concurrency,
+      testAssetDirectory: testAssetDirectory,
+      flutterProject: flutterProject,
+      icudtlPath: icudtlPath,
+      randomSeed: randomSeed,
+      reporter: reporter,
+      fileReporter: fileReporter,
+      timeout: timeout,
+      runSkipped: runSkipped,
+      shardIndex: shardIndex,
+      totalShards: totalShards,
+      testTimeRecorder: testTimeRecorder,
+      nativeAssetsBuilder: nativeAssetsBuilder,
     );
   }
 }

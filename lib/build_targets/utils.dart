@@ -42,7 +42,7 @@ Directory getEmbedderArtifactsDirectory(String? apiVersion, String arch) {
   if (version != null && version >= Version(6, 5, 0)) {
     apiVersion = '6.5';
   } else {
-    apiVersion = '5.5';
+    apiVersion = '6.0';
   }
   return globals.cache
       .getArtifactDirectory('engine')

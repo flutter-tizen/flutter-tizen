@@ -102,7 +102,7 @@ class NativePlugins extends Target {
     final Directory dartSdkDir = getDartSdkDirectory();
 
     assert(tizenSdk != null);
-    final Rootstrap rootstrap = tizenSdk!.getFlutterRootstrap(
+    final Rootstrap rootstrap = tizenSdk!.getRootstrap(
       profile: profile,
       apiVersion: apiVersion,
       arch: buildInfo.targetArch,

@@ -36,6 +36,10 @@ class TizenOperatingSystemUtils implements OperatingSystemUtils {
       _osUtils.findFreePort(ipv6: ipv6);
 
   @override
+  int? getDirectorySize(Directory directory) =>
+      _osUtils.getDirectorySize(directory);
+
+  @override
   Stream<List<int>> gzipLevel1Stream(Stream<List<int>> stream) =>
       _osUtils.gzipLevel1Stream(stream);
 

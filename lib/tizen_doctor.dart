@@ -70,23 +70,23 @@ class TizenValidator extends DoctorValidator {
 
   bool _validatePackages(List<ValidationMessage> messages) {
     final String gccVersion = _tizenSdk!.defaultGccVersion;
-    final String packageManager = _tizenSdk!.packageManagerCli.path;
+    final String packageManager = _tizenSdk.packageManagerCli.path;
     final List<String> missingPackages = <String>[];
 
-    if (!_tizenSdk!.tizenCli.existsSync()) {
+    if (!_tizenSdk.tizenCli.existsSync()) {
       missingPackages.add('NativeCLI');
     }
-    if (!_tizenSdk!.toolsDirectory
+    if (!_tizenSdk.toolsDirectory
         .childDirectory('arm-linux-gnueabi-gcc-$gccVersion')
         .existsSync()) {
       missingPackages.add('NativeToolchain-Gcc-$gccVersion');
     }
-    if (!_tizenSdk!.platformsDirectory
-        .childDirectory('tizen-5.5')
-        .childDirectory('wearable')
+    if (!_tizenSdk.platformsDirectory
+        .childDirectory('tizen-6.0')
+        .childDirectory('iot-headed')
         .childDirectory('rootstraps')
         .existsSync()) {
-      missingPackages.add('WEARABLE-5.5-NativeAppDevelopment-CLI');
+      missingPackages.add('IOT-Headed-6.0-NativeAppDevelopment');
     }
 
     if (missingPackages.isNotEmpty) {
@@ -136,17 +136,17 @@ class TizenValidator extends DoctorValidator {
       return ValidationResult(ValidationType.missing, messages);
     }
 
-    final Version? sdkVersion = Version.parse(_tizenSdk!.sdkVersion);
+    final Version? sdkVersion = Version.parse(_tizenSdk.sdkVersion);
     if (sdkVersion != null && sdkVersion < Version(5, 0, 0)) {
       messages.add(ValidationMessage.error(
         'A newer version of Tizen Studio is required. To update, run:\n'
-        '${_tizenSdk!.packageManagerCli.path} update',
+        '${_tizenSdk.packageManagerCli.path} update',
       ));
       return ValidationResult(ValidationType.missing, messages);
     } else {
       final String versionText = sdkVersion != null ? ' $sdkVersion' : '';
       messages.add(ValidationMessage(
-        'Tizen Studio$versionText at ${_tizenSdk!.directory.path}',
+        'Tizen Studio$versionText at ${_tizenSdk.directory.path}',
       ));
     }
 
@@ -154,10 +154,10 @@ class TizenValidator extends DoctorValidator {
       return ValidationResult(ValidationType.partial, messages);
     }
 
-    if (_dotnetCli != null && _processManager.canRun(_dotnetCli!.path)) {
+    if (_dotnetCli != null && _processManager.canRun(_dotnetCli.path)) {
       final Version? dotnetVersion = Version.parse(
         _processUtils
-            .runSync(<String>[_dotnetCli!.path, '--version'])
+            .runSync(<String>[_dotnetCli.path, '--version'])
             .stdout
             .trim(),
       );
@@ -169,7 +169,7 @@ class TizenValidator extends DoctorValidator {
         return ValidationResult(ValidationType.missing, messages);
       } else {
         messages.add(ValidationMessage(
-          '.NET SDK $dotnetVersion at ${_dotnetCli!.path}',
+          '.NET SDK $dotnetVersion at ${_dotnetCli.path}',
         ));
       }
     } else {

@@ -88,6 +88,7 @@ class TizenBuilder {
       processManager: globals.processManager,
       platform: globals.platform,
       usage: globals.flutterUsage,
+      analytics: globals.analytics,
       generateDartPluginRegistry: false,
     );
 
@@ -124,9 +125,9 @@ class TizenBuilder {
       throwToolExit('The output TPK does not exist.');
     }
     final String relativeTpkPath = globals.fs.path.relative(tpkFile.path);
-    final String tpkSize = getSizeAsMB(tpkFile.lengthSync());
+    final String tpkSize = getSizeAsPlatformMB(tpkFile.lengthSync());
     globals.printStatus(
-      '${globals.logger.terminal.successMark} Built $relativeTpkPath ($tpkSize).',
+      '${globals.logger.terminal.successMark} Built $relativeTpkPath ($tpkSize)',
       color: TerminalColor.green,
     );
 
@@ -136,6 +137,7 @@ class TizenBuilder {
         fileSystem: globals.fs,
         logger: globals.logger,
         flutterUsage: globals.flutterUsage,
+        analytics: globals.analytics,
       );
       final File codeSizeFile = globals.fs
           .directory(buildInfo.codeSizeDirectory)
@@ -222,6 +224,7 @@ class TizenBuilder {
       processManager: globals.processManager,
       platform: globals.platform,
       usage: globals.flutterUsage,
+      analytics: globals.analytics,
       generateDartPluginRegistry: false,
     );
 
@@ -248,7 +251,7 @@ class TizenBuilder {
 
     final String relativeOutPath = globals.fs.path.relative(outputDir.path);
     globals.printStatus(
-      '${globals.logger.terminal.successMark} Built $relativeOutPath.',
+      '${globals.logger.terminal.successMark} Built $relativeOutPath',
       color: TerminalColor.green,
     );
   }

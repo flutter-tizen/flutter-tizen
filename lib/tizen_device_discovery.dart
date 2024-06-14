@@ -54,12 +54,12 @@ class TizenDeviceDiscovery extends PollingDeviceDiscovery {
 
   @override
   Future<List<Device>> pollingGetDevices({Duration? timeout}) async {
-    if (_tizenSdk == null || !_tizenSdk!.sdb.existsSync()) {
+    if (_tizenSdk == null || !_tizenSdk.sdb.existsSync()) {
       return <TizenDevice>[];
     }
 
     final RunResult result =
-        await _processUtils.run(<String>[_tizenSdk!.sdb.path, 'devices']);
+        await _processUtils.run(<String>[_tizenSdk.sdb.path, 'devices']);
     if (result.exitCode != 0) {
       throwToolExit('sdb failed to list attached devices:\n$result');
     }
@@ -89,7 +89,7 @@ class TizenDeviceDiscovery extends PollingDeviceDiscovery {
         modelId: deviceModel,
         logger: _logger,
         processManager: _processManager,
-        tizenSdk: _tizenSdk!,
+        tizenSdk: _tizenSdk,
         fileSystem: _fileSystem,
       );
 
@@ -114,7 +114,7 @@ class TizenDeviceDiscovery extends PollingDeviceDiscovery {
     }
 
     final RunResult result =
-        await _processUtils.run(<String>[_tizenSdk!.sdb.path, 'devices']);
+        await _processUtils.run(<String>[_tizenSdk.sdb.path, 'devices']);
     if (result.exitCode != 0) {
       return <String>[];
     }
@@ -144,15 +144,16 @@ class TizenDeviceDiscovery extends PollingDeviceDiscovery {
       final String deviceId = splitLine[0];
       final String deviceState = splitLine[1];
 
-      if (deviceState == 'unauthorized') {
-        messages.add(
-          'Device $deviceId is not authorized.\n'
-          'You might need to check your device for an authorization dialog.',
-        );
-      } else if (deviceState == 'offline') {
-        messages.add('Device $deviceId is offline.');
-      } else if (deviceState == 'unknown') {
-        messages.add('Device $deviceId is not ready.');
+      switch (deviceState) {
+        case 'unauthorized':
+          messages.add(
+            'Device $deviceId is not authorized.\n'
+            'You might need to check your device for an authorization dialog.',
+          );
+        case 'offline':
+          messages.add('Device $deviceId is offline.');
+        case 'unknown':
+          messages.add('Device $deviceId is not ready.');
       }
     }
     return messages;

@@ -67,16 +67,14 @@ class ForwardingLogReader extends DeviceLogReader {
       return message;
     }
     final String prefix = match.group(1)!;
-    TerminalColor color;
-    if (prefix == '[I]') {
-      color = TerminalColor.cyan;
-    } else if (prefix == '[W]') {
-      color = TerminalColor.yellow;
-    } else if (prefix == '[E]') {
-      color = TerminalColor.red;
-    } else if (prefix == '[F]') {
-      color = TerminalColor.magenta;
-    } else {
+    final TerminalColor? color = switch (prefix) {
+      '[I]' => TerminalColor.cyan,
+      '[W]' => TerminalColor.yellow,
+      '[E]' => TerminalColor.red,
+      '[F]' => TerminalColor.magenta,
+      _ => null,
+    };
+    if (color == null) {
       return message;
     }
     return message.replaceFirst(prefix, globals.terminal.color(prefix, color));

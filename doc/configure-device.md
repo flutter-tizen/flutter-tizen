@@ -1,30 +1,22 @@
 # Configuring Tizen devices for development
 
-## Watch/TV
+## TV
 
-1. Make sure your host PC and target device are on the same network (connected to the same access point).
+1. Make sure your host PC and TV are on the same network (connected to the same access point).
 
-1. Enable the developer options.
+1. Enable the developer mode.
 
-   - **[Watch]**: Open **Settings - About watch - Software**, tap **Software version** several times, and make sure **Debugging** is turned on. If you still see the message _Debugging is turned off_, tap _Debugging_ in the text to turn it on.
+   1. Open **Apps** and enter the number **12345** using the remote control or on-screen number pad.
 
-     ![About watch](images/watch-developer-option-1.png) ![Software version](images/watch-developer-option-2.png) ![Debugging mode](images/watch-developer-option-3.png)
+      ![Apps](images/tv-developer-option-1.png)
 
-     If you are connecting for the first time, make sure to disable **Bluetooth** and set **Wi-Fi** to **Always on**.
+   1. Set **Developer mode** to **On**, enter the IP address of the host PC, and press **OK**.
 
-     ![Wi-Fi Always On](images/watch-developer-option-4.png)
+      ![Enter IP address](images/tv-developer-option-2.png)
 
-     To find out the device IP address, go to **Settings - Connections - Wi-Fi - Wi-Fi Networks - (access point name)**.
+   1. Restart the TV. You will see **Develop Mode** enabled in **Apps** after the TV restarts.
 
-     ![Wi-Fi networks](images/watch-developer-option-5.png) ![Wi-Fi connected](images/watch-developer-option-6.png) ![IP address](images/watch-developer-option-7.png)
-
-   - **[TV]**: Open **Apps**, enter **12345** using the remote control or on-screen number pad, set **Developer mode** to **On**, enter the host IP address, and press **OK**. You will see **Develop mode** enabled in **Apps** after the TV restarts.
-
-     ![Apps](images/tv-developer-option-1.png)
-
-     ![Enter IP address](images/tv-developer-option-2.png)
-
-     ![Develop mode enabled](images/tv-developer-option-3.png)
+      ![Develop mode enabled](images/tv-developer-option-3.png)
 
 1. Find the path to `sdb` and add it to your PATH. For example, if you're using Linux or macOS and Tizen Studio has been installed to the default location, run:
 
@@ -142,20 +134,7 @@ You need a Linux PC (for flashing), a Raspberry Pi 4 board, and a micro SD card 
   failed to connect to 192.168.0.101:26101
   ```
 
-  Make sure the target device and the host PC are on the same network.
-
-  - Watch: Make sure Bluetooth is turned off and restart the device.
-  - TV: Make sure you have entered the host IP address correctly in the Developer mode configuration.
-
-- #### Device unauthorized
-
-  ```sh
-  $ sdb devices
-  List of devices attached
-  192.168.0.101:26101     unauthorized    <unknown>
-  ```
-
-  Check the confirmation dialog on the device and approve the connection.
+  Make sure the target device and the host PC are on the same network. Make sure the host IP address is entered correctly in the developer mode settings (TV).
 
 - #### Device offline
 

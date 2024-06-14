@@ -358,11 +358,11 @@ class TizenEmbedderArtifacts extends TizenCachedArtifacts {
   List<List<String>> getBinaryDirs() {
     return <List<String>>[
       <String>['tizen-common', 'tizen-common.zip'],
-      <String>['tizen-arm/5.5', 'tizen-5.5-arm.zip'],
+      <String>['tizen-arm/6.0', 'tizen-6.0-arm.zip'],
       <String>['tizen-arm/6.5', 'tizen-6.5-arm.zip'],
-      <String>['tizen-arm64/5.5', 'tizen-5.5-arm64.zip'],
+      <String>['tizen-arm64/6.0', 'tizen-6.0-arm64.zip'],
       <String>['tizen-arm64/6.5', 'tizen-6.5-arm64.zip'],
-      <String>['tizen-x86/5.5', 'tizen-5.5-x86.zip'],
+      <String>['tizen-x86/6.0', 'tizen-6.0-x86.zip'],
       <String>['tizen-x86/6.5', 'tizen-6.5-x86.zip'],
     ];
   }

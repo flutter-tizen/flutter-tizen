@@ -78,10 +78,10 @@ void main() {
         ],
         stdout: '''
 platform_name
-  Profile           : wearable
-  Version           : 6.0
+  Profile           : tizen
+  Version           : 8.0
   CPU Arch          : x86
-  Skin shape        : circle
+  Skin shape        : square
 ''',
       ));
       processManager.addCommand(const FakeCommand(

@@ -245,20 +245,12 @@ class TizenSdk {
     ]);
   }
 
-  Rootstrap getFlutterRootstrap({
+  Rootstrap getRootstrap({
     required String profile,
     String? apiVersion,
     required String arch,
   }) {
-    if (profile == 'common') {
-      // Note: The headless profile is not supported.
-      profile = 'iot-headed';
-    }
-    if (profile == 'tv') {
-      // Note: The tv-samsung rootstrap is not publicly available.
-      profile = 'tv-samsung';
-    }
-    apiVersion ??= '5.5';
+    apiVersion ??= '6.0';
 
     double versionToDouble(String versionString) {
       final double? version = double.tryParse(versionString);
@@ -268,21 +260,34 @@ class TizenSdk {
       return version;
     }
 
-    String type = arch == 'x86' ? 'emulator' : 'device';
-    if (arch == 'arm64') {
-      // The arm64 build is only supported by iot-headed-6.0+ rootstraps.
-      if (profile != 'iot-headed') {
-        _logger.printError(
-            'The arm64 build is not supported by the $profile profile.');
-        profile = 'iot-headed';
-      }
-      if (versionToDouble(apiVersion) < 6.0) {
-        apiVersion = '6.0';
-      }
-      type = 'device64';
+    if (versionToDouble(apiVersion) < 6.0) {
+      throwToolExit('Not supported API version: $apiVersion');
     }
 
-    Rootstrap getRootstrap(String profile, String apiVersion, String type) {
+    switch (profile) {
+      case 'common':
+        if (versionToDouble(apiVersion) >= 8.0) {
+          // Note: Starting with Tizen 8.0, the unified "tizen" profile is used.
+          profile = 'tizen';
+        } else {
+          profile = arch == 'x86' ? 'mobile' : 'iot-headed';
+        }
+      case 'tv':
+        // Note: The tv-samsung rootstrap is not publicly available.
+        profile = 'tv-samsung';
+      case 'mobile':
+        if (versionToDouble(apiVersion) >= 8.0) {
+          profile = 'tizen';
+        }
+    }
+
+    final String type = switch (arch) {
+      'x86' => 'emulator',
+      'arm64' => 'device64',
+      _ => 'device',
+    };
+
+    Rootstrap findRootstrap(String profile, String apiVersion, String type) {
       final String id = '$profile-$apiVersion-$type.core';
       final Directory rootDir = platformsDirectory
           .childDirectory('tizen-$apiVersion')
@@ -292,12 +297,17 @@ class TizenSdk {
       return Rootstrap(id, rootDir);
     }
 
-    Rootstrap rootstrap = getRootstrap(profile, apiVersion, type);
+    Rootstrap rootstrap = findRootstrap(profile, apiVersion, type);
     if (!rootstrap.isValid && profile == 'tv-samsung') {
       _logger.printTrace('TV SDK could not be found.');
-      profile = 'wearable';
-      rootstrap = getRootstrap(profile, apiVersion, type);
+      if (versionToDouble(apiVersion) >= 8.0) {
+        profile = 'tizen';
+      } else {
+        profile = arch == 'x86' ? 'mobile' : 'iot-headed';
+      }
+      rootstrap = findRootstrap(profile, apiVersion, type);
     }
+
     if (!rootstrap.isValid) {
       final String profileUpperCase =
           profile.toUpperCase().replaceAll('HEADED', 'Headed');
@@ -309,40 +319,7 @@ class TizenSdk {
     }
     _logger.printTrace('Found a rootstrap: ${rootstrap.id}');
 
-    // Create a custom rootstrap definition to override the GCC version.
-    final String flutterRootstrapId =
-        rootstrap.id.replaceFirst('.core', '.flutter');
-    final String buildArch = getTizenBuildArch(arch);
-    final File configFile = rootstrap.rootDirectory.parent
-        .childDirectory('info')
-        .childFile('${rootstrap.id}.dev.xml');
-
-    // libstdc++ shipped with Tizen 5.5 is not compatible with C++17.
-    // Original PR: https://github.com/flutter-tizen/flutter-tizen/pull/106
-    final List<String> linkerFlags = <String>[];
-    if (versionToDouble(apiVersion) < 6.0) {
-      linkerFlags.add('-static-libstdc++');
-    }
-
-    // Tizen SBI reads rootstrap definitions from this directory.
-    final Directory pluginsDir = toolsDirectory
-        .childDirectory('smart-build-interface')
-        .childDirectory('plugins');
-    pluginsDir.childFile('flutter-rootstrap.xml')
-      ..createSync(recursive: true)
-      ..writeAsStringSync('''
-<?xml version="1.0"?>
-<extension point="rootstrapDefinition">
-  <rootstrap id="$flutterRootstrapId" name="Flutter" version="Tizen $apiVersion" architecture="$buildArch" path="${rootstrap.rootDirectory.path}" supportToolchainType="tizen.core">
-    <property key="DEV_PACKAGE_CONFIG_PATH" value="${configFile.path}"/>
-    <property key="LINKER_MISCELLANEOUS_OPTION" value="${linkerFlags.join(' ')}"/>
-    <property key="COMPILER_MISCELLANEOUS_OPTION" value=""/>
-    <toolchain name="gcc" version="$defaultGccVersion"/>
-  </rootstrap>
-</extension>
-''');
-
-    return Rootstrap(flutterRootstrapId, rootstrap.rootDirectory);
+    return Rootstrap(rootstrap.id, rootstrap.rootDirectory);
   }
 }
 
