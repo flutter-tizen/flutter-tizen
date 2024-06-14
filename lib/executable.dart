@@ -16,6 +16,7 @@ import 'package:flutter_tools/src/base/os.dart';
 import 'package:flutter_tools/src/base/template.dart';
 import 'package:flutter_tools/src/base/terminal.dart';
 import 'package:flutter_tools/src/build_system/build_system.dart';
+import 'package:flutter_tools/src/build_system/build_targets.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/commands/analyze.dart';
 import 'package:flutter_tools/src/commands/config.dart';
@@ -34,6 +35,7 @@ import 'package:flutter_tools/src/doctor.dart';
 import 'package:flutter_tools/src/emulator.dart';
 import 'package:flutter_tools/src/features.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
+import 'package:flutter_tools/src/isolated/build_targets.dart';
 import 'package:flutter_tools/src/isolated/mustache_template.dart';
 import 'package:flutter_tools/src/project_validator.dart';
 import 'package:flutter_tools/src/runner/flutter_command.dart';
@@ -185,6 +187,7 @@ Future<void> main(List<String> args) async {
             platform: globals.platform,
             logger: globals.logger,
           ),
+      BuildTargets: () => const BuildTargetsImpl(),
       Cache: () => TizenCache(
             fileSystem: globals.fs,
             logger: globals.logger,

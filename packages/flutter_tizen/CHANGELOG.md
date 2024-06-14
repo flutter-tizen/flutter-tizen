@@ -1,3 +1,7 @@
+## 0.2.3
+
+* Update the minimum SDK version to 3.3.0.
+
 ## 0.2.2
 
 * Add setOffset to PostFrameCallback.

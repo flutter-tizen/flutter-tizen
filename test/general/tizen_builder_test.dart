@@ -132,7 +132,7 @@ void main() {
 
       expect(
         logger.statusText,
-        contains('Built build/tizen/tpk/package_id-1.0.0.tpk (0.0MB).'),
+        contains('Built build/tizen/tpk/package_id-1.0.0.tpk (0.0MB)'),
       );
     }, overrides: <Type, Generator>{
       FileSystem: () => fileSystem,
@@ -202,7 +202,7 @@ void main() {
         targetFile: 'main.dart',
       );
 
-      expect(logger.statusText, contains('Built build/tizen/module.'));
+      expect(logger.statusText, contains('Built build/tizen/module'));
     }, overrides: <Type, Generator>{
       FileSystem: () => fileSystem,
       ProcessManager: () => FakeProcessManager.any(),
@@ -217,7 +217,7 @@ class _FakeSizeAnalyzer extends SizeAnalyzer {
   _FakeSizeAnalyzer({
     required super.fileSystem,
     required super.logger,
-  }) : super(flutterUsage: TestUsage(), analytics: NoOpAnalytics());
+  }) : super(flutterUsage: TestUsage(), analytics: const NoOpAnalytics());
 
   @override
   Future<Map<String, Object?>> analyzeAotSnapshot({

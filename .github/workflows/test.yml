@@ -12,10 +12,9 @@ jobs:
       - uses: actions/checkout@v3
       - name: Fetch Flutter SDK
         run: |
-          git clone --depth=1 https://github.com/flutter/flutter.git
+          git clone https://github.com/flutter/flutter.git
           cd flutter
-          git fetch --depth=1 https://github.com/flutter/flutter.git $(cat ../bin/internal/flutter.version)
-          git checkout FETCH_HEAD
+          git checkout $(cat ../bin/internal/flutter.version)
       - name: Run tests
         run: flutter/bin/flutter test --coverage
       - name: Report coverage

@@ -9,5 +9,5 @@ import '../tizen_plugins.dart';
 
 class TizenRunCommand extends RunCommand
     with DartPluginRegistry, TizenRequiredArtifacts {
-  TizenRunCommand({super.verboseHelp});
+  TizenRunCommand({super.verboseHelp, super.nativeAssetsBuilder});
 }
