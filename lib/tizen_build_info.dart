@@ -21,23 +21,20 @@ class TizenBuildInfo {
 
 /// See: [getNameForTargetPlatform] in `build_info.dart`
 String getArchForTargetPlatform(TargetPlatform platform) {
-  if (platform == TargetPlatform.android_arm64) {
-    return 'arm64';
-  } else if (platform == TargetPlatform.android_x86) {
-    return 'x86';
-  } else {
-    return 'arm';
-  }
+  return switch (platform) {
+    TargetPlatform.android_arm => 'arm',
+    TargetPlatform.android_arm64 => 'arm64',
+    TargetPlatform.android_x86 => 'x86',
+    _ => throw ArgumentError('Unexpected platform $platform'),
+  };
 }
 
 /// See: [getTargetPlatformForName] in `build_info.dart`
 TargetPlatform getTargetPlatformForArch(String arch) {
-  switch (arch) {
-    case 'arm64':
-      return TargetPlatform.android_arm64;
-    case 'x86':
-      return TargetPlatform.android_x86;
-    default:
-      return TargetPlatform.android_arm;
-  }
+  return switch (arch) {
+    'arm' => TargetPlatform.android_arm,
+    'arm64' => TargetPlatform.android_arm64,
+    'x86' => TargetPlatform.android_x86,
+    _ => throw ArgumentError('Unexpected arch name $arch'),
+  };
 }
