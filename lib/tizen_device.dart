@@ -305,7 +305,7 @@ class TizenDevice extends Device {
   }) async {
     final RunResult result =
         await runSdbAsync(<String>['uninstall', app.id], checked: false);
-    if (result.exitCode != 0 || !result.stdout.contains('val[ok]')) {
+    if (result.exitCode != 0) {
       _logger.printError('sdb uninstall failed:\n$result');
       return false;
     }
