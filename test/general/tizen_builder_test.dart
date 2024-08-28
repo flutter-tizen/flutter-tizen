@@ -59,6 +59,7 @@ void main() {
         trackWidgetCreation: true,
         treeShakeIcons: false,
         codeSizeDirectory: 'code_size_analysis',
+        packageConfigPath: '.dart_tool/package_config.json',
       ),
       targetArch: 'arm',
       deviceProfile: 'common',
