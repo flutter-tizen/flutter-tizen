@@ -4,7 +4,7 @@ index 8e9a7d66fb..fa388a4369 100644
 +++ b/packages/flutter_tools/templates/app/pubspec.yaml.tmpl
 @@ -67,6 +67,11 @@ dependencies:
    # Use with the CupertinoIcons class for iOS style icons.
-   cupertino_icons: ^1.0.6
+   cupertino_icons: ^1.0.8
  
 +  # Tizen-specific dependencies.
 +  messageport_tizen: ^0.3.2
