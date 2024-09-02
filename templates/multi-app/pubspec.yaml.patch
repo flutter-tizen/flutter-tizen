@@ -8,8 +8,8 @@ index 8e9a7d66fb..fa388a4369 100644
  
 +  # Tizen-specific dependencies.
 +  messageport_tizen: ^0.3.2
-+  tizen_app_control: ^0.2.2
-+  tizen_app_manager: ^0.2.2
++  tizen_app_control: ^0.2.3
++  tizen_app_manager: ^0.2.3
 +
  dev_dependencies:
  {{#withPlatformChannelPluginHook}}

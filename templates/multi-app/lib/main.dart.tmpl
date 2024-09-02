@@ -48,7 +48,7 @@ void serviceMain() {
 }
 
 class MyApp extends StatefulWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -111,7 +111,7 @@ class _MyAppState extends State<MyApp> {
                 ElevatedButton(
                   onPressed: _terminateService,
                   style: ElevatedButton.styleFrom(
-                    primary: Colors.redAccent,
+                    foregroundColor: Colors.redAccent,
                   ),
                   child: const Text('Terminate service'),
                 )
