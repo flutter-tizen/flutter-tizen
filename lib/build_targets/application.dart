@@ -21,8 +21,8 @@ import 'package:package_config/src/package_config.dart';
 import '../tizen_build_info.dart';
 import 'plugins.dart';
 
-class TizenKernelSnapshot extends KernelSnapshot {
-  const TizenKernelSnapshot();
+class TizenKernelSnapshotProgram extends KernelSnapshotProgram {
+  const TizenKernelSnapshotProgram();
 
   /// Source: [KernelSnapshot.build] in `common.dart`
   @override
@@ -64,6 +64,9 @@ class TizenKernelSnapshot extends KernelSnapshot {
       logger: environment.logger,
     );
 
+    final String dillPath =
+        environment.buildDir.childFile(KernelSnapshotProgram.dillName).path;
+
     final CompilerOutput? output = await compiler.compile(
       sdkRoot: environment.artifacts.getArtifactPath(
         Artifact.flutterPatchedSdkPath,
@@ -73,14 +76,13 @@ class TizenKernelSnapshot extends KernelSnapshot {
       buildMode: buildMode,
       trackWidgetCreation:
           trackWidgetCreation && buildMode != BuildMode.release,
-      outputFilePath: environment.buildDir.childFile('app.dill').path,
-      initializeFromDill: buildMode.isPrecompiled
-          ? null
-          : environment.buildDir.childFile('app.dill').path,
+      outputFilePath: dillPath,
+      initializeFromDill: buildMode.isPrecompiled ? null : dillPath,
       packagesPath: packagesFile.path,
       linkPlatformKernelIn: buildMode.isPrecompiled,
       mainPath: targetFileAbsolute,
-      depFilePath: environment.buildDir.childFile('kernel_snapshot.d').path,
+      depFilePath:
+          environment.buildDir.childFile(KernelSnapshotProgram.depfile).path,
       frontendServerStarterPath: frontendServerStarterPath,
       extraFrontEndOptions: extraFrontEndOptions,
       fileSystemRoots: fileSystemRoots,
@@ -95,6 +97,16 @@ class TizenKernelSnapshot extends KernelSnapshot {
       throw Exception();
     }
   }
+}
+
+class TizenKernelSnapshot extends KernelSnapshot {
+  const TizenKernelSnapshot();
+
+  @override
+  List<Target> get dependencies => const <Target>[
+        TizenKernelSnapshotProgram(),
+        KernelSnapshotNativeAssets(),
+      ];
 }
 
 /// Prepares the pre-built Flutter bundle.
@@ -156,6 +168,7 @@ abstract class TizenAssetBundle extends Target {
       environment,
       outputDirectory,
       targetPlatform: TargetPlatform.android,
+      buildMode: buildMode,
       flavor: environment.defines[kFlavor],
     );
     final DepfileService depfileService = DepfileService(
