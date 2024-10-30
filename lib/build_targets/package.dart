@@ -154,7 +154,7 @@ class DotnetTpk extends TizenPackage {
     }
 
     File locateTpk(String stdout) {
-      // "Runner -> /path/to/project/tizen/bin/Debug/tizen40/com.example.app-1.0.0.tpk"
+      // "Runner -> /path/to/project/tizen/bin/Debug/tizen80/com.example.app-1.0.0.tpk"
       final Match? match = RegExp(' -> (.+.tpk)').firstMatch(stdout);
       if (match == null) {
         throwToolExit('Unable to locate the output TPK:\n$stdout');
