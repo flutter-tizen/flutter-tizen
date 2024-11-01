@@ -25,12 +25,12 @@ const String kMsbuildOutput = '''
 MSBuild version 17.3.0+92e077650 for .NET
   Determining projects to restore...
   All projects are up-to-date for restore.
-  Runner -> /flutter_project/tizen/bin/Release/tizen40/Runner.dll
+  Runner -> /flutter_project/tizen/bin/Release/tizen80/Runner.dll
   Configuration :
   Platform :
   TargetFramework :
   Runner is signed with Default Certificates!
-  Runner -> /flutter_project/tizen/bin/Release/tizen40/package_id-1.0.0.tpk
+  Runner -> /flutter_project/tizen/bin/Release/tizen80/package_id-1.0.0.tpk
 
 Build succeeded.
     0 Warning(s)
@@ -108,7 +108,7 @@ void main() {
         ],
         onRun: (_) {
           projectDir
-              .childFile('tizen/bin/Release/tizen40/package_id-1.0.0.tpk')
+              .childFile('tizen/bin/Release/tizen80/package_id-1.0.0.tpk')
               .createSync(recursive: true);
         },
         stdout: kMsbuildOutput,
@@ -178,7 +178,7 @@ void main() {
         ],
         onRun: (_) {
           projectDir
-              .childFile('tizen/bin/Release/tizen40/package_id-1.0.0.tpk')
+              .childFile('tizen/bin/Release/tizen80/package_id-1.0.0.tpk')
               .createSync(recursive: true);
         },
         stdout: kMsbuildOutput,
