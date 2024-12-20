@@ -15,7 +15,6 @@ import 'package:flutter_tools/src/build_info.dart';
 import 'package:flutter_tools/src/build_system/build_system.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/project.dart';
-import 'package:flutter_tools/src/reporting/reporting.dart';
 import 'package:unified_analytics/src/analytics.dart';
 
 import '../src/common.dart';
@@ -218,7 +217,7 @@ class _FakeSizeAnalyzer extends SizeAnalyzer {
   _FakeSizeAnalyzer({
     required super.fileSystem,
     required super.logger,
-  }) : super(flutterUsage: TestUsage(), analytics: const NoOpAnalytics());
+  }) : super(analytics: const NoOpAnalytics());
 
   @override
   Future<Map<String, Object?>> analyzeAotSnapshot({
