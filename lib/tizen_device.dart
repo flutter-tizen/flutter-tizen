@@ -38,7 +38,7 @@ class TizenDevice extends Device {
   TizenDevice(
     super.id, {
     required String modelId,
-    required Logger logger,
+    required super.logger,
     required ProcessManager processManager,
     required TizenSdk tizenSdk,
     required FileSystem fileSystem,
