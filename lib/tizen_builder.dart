@@ -19,10 +19,10 @@ import 'package:flutter_tools/src/build_system/build_system.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/commands/assemble.dart';
 import 'package:flutter_tools/src/commands/build_ios_framework.dart';
+import 'package:flutter_tools/src/dart/package_map.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/linux/build_linux.dart';
 import 'package:flutter_tools/src/project.dart';
-import 'package:flutter_tools/src/dart/package_map.dart';
 
 import 'build_targets/package.dart';
 import 'tizen_build_info.dart';
