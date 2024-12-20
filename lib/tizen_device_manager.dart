@@ -9,7 +9,6 @@ import 'package:flutter_tools/src/custom_devices/custom_devices_config.dart';
 import 'package:flutter_tools/src/device.dart';
 import 'package:flutter_tools/src/features.dart';
 import 'package:flutter_tools/src/flutter_device_manager.dart';
-import 'package:flutter_tools/src/fuchsia/fuchsia_workflow.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/macos/macos_workflow.dart';
 import 'package:flutter_tools/src/windows/windows_workflow.dart';
@@ -41,14 +40,13 @@ class TizenDeviceManager extends FlutterDeviceManager {
           artifacts: globals.artifacts!,
           flutterVersion: globals.flutterVersion,
           androidWorkflow: androidWorkflow!,
-          fuchsiaWorkflow: fuchsiaWorkflow!,
           xcDevice: globals.xcdevice!,
           userMessages: globals.userMessages,
           windowsWorkflow: windowsWorkflow!,
           macOSWorkflow: context.get<MacOSWorkflow>()!,
-          fuchsiaSdk: globals.fuchsiaSdk!,
           operatingSystemUtils: globals.os,
           customDevicesConfig: context.get<CustomDevicesConfig>()!,
+          nativeAssetsBuilder: globals.nativeAssetsBuilder,
         );
 
   final TizenDeviceDiscovery _tizenDeviceDiscovery;

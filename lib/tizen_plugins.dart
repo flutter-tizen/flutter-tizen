@@ -152,16 +152,18 @@ mixin DartPluginRegistry on FlutterCommand {
   Future<BuildInfo> getBuildInfo({
     BuildMode? forcedBuildMode,
     File? forcedTargetFile,
+    bool? forcedUseLocalCanvasKit,
   }) async {
     final BuildInfo buildInfo = await super.getBuildInfo(
       forcedBuildMode: forcedBuildMode,
       forcedTargetFile: forcedTargetFile,
+      forcedUseLocalCanvasKit: forcedUseLocalCanvasKit,
     );
 
     // The generated main contains the Dart plugin registrant.
     final File dartPluginRegistrant = globals.fs.file(targetFile);
     final PackageConfig packageConfig = await loadPackageConfigWithLogging(
-      FlutterProject.current().packageConfigFile,
+      findPackageConfigFileOrDefault(FlutterProject.current().directory),
       logger: globals.logger,
     );
     String? dartPluginRegistrantUri;
@@ -276,7 +278,7 @@ Future<void> _generateEntrypointWithPluginRegistrant(
   }
 
   final PackageConfig packageConfig = await loadPackageConfigWithLogging(
-    project.packageConfigFile,
+    findPackageConfigFileOrDefault(project.directory),
     logger: globals.logger,
   );
   final Uri mainFileUri = mainFile.absolute.uri;
@@ -395,7 +397,7 @@ Future<List<TizenPlugin>> findTizenPlugins(
   final List<TizenPlugin> plugins = <TizenPlugin>[];
   final FileSystem fs = project.directory.fileSystem;
   final PackageConfig packageConfig = await loadPackageConfigWithLogging(
-    project.packageConfigFile,
+    findPackageConfigFileOrDefault(project.directory),
     logger: globals.logger,
     throwOnError: throwOnError,
   );
