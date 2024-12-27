@@ -5,6 +5,7 @@
 import 'dart:async';
 
 import 'package:file/file.dart';
+import 'package:flutter_tools/src/build_info.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/commands/test.dart';
 import 'package:flutter_tools/src/dart/language_version.dart';
@@ -53,7 +54,7 @@ class TizenTestRunner implements FlutterTestRunner {
   Future<List<Uri>> _generateEntrypointWrappers(List<Uri> testFiles) async {
     final FlutterProject project = FlutterProject.current();
     final PackageConfig packageConfig = await loadPackageConfigWithLogging(
-      project.packageConfigFile,
+      findPackageConfigFileOrDefault(project.directory),
       logger: globals.logger,
     );
     final List<TizenPlugin> dartPlugins =
@@ -112,7 +113,6 @@ void main() {
     String? tags,
     String? excludeTags,
     bool enableVmService = false,
-    bool ipv6 = false,
     bool machine = false,
     String? precompiledDillPath,
     Map<String, String>? precompiledDillFiles,
@@ -136,6 +136,7 @@ void main() {
     String? integrationTestUserIdentifier,
     TestTimeRecorder? testTimeRecorder,
     TestCompilerNativeAssetsBuilder? nativeAssetsBuilder,
+    BuildInfo? buildInfo,
   }) async {
     if (isIntegrationTest) {
       testFiles = await _generateEntrypointWrappers(testFiles);
@@ -149,7 +150,6 @@ void main() {
       tags: tags,
       excludeTags: excludeTags,
       enableVmService: enableVmService,
-      ipv6: ipv6,
       machine: machine,
       precompiledDillPath: precompiledDillPath,
       precompiledDillFiles: precompiledDillFiles,
@@ -173,6 +173,7 @@ void main() {
       integrationTestUserIdentifier: integrationTestUserIdentifier,
       testTimeRecorder: testTimeRecorder,
       nativeAssetsBuilder: nativeAssetsBuilder,
+      buildInfo: buildInfo,
     );
   }
 

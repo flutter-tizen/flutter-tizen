@@ -19,6 +19,7 @@ import 'package:flutter_tools/src/build_system/build_system.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/commands/assemble.dart';
 import 'package:flutter_tools/src/commands/build_ios_framework.dart';
+import 'package:flutter_tools/src/dart/package_map.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/linux/build_linux.dart';
 import 'package:flutter_tools/src/project.dart';
@@ -68,6 +69,7 @@ class TizenBuilder {
 
     final Environment environment = Environment(
       projectDir: project.directory,
+      packageConfigPath: findPackageConfigFileOrDefault(project.directory).path,
       outputDir: outputDir,
       buildDir: project.dartTool.childDirectory('flutter_build'),
       cacheDir: globals.cache.getRoot(),
@@ -136,7 +138,6 @@ class TizenBuilder {
       sizeAnalyzer ??= SizeAnalyzer(
         fileSystem: globals.fs,
         logger: globals.logger,
-        flutterUsage: globals.flutterUsage,
         analytics: globals.analytics,
       );
       final File codeSizeFile = globals.fs
@@ -205,6 +206,7 @@ class TizenBuilder {
 
     final Environment environment = Environment(
       projectDir: project.directory,
+      packageConfigPath: findPackageConfigFileOrDefault(project.directory).path,
       outputDir: outputDir,
       buildDir: project.dartTool.childDirectory('flutter_build'),
       cacheDir: globals.cache.getRoot(),
