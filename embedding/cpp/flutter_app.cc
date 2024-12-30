@@ -47,6 +47,7 @@ bool FlutterApp::OnCreate() {
       static_cast<FlutterDesktopExternalOutputType>(external_output_type_);
   window_prop.user_pixel_ratio =
       user_pixel_ratio_ < 0.0 ? 0.0 : user_pixel_ratio_;
+  window_prop.window_handle = nullptr;
 
   view_ = FlutterDesktopViewCreateFromNewWindow(window_prop,
                                                 engine_->RelinquishEngine());
