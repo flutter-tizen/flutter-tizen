@@ -37,7 +37,6 @@ class _MyAppState extends State<MyApp> {
             children: <Widget>[
               Text('isTizen : $_isTizen\n'),
               Text('apiVersion : $_apiVersion\n'),
-              
             ],
           ),
         ),
