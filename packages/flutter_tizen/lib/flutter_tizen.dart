@@ -8,3 +8,10 @@ import 'dart:io';
 bool get isTizen {
   return Platform.environment.containsKey('TIZEN_API_VERSION');
 }
+
+/// The api version of the currently running app.
+///
+/// If the operating system is not Tizen, return "none".
+String get apiVersion {
+  return Platform.environment['TIZEN_API_VERSION'] ?? "none";
+}

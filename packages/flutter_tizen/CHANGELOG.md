@@ -1,3 +1,8 @@
+## 0.2.4
+
+* Add apiVersion to flutter-tizen.dart.
+* Add example code.
+
 ## 0.2.3
 
 * Update the minimum SDK version to 3.3.0.
