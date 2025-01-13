@@ -15,6 +15,8 @@ namespace Tizen.Flutter.Embedding
     /// </summary>
     public class FlutterEngine : IPluginRegistry
     {
+        private const string MetadataKeyEnableImepeller = "http://tizen.org/metadata/flutter_tizen/enable_impeller";
+
         /// <summary>
         /// Creates a <see cref="FlutterEngine"/> with an optional entrypoint name and entrypoint arguments.
         /// </summary>
@@ -55,6 +57,11 @@ namespace Tizen.Flutter.Embedding
         /// Whether the engine is valid or not.
         /// </summary>
         public bool IsValid => !Engine.IsInvalid;
+
+        /// <summary>
+        /// Whether the impeller is enabled or not.
+        /// </summary>
+        public bool IsImpellerEnabled { get; private set; } = false;
 
         /// <summary>
         /// Handle for interacting with the C API's engine reference.
@@ -170,32 +177,49 @@ namespace Tizen.Flutter.Embedding
         /// <summary>
         /// Reads engine arguments passed from the flutter-tizen tool.
         /// </summary>
-        private static IList<string> ParseEngineArgs()
+        private IList<string> ParseEngineArgs()
         {
             var result = new List<string>();
+            var appInfo = Application.Current.ApplicationInfo;
 
-            string appId = Application.Current.ApplicationInfo.ApplicationId;
+            string appId = appInfo.ApplicationId;
+            bool enableImpellerKeyExist = appInfo.Metadata.ContainsKey(MetadataKeyEnableImepeller);
             string tempPath = $"/home/owner/share/tmp/sdk_tools/{appId}.rpm";
-            if (!File.Exists(tempPath))
-            {
-                return result;
-            }
 
-            try
+            if (File.Exists(tempPath))
             {
-                var lines = File.ReadAllText(tempPath).Trim().Split('\n');
-                foreach (string line in lines)
+                try
                 {
-                    TizenLog.Info($"Enabled: {line}");
-                    result.Add(line);
+                    var lines = File.ReadAllText(tempPath).Trim().Split('\n');
+                    foreach (string line in lines)
+                    {
+                        result.Add(line);
+                    }
+                    File.Delete(tempPath);
                 }
-                File.Delete(tempPath);
-            }
-            catch (Exception ex)
-            {
-                TizenLog.Warn($"Error while processing a file: {ex}");
+                catch (Exception ex)
+                {
+                    TizenLog.Warn($"Error while processing a file: {ex}");
+                }
             }
 
+            if (enableImpellerKeyExist)
+            {
+                if (!result.Contains("--enable-impeller") && appInfo.Metadata[MetadataKeyEnableImepeller] == "true")
+                {
+                    IsImpellerEnabled = true;
+                    result.Insert(0, "--enable-impeller");
+                }
+                else if (result.Contains("--enable-impeller") && appInfo.Metadata[MetadataKeyEnableImepeller] == "false")
+                {
+                    result.Remove("--enable-impeller");
+                }
+            }
+
+            foreach (string flag in result)
+            {
+                TizenLog.Info($"Enabled: {flag}");
+            }
             return result;
         }
     }
