@@ -43,6 +43,8 @@ jobs:
           path: flutter-tizen
       - name: Install Tizen Studio
         run: |
+          sudo add-apt-repository ppa:deadsnakes/ppa
+          sudo apt update
           sudo apt install -y libncurses5 python2.7 libpython2.7 gettext \
             libkf5itemmodels5 libkf5kiowidgets5 libkchart2
           curl https://download.tizen.org/sdk/Installer/tizen-studio_5.6/web-cli_Tizen_Studio_5.6_ubuntu-64.bin -o install.bin
