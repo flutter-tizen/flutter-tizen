@@ -4,7 +4,7 @@ on: [pull_request, workflow_dispatch]
 
 jobs:
   pub:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     if: ${{ github.repository_owner == 'flutter-tizen' }}
     steps:
       - uses: actions/checkout@v3
@@ -30,7 +30,7 @@ jobs:
           done
 
   nuget:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     if: ${{ github.repository_owner == 'flutter-tizen' }}
     steps:
       - uses: actions/checkout@v3
