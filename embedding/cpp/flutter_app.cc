@@ -25,6 +25,14 @@ bool FlutterApp::OnCreate() {
     return false;
   }
 
+  if (renderer_type_ == FlutterRendererType::kEvasGL &&
+      engine_->IsImpellerEnabled()) {
+    TizenLog::Error(
+        "Impeller is not supported by FlutterRendererType::kEvasGL type "
+        "renderer.");
+    return false;
+  }
+
   FlutterDesktopWindowProperties window_prop = {};
   window_prop.x = window_offset_x_;
   window_prop.y = window_offset_y_;

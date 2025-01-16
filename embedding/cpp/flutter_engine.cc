@@ -42,7 +42,7 @@ std::map<std::string, std::string> GetMetadata(std::string app_id) {
 }
 
 // Reads engine arguments passed from the flutter-tizen tool.
-std::vector<std::string> ParseEngineArgs() {
+std::vector<std::string> ParseEngineArgs(bool* is_impeller_enabled) {
   std::vector<std::string> engine_args;
   char* id;
   if (app_get_id(&id) != 0) {
@@ -79,6 +79,7 @@ std::vector<std::string> ParseEngineArgs() {
     auto engine_args_it =
         std::find(engine_args.begin(), engine_args.end(), "--enable-impeller");
     if (engine_args_it == engine_args.end() && it->second == "true") {
+      *is_impeller_enabled = true;
       engine_args.insert(engine_args.begin(), "--enable-impeller");
     } else if (engine_args_it != engine_args.end() && it->second == "false") {
       engine_args.erase(engine_args_it);
@@ -126,7 +127,7 @@ FlutterEngine::FlutterEngine(
   engine_prop.icu_data_path = icu_data_path.c_str();
   engine_prop.aot_library_path = aot_library_path.c_str();
 
-  std::vector<std::string> engine_args = ParseEngineArgs();
+  std::vector<std::string> engine_args = ParseEngineArgs(&is_impeller_enabled_);
   std::vector<const char*> switches;
   for (const std::string& arg : engine_args) {
     switches.push_back(arg.c_str());
