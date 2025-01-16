@@ -9,6 +9,7 @@ import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/base/os.dart' show OperatingSystemUtils;
 import 'package:flutter_tools/src/base/platform.dart';
 import 'package:flutter_tools/src/base/process.dart';
+import 'package:flutter_tools/src/build_info.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/features.dart';
 import 'package:flutter_tools/src/flutter_cache.dart';
@@ -281,7 +282,8 @@ class TizenEngineArtifacts extends TizenCachedArtifacts {
       if (_platform.isWindows)
         ..._binaryDirsForHostPlatform('windows-x64')
       else if (_platform.isMacOS)
-        ..._binaryDirsForHostPlatform('darwin-x64')
+        ..._binaryDirsForHostPlatform(
+            'darwin-${getCurrentHostPlatform().platformName}')
       else if (_platform.isLinux)
         ..._binaryDirsForHostPlatform('linux-x64'),
     ];
