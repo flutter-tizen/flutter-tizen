@@ -4,7 +4,7 @@ on: [push, pull_request]
 
 jobs:
   dart:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
       - name: Fetch Flutter SDK
@@ -20,7 +20,7 @@ jobs:
         run: flutter/bin/dart analyze --fatal-infos lib test
 
   csharp:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-dotnet@v2

@@ -7,7 +7,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-22.04, windows-latest, macos-latest]
     steps:
       - uses: actions/checkout@v3
       - name: Fetch Flutter SDK
@@ -18,7 +18,7 @@ jobs:
       - name: Run tests
         run: flutter/bin/flutter test --coverage
       - name: Report coverage
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-22.04'
         run: |
           sudo apt update
           sudo apt install -y lcov
@@ -26,7 +26,7 @@ jobs:
           lcov --list coverage/lcov.info
 
   embedding:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-dotnet@v2
@@ -36,13 +36,15 @@ jobs:
         run: dotnet test embedding/csharp
 
   e2e:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
         with:
           path: flutter-tizen
       - name: Install Tizen Studio
         run: |
+          sudo add-apt-repository ppa:deadsnakes/ppa
+          sudo apt update
           sudo apt install -y libncurses5 python2.7 libpython2.7 gettext \
             libkf5itemmodels5 libkf5kiowidgets5 libkchart2
           curl https://download.tizen.org/sdk/Installer/tizen-studio_5.6/web-cli_Tizen_Studio_5.6_ubuntu-64.bin -o install.bin
