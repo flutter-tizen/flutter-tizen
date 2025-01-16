@@ -9,6 +9,8 @@
 #include <flutter/plugin_registry.h>
 #include <flutter_tizen.h>
 
+#include <algorithm>
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -77,6 +79,9 @@ class FlutterEngine : public flutter::PluginRegistry {
   FlutterDesktopPluginRegistrarRef GetRegistrarForPlugin(
       const std::string& plugin_name) override;
 
+  // Whether the impeller is enabled or not.
+  bool IsImpellerEnabled() { return is_impeller_enabled_; }
+
  private:
   FlutterEngine(const std::string& assets_path,
                 const std::string& icu_data_path,
@@ -89,6 +94,9 @@ class FlutterEngine : public flutter::PluginRegistry {
 
   // Whether or not this wrapper owns |engine_|.
   bool owns_engine_ = true;
+
+  // Whether the impeller is enabled or not.
+  bool is_impeller_enabled_ = false;
 };
 
 #endif /* FLUTTER_TIZEN_EMBEDDING_CPP_INCLUDE_FLUTTER_ENGINE_H_ */
