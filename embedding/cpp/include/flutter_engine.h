@@ -9,6 +9,8 @@
 #include <flutter/plugin_registry.h>
 #include <flutter_tizen.h>
 
+#include <algorithm>
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>

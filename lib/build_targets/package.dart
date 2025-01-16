@@ -335,6 +335,7 @@ class NativeTpk extends TizenPackage {
       'appcore-agent',
       'capi-appfw-app-common',
       'capi-appfw-application',
+      'capi-appfw-app-manager',
       'dlog',
       'elementary',
       'evas',
