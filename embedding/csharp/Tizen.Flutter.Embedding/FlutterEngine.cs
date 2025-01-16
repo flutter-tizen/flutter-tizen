@@ -203,6 +203,11 @@ namespace Tizen.Flutter.Embedding
                 }
             }
 
+            if (result.Contains("--enable-impeller"))
+            {
+                IsImpellerEnabled = true;
+            }
+
             if (enableImpellerKeyExist)
             {
                 if (!result.Contains("--enable-impeller") && appInfo.Metadata[MetadataKeyEnableImepeller] == "true")
@@ -212,6 +217,7 @@ namespace Tizen.Flutter.Embedding
                 }
                 else if (result.Contains("--enable-impeller") && appInfo.Metadata[MetadataKeyEnableImepeller] == "false")
                 {
+                    IsImpellerEnabled = false;
                     result.Remove("--enable-impeller");
                 }
             }

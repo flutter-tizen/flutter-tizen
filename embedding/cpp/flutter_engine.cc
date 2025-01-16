@@ -73,15 +73,20 @@ std::vector<std::string> ParseEngineArgs(bool* is_impeller_enabled) {
     }
   }
 
+  auto engine_args_it =
+      std::find(engine_args.begin(), engine_args.end(), "--enable-impeller");
+  if (engine_args_it != engine_args.end()) {
+    *is_impeller_enabled = true;
+  }
+
   std::map<std::string, std::string> metadata = GetMetadata(app_id);
   auto it = metadata.find(kMetadataKeyEnableImepeller);
   if (it != metadata.end()) {
-    auto engine_args_it =
-        std::find(engine_args.begin(), engine_args.end(), "--enable-impeller");
     if (engine_args_it == engine_args.end() && it->second == "true") {
       *is_impeller_enabled = true;
       engine_args.insert(engine_args.begin(), "--enable-impeller");
     } else if (engine_args_it != engine_args.end() && it->second == "false") {
+      *is_impeller_enabled = false;
       engine_args.erase(engine_args_it);
     }
   }
