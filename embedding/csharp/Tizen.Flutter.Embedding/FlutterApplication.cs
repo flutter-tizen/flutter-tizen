@@ -150,6 +150,11 @@ namespace Tizen.Flutter.Embedding
                 throw new Exception("External output is not supported by FlutterRendererType::kEGL type renderer.");
             }
 
+            if (RendererType == FlutterRendererType.EvasGL && Engine.IsImpellerEnabled)
+            {
+                throw new Exception("Impeller is not supported by FlutterRendererType::kEvasGL type renderer.");
+            }
+
             var windowProperties = new FlutterDesktopWindowProperties
             {
                 x = WindowOffsetX,
