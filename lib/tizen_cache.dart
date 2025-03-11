@@ -14,6 +14,8 @@ import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/features.dart';
 import 'package:flutter_tools/src/flutter_cache.dart';
 import 'package:flutter_tools/src/runner/flutter_command.dart';
+import 'package:flutter_tools/src/project.dart';
+import 'package:flutter_tools/src/dart/pub.dart';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart';
 import 'package:process/process.dart';
@@ -45,20 +47,29 @@ class TizenDevelopmentArtifact implements DevelopmentArtifact {
   static const DevelopmentArtifact tizen = TizenDevelopmentArtifact('tizen');
 }
 
-class TizenCache extends FlutterCache {
+class TizenCache extends Cache {
   TizenCache({
     required Logger logger,
     required FileSystem fileSystem,
     required Platform platform,
     required OperatingSystemUtils osUtils,
     required ProcessManager processManager,
-    required super.projectFactory,
+    required FlutterProjectFactory projectFactory,
   }) : super(
-          logger: logger,
-          fileSystem: fileSystem,
-          platform: platform,
-          osUtils: osUtils,
-        ) {
+            logger: logger,
+            platform: platform,
+            fileSystem: fileSystem,
+            osUtils: osUtils,
+            artifacts: <ArtifactSet>[]) {
+    registerArtifact(FontSubsetArtifacts(this, platform: platform));
+    registerArtifact(PubDependencies(
+      logger: logger,
+      // flutter root and pub must be lazily initialized to avoid accessing
+      // before the version is determined.
+      flutterRoot: () => Cache.flutterRoot!,
+      pub: () => pub,
+      projectFactory: projectFactory,
+    ));
     registerArtifact(TizenEngineArtifacts(
       cache: this,
       logger: logger,

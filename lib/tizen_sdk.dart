@@ -107,6 +107,10 @@ class TizenSdk {
       .childDirectory('bin')
       .childFile(_platform.isWindows ? 'tizen.bat' : 'tizen');
 
+  File get tzCore => toolsDirectory
+      .childDirectory('tizen-core')
+      .childFile(_platform.isWindows ? 'tz.exe' : 'tz');
+
   File get emCli => toolsDirectory
       .childDirectory('emulator')
       .childDirectory('bin')
@@ -222,6 +226,31 @@ class TizenSdk {
         'USER_CPP_OPTS': '-std=c++17',
         ...environment,
       },
+    );
+  }
+
+  Future<RunResult> buildDotnet(
+    String workingDirectory, {
+    String? configuration,
+    String? sign,
+  }) {
+    _processUtils.run(
+      <String>[
+        tzCore.path,
+        'set',
+        if (configuration != null) ...<String>['-b', configuration],
+        '-w',
+        workingDirectory,
+      ],
+    );
+
+    return _processUtils.run(
+      <String>[
+        tzCore.path,
+        'build',
+        '-w',
+        workingDirectory,
+      ],
     );
   }
 
