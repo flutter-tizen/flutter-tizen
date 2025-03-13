@@ -355,11 +355,11 @@ class TizenCreateCommand extends CreateCommand {
     final Directory appTemplate = _tizenTemplates.childDirectory('$appType-app');
     _copyDirectoryIfExists(
       appTemplate.childDirectory('cpp'),
-      _flutterTemplates.childDirectory('app_shared').childDirectory('tizen-cpp.tmpl'),
+      _flutterTemplates.childDirectory('app').childDirectory('tizen-cpp.tmpl'),
     );
     _copyDirectoryIfExists(
       appTemplate.childDirectory('csharp'),
-      _flutterTemplates.childDirectory('app_shared').childDirectory('tizen-csharp.tmpl'),
+      _flutterTemplates.childDirectory('app').childDirectory('tizen-csharp.tmpl'),
     );
     _copyDirectoryIfExists(
       appTemplate.childDirectory('lib'),
