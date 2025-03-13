@@ -26,14 +26,9 @@ TizenValidator? get tizenValidator => context.get<TizenValidator>();
 class TizenDoctorValidatorsProvider implements DoctorValidatorsProvider {
   @override
   List<DoctorValidator> get validators {
-    final List<DoctorValidator> validators =
-        DoctorValidatorsProvider.defaultInstance.validators;
+    final List<DoctorValidator> validators = DoctorValidatorsProvider.defaultInstance.validators;
     assert(validators.first is FlutterValidator);
-    return <DoctorValidator>[
-      validators.first,
-      tizenValidator!,
-      ...validators.sublist(1)
-    ];
+    return <DoctorValidator>[validators.first, tizenValidator!, ...validators.sublist(1)];
   }
 
   @override
@@ -56,8 +51,7 @@ class TizenValidator extends DoctorValidator {
         _dotnetCli = dotnetCli,
         _fileSystem = fileSystem,
         _processManager = processManager,
-        _processUtils =
-            ProcessUtils(logger: logger, processManager: processManager),
+        _processUtils = ProcessUtils(logger: logger, processManager: processManager),
         _userMessages = userMessages,
         super('Tizen toolchain - develop for Tizen devices');
 
@@ -117,11 +111,10 @@ class TizenValidator extends DoctorValidator {
 
   /// See: [AndroidValidator.validate] in `android_workflow.dart`
   @override
-  Future<ValidationResult> validate() async {
+  Future<ValidationResult> validateImpl() async {
     final List<ValidationMessage> messages = <ValidationMessage>[];
 
-    final Directory workingDirectory =
-        _fileSystem.directory(Cache.flutterRoot).parent;
+    final Directory workingDirectory = _fileSystem.directory(Cache.flutterRoot).parent;
     final String revision = _runGit(
       'git -c log.showSignature=false log -n 1 --pretty=format:%H',
       workingDirectory.path,
@@ -138,12 +131,9 @@ class TizenValidator extends DoctorValidator {
     )));
 
     final String? engineRevision = _getVersionFor('engine', workingDirectory);
-    final String? embedderRevision =
-        _getVersionFor('embedder', workingDirectory);
-    messages.add(ValidationMessage(
-        'Engine revision ${_shortGitRevision(engineRevision)}'));
-    messages.add(ValidationMessage(
-        'Embedder revision ${_shortGitRevision(embedderRevision)}'));
+    final String? embedderRevision = _getVersionFor('embedder', workingDirectory);
+    messages.add(ValidationMessage('Engine revision ${_shortGitRevision(engineRevision)}'));
+    messages.add(ValidationMessage('Embedder revision ${_shortGitRevision(embedderRevision)}'));
 
     if (_tizenSdk == null) {
       messages.add(const ValidationMessage.error(
@@ -174,10 +164,7 @@ class TizenValidator extends DoctorValidator {
 
     if (_dotnetCli != null && _processManager.canRun(_dotnetCli.path)) {
       final Version? dotnetVersion = Version.parse(
-        _processUtils
-            .runSync(<String>[_dotnetCli.path, '--version'])
-            .stdout
-            .trim(),
+        _processUtils.runSync(<String>[_dotnetCli.path, '--version']).stdout.trim(),
       );
       if (dotnetVersion == null || dotnetVersion < Version(6, 0, 0)) {
         messages.add(const ValidationMessage.error(
@@ -216,8 +203,7 @@ class TizenWorkflow extends Workflow {
   final OperatingSystemUtils _operatingSystemUtils;
 
   @override
-  bool get appliesToHostPlatform =>
-      _operatingSystemUtils.hostPlatform != HostPlatform.linux_arm64;
+  bool get appliesToHostPlatform => _operatingSystemUtils.hostPlatform != HostPlatform.linux_arm64;
 
   @override
   bool get canLaunchDevices => appliesToHostPlatform && _tizenSdk != null;
@@ -243,9 +229,7 @@ String? _getVersionFor(String artifactName, Directory workingDirectory) {
       .childDirectory('bin')
       .childDirectory('internal')
       .childFile('$artifactName.version');
-  return versionFile.existsSync()
-      ? versionFile.readAsStringSync().trim()
-      : null;
+  return versionFile.existsSync() ? versionFile.readAsStringSync().trim() : null;
 }
 
 /// Source: [_shortGitRevision] in `version.dart`
