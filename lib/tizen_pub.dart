@@ -97,6 +97,11 @@ class TizenPub implements Pub {
   }
 
   @override
+  Future<Map<String, Object?>> deps(FlutterProject project) {
+    return _pub.deps(project);
+  }
+
+  @override
   Future<void> interactively(
     List<String> arguments, {
     FlutterProject? project,
