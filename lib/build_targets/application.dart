@@ -105,7 +105,6 @@ class TizenKernelSnapshot extends KernelSnapshot {
   @override
   List<Target> get dependencies => const <Target>[
         TizenKernelSnapshotProgram(),
-        // KernelSnapshotNativeAssets(),
       ];
 }
 
