@@ -12,6 +12,7 @@ import 'package:flutter_tools/src/base/terminal.dart';
 import 'package:flutter_tools/src/device.dart';
 import 'package:flutter_tools/src/device_port_forwarder.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
+import 'package:flutter_tools/src/vmservice.dart';
 
 /// Default factory that creates a real socket connection.
 Future<Socket> kSocketFactory(String host, int port) =>
@@ -190,4 +191,7 @@ class ForwardingLogReader extends DeviceLogReader {
     _socket?.destroy();
     _linesController.close();
   }
+
+  @override
+  Future<void> provideVmService(FlutterVmService connectedVmService) async { }
 }
