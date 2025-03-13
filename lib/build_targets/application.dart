@@ -21,7 +21,7 @@ import 'package:package_config/src/package_config.dart';
 import '../tizen_build_info.dart';
 import 'plugins.dart';
 
-class TizenKernelSnapshotProgram extends KernelSnapshotProgram {
+class TizenKernelSnapshotProgram extends KernelSnapshot {
   const TizenKernelSnapshotProgram();
 
   /// Source: [KernelSnapshot.build] in `common.dart`
@@ -65,7 +65,7 @@ class TizenKernelSnapshotProgram extends KernelSnapshotProgram {
     );
 
     final String dillPath =
-        environment.buildDir.childFile(KernelSnapshotProgram.dillName).path;
+        environment.buildDir.childFile(KernelSnapshot.dillName).path;
 
     final CompilerOutput? output = await compiler.compile(
       sdkRoot: environment.artifacts.getArtifactPath(
@@ -82,7 +82,7 @@ class TizenKernelSnapshotProgram extends KernelSnapshotProgram {
       linkPlatformKernelIn: buildMode.isPrecompiled,
       mainPath: targetFileAbsolute,
       depFilePath:
-          environment.buildDir.childFile(KernelSnapshotProgram.depfile).path,
+          environment.buildDir.childFile(KernelSnapshot.depfile).path,
       frontendServerStarterPath: frontendServerStarterPath,
       extraFrontEndOptions: extraFrontEndOptions,
       fileSystemRoots: fileSystemRoots,
@@ -105,7 +105,7 @@ class TizenKernelSnapshot extends KernelSnapshot {
   @override
   List<Target> get dependencies => const <Target>[
         TizenKernelSnapshotProgram(),
-        KernelSnapshotNativeAssets(),
+        // KernelSnapshotNativeAssets(),
       ];
 }
 
