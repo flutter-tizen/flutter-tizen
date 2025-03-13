@@ -30,7 +30,7 @@ String getBuildConfig(BuildMode buildMode) {
 }
 
 Directory getEngineArtifactsDirectory(String arch, BuildMode mode) {
-  return globals.artifacts!.isLocalEngine
+  return globals.artifacts!.usesLocalArtifacts
       ? globals.fs.directory(globals.artifacts!.localEngineInfo!.targetOutPath)
       : globals.cache
           .getArtifactDirectory('engine')
