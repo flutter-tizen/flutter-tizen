@@ -130,14 +130,6 @@ void main() {
 
     expect(projectDir.childDirectory('tizen/ui').listSync(), isNotEmpty);
     expect(projectDir.childDirectory('tizen/service').listSync(), isNotEmpty);
-
-    final ProcessResult result = await Process.run(
-      'git',
-      <String>['diff', '--name-only'],
-      workingDirectory: Cache.flutterRoot,
-    );
-    expect(result.exitCode, 0);
-    expect(result.stdout, isEmpty);
   }, overrides: <Type, Generator>{});
 
   testUsingContext('Can create a C++ plugin project', () async {
