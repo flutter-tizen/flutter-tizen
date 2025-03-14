@@ -39,12 +39,10 @@ void main() {
     );
     environment.buildDir.childFile('app.dill').createSync(recursive: true);
     fileSystem
-        .file(artifacts.getArtifactPath(Artifact.vmSnapshotData,
-            mode: BuildMode.debug))
+        .file(artifacts.getArtifactPath(Artifact.vmSnapshotData, mode: BuildMode.debug))
         .createSync(recursive: true);
     fileSystem
-        .file(artifacts.getArtifactPath(Artifact.isolateSnapshotData,
-            mode: BuildMode.debug))
+        .file(artifacts.getArtifactPath(Artifact.isolateSnapshotData, mode: BuildMode.debug))
         .createSync(recursive: true);
 
     await DebugTizenApplication(const TizenBuildInfo(
@@ -53,8 +51,7 @@ void main() {
       deviceProfile: 'common',
     )).build(environment);
 
-    final Directory bundleDir =
-        environment.buildDir.childDirectory('flutter_assets');
+    final Directory bundleDir = environment.buildDir.childDirectory('flutter_assets');
     expect(bundleDir.childFile('vm_snapshot_data'), exists);
     expect(bundleDir.childFile('isolate_snapshot_data'), exists);
     expect(bundleDir.childFile('kernel_blob.bin'), exists);

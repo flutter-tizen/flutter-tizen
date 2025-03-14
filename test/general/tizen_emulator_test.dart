@@ -60,8 +60,7 @@ void main() {
 
       final CreateEmulatorResult result = await manager.createEmulator();
       expect(result.success, isFalse);
-      expect(result.error,
-          contains('No suitable Tizen platform images are available.'));
+      expect(result.error, contains('No suitable Tizen platform images are available.'));
     });
 
     testWithoutContext('Can create emulator without name', () async {

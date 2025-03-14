@@ -45,22 +45,10 @@ void main() {
     expect(
       artifacts.getBinaryDirs(),
       containsAll(<List<String>>[
-        <String>[
-          'tizen-arm-profile/windows-x64',
-          'tizen-arm-profile_windows-x64.zip'
-        ],
-        <String>[
-          'tizen-arm-release/windows-x64',
-          'tizen-arm-release_windows-x64.zip'
-        ],
-        <String>[
-          'tizen-arm64-profile/windows-x64',
-          'tizen-arm64-profile_windows-x64.zip'
-        ],
-        <String>[
-          'tizen-arm64-release/windows-x64',
-          'tizen-arm64-release_windows-x64.zip'
-        ],
+        <String>['tizen-arm-profile/windows-x64', 'tizen-arm-profile_windows-x64.zip'],
+        <String>['tizen-arm-release/windows-x64', 'tizen-arm-release_windows-x64.zip'],
+        <String>['tizen-arm64-profile/windows-x64', 'tizen-arm64-profile_windows-x64.zip'],
+        <String>['tizen-arm64-release/windows-x64', 'tizen-arm64-release_windows-x64.zip'],
       ]),
     );
   });
@@ -91,8 +79,7 @@ void main() {
     expect(genSnapshots, isNotEmpty);
     expect(
       osUtils.chmods,
-      containsAll(genSnapshots
-          .map<List<String>>((File file) => <String>[file.path, 'a+r,a+x'])),
+      containsAll(genSnapshots.map<List<String>>((File file) => <String>[file.path, 'a+r,a+x'])),
     );
   });
 

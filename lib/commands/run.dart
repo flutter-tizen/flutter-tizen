@@ -7,7 +7,6 @@ import 'package:flutter_tools/src/commands/run.dart';
 import '../tizen_cache.dart';
 import '../tizen_plugins.dart';
 
-class TizenRunCommand extends RunCommand
-    with DartPluginRegistry, TizenRequiredArtifacts {
-  TizenRunCommand({super.verboseHelp, super.nativeAssetsBuilder});
+class TizenRunCommand extends RunCommand with DartPluginRegistry, TizenRequiredArtifacts {
+  TizenRunCommand({super.verboseHelp});
 }

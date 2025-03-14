@@ -7,8 +7,7 @@ import 'package:flutter_tools/src/commands/drive.dart';
 import '../tizen_cache.dart';
 import '../tizen_plugins.dart';
 
-class TizenDriveCommand extends DriveCommand
-    with DartPluginRegistry, TizenRequiredArtifacts {
+class TizenDriveCommand extends DriveCommand with DartPluginRegistry, TizenRequiredArtifacts {
   TizenDriveCommand({
     super.verboseHelp,
     required super.fileSystem,

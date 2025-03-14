@@ -86,16 +86,12 @@ void main() {
         artifacts: artifacts,
         processManager: processManager,
       );
-      environment.buildDir
-          .childDirectory('flutter_assets')
-          .createSync(recursive: true);
+      environment.buildDir.childDirectory('flutter_assets').createSync(recursive: true);
       environment.buildDir.childFile('app.so').createSync(recursive: true);
       environment.buildDir
           .childFile('tizen_plugins/lib/libflutter_plugins.so')
           .createSync(recursive: true);
-      environment.buildDir
-          .childFile('tizen_plugins/lib/libshared.so')
-          .createSync(recursive: true);
+      environment.buildDir.childFile('tizen_plugins/lib/libshared.so').createSync(recursive: true);
 
       processManager.addCommand(FakeCommand(
         command: <String>[
@@ -123,17 +119,13 @@ void main() {
       final File outputTpk = outputDir.childFile('package_id-1.0.0.tpk');
       expect(outputTpk, exists);
 
-      final Directory ephemeralDir =
-          projectDir.childDirectory('tizen/flutter/ephemeral');
-      final Directory flutterAssetsDir =
-          ephemeralDir.childDirectory('res/flutter_assets');
-      final File engineBinary =
-          ephemeralDir.childFile('lib/libflutter_engine.so');
+      final Directory ephemeralDir = projectDir.childDirectory('tizen/flutter/ephemeral');
+      final Directory flutterAssetsDir = ephemeralDir.childDirectory('res/flutter_assets');
+      final File engineBinary = ephemeralDir.childFile('lib/libflutter_engine.so');
       final File embedder = ephemeralDir.childFile('lib/libflutter_tizen.so');
       final File icuData = ephemeralDir.childFile('res/icudtl.dat');
       final File aotSnapshot = ephemeralDir.childFile('lib/libapp.so');
-      final File pluginsLib =
-          ephemeralDir.childFile('lib/libflutter_plugins.so');
+      final File pluginsLib = ephemeralDir.childFile('lib/libflutter_plugins.so');
       final File pluginsUserLib = ephemeralDir.childFile('lib/libshared.so');
 
       expect(flutterAssetsDir, exists);
@@ -162,9 +154,7 @@ void main() {
         artifacts: artifacts,
         processManager: processManager,
       );
-      environment.buildDir
-          .childDirectory('flutter_assets')
-          .createSync(recursive: true);
+      environment.buildDir.childDirectory('flutter_assets').createSync(recursive: true);
       environment.buildDir.childFile('app.so').createSync(recursive: true);
 
       processManager.addCommand(FakeCommand(
@@ -221,16 +211,12 @@ type = app
         artifacts: artifacts,
         processManager: processManager,
       );
-      environment.buildDir
-          .childDirectory('flutter_assets')
-          .createSync(recursive: true);
+      environment.buildDir.childDirectory('flutter_assets').createSync(recursive: true);
       environment.buildDir.childFile('app.so').createSync(recursive: true);
       environment.buildDir
           .childFile('tizen_plugins/lib/libflutter_plugins.so')
           .createSync(recursive: true);
-      environment.buildDir
-          .childFile('tizen_plugins/lib/libshared.so')
-          .createSync(recursive: true);
+      environment.buildDir.childFile('tizen_plugins/lib/libshared.so').createSync(recursive: true);
 
       await NativeTpk(const TizenBuildInfo(
         BuildInfo.release,
@@ -241,18 +227,13 @@ type = app
       final File outputTpk = outputDir.childFile('package_id-1.0.0.tpk');
       expect(outputTpk, exists);
 
-      final Directory ephemeralDir =
-          projectDir.childDirectory('tizen/flutter/ephemeral');
-      final Directory flutterAssetsDir =
-          ephemeralDir.childDirectory('res/flutter_assets');
-      final File engineBinary =
-          ephemeralDir.childFile('lib/libflutter_engine.so');
-      final File embedder =
-          ephemeralDir.childFile('lib/libflutter_tizen_common.so');
+      final Directory ephemeralDir = projectDir.childDirectory('tizen/flutter/ephemeral');
+      final Directory flutterAssetsDir = ephemeralDir.childDirectory('res/flutter_assets');
+      final File engineBinary = ephemeralDir.childFile('lib/libflutter_engine.so');
+      final File embedder = ephemeralDir.childFile('lib/libflutter_tizen_common.so');
       final File icuData = ephemeralDir.childFile('res/icudtl.dat');
       final File aotSnapshot = ephemeralDir.childFile('lib/libapp.so');
-      final File pluginsLib =
-          ephemeralDir.childFile('lib/libflutter_plugins.so');
+      final File pluginsLib = ephemeralDir.childFile('lib/libflutter_plugins.so');
       final File pluginsUserLib = ephemeralDir.childFile('lib/libshared.so');
 
       expect(flutterAssetsDir, exists);
@@ -278,9 +259,7 @@ type = app
         artifacts: artifacts,
         processManager: processManager,
       );
-      environment.buildDir
-          .childDirectory('flutter_assets')
-          .createSync(recursive: true);
+      environment.buildDir.childDirectory('flutter_assets').createSync(recursive: true);
 
       await expectLater(
         () => NativeTpk(const TizenBuildInfo(
@@ -309,9 +288,7 @@ type = app
         artifacts: artifacts,
         processManager: processManager,
       );
-      environment.buildDir
-          .childDirectory('flutter_assets')
-          .createSync(recursive: true);
+      environment.buildDir.childDirectory('flutter_assets').createSync(recursive: true);
       environment.buildDir.childFile('app.so').createSync(recursive: true);
       projectDir
           .childFile('tizen/flutter/GeneratedPluginRegistrant.cs')
@@ -326,8 +303,7 @@ type = app
         deviceProfile: 'common',
       )).build(environment);
 
-      final Directory flutterAssetsDir =
-          outputDir.childDirectory('res/flutter_assets');
+      final Directory flutterAssetsDir = outputDir.childDirectory('res/flutter_assets');
       final File engineBinary = outputDir.childFile('lib/libflutter_engine.so');
       final File embedder = outputDir.childFile('lib/libflutter_tizen.so');
       final File icuData = outputDir.childFile('res/icudtl.dat');
@@ -362,9 +338,7 @@ type = app
         artifacts: artifacts,
         processManager: processManager,
       );
-      environment.buildDir
-          .childDirectory('flutter_assets')
-          .createSync(recursive: true);
+      environment.buildDir.childDirectory('flutter_assets').createSync(recursive: true);
       environment.buildDir.childFile('app.so').createSync(recursive: true);
       projectDir
           .childFile('tizen/flutter/generated_plugin_registrant.h')
@@ -385,19 +359,16 @@ type = app
         deviceProfile: 'common',
       )).build(environment);
 
-      final Directory flutterAssetsDir =
-          outputDir.childDirectory('res/flutter_assets');
+      final Directory flutterAssetsDir = outputDir.childDirectory('res/flutter_assets');
       final File engineBinary = outputDir.childFile('lib/libflutter_engine.so');
-      final File embedder =
-          outputDir.childFile('lib/libflutter_tizen_common.so');
+      final File embedder = outputDir.childFile('lib/libflutter_tizen_common.so');
       final File icuData = outputDir.childFile('res/icudtl.dat');
       final File aotSnapshot = outputDir.childFile('lib/libapp.so');
       final File generatedPluginRegistrant =
           outputDir.childFile('inc/generated_plugin_registrant.h');
       final File pluginsLib = outputDir.childFile('lib/libflutter_plugins.so');
       final File embeddingHeader = outputDir.childFile('inc/flutter.h');
-      final File embeddingLib =
-          outputDir.childFile('Release/libembedding_cpp.a');
+      final File embeddingLib = outputDir.childFile('Release/libembedding_cpp.a');
 
       expect(flutterAssetsDir, exists);
       expect(engineBinary, exists);

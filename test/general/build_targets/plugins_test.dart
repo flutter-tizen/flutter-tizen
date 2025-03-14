@@ -58,9 +58,7 @@ flutter:
 APPNAME = some_native_plugin
 type = staticLib
 ''');
-    pluginDir
-        .childFile('tizen/inc/some_native_plugin.h')
-        .createSync(recursive: true);
+    pluginDir.childFile('tizen/inc/some_native_plugin.h').createSync(recursive: true);
 
     projectDir = fileSystem.directory('/flutter_project');
     projectDir.childFile('pubspec.yaml')
@@ -112,8 +110,7 @@ dependencies:
       deviceProfile: 'common',
     )).build(environment);
 
-    final Directory outputDir =
-        environment.buildDir.childDirectory('tizen_plugins');
+    final Directory outputDir = environment.buildDir.childDirectory('tizen_plugins');
     expect(outputDir.childFile('include/some_native_plugin.h'), exists);
     expect(outputDir.childFile('lib/libflutter_plugins.so'), exists);
   }, overrides: <Type, Generator>{
@@ -125,8 +122,8 @@ dependencies:
 
   testUsingContext('Can build sharedLib project', () async {
     final File projectDef = pluginDir.childFile('tizen/project_def.prop');
-    projectDef.writeAsStringSync(
-        projectDef.readAsStringSync().replaceFirst('staticLib', 'sharedLib'));
+    projectDef
+        .writeAsStringSync(projectDef.readAsStringSync().replaceFirst('staticLib', 'sharedLib'));
 
     final Environment environment = Environment.test(
       projectDir,
@@ -143,8 +140,7 @@ dependencies:
       deviceProfile: 'common',
     )).build(environment);
 
-    final Directory outputDir =
-        environment.buildDir.childDirectory('tizen_plugins');
+    final Directory outputDir = environment.buildDir.childDirectory('tizen_plugins');
     expect(outputDir.childFile('lib/libflutter_plugins.so'), isNot(exists));
     expect(outputDir.childFile('lib/libsome_native_plugin.so'), exists);
     expect(outputDir.childFile('lib/libshared.so'), exists);
@@ -171,8 +167,8 @@ dependencies:
       deviceProfile: 'common',
     )).build(environment);
 
-    final Directory outputResDir = environment.buildDir
-        .childDirectory('tizen_plugins/res/some_native_plugin');
+    final Directory outputResDir =
+        environment.buildDir.childDirectory('tizen_plugins/res/some_native_plugin');
     expect(outputResDir.childFile('a/b.txt'), exists);
   }, overrides: <Type, Generator>{
     FileSystem: () => fileSystem,
@@ -191,18 +187,10 @@ dependencies:
     );
     pluginDir.childFile('tizen/lib/libstatic.a').createSync(recursive: true);
     pluginDir.childFile('tizen/lib/libshared.so').createSync(recursive: true);
-    pluginDir
-        .childFile('tizen/lib/armel/libshared_arm.so')
-        .createSync(recursive: true);
-    pluginDir
-        .childFile('tizen/lib/i586/libshared_x86.so')
-        .createSync(recursive: true);
-    pluginDir
-        .childFile('tizen/lib/armel/4.0/libshared_40.so')
-        .createSync(recursive: true);
-    pluginDir
-        .childFile('tizen/lib/armel/5.0/libshared_50.so')
-        .createSync(recursive: true);
+    pluginDir.childFile('tizen/lib/armel/libshared_arm.so').createSync(recursive: true);
+    pluginDir.childFile('tizen/lib/i586/libshared_x86.so').createSync(recursive: true);
+    pluginDir.childFile('tizen/lib/armel/4.0/libshared_40.so').createSync(recursive: true);
+    pluginDir.childFile('tizen/lib/armel/5.0/libshared_50.so').createSync(recursive: true);
 
     await NativePlugins(const TizenBuildInfo(
       BuildInfo.release,
@@ -210,8 +198,7 @@ dependencies:
       deviceProfile: 'common',
     )).build(environment);
 
-    final Directory outputDir =
-        environment.buildDir.childDirectory('tizen_plugins');
+    final Directory outputDir = environment.buildDir.childDirectory('tizen_plugins');
     expect(outputDir.childFile('lib/libstatic.a'), isNot(exists));
     expect(outputDir.childFile('lib/libshared.so'), exists);
     expect(outputDir.childFile('lib/libshared_arm.so'), exists);
@@ -219,8 +206,7 @@ dependencies:
     expect(outputDir.childFile('lib/libshared_40.so'), exists);
     expect(outputDir.childFile('lib/libshared_50.so'), isNot(exists));
 
-    final Map<String, String> projectDef =
-        parseIniFile(outputDir.childFile('project_def.prop'));
+    final Map<String, String> projectDef = parseIniFile(outputDir.childFile('project_def.prop'));
     expect(
       projectDef['USER_LIBS'],
       contains('some_native_plugin static shared shared_arm shared_40'),

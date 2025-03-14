@@ -67,8 +67,7 @@ void main() {
 
     final ValidationMessage sdkMessage = result.messages.last;
     expect(sdkMessage.type, equals(ValidationMessageType.error));
-    expect(sdkMessage.message,
-        contains('A newer version of Tizen Studio is required.'));
+    expect(sdkMessage.message, contains('A newer version of Tizen Studio is required.'));
   });
 
   testUsingContext('Detects missing packages', () async {
