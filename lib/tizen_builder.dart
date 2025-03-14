@@ -59,13 +59,11 @@ class TizenBuilder {
       );
     }
 
-    final Directory outputDir = project.directory
-        .childDirectory('build')
-        .childDirectory('tizen')
-        .childDirectory('tpk');
+    final Directory outputDir =
+        project.directory.childDirectory('build').childDirectory('tizen').childDirectory('tpk');
     final BuildInfo buildInfo = tizenBuildInfo.buildInfo;
-    final String targetPlatform = getNameForTargetPlatform(
-        getTargetPlatformForArch(tizenBuildInfo.targetArch));
+    final String targetPlatform =
+        getNameForTargetPlatform(getTargetPlatformForArch(tizenBuildInfo.targetArch));
 
     final Environment environment = Environment(
       projectDir: project.directory,
@@ -74,9 +72,8 @@ class TizenBuilder {
       buildDir: project.dartTool.childDirectory('flutter_build'),
       cacheDir: globals.cache.getRoot(),
       flutterRootDir: globals.fs.directory(Cache.flutterRoot),
-      engineVersion: globals.artifacts!.usesLocalArtifacts
-          ? null
-          : globals.flutterVersion.engineRevision,
+      engineVersion:
+          globals.artifacts!.usesLocalArtifacts ? null : globals.flutterVersion.engineRevision,
       defines: <String, String>{
         kTargetFile: targetFile,
         // Used by AotElfBase to generate an AOT snapshot.
@@ -94,27 +91,23 @@ class TizenBuilder {
       generateDartPluginRegistry: false,
     );
 
-    final Target target = tizenProject.isDotnet
-        ? DotnetTpk(tizenBuildInfo)
-        : NativeTpk(tizenBuildInfo);
+    final Target target =
+        tizenProject.isDotnet ? DotnetTpk(tizenBuildInfo) : NativeTpk(tizenBuildInfo);
 
     final String buildModeName = buildInfo.modeName;
-    final Status status = globals.logger.startProgress(
-        'Building a Tizen application in $buildModeName mode...');
+    final Status status =
+        globals.logger.startProgress('Building a Tizen application in $buildModeName mode...');
     try {
-      final BuildResult result =
-          await globals.buildSystem.build(target, environment);
+      final BuildResult result = await globals.buildSystem.build(target, environment);
       if (!result.success) {
-        for (final ExceptionMeasurement measurement
-            in result.exceptions.values) {
+        for (final ExceptionMeasurement measurement in result.exceptions.values) {
           globals.printError(measurement.toString());
         }
         throwToolExit('The build failed.');
       }
 
       if (buildInfo.performanceMeasurementFile != null) {
-        final File outFile =
-            globals.fs.file(buildInfo.performanceMeasurementFile);
+        final File outFile = globals.fs.file(buildInfo.performanceMeasurementFile);
         // ignore: invalid_use_of_visible_for_testing_member
         writePerformanceData(result.performance.values, outFile);
       }
@@ -143,9 +136,8 @@ class TizenBuilder {
       final File codeSizeFile = globals.fs
           .directory(buildInfo.codeSizeDirectory)
           .childFile('snapshot.$targetPlatform.json');
-      final File precompilerTrace = globals.fs
-          .directory(buildInfo.codeSizeDirectory)
-          .childFile('trace.$targetPlatform.json');
+      final File precompilerTrace =
+          globals.fs.directory(buildInfo.codeSizeDirectory).childFile('trace.$targetPlatform.json');
       final Map<String, Object?> output = await sizeAnalyzer.analyzeAotSnapshot(
         aotSnapshot: codeSizeFile,
         outputDirectory: tpkrootDir,
@@ -153,9 +145,7 @@ class TizenBuilder {
         type: 'linux',
       );
       final File outputFile = globals.fsUtils.getUniqueFile(
-        globals.fs
-            .directory(globals.fsUtils.homeDirPath)
-            .childDirectory('.flutter-devtools'),
+        globals.fs.directory(globals.fsUtils.homeDirPath).childDirectory('.flutter-devtools'),
         'tpk-code-size-analysis',
         'json',
       )..writeAsStringSync(jsonEncode(output));
@@ -164,8 +154,7 @@ class TizenBuilder {
       );
 
       // DevTools expects a file path relative to the .flutter-devtools/ dir.
-      final String relativeAppSizePath =
-          outputFile.path.split('.flutter-devtools/').last.trim();
+      final String relativeAppSizePath = outputFile.path.split('.flutter-devtools/').last.trim();
       globals.printStatus(
         '\nTo analyze your app size in Dart DevTools, run the following commands:\n\n'
         '\$ flutter-tizen pub global activate devtools\n'
@@ -201,8 +190,8 @@ class TizenBuilder {
           .childDirectory('module');
     }
     final BuildInfo buildInfo = tizenBuildInfo.buildInfo;
-    final String targetPlatform = getNameForTargetPlatform(
-        getTargetPlatformForArch(tizenBuildInfo.targetArch));
+    final String targetPlatform =
+        getNameForTargetPlatform(getTargetPlatformForArch(tizenBuildInfo.targetArch));
 
     final Environment environment = Environment(
       projectDir: project.directory,
@@ -211,9 +200,8 @@ class TizenBuilder {
       buildDir: project.dartTool.childDirectory('flutter_build'),
       cacheDir: globals.cache.getRoot(),
       flutterRootDir: globals.fs.directory(Cache.flutterRoot),
-      engineVersion: globals.artifacts!.usesLocalArtifacts
-          ? null
-          : globals.flutterVersion.engineRevision,
+      engineVersion:
+          globals.artifacts!.usesLocalArtifacts ? null : globals.flutterVersion.engineRevision,
       defines: <String, String>{
         kTargetFile: targetFile,
         kTargetPlatform: targetPlatform,
@@ -230,19 +218,16 @@ class TizenBuilder {
       generateDartPluginRegistry: false,
     );
 
-    final Target target = tizenProject.isDotnet
-        ? DotnetModule(tizenBuildInfo)
-        : NativeModule(tizenBuildInfo);
+    final Target target =
+        tizenProject.isDotnet ? DotnetModule(tizenBuildInfo) : NativeModule(tizenBuildInfo);
 
     final String buildModeName = buildInfo.modeName;
-    final Status status = globals.logger.startProgress(
-        'Building a Tizen application in $buildModeName mode...');
+    final Status status =
+        globals.logger.startProgress('Building a Tizen application in $buildModeName mode...');
     try {
-      final BuildResult result =
-          await globals.buildSystem.build(target, environment);
+      final BuildResult result = await globals.buildSystem.build(target, environment);
       if (!result.success) {
-        for (final ExceptionMeasurement measurement
-            in result.exceptions.values) {
+        for (final ExceptionMeasurement measurement in result.exceptions.values) {
           globals.printError(measurement.exception.toString());
         }
         throwToolExit('The build failed.');

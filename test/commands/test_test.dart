@@ -33,9 +33,7 @@ void main() {
     pubspecFile = fileSystem.file('pubspec.yaml')..createSync(recursive: true);
     packageConfigFile = fileSystem.file('.dart_tool/package_config.json')
       ..createSync(recursive: true);
-    fileSystem
-        .file('integration_test/some_integration_test.dart')
-        .createSync(recursive: true);
+    fileSystem.file('integration_test/some_integration_test.dart').createSync(recursive: true);
 
     deviceManager = _FakeDeviceManager(<Device>[
       FakeDevice('ephemeral', 'ephemeral', type: PlatformType.custom),
@@ -82,8 +80,7 @@ void main() {
     DeviceManager: () => deviceManager,
   }, testOn: 'posix');
 
-  testUsingContext('Can generate entrypoint wrapper for integration test',
-      () async {
+  testUsingContext('Can generate entrypoint wrapper for integration test', () async {
     final _FakeTestWrapper testWrapper = _FakeTestWrapper();
     final TizenTestCommand command = TizenTestCommand(testWrapper: testWrapper);
     final CommandRunner<void> runner = createTestCommandRunner(command);
@@ -164,8 +161,7 @@ class _FakeDeviceManager extends DeviceManager {
 
   @override
   Future<List<Device>> getAllDevices({DeviceDiscoveryFilter? filter}) async {
-    if (filter?.deviceConnectionInterface ==
-        DeviceConnectionInterface.wireless) {
+    if (filter?.deviceConnectionInterface == DeviceConnectionInterface.wireless) {
       return <Device>[];
     }
     return _devices;

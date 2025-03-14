@@ -29,8 +29,7 @@ class TizenProject extends FlutterProjectPlatform {
   String get pluginConfigKey => TizenPlugin.kConfigKey;
 
   Directory get editableDirectory => parent.directory.childDirectory('tizen');
-  Directory get _ephemeralModuleDirectory =>
-      parent.directory.childDirectory('.tizen');
+  Directory get _ephemeralModuleDirectory => parent.directory.childDirectory('.tizen');
 
   /// The parent directory of [manifestFile] and [projectFile].
   Directory get hostAppRoot {
@@ -45,30 +44,25 @@ class TizenProject extends FlutterProjectPlatform {
   /// creation should live here.
   Directory get managedDirectory => hostAppRoot.childDirectory('flutter');
 
-  Directory get serviceManagedDirectory =>
-      serviceAppDirectory.childDirectory('flutter');
+  Directory get serviceManagedDirectory => serviceAppDirectory.childDirectory('flutter');
 
   /// The subdirectory of [managedDirectory] that contains files that are
   /// generated on the fly. All generated files that are not intended to be
   /// checked in should live here.
-  Directory get ephemeralDirectory =>
-      managedDirectory.childDirectory('ephemeral');
+  Directory get ephemeralDirectory => managedDirectory.childDirectory('ephemeral');
 
-  bool get isMultiApp =>
-      uiAppDirectory.existsSync() && serviceAppDirectory.existsSync();
+  bool get isMultiApp => uiAppDirectory.existsSync() && serviceAppDirectory.existsSync();
 
   @visibleForTesting
   Directory get uiAppDirectory => editableDirectory.childDirectory('ui');
 
-  Directory get serviceAppDirectory =>
-      editableDirectory.childDirectory('service');
+  Directory get serviceAppDirectory => editableDirectory.childDirectory('service');
 
   @visibleForTesting
   File get uiManifestFile => uiAppDirectory.childFile('tizen-manifest.xml');
 
   @visibleForTesting
-  File get serviceManifestFile =>
-      serviceAppDirectory.childFile('tizen-manifest.xml');
+  File get serviceManifestFile => serviceAppDirectory.childFile('tizen-manifest.xml');
 
   File get manifestFile => hostAppRoot.childFile('tizen-manifest.xml');
 
@@ -122,8 +116,7 @@ class TizenProject extends FlutterProjectPlatform {
     if (existsSync() && isDotnet) {
       updateDotnetUserProjectFile(projectFile!);
       if (isMultiApp) {
-        final File? serviceProjectFile =
-            findDotnetProjectFile(serviceAppDirectory);
+        final File? serviceProjectFile = findDotnetProjectFile(serviceAppDirectory);
         if (serviceProjectFile != null) {
           updateDotnetUserProjectFile(serviceProjectFile);
         }
@@ -141,8 +134,8 @@ class TizenProject extends FlutterProjectPlatform {
       logger: globals.logger,
       templateRenderer: globals.templateRenderer,
     );
-    final String androidIdentifier = parent.manifest.androidPackage ??
-        'com.example.${parent.manifest.appName}';
+    final String androidIdentifier =
+        parent.manifest.androidPackage ?? 'com.example.${parent.manifest.appName}';
     template.render(
       target,
       <String, Object>{
@@ -210,8 +203,7 @@ File? findDotnetProjectFile(Directory directory) {
 }
 
 void updateDotnetUserProjectFile(File projectFile) {
-  final File userFile =
-      projectFile.parent.childFile('${projectFile.basename}.user');
+  final File userFile = projectFile.parent.childFile('${projectFile.basename}.user');
   const String initialXmlContent = '''
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
@@ -236,8 +228,7 @@ void updateDotnetUserProjectFile(File projectFile) {
       .childDirectory('csharp')
       .childDirectory('Tizen.Flutter.Embedding')
       .childFile('Tizen.Flutter.Embedding.csproj');
-  final Iterable<XmlElement> elements =
-      document.findAllElements('FlutterEmbeddingPath');
+  final Iterable<XmlElement> elements = document.findAllElements('FlutterEmbeddingPath');
   if (elements.isEmpty) {
     // Create an element if not exists.
     final XmlBuilder builder = XmlBuilder();

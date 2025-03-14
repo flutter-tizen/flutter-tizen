@@ -21,17 +21,14 @@ void main() {
   });
 
   testWithoutContext('TizenTpk.fromProject fails if manifest is invalid', () {
-    final FlutterProject project =
-        FlutterProject.fromDirectoryTest(fileSystem.currentDirectory);
+    final FlutterProject project = FlutterProject.fromDirectoryTest(fileSystem.currentDirectory);
     fileSystem.file('tizen/tizen-manifest.xml').createSync(recursive: true);
 
     expect(() => TizenTpk.fromProject(project),
         throwsToolExit(message: 'Failed to parse tizen-manifest.xml'));
   });
 
-  testWithoutContext(
-      'TizenManifest.parseFromXml can parse manifest that has no profile value',
-      () {
+  testWithoutContext('TizenManifest.parseFromXml can parse manifest that has no profile value', () {
     final File xmlFile = fileSystem.file('tizen-manifest.xml')
       ..createSync(recursive: true)
       ..writeAsStringSync('''
@@ -49,8 +46,7 @@ void main() {
     expect(manifest.applicationType, equals('dotnet'));
   });
 
-  testUsingContext('TizenManifest.parseFromXml can parse multi-app manifest',
-      () {
+  testUsingContext('TizenManifest.parseFromXml can parse multi-app manifest', () {
     final File xmlFile = fileSystem.file('tizen-manifest.xml')
       ..createSync(recursive: true)
       ..writeAsStringSync('''
@@ -64,14 +60,12 @@ void main() {
 
     final TizenManifest manifest = TizenManifest.parseFromXml(xmlFile);
     expect(manifest.applicationId, equals('app_id_1'));
-    expect(logger.traceText,
-        contains('tizen-manifest.xml: Found 3 application declarations.'));
+    expect(logger.traceText, contains('tizen-manifest.xml: Found 3 application declarations.'));
   }, overrides: <Type, Generator>{
     Logger: () => logger,
   });
 
-  testWithoutContext('Signature.parseFromXml can parse multi-line signature',
-      () {
+  testWithoutContext('Signature.parseFromXml can parse multi-line signature', () {
     final File xmlFile = fileSystem.file('author-signature.xml')
       ..createSync(recursive: true)
       ..writeAsStringSync('''

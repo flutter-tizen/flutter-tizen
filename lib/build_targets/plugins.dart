@@ -56,13 +56,11 @@ class NativePlugins extends Target {
       logger: environment.logger,
     );
 
-    final FlutterProject project =
-        FlutterProject.fromDirectory(environment.projectDir);
+    final FlutterProject project = FlutterProject.fromDirectory(environment.projectDir);
     final TizenProject tizenProject = TizenProject.fromFlutter(project);
 
     // Check if there's anything to build.
-    final List<TizenPlugin> nativePlugins =
-        await findTizenPlugins(project, cppOnly: true);
+    final List<TizenPlugin> nativePlugins = await findTizenPlugins(project, cppOnly: true);
     if (nativePlugins.isEmpty) {
       depfileService.writeToFile(
         Depfile(inputs, outputs),
@@ -71,32 +69,25 @@ class NativePlugins extends Target {
       return;
     }
 
-    final Directory outputDir = environment.buildDir
-        .childDirectory('tizen_plugins')
+    final Directory outputDir = environment.buildDir.childDirectory('tizen_plugins')
       ..createSync(recursive: true);
-    final Directory includeDir = outputDir.childDirectory('include')
-      ..createSync(recursive: true);
-    final Directory resDir = outputDir.childDirectory('res')
-      ..createSync(recursive: true);
-    final Directory libDir = outputDir.childDirectory('lib')
-      ..createSync(recursive: true);
+    final Directory includeDir = outputDir.childDirectory('include')..createSync(recursive: true);
+    final Directory resDir = outputDir.childDirectory('res')..createSync(recursive: true);
+    final Directory libDir = outputDir.childDirectory('lib')..createSync(recursive: true);
 
-    final TizenManifest tizenManifest =
-        TizenManifest.parseFromXml(tizenProject.manifestFile);
+    final TizenManifest tizenManifest = TizenManifest.parseFromXml(tizenProject.manifestFile);
     final String profile = buildInfo.deviceProfile;
     final String? apiVersion = tizenManifest.apiVersion;
 
     final BuildMode buildMode = buildInfo.buildInfo.mode;
     final String buildConfig = getBuildConfig(buildMode);
 
-    final Directory embedderDir =
-        getEmbedderArtifactsDirectory(apiVersion, buildInfo.targetArch);
+    final Directory embedderDir = getEmbedderArtifactsDirectory(apiVersion, buildInfo.targetArch);
     final File embedder = embedderDir.childFile('libflutter_tizen_$profile.so');
     inputs.add(embedder);
 
     final Directory commonDir = getCommonArtifactsDirectory();
-    final Directory clientWrapperDir =
-        commonDir.childDirectory('cpp_client_wrapper');
+    final Directory clientWrapperDir = commonDir.childDirectory('cpp_client_wrapper');
     final Directory publicDir = commonDir.childDirectory('public');
 
     final Directory dartSdkDir = getDartSdkDirectory();
@@ -109,8 +100,7 @@ class NativePlugins extends Target {
     );
     inputs.add(tizenProject.manifestFile);
 
-    final Directory embeddingDir =
-        environment.buildDir.childDirectory('tizen_embedding');
+    final Directory embeddingDir = environment.buildDir.childDirectory('tizen_embedding');
     final File embeddingLib = embeddingDir.childFile('libembedding_cpp.a');
 
     final List<String> userLibs = <String>[];
@@ -170,17 +160,11 @@ class NativePlugins extends Target {
 
       final Directory pluginIncludeDir = plugin.directory.childDirectory('inc');
       if (pluginIncludeDir.existsSync()) {
-        pluginIncludeDir
-            .listSync(recursive: true)
-            .whereType<File>()
-            .forEach(inputs.add);
+        pluginIncludeDir.listSync(recursive: true).whereType<File>().forEach(inputs.add);
       }
       final Directory pluginSourceDir = plugin.directory.childDirectory('src');
       if (pluginSourceDir.existsSync()) {
-        pluginSourceDir
-            .listSync(recursive: true)
-            .whereType<File>()
-            .forEach(inputs.add);
+        pluginSourceDir.listSync(recursive: true).whereType<File>().forEach(inputs.add);
       }
 
       // Copy resource files.
@@ -204,11 +188,9 @@ class NativePlugins extends Target {
         pluginLibDir,
         pluginLibDir.childDirectory(buildInfo.targetArch),
         pluginLibDir.childDirectory(buildArch),
-        if (apiVersion != null)
-          pluginLibDir.childDirectory(buildArch).childDirectory(apiVersion),
+        if (apiVersion != null) pluginLibDir.childDirectory(buildArch).childDirectory(apiVersion),
       ];
-      for (final Directory directory
-          in pluginLibDirs.where((Directory dir) => dir.existsSync())) {
+      for (final Directory directory in pluginLibDirs.where((Directory dir) => dir.existsSync())) {
         for (final File lib in directory.listSync().whereType<File>()) {
           // Symbolic links are not supported because they are not portable.
           // Issue: https://github.com/flutter-tizen/flutter-tizen/pull/322
@@ -284,15 +266,12 @@ USER_LIBS = pthread ${userLibs.join(' ')}
           '${result.stdout}',
         );
       }
-      outputs
-          .add(outputLib.copySync(libDir.childFile(outputLib.basename).path));
+      outputs.add(outputLib.copySync(libDir.childFile(outputLib.basename).path));
     }
 
     // Remove intermediate files.
-    for (final File lib in libDir
-        .listSync()
-        .whereType<File>()
-        .where((File f) => f.basename.endsWith('.a'))) {
+    for (final File lib
+        in libDir.listSync().whereType<File>().where((File f) => f.basename.endsWith('.a'))) {
       lib.deleteSync();
     }
 

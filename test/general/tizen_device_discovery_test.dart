@@ -36,8 +36,7 @@ void main() {
     );
   });
 
-  testWithoutContext('pollingGetDevices can retrieve device information',
-      () async {
+  testWithoutContext('pollingGetDevices can retrieve device information', () async {
     processManager.addCommand(const FakeCommand(
       command: <String>['/tizen-studio/tools/sdb', 'devices'],
       stdout: '''
@@ -62,8 +61,7 @@ List of devices attached
     expect(devices.first.name, equals('Tizen SM-R500'));
   });
 
-  testWithoutContext(
-      'pollingGetDevices can parse device ID containing whitespace', () async {
+  testWithoutContext('pollingGetDevices can parse device ID containing whitespace', () async {
     processManager.addCommand(const FakeCommand(
       command: <String>['/tizen-studio/tools/sdb', 'devices'],
       stdout: '''
@@ -86,8 +84,7 @@ Tizen 0                 device          80
     expect(devices.first.name, equals('Tizen 80'));
   });
 
-  testWithoutContext(
-      'getDiagnostics can detect offline and unauthorized devices', () async {
+  testWithoutContext('getDiagnostics can detect offline and unauthorized devices', () async {
     processManager.addCommand(const FakeCommand(
       command: <String>['/tizen-studio/tools/sdb', 'devices'],
       stdout: '''

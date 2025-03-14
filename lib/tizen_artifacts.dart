@@ -22,9 +22,7 @@ class TizenArtifacts extends CachedArtifacts {
 
   /// See: [CachedArtifacts._getEngineArtifactsPath]
   Directory _getEngineArtifactsDirectory(String arch, BuildMode mode) {
-    return _cache
-        .getArtifactDirectory('engine')
-        .childDirectory('tizen-$arch-${mode.name}');
+    return _cache.getArtifactDirectory('engine').childDirectory('tizen-$arch-${mode.name}');
   }
 
   /// See: [CachedArtifacts._getAndroidArtifactPath] in `artifacts.dart`
@@ -39,8 +37,7 @@ class TizenArtifacts extends CachedArtifacts {
         platform != null &&
         getNameForTargetPlatform(platform).startsWith('android')) {
       assert(mode != null, 'Need to specify a build mode.');
-      assert(mode != BuildMode.debug,
-          'Artifact $artifact only available in non-debug mode.');
+      assert(mode != BuildMode.debug, 'Artifact $artifact only available in non-debug mode.');
       final String arch = getArchForTargetPlatform(platform);
       final HostPlatform hostPlatform = getCurrentHostPlatform();
       assert(hostPlatform != HostPlatform.linux_arm64,

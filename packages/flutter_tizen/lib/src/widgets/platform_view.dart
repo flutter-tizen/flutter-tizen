@@ -85,8 +85,7 @@ class _TizenViewState extends State<TizenView> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     final TextDirection newLayoutDirection = _findLayoutDirection();
-    final bool didChangeLayoutDirection =
-        _layoutDirection != newLayoutDirection;
+    final bool didChangeLayoutDirection = _layoutDirection != newLayoutDirection;
     _layoutDirection = newLayoutDirection;
 
     _initializeOnce();
@@ -100,8 +99,7 @@ class _TizenViewState extends State<TizenView> {
     super.didUpdateWidget(oldWidget);
 
     final TextDirection newLayoutDirection = _findLayoutDirection();
-    final bool didChangeLayoutDirection =
-        _layoutDirection != newLayoutDirection;
+    final bool didChangeLayoutDirection = _layoutDirection != newLayoutDirection;
     _layoutDirection = newLayoutDirection;
 
     if (widget.viewType != oldWidget.viewType) {
@@ -116,8 +114,7 @@ class _TizenViewState extends State<TizenView> {
   }
 
   TextDirection _findLayoutDirection() {
-    assert(
-        widget.layoutDirection != null || debugCheckHasDirectionality(context));
+    assert(widget.layoutDirection != null || debugCheckHasDirectionality(context));
     return widget.layoutDirection ?? Directionality.of(context);
   }
 
@@ -140,8 +137,7 @@ class _TizenViewState extends State<TizenView> {
       },
     );
     if (widget.onPlatformViewCreated != null) {
-      _controller
-          .addOnPlatformViewCreatedListener(widget.onPlatformViewCreated!);
+      _controller.addOnPlatformViewCreatedListener(widget.onPlatformViewCreated!);
     }
   }
 

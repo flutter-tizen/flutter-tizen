@@ -18,35 +18,28 @@ void main() {
 
   setUp(() {
     fileSystem = MemoryFileSystem.test();
-    project = TizenProject.fromFlutter(
-        FlutterProject.fromDirectoryTest(fileSystem.currentDirectory));
+    project =
+        TizenProject.fromFlutter(FlutterProject.fromDirectoryTest(fileSystem.currentDirectory));
   });
 
   testUsingContext('Can create csproj.user file', () async {
     project.manifestFile.createSync(recursive: true);
-    project.editableDirectory
-        .childFile('Runner.csproj')
-        .createSync(recursive: true);
+    project.editableDirectory.childFile('Runner.csproj').createSync(recursive: true);
 
-    final File userFile =
-        project.editableDirectory.childFile('Runner.csproj.user');
+    final File userFile = project.editableDirectory.childFile('Runner.csproj.user');
     expect(userFile, isNot(exists));
 
     await project.ensureReadyForPlatformSpecificTooling();
 
-    final XmlDocument xmlDocument =
-        XmlDocument.parse(userFile.readAsStringSync());
+    final XmlDocument xmlDocument = XmlDocument.parse(userFile.readAsStringSync());
     expect(xmlDocument.findAllElements('FlutterEmbeddingPath'), isNotEmpty);
   });
 
   testUsingContext('Can update existing csproj.user file', () async {
     project.manifestFile.createSync(recursive: true);
-    project.editableDirectory
-        .childFile('Runner.csproj')
-        .createSync(recursive: true);
+    project.editableDirectory.childFile('Runner.csproj').createSync(recursive: true);
 
-    final File userFile = project.editableDirectory
-        .childFile('Runner.csproj.user')
+    final File userFile = project.editableDirectory.childFile('Runner.csproj.user')
       ..writeAsStringSync('''
 <?xml version="1.0" encoding="utf-8"?>
 <Project>
@@ -58,8 +51,7 @@ void main() {
 
     await project.ensureReadyForPlatformSpecificTooling();
 
-    final XmlDocument xmlDocument =
-        XmlDocument.parse(userFile.readAsStringSync());
+    final XmlDocument xmlDocument = XmlDocument.parse(userFile.readAsStringSync());
     expect(
       xmlDocument.findAllElements('FlutterEmbeddingPath').first.innerText,
       endsWith('Tizen.Flutter.Embedding.csproj'),
@@ -68,13 +60,9 @@ void main() {
 
   testUsingContext('Can clean C# project', () {
     project.uiManifestFile.createSync(recursive: true);
-    project.uiAppDirectory
-        .childFile('Runner.csproj')
-        .createSync(recursive: true);
+    project.uiAppDirectory.childFile('Runner.csproj').createSync(recursive: true);
     project.serviceManifestFile.createSync(recursive: true);
-    project.serviceAppDirectory
-        .childFile('Runner.csproj')
-        .createSync(recursive: true);
+    project.serviceAppDirectory.childFile('Runner.csproj').createSync(recursive: true);
     expect(project.isMultiApp, isTrue);
     expect(project.isDotnet, isTrue);
 
@@ -82,11 +70,9 @@ void main() {
       ..createSync(recursive: true);
     final Directory uiObjDir = project.uiAppDirectory.childDirectory('obj')
       ..createSync(recursive: true);
-    final Directory serviceBinDir = project.serviceAppDirectory
-        .childDirectory('bin')
+    final Directory serviceBinDir = project.serviceAppDirectory.childDirectory('bin')
       ..createSync(recursive: true);
-    final Directory serviceObjDir = project.serviceAppDirectory
-        .childDirectory('obj')
+    final Directory serviceObjDir = project.serviceAppDirectory.childDirectory('obj')
       ..createSync(recursive: true);
 
     project.clean();
@@ -105,14 +91,11 @@ void main() {
 
     final Directory uiDebugDir = project.uiAppDirectory.childDirectory('Debug')
       ..createSync(recursive: true);
-    final Directory uiReleaseDir = project.uiAppDirectory
-        .childDirectory('Release')
+    final Directory uiReleaseDir = project.uiAppDirectory.childDirectory('Release')
       ..createSync(recursive: true);
-    final Directory serviceDebugDir = project.serviceAppDirectory
-        .childDirectory('Debug')
+    final Directory serviceDebugDir = project.serviceAppDirectory.childDirectory('Debug')
       ..createSync(recursive: true);
-    final Directory serviceReleaseDir = project.serviceAppDirectory
-        .childDirectory('Release')
+    final Directory serviceReleaseDir = project.serviceAppDirectory.childDirectory('Release')
       ..createSync(recursive: true);
 
     project.clean();

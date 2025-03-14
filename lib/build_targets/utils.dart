@@ -32,9 +32,7 @@ String getBuildConfig(BuildMode buildMode) {
 Directory getEngineArtifactsDirectory(String arch, BuildMode mode) {
   return globals.artifacts!.usesLocalArtifacts
       ? globals.fs.directory(globals.artifacts!.localEngineInfo!.targetOutPath)
-      : globals.cache
-          .getArtifactDirectory('engine')
-          .childDirectory('tizen-$arch-${mode.name}');
+      : globals.cache.getArtifactDirectory('engine').childDirectory('tizen-$arch-${mode.name}');
 }
 
 Directory getEmbedderArtifactsDirectory(String? apiVersion, String arch) {
@@ -51,9 +49,7 @@ Directory getEmbedderArtifactsDirectory(String? apiVersion, String arch) {
 }
 
 Directory getCommonArtifactsDirectory() {
-  return globals.cache
-      .getArtifactDirectory('engine')
-      .childDirectory('tizen-common');
+  return globals.cache.getArtifactDirectory('engine').childDirectory('tizen-common');
 }
 
 Directory getDartSdkDirectory() {

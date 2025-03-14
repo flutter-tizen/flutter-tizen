@@ -29,8 +29,7 @@ class TizenPrecacheCommand extends PrecacheCommand {
 
   bool get _includeOtherPlatforms {
     final bool includeAndroid = boolArg('android');
-    bool explicitlySelected(String name) =>
-        argResults!.wasParsed(name) && boolArg(name);
+    bool explicitlySelected(String name) => argResults!.wasParsed(name) && boolArg(name);
     return includeAndroid ||
         DevelopmentArtifact.values
             .map((DevelopmentArtifact artifact) => artifact.name)

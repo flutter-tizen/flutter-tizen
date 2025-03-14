@@ -32,8 +32,7 @@ class TizenBuildCommand extends BuildCommand {
   }
 }
 
-class BuildTpkCommand extends BuildSubCommand
-    with DartPluginRegistry, TizenRequiredArtifacts {
+class BuildTpkCommand extends BuildSubCommand with DartPluginRegistry, TizenRequiredArtifacts {
   /// See: [BuildApkCommand] in `build_apk.dart`
   BuildTpkCommand({
     required super.logger,
@@ -90,8 +89,7 @@ class BuildTpkCommand extends BuildSubCommand
   }
 }
 
-class BuildModuleCommand extends BuildSubCommand
-    with DartPluginRegistry, TizenRequiredArtifacts {
+class BuildModuleCommand extends BuildSubCommand with DartPluginRegistry, TizenRequiredArtifacts {
   BuildModuleCommand({
     required super.logger,
     required bool verboseHelp,
@@ -131,8 +129,7 @@ class BuildModuleCommand extends BuildSubCommand
   final String name = 'module';
 
   @override
-  final String description =
-      'Build a module that can be embedded in your existing Tizen app.';
+  final String description = 'Build a module that can be embedded in your existing Tizen app.';
 
   @override
   Future<FlutterCommandResult> runCommand() async {
@@ -157,12 +154,10 @@ class BuildModuleCommand extends BuildSubCommand
 
 /// See: [validateBuild] in `build_validation.dart`
 void _validateBuild(TizenBuildInfo tizenBuildInfo) {
-  if (tizenBuildInfo.buildInfo.mode.isPrecompiled &&
-      tizenBuildInfo.targetArch == 'x86') {
+  if (tizenBuildInfo.buildInfo.mode.isPrecompiled && tizenBuildInfo.targetArch == 'x86') {
     throwToolExit('x86 ABI does not support AOT compilation.');
   }
-  if (tizenBuildInfo.deviceProfile != 'common' &&
-      tizenBuildInfo.targetArch == 'arm64') {
+  if (tizenBuildInfo.deviceProfile != 'common' && tizenBuildInfo.targetArch == 'arm64') {
     throwToolExit(
         'The arm64 build is not supported by the ${tizenBuildInfo.deviceProfile} profile.');
   }

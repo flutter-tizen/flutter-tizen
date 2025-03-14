@@ -29,8 +29,7 @@ class TizenEmulatorManager extends EmulatorManager {
     required super.logger,
     required super.processManager,
     AndroidWorkflow? dummyAndroidWorkflow,
-  })  : _processUtils =
-            ProcessUtils(logger: logger, processManager: processManager),
+  })  : _processUtils = ProcessUtils(logger: logger, processManager: processManager),
         _tizenSdk = tizenSdk,
         _tizenEmulators = TizenEmulators(
           logger: logger,
@@ -104,13 +103,11 @@ class TizenEmulatorManager extends EmulatorManager {
       <String>[_tizenSdk!.emCli.path, 'list-platform', '-d'],
       throwOnError: true,
     );
-    final Map<String, Map<String, String>> parsed =
-        parseEmCliOutput(result.stdout);
+    final Map<String, Map<String, String>> parsed = parseEmCliOutput(result.stdout);
 
     final List<PlatformImage> platformImages = <PlatformImage>[];
     parsed.forEach((String name, Map<String, String> properties) {
-      if (properties.containsKey('Profile') &&
-          properties.containsKey('Version')) {
+      if (properties.containsKey('Profile') && properties.containsKey('Version')) {
         platformImages.add(PlatformImage(
           name: name,
           profile: properties['Profile']!,
@@ -133,8 +130,7 @@ class TizenEmulatorManager extends EmulatorManager {
   }
 
   @override
-  Future<List<Emulator>> getAllAvailableEmulators() =>
-      _tizenEmulators.emulators;
+  Future<List<Emulator>> getAllAvailableEmulators() => _tizenEmulators.emulators;
 
   @override
   bool get canListAnything => _tizenEmulators.canListAnything;
@@ -166,8 +162,7 @@ class TizenEmulators extends EmulatorDiscovery {
         _tizenWorkflow = tizenWorkflow,
         _logger = logger,
         _processManager = processManager,
-        _processUtils =
-            ProcessUtils(logger: logger, processManager: processManager);
+        _processUtils = ProcessUtils(logger: logger, processManager: processManager);
 
   final TizenSdk? _tizenSdk;
   final TizenWorkflow _tizenWorkflow;
@@ -195,8 +190,7 @@ class TizenEmulators extends EmulatorDiscovery {
       <String>[_tizenSdk!.emCli.path, 'list-vm', '-d'],
       throwOnError: true,
     );
-    final Map<String, Map<String, String>> parsed =
-        parseEmCliOutput(result.stdout);
+    final Map<String, Map<String, String>> parsed = parseEmCliOutput(result.stdout);
 
     final List<Emulator> emulators = <Emulator>[];
     parsed.forEach((String id, Map<String, String> properties) {
@@ -222,8 +216,7 @@ class TizenEmulator extends Emulator {
     required TizenSdk? tizenSdk,
   })  : _properties = properties,
         _logger = logger,
-        _processUtils =
-            ProcessUtils(logger: logger, processManager: processManager),
+        _processUtils = ProcessUtils(logger: logger, processManager: processManager),
         _tizenSdk = tizenSdk,
         super(id, properties.isNotEmpty);
 
@@ -251,8 +244,7 @@ class TizenEmulator extends Emulator {
       throwToolExit('Unable to locate Tizen Emulator Manager.');
     }
 
-    final RunResult result =
-        await _processUtils.run(<String>[emCli.path, 'launch', '--name', id]);
+    final RunResult result = await _processUtils.run(<String>[emCli.path, 'launch', '--name', id]);
     if (result.exitCode == 0) {
       _logger.printStatus('Successfully launched Tizen emulator $id.');
     } else if (result.stdout.contains('is running now...')) {
@@ -266,8 +258,7 @@ class TizenEmulator extends Emulator {
 
 @visibleForTesting
 Map<String, Map<String, String>> parseEmCliOutput(String lines) {
-  final Map<String, Map<String, String>> result =
-      <String, Map<String, String>>{};
+  final Map<String, Map<String, String>> result = <String, Map<String, String>>{};
   String? lastId;
   for (final String line in LineSplitter.split(lines)) {
     if (line.trim().isEmpty) {

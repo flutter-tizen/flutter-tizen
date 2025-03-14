@@ -25,8 +25,7 @@ const String kTizenEmbedderRepoName = 'flutter-tizen/embedder';
 
 mixin TizenRequiredArtifacts on FlutterCommand {
   @override
-  Future<Set<DevelopmentArtifact>> get requiredArtifacts async =>
-      <DevelopmentArtifact>{
+  Future<Set<DevelopmentArtifact>> get requiredArtifacts async => <DevelopmentArtifact>{
         ...await super.requiredArtifacts,
         TizenDevelopmentArtifact.tizen,
       };
@@ -93,8 +92,7 @@ abstract class TizenCachedArtifacts extends EngineCachedArtifact {
         _fileSystem = fileSystem,
         _platform = platform,
         _osUtils = osUtils,
-        _processUtils =
-            ProcessUtils(processManager: processManager, logger: logger),
+        _processUtils = ProcessUtils(processManager: processManager, logger: logger),
         super(stampName, cache, TizenDevelopmentArtifact.tizen);
 
   final String _repoName;
@@ -146,8 +144,7 @@ abstract class TizenCachedArtifacts extends EngineCachedArtifact {
     FileSystem fileSystem,
     OperatingSystemUtils operatingSystemUtils,
   ) async {
-    final String downloadUrl =
-        '$kGithubBaseUrl/$_repoName/releases/download/$shortVersion';
+    final String downloadUrl = '$kGithubBaseUrl/$_repoName/releases/download/$shortVersion';
 
     for (final List<String> toolsDir in getBinaryDirs()) {
       final String cacheDir = toolsDir[0];
@@ -170,15 +167,13 @@ abstract class TizenCachedArtifacts extends EngineCachedArtifact {
   ) async {
     _logger.printStatus('Downloading Tizen artifacts from GitHub Actions...');
     if (operatingSystemUtils.which('gh') == null) {
-      throwToolExit(
-          'GitHub CLI not found. Please install it first: https://cli.github.com');
+      throwToolExit('GitHub CLI not found. Please install it first: https://cli.github.com');
     }
     for (final List<String> toolsDir in getBinaryDirs()) {
       final String cacheDir = toolsDir[0];
       final String urlPath = toolsDir[1];
       final Directory artifactDir = location.childDirectory(cacheDir);
-      final Status status =
-          _logger.startProgress('Downloading $cacheDir tools...');
+      final Status status = _logger.startProgress('Downloading $cacheDir tools...');
       try {
         if (artifactDir.existsSync()) {
           artifactDir.deleteSync(recursive: true);
@@ -242,9 +237,7 @@ class TizenEngineArtifacts extends TizenCachedArtifacts {
         .childDirectory('bin')
         .childDirectory('internal')
         .childFile('engine.version');
-    return versionFile.existsSync()
-        ? versionFile.readAsStringSync().trim()
-        : null;
+    return versionFile.existsSync() ? versionFile.readAsStringSync().trim() : null;
   }
 
   @override
@@ -282,8 +275,7 @@ class TizenEngineArtifacts extends TizenCachedArtifacts {
       if (_platform.isWindows)
         ..._binaryDirsForHostPlatform('windows-x64')
       else if (_platform.isMacOS)
-        ..._binaryDirsForHostPlatform(
-            'darwin-${getCurrentHostPlatform().platformName}')
+        ..._binaryDirsForHostPlatform('darwin-${getCurrentHostPlatform().platformName}')
       else if (_platform.isLinux)
         ..._binaryDirsForHostPlatform('linux-x64'),
     ];
@@ -291,22 +283,10 @@ class TizenEngineArtifacts extends TizenCachedArtifacts {
 
   List<List<String>> _binaryDirsForHostPlatform(String platform) {
     return <List<String>>[
-      <String>[
-        'tizen-arm-profile/$platform',
-        'tizen-arm-profile_$platform.zip'
-      ],
-      <String>[
-        'tizen-arm-release/$platform',
-        'tizen-arm-release_$platform.zip'
-      ],
-      <String>[
-        'tizen-arm64-profile/$platform',
-        'tizen-arm64-profile_$platform.zip'
-      ],
-      <String>[
-        'tizen-arm64-release/$platform',
-        'tizen-arm64-release_$platform.zip'
-      ],
+      <String>['tizen-arm-profile/$platform', 'tizen-arm-profile_$platform.zip'],
+      <String>['tizen-arm-release/$platform', 'tizen-arm-release_$platform.zip'],
+      <String>['tizen-arm64-profile/$platform', 'tizen-arm64-profile_$platform.zip'],
+      <String>['tizen-arm64-release/$platform', 'tizen-arm64-release_$platform.zip'],
     ];
   }
 }
@@ -329,9 +309,7 @@ class TizenEmbedderArtifacts extends TizenCachedArtifacts {
         .childDirectory('bin')
         .childDirectory('internal')
         .childFile('embedder.version');
-    return versionFile.existsSync()
-        ? versionFile.readAsStringSync().trim()
-        : null;
+    return versionFile.existsSync() ? versionFile.readAsStringSync().trim() : null;
   }
 
   @override

@@ -122,8 +122,7 @@ void main() {
     final File mainDart = projectDir.childFile('lib/main.dart');
     expect(mainDart.readAsStringSync(), contains('Tizen Multi App Demo'));
 
-    final String rawPubspec =
-        projectDir.childFile('pubspec.yaml').readAsStringSync();
+    final String rawPubspec = projectDir.childFile('pubspec.yaml').readAsStringSync();
     final Pubspec pubspec = Pubspec.parse(rawPubspec);
     expect(pubspec.dependencies, contains('tizen_app_control'));
     expect(pubspec.dependencies, contains('messageport_tizen'));
@@ -185,15 +184,13 @@ void main() {
     expect(projectDir.childFile('example/tizen/Runner.csproj'), exists);
     expect(projectDir.childFile('tizen/.gitignore'), exists);
     expect(projectDir.childFile('tizen/FlutterProjectPlugin.csproj'), exists);
-    expect(
-        projectDir.childFile('tizen/FlutterProjectPlugin.csproj.user'), exists);
+    expect(projectDir.childFile('tizen/FlutterProjectPlugin.csproj.user'), exists);
     expect(logger.errorText, contains(_kNoPlatformsMessage));
   }, overrides: <Type, Generator>{
     Logger: () => logger,
   });
 
-  testUsingContext(
-      'Cannot create a plugin project with --app-type=multi option', () async {
+  testUsingContext('Cannot create a plugin project with --app-type=multi option', () async {
     final TizenCreateCommand command = TizenCreateCommand();
     final CommandRunner<void> runner = createTestCommandRunner(command);
     await expectLater(
@@ -209,8 +206,7 @@ void main() {
     );
   }, overrides: <Type, Generator>{});
 
-  testUsingContext('Can add Tizen platform to existing plugin project',
-      () async {
+  testUsingContext('Can add Tizen platform to existing plugin project', () async {
     final TizenCreateCommand command = TizenCreateCommand();
     final CommandRunner<void> runner = createTestCommandRunner(command);
     await runner.run(<String>[

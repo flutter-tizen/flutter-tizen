@@ -118,8 +118,7 @@ void main() {
       BuildSystem: () => TestBuildSystem.all(BuildResult(success: true)),
     });
 
-    testUsingContext('Indicates that TPK has been built successfully',
-        () async {
+    testUsingContext('Indicates that TPK has been built successfully', () async {
       fileSystem.file('tizen/tizen-manifest.xml')
         ..createSync(recursive: true)
         ..writeAsStringSync(_kTizenManifestContents);
@@ -142,9 +141,7 @@ void main() {
       BuildSystem: () => TestBuildSystem.all(
             BuildResult(success: true),
             (Target target, Environment environment) {
-              environment.outputDir
-                  .childFile('package_id-1.0.0.tpk')
-                  .createSync(recursive: true);
+              environment.outputDir.childFile('package_id-1.0.0.tpk').createSync(recursive: true);
             },
           ),
     });
@@ -161,8 +158,7 @@ void main() {
         sizeAnalyzer: _FakeSizeAnalyzer(fileSystem: fileSystem, logger: logger),
       );
 
-      final File codeSizeFile =
-          fileSystem.file('.flutter-devtools/tpk-code-size-analysis_01.json');
+      final File codeSizeFile = fileSystem.file('.flutter-devtools/tpk-code-size-analysis_01.json');
       expect(codeSizeFile, exists);
       expect(
         logger.statusText,
@@ -176,22 +172,16 @@ void main() {
       BuildSystem: () => TestBuildSystem.all(
             BuildResult(success: true),
             (Target target, Environment environment) {
-              environment.outputDir
-                  .childDirectory('tpkroot')
-                  .createSync(recursive: true);
-              environment.outputDir
-                  .childFile('package_id-1.0.0.tpk')
-                  .createSync(recursive: true);
+              environment.outputDir.childDirectory('tpkroot').createSync(recursive: true);
+              environment.outputDir.childFile('package_id-1.0.0.tpk').createSync(recursive: true);
             },
           ),
-      FileSystemUtils: () =>
-          FileSystemUtils(fileSystem: fileSystem, platform: platform),
+      FileSystemUtils: () => FileSystemUtils(fileSystem: fileSystem, platform: platform),
     });
   });
 
   group('TizenBuilder.buildModule', () {
-    testUsingContext('Indicates that module has been built successfully',
-        () async {
+    testUsingContext('Indicates that module has been built successfully', () async {
       fileSystem.file('tizen/tizen-manifest.xml')
         ..createSync(recursive: true)
         ..writeAsStringSync(_kTizenManifestContents);

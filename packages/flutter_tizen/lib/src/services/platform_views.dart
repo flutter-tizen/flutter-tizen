@@ -55,17 +55,15 @@ abstract class TizenViewController extends PlatformViewController {
 
   bool get _createRequiresSize;
 
-  Future<void> _sendCreateMessage(
-      {required covariant Size? size, Offset? position});
+  Future<void> _sendCreateMessage({required covariant Size? size, Offset? position});
 
   Future<Size> _sendResizeMessage(Size size);
 
   @override
   Future<void> create({Size? size, Offset? position}) async {
-    assert(_state != _TizenViewState.disposed,
-        'trying to create a disposed Tizen view');
-    assert(_state == _TizenViewState.waitingForSize,
-        'Tizen view is already sized. View id: $viewId');
+    assert(_state != _TizenViewState.disposed, 'trying to create a disposed Tizen view');
+    assert(
+        _state == _TizenViewState.waitingForSize, 'Tizen view is already sized. View id: $viewId');
 
     if (_createRequiresSize && size == null) {
       // Wait for a setSize call.
@@ -76,15 +74,13 @@ abstract class TizenViewController extends PlatformViewController {
     await _sendCreateMessage(size: size, position: position);
     _state = _TizenViewState.created;
 
-    for (final PlatformViewCreatedCallback callback
-        in _platformViewCreatedCallbacks) {
+    for (final PlatformViewCreatedCallback callback in _platformViewCreatedCallbacks) {
       callback(viewId);
     }
   }
 
   Future<Size> setSize(Size size) async {
-    assert(_state != _TizenViewState.disposed,
-        'Tizen view is disposed. View id: $viewId');
+    assert(_state != _TizenViewState.disposed, 'Tizen view is disposed. View id: $viewId');
     if (_state == _TizenViewState.waitingForSize) {
       // Either `create` hasn't been called, or it couldn't run due to missing
       // size information, so create the view now.
@@ -109,15 +105,13 @@ abstract class TizenViewController extends PlatformViewController {
     _platformViewCreatedCallbacks.add(listener);
   }
 
-  void removeOnPlatformViewCreatedListener(
-      PlatformViewCreatedCallback listener) {
+  void removeOnPlatformViewCreatedListener(PlatformViewCreatedCallback listener) {
     assert(_state != _TizenViewState.disposed);
     _platformViewCreatedCallbacks.remove(listener);
   }
 
   @visibleForTesting
-  List<PlatformViewCreatedCallback> get createdCallbacks =>
-      _platformViewCreatedCallbacks;
+  List<PlatformViewCreatedCallback> get createdCallbacks => _platformViewCreatedCallbacks;
 
   Future<void> setLayoutDirection(TextDirection layoutDirection) async {
     assert(_state != _TizenViewState.disposed,
@@ -134,8 +128,7 @@ abstract class TizenViewController extends PlatformViewController {
       return;
     }
 
-    await SystemChannels.platform_views
-        .invokeMethod<void>('setDirection', <String, dynamic>{
+    await SystemChannels.platform_views.invokeMethod<void>('setDirection', <String, dynamic>{
       'id': viewId,
       'direction': layoutDirection == TextDirection.ltr ? 0 : 1,
     });
@@ -177,14 +170,12 @@ abstract class TizenViewController extends PlatformViewController {
     if (_state != _TizenViewState.created) {
       return Future<void>.value();
     }
-    return SystemChannels.platform_views
-        .invokeMethod<void>('clearFocus', viewId);
+    return SystemChannels.platform_views.invokeMethod<void>('clearFocus', viewId);
   }
 
   @override
   Future<void> dispose() async {
-    if (_state == _TizenViewState.creating ||
-        _state == _TizenViewState.created) {
+    if (_state == _TizenViewState.creating || _state == _TizenViewState.created) {
       await _sendDisposeMessage();
     }
     _platformViewCreatedCallbacks.clear();
@@ -279,22 +270,19 @@ class TextureTizenViewController extends TizenViewController {
       if (position != null) 'top': position.dy,
     };
     if (_creationParams != null) {
-      final ByteData paramsByteData =
-          _creationParamsCodec!.encodeMessage(_creationParams)!;
+      final ByteData paramsByteData = _creationParamsCodec!.encodeMessage(_creationParams)!;
       args['params'] = Uint8List.view(
         paramsByteData.buffer,
         0,
         paramsByteData.lengthInBytes,
       );
     }
-    _textureId =
-        await SystemChannels.platform_views.invokeMethod<int>('create', args);
+    _textureId = await SystemChannels.platform_views.invokeMethod<int>('create', args);
   }
 
   @override
   Future<void> _sendDisposeMessage() {
-    return SystemChannels.platform_views
-        .invokeMethod<void>('dispose', <String, dynamic>{
+    return SystemChannels.platform_views.invokeMethod<void>('dispose', <String, dynamic>{
       'id': viewId,
       'hybrid': false,
     });
@@ -310,8 +298,7 @@ class PlatformViewsServiceTizen {
   PlatformViewsServiceTizen._() {
     SystemChannels.platform_views.setMethodCallHandler(_onMethodCall);
   }
-  static final PlatformViewsServiceTizen _instance =
-      PlatformViewsServiceTizen._();
+  static final PlatformViewsServiceTizen _instance = PlatformViewsServiceTizen._();
 
   Future<void> _onMethodCall(MethodCall call) {
     switch (call.method) {

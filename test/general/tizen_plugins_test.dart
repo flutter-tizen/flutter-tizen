@@ -71,8 +71,7 @@ dependencies:
 ''');
     await runner.run(<String>['dummy']);
 
-    final File generatedMain =
-        fileSystem.file('tizen/flutter/generated_main.dart');
+    final File generatedMain = fileSystem.file('tizen/flutter/generated_main.dart');
     expect(generatedMain, exists);
     expect(generatedMain.readAsStringSync(), contains('''
 import 'package:some_dart_plugin/some_dart_plugin.dart';
@@ -125,8 +124,7 @@ dependencies:
 ''');
     await injectTizenPlugins(project);
 
-    final File cppPluginRegistrant =
-        fileSystem.file('tizen/flutter/generated_plugin_registrant.h');
+    final File cppPluginRegistrant = fileSystem.file('tizen/flutter/generated_plugin_registrant.h');
     expect(cppPluginRegistrant, exists);
     expect(cppPluginRegistrant.readAsStringSync(), contains('''
 #include "some_native_plugin.h"
@@ -274,12 +272,8 @@ internal class GeneratedPluginRegistrant
   testUsingContext('Generates .NET plugin registrants for C# multi', () async {
     fileSystem.file('tizen/ui/Runner.csproj').createSync(recursive: true);
     fileSystem.file('tizen/ui/tizen-manifest.xml').createSync(recursive: true);
-    fileSystem
-        .file('tizen/service/RunnerService.csproj')
-        .createSync(recursive: true);
-    fileSystem
-        .file('tizen/service/tizen-manifest.xml')
-        .createSync(recursive: true);
+    fileSystem.file('tizen/service/RunnerService.csproj').createSync(recursive: true);
+    fileSystem.file('tizen/service/tizen-manifest.xml').createSync(recursive: true);
 
     final Directory pluginDir = fileSystem.directory('/some_dotnet_plugin');
     pluginDir.childFile('pubspec.yaml')

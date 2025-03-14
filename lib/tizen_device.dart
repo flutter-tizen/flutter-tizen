@@ -46,8 +46,7 @@ class TizenDevice extends Device {
         _logger = logger,
         _tizenSdk = tizenSdk,
         _fileSystem = fileSystem,
-        _processUtils =
-            ProcessUtils(logger: logger, processManager: processManager),
+        _processUtils = ProcessUtils(logger: logger, processManager: processManager),
         super(
           category: Category.mobile,
           platformType: PlatformType.custom,
@@ -97,8 +96,7 @@ class TizenDevice extends Device {
       _capabilities = capabilities;
     }
     if (!_capabilities!.containsKey(name)) {
-      throwToolExit(
-          'Failed to read the $name capability value from device $id.');
+      throwToolExit('Failed to read the $name capability value from device $id.');
     }
     return _capabilities![name]!;
   }
@@ -159,8 +157,7 @@ class TizenDevice extends Device {
       // Reading the cpu_arch capability value is not a reliable way to get the
       // runtime architecture from devices like Raspberry Pi. The following is a
       // little workaround.
-      final String stdout =
-          runSdbSync(<String>['shell', 'ls', '/usr/lib64']).stdout;
+      final String stdout = runSdbSync(<String>['shell', 'ls', '/usr/lib64']).stdout;
       return stdout.contains('No such file or directory') ? 'arm' : 'arm64';
     }
   }();
@@ -189,9 +186,8 @@ class TizenDevice extends Device {
       '/opt/usr/globalapps',
     ];
     for (final String root in rootCandidates) {
-      final File signatureFile = _fileSystem.systemTempDirectory
-          .createTempSync()
-          .childFile('author-signature.xml');
+      final File signatureFile =
+          _fileSystem.systemTempDirectory.createTempSync().childFile('author-signature.xml');
       final RunResult result = await runSdbAsync(
         <String>[
           'pull',
@@ -258,26 +254,22 @@ class TizenDevice extends Device {
   Future<bool> _installApp(TizenTpk app, {bool installTwice = false}) async {
     final FileSystemEntity package = app.applicationPackage;
     if (!package.existsSync()) {
-      _logger.printError(
-          '"${_fileSystem.path.relative(package.path)}" does not exist.');
+      _logger.printError('"${_fileSystem.path.relative(package.path)}" does not exist.');
       return false;
     }
 
     final Version? platformVersion = Version.parse(_platformVersion);
     final Version? apiVersion = Version.parse(app.manifest.apiVersion);
-    if (platformVersion != null &&
-        apiVersion != null &&
-        apiVersion > platformVersion) {
+    if (platformVersion != null && apiVersion != null && apiVersion > platformVersion) {
       _logger.printWarning(
         'Warning: The package API version ($apiVersion) is greater than the device API version ($platformVersion).\n'
         'Check "tizen-manifest.xml" of your Tizen project to fix this problem.',
       );
     }
 
-    final Status status = _logger.startProgress(
-        'Installing ${_fileSystem.path.relative(package.path)}...');
-    final RunResult result =
-        await runSdbAsync(<String>['install', package.path], checked: false);
+    final Status status =
+        _logger.startProgress('Installing ${_fileSystem.path.relative(package.path)}...');
+    final RunResult result = await runSdbAsync(<String>['install', package.path], checked: false);
     if (result.exitCode != 0 ||
         result.stdout.contains('val[fail]') ||
         result.stdout.contains('install failed')) {
@@ -303,8 +295,7 @@ class TizenDevice extends Device {
     covariant TizenTpk app, {
     String? userIdentifier,
   }) async {
-    final RunResult result =
-        await runSdbAsync(<String>['uninstall', app.id], checked: false);
+    final RunResult result = await runSdbAsync(<String>['uninstall', app.id], checked: false);
     if (result.exitCode != 0) {
       _logger.printError('sdb uninstall failed:\n$result');
       return false;
@@ -316,12 +307,10 @@ class TizenDevice extends Device {
     List<String> arguments,
     String filename,
   ) async {
-    final File localFile =
-        _fileSystem.systemTempDirectory.createTempSync().childFile(filename);
+    final File localFile = _fileSystem.systemTempDirectory.createTempSync().childFile(filename);
     localFile.writeAsStringSync(arguments.join('\n'));
     final String remotePath = '/home/owner/share/tmp/sdk_tools/$filename';
-    final RunResult result =
-        await runSdbAsync(<String>['push', localFile.path, remotePath]);
+    final RunResult result = await runSdbAsync(<String>['push', localFile.path, remotePath]);
     if (!result.stdout.contains('file(s) pushed')) {
       _logger.printError('Failed to push a file: $result');
     }
@@ -340,8 +329,7 @@ class TizenDevice extends Device {
     String? userIdentifier,
   }) async {
     if (!debuggingOptions.buildInfo.isDebug && await isLocalEmulator) {
-      _logger.printError(
-          'Profile and release builds are not supported on emulator targets.');
+      _logger.printError('Profile and release builds are not supported on emulator targets.');
       return LaunchResult.failed();
     }
 
@@ -397,10 +385,8 @@ class TizenDevice extends Device {
       if (debuggingOptions.enableDartProfiling) '--enable-dart-profiling',
       if (traceStartup) '--trace-startup',
       if (route != null) ...<String>['--route', route],
-      if (debuggingOptions.enableSoftwareRendering)
-        '--enable-software-rendering',
-      if (debuggingOptions.skiaDeterministicRendering)
-        '--skia-deterministic-rendering',
+      if (debuggingOptions.enableSoftwareRendering) '--enable-software-rendering',
+      if (debuggingOptions.skiaDeterministicRendering) '--skia-deterministic-rendering',
       if (debuggingOptions.traceSkia) '--trace-skia',
       if (debuggingOptions.traceAllowlist != null) ...<String>[
         '--trace-allowlist',
@@ -416,18 +402,15 @@ class TizenDevice extends Device {
         debuggingOptions.traceToFile!,
       ],
       if (debuggingOptions.endlessTraceBuffer) '--endless-trace-buffer',
-      if (debuggingOptions.dumpSkpOnShaderCompilation)
-        '--dump-skp-on-shader-compilation',
+      if (debuggingOptions.dumpSkpOnShaderCompilation) '--dump-skp-on-shader-compilation',
       if (debuggingOptions.cacheSkSL) '--cache-sksl',
       if (debuggingOptions.purgePersistentCache) '--purge-persistent-cache',
-      if (debuggingOptions.enableImpeller == ImpellerStatus.enabled)
-        '--enable-impeller',
+      if (debuggingOptions.enableImpeller == ImpellerStatus.enabled) '--enable-impeller',
       if (debuggingOptions.enableVulkanValidation) '--enable-vulkan-validation',
       if (debuggingOptions.debuggingEnabled) ...<String>[
         '--enable-checked-mode',
         if (debuggingOptions.startPaused) '--start-paused',
-        if (debuggingOptions.disableServiceAuthCodes)
-          '--disable-service-auth-codes',
+        if (debuggingOptions.disableServiceAuthCodes) '--disable-service-auth-codes',
         if (debuggingOptions.dartFlags.isNotEmpty) ...<String>[
           '--dart-flags',
           debuggingOptions.dartFlags,
@@ -469,8 +452,7 @@ class TizenDevice extends Device {
 
     try {
       Uri? vmServiceUri;
-      if (debuggingOptions.buildInfo.isDebug ||
-          debuggingOptions.buildInfo.isProfile) {
+      if (debuggingOptions.buildInfo.isDebug || debuggingOptions.buildInfo.isProfile) {
         vmServiceUri = await vmServiceDiscovery?.uri;
         if (vmServiceUri == null) {
           _logger.printError(
@@ -597,8 +579,7 @@ class TizenDevicePortForwarder extends DevicePortForwarder {
 
     String stdout;
     try {
-      final RunResult result =
-          _device.runSdbSync(<String>['forward', '--list']);
+      final RunResult result = _device.runSdbSync(<String>['forward', '--list']);
       stdout = result.stdout.trim();
     } on ProcessException catch (error) {
       _logger.printError('Failed to list forwarded ports: $error.');

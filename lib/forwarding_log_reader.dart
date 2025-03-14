@@ -15,8 +15,7 @@ import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/vmservice.dart';
 
 /// Default factory that creates a real socket connection.
-Future<Socket> kSocketFactory(String host, int port) =>
-    Socket.connect(host, port);
+Future<Socket> kSocketFactory(String host, int port) => Socket.connect(host, port);
 
 /// Override this in tests with an implementation that returns mock responses.
 typedef SocketFactory = Future<Socket> Function(String host, int port);
@@ -51,8 +50,7 @@ class ForwardingLogReader extends DeviceLogReader {
   final SocketFactory _socketFactory;
   Socket? _socket;
 
-  final StreamController<String> _linesController =
-      StreamController<String>.broadcast();
+  final StreamController<String> _linesController = StreamController<String>.broadcast();
 
   @override
   Stream<String> get logLines => _linesController.stream;
@@ -107,24 +105,21 @@ class ForwardingLogReader extends DeviceLogReader {
           if (response.startsWith('ACCEPTED')) {
             response = response.substring(8);
           } else {
-            globals.printError(
-                'Invalid message received from the device logger: $response');
+            globals.printError('Invalid message received from the device logger: $response');
             socket?.destroy();
             socket = null;
           }
           completer.complete();
         }
         for (final String line in LineSplitter.split(response)) {
-          if (line.isEmpty ||
-              _filteredTexts.any((RegExp re) => re.hasMatch(line))) {
+          if (line.isEmpty || _filteredTexts.any((RegExp re) => re.hasMatch(line))) {
             continue;
           }
           _linesController.add(_colorizePrefix(line));
         }
       },
       onError: (Object error) {
-        globals
-            .printError('An error occurred while reading from socket: $error');
+        globals.printError('An error occurred while reading from socket: $error');
         if (!completer.isCompleted) {
           socket?.destroy();
           socket = null;
@@ -170,8 +165,7 @@ class ForwardingLogReader extends DeviceLogReader {
           break;
         }
         if (attempts == 10) {
-          globals.printError(
-              'Connecting to the device logger is taking longer than expected...');
+          globals.printError('Connecting to the device logger is taking longer than expected...');
         } else if (attempts == 20) {
           globals.printError(
             'Still attempting to connect to the device logger...\n'
@@ -193,5 +187,5 @@ class ForwardingLogReader extends DeviceLogReader {
   }
 
   @override
-  Future<void> provideVmService(FlutterVmService connectedVmService) async { }
+  Future<void> provideVmService(FlutterVmService connectedVmService) async {}
 }
