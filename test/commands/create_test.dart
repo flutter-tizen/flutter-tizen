@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:args/command_runner.dart';
 import 'package:file_testing/file_testing.dart';
