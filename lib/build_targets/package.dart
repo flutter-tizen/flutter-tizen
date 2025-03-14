@@ -173,8 +173,10 @@ class DotnetTpk extends TizenPackage {
         'Install the latest .NET SDK from: https://dotnet.microsoft.com/download',
       );
     }
-    final RunResult result = await tizenSdk!
-        .buildDotnet(tizenProject.hostAppRoot.path, configuration: buildConfig);
+    final RunResult result = await tizenSdk!.buildDotnet(
+        tizenProject.hostAppRoot.path,
+        configuration: buildConfig,
+        sign: securityProfile);
     if (result.exitCode != 0) {
       throwToolExit('Failed to build .NET application:\n$result');
     }

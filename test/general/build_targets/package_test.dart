@@ -99,11 +99,23 @@ void main() {
 
       processManager.addCommand(FakeCommand(
         command: <String>[
-          'dotnet',
-          'build',
-          '-c',
+          '/tizen-studio/tools/tizen-core/tz',
+          'set',
+          '-b',
           'Release',
-          '/p:DefineConstants=COMMON_PROFILE',
+          '-s',
+          'test_profile',
+          '-w',
+          '${projectDir.path}/tizen',
+        ],
+        onRun: (_) {},
+      ));
+
+      processManager.addCommand(FakeCommand(
+        command: <String>[
+          '/tizen-studio/tools/tizen-core/tz',
+          'build',
+          '-w',
           '${projectDir.path}/tizen',
         ],
         onRun: (_) {
@@ -150,7 +162,8 @@ void main() {
       ProcessManager: () => processManager,
       Cache: () => cache,
       OperatingSystemUtils: () => osUtils,
-      TizenSdk: () => FakeTizenSdk(fileSystem, securityProfile: 'test_profile'),
+      TizenSdk: () => FakeTizenSdk(fileSystem,
+          securityProfile: 'test_profile', processManager: processManager),
     });
 
     testUsingContext('Build fails if no security profile is found', () async {
@@ -169,11 +182,23 @@ void main() {
 
       processManager.addCommand(FakeCommand(
         command: <String>[
-          'dotnet',
-          'build',
-          '-c',
+          '/tizen-studio/tools/tizen-core/tz',
+          'set',
+          '-b',
           'Release',
-          '/p:DefineConstants=COMMON_PROFILE',
+          '-s',
+          'test_profile',
+          '-w',
+          '${projectDir.path}/tizen',
+        ],
+        onRun: (_) {},
+      ));
+
+      processManager.addCommand(FakeCommand(
+        command: <String>[
+          '/tizen-studio/tools/tizen-core/tz',
+          'build',
+          '-w',
           '${projectDir.path}/tizen',
         ],
         onRun: (_) {
@@ -197,7 +222,7 @@ void main() {
       ProcessManager: () => processManager,
       Cache: () => cache,
       OperatingSystemUtils: () => osUtils,
-      TizenSdk: () => FakeTizenSdk(fileSystem),
+      TizenSdk: () => FakeTizenSdk(fileSystem, processManager: processManager),
     });
   });
 

@@ -239,6 +239,7 @@ class TizenSdk {
         tzCore.path,
         'set',
         if (configuration != null) ...<String>['-b', configuration],
+        if (sign != null) ...<String>['-s', sign],
         '-w',
         workingDirectory,
       ],
