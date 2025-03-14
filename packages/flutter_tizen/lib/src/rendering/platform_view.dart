@@ -148,8 +148,7 @@ class RenderTizenView extends PlatformViewRenderBox {
     }
 
     final bool isTextureLargerThanWidget =
-        _currentTextureSize!.width > size.width ||
-            _currentTextureSize!.height > size.height;
+        _currentTextureSize!.width > size.width || _currentTextureSize!.height > size.height;
     if (isTextureLargerThanWidget && clipBehavior != Clip.none) {
       _clipRectLayer.layer = context.pushClipRect(
         true,
@@ -165,8 +164,7 @@ class RenderTizenView extends PlatformViewRenderBox {
     _paintTexture(context, offset);
   }
 
-  final LayerHandle<ClipRectLayer> _clipRectLayer =
-      LayerHandle<ClipRectLayer>();
+  final LayerHandle<ClipRectLayer> _clipRectLayer = LayerHandle<ClipRectLayer>();
 
   @override
   void dispose() {

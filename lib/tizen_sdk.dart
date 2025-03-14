@@ -26,8 +26,7 @@ class TizenSdk {
     required ProcessManager processManager,
   })  : _logger = logger,
         _platform = platform,
-        _processUtils =
-            ProcessUtils(logger: logger, processManager: processManager);
+        _processUtils = ProcessUtils(logger: logger, processManager: processManager);
 
   /// See: [AndroidSdk.locateAndroidSdk] in `android_sdk.dart`
   static TizenSdk? locateSdk() {
@@ -40,15 +39,13 @@ class TizenSdk {
       tizenHomeDir = sdb.parent.parent;
     } else if (globals.platform.isLinux || globals.platform.isMacOS) {
       if (globals.fsUtils.homeDirPath != null) {
-        tizenHomeDir = globals.fs
-            .directory(globals.fsUtils.homeDirPath)
-            .childDirectory('tizen-studio');
+        tizenHomeDir =
+            globals.fs.directory(globals.fsUtils.homeDirPath).childDirectory('tizen-studio');
       }
     } else if (globals.platform.isWindows) {
       if (environment.containsKey('SystemDrive')) {
-        tizenHomeDir = globals.fs
-            .directory(environment['SystemDrive'])
-            .childDirectory('tizen-studio');
+        tizenHomeDir =
+            globals.fs.directory(environment['SystemDrive']).childDirectory('tizen-studio');
       }
     }
     if (tizenHomeDir == null || !tizenHomeDir.existsSync()) {
@@ -80,8 +77,7 @@ class TizenSdk {
     }
     final Map<String, String> info = parseIniFile(sdkInfo);
     if (info.containsKey('TIZEN_SDK_DATA_PATH')) {
-      final Directory dataDir =
-          directory.fileSystem.directory(info['TIZEN_SDK_DATA_PATH']);
+      final Directory dataDir = directory.fileSystem.directory(info['TIZEN_SDK_DATA_PATH']);
       if (dataDir.existsSync()) {
         return dataDir;
       }
@@ -99,8 +95,7 @@ class TizenSdk {
     return parseIniFile(versionFile)['TIZEN_SDK_VERSION'];
   }
 
-  File get sdb =>
-      toolsDirectory.childFile(_platform.isWindows ? 'sdb.exe' : 'sdb');
+  File get sdb => toolsDirectory.childFile(_platform.isWindows ? 'sdb.exe' : 'sdb');
 
   File get tizenCli => toolsDirectory
       .childDirectory('ide')
@@ -116,14 +111,12 @@ class TizenSdk {
       .childDirectory('bin')
       .childFile(_platform.isWindows ? 'em-cli.bat' : 'em-cli');
 
-  File get packageManagerCli =>
-      directory.childDirectory('package-manager').childFile(_platform.isWindows
-          ? 'package-manager-cli.exe'
-          : 'package-manager-cli.bin');
+  File get packageManagerCli => directory
+      .childDirectory('package-manager')
+      .childFile(_platform.isWindows ? 'package-manager-cli.exe' : 'package-manager-cli.bin');
 
   SecurityProfiles? get securityProfiles {
-    final File manifest =
-        sdkDataDirectory.childDirectory('profile').childFile('profiles.xml');
+    final File manifest = sdkDataDirectory.childDirectory('profile').childFile('profiles.xml');
     return SecurityProfiles.parseFromXml(manifest);
   }
 
@@ -138,10 +131,8 @@ class TizenSdk {
   String getPathVariable() {
     String path = _platform.environment['PATH'] ?? '';
     if (_platform.isWindows) {
-      final Directory msysUsrBin = toolsDirectory
-          .childDirectory('msys2')
-          .childDirectory('usr')
-          .childDirectory('bin');
+      final Directory msysUsrBin =
+          toolsDirectory.childDirectory('msys2').childDirectory('usr').childDirectory('bin');
       path = '${msysUsrBin.path};$path';
     }
     return path;
@@ -341,8 +332,7 @@ class TizenSdk {
     }
 
     if (!rootstrap.isValid) {
-      final String profileUpperCase =
-          profile.toUpperCase().replaceAll('HEADED', 'Headed');
+      final String profileUpperCase = profile.toUpperCase().replaceAll('HEADED', 'Headed');
       throwToolExit(
         'The rootstrap ${rootstrap.id} could not be found.\n'
         'To install missing package(s), run:\n'
@@ -430,8 +420,7 @@ class SecurityProfiles {
     }
 
     final List<String> profiles = <String>[];
-    for (final XmlElement profile
-        in document.rootElement.findAllElements('profile')) {
+    for (final XmlElement profile in document.rootElement.findAllElements('profile')) {
       final String? name = profile.getAttribute('name');
       if (name != null) {
         profiles.add(name);

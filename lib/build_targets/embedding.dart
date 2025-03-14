@@ -51,12 +51,10 @@ class NativeEmbedding extends Target {
       logger: environment.logger,
     );
 
-    final FlutterProject project =
-        FlutterProject.fromDirectory(environment.projectDir);
+    final FlutterProject project = FlutterProject.fromDirectory(environment.projectDir);
     final TizenProject tizenProject = TizenProject.fromFlutter(project);
 
-    final Directory outputDir = environment.buildDir
-        .childDirectory('tizen_embedding')
+    final Directory outputDir = environment.buildDir.childDirectory('tizen_embedding')
       ..createSync(recursive: true);
     final Directory embeddingDir = environment.fileSystem
         .directory(Cache.flutterRoot)
@@ -77,13 +75,9 @@ class NativeEmbedding extends Target {
     final String buildConfig = getBuildConfig(buildMode);
 
     final Directory commonDir = getCommonArtifactsDirectory();
-    final Directory clientWrapperDir =
-        commonDir.childDirectory('cpp_client_wrapper');
+    final Directory clientWrapperDir = commonDir.childDirectory('cpp_client_wrapper');
     final Directory publicDir = commonDir.childDirectory('public');
-    clientWrapperDir
-        .listSync(recursive: true)
-        .whereType<File>()
-        .forEach(inputs.add);
+    clientWrapperDir.listSync(recursive: true).whereType<File>().forEach(inputs.add);
     publicDir.listSync(recursive: true).whereType<File>().forEach(inputs.add);
 
     getDartSdkDirectory()
@@ -95,8 +89,7 @@ class NativeEmbedding extends Target {
     assert(tizenSdk != null);
     String? apiVersion;
     if (tizenProject.manifestFile.existsSync()) {
-      final TizenManifest tizenManifest =
-          TizenManifest.parseFromXml(tizenProject.manifestFile);
+      final TizenManifest tizenManifest = TizenManifest.parseFromXml(tizenProject.manifestFile);
       apiVersion = tizenManifest.apiVersion;
       inputs.add(tizenProject.manifestFile);
     }
@@ -131,8 +124,7 @@ class NativeEmbedding extends Target {
         '${result.stdout}',
       );
     }
-    outputs
-        .add(outputLib.copySync(outputDir.childFile(outputLib.basename).path));
+    outputs.add(outputLib.copySync(outputDir.childFile(outputLib.basename).path));
 
     depfileService.writeToFile(
       Depfile(inputs, outputs),

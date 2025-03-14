@@ -62,8 +62,7 @@ type = staticLib
       deviceProfile: 'common',
     )).build(environment);
 
-    final Directory outputDir =
-        environment.buildDir.childDirectory('tizen_embedding');
+    final Directory outputDir = environment.buildDir.childDirectory('tizen_embedding');
     expect(outputDir.childFile('include/flutter.h'), exists);
     expect(outputDir.childFile('libembedding_cpp.a'), exists);
   }, overrides: <Type, Generator>{

@@ -55,9 +55,7 @@ class FakeTizenSdk extends TizenSdk {
     expect(buildConfigs, isNotEmpty);
 
     final Directory projectDir = _fileSystem.directory(workingDirectory);
-    projectDir
-        .childFile('${buildConfigs!.first}/app.tpk')
-        .createSync(recursive: true);
+    projectDir.childFile('${buildConfigs!.first}/app.tpk').createSync(recursive: true);
 
     return RunResult(ProcessResult(0, 0, '', ''), <String>['build-app']);
   }
@@ -74,8 +72,7 @@ class FakeTizenSdk extends TizenSdk {
     Map<String, String> environment = const <String, String>{},
   }) async {
     final Directory projectDir = _fileSystem.directory(workingDirectory);
-    final Map<String, String> projectDef =
-        parseIniFile(projectDir.childFile('project_def.prop'));
+    final Map<String, String> projectDef = parseIniFile(projectDir.childFile('project_def.prop'));
 
     final String? libName = projectDef['APPNAME'];
     final String? libType = projectDef['type'];
@@ -105,6 +102,5 @@ class FakeTizenSdk extends TizenSdk {
   }
 
   @override
-  SecurityProfiles get securityProfiles =>
-      SecurityProfiles.test(_securityProfile);
+  SecurityProfiles get securityProfiles => SecurityProfiles.test(_securityProfile);
 }

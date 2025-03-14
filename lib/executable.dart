@@ -68,8 +68,7 @@ import 'tizen_sdk.dart';
 /// Source: [flutter.main] in `executable.dart` (some commands and options were omitted)
 Future<void> main(List<String> args) async {
   final bool veryVerbose = args.contains('-vv');
-  final bool verbose =
-      args.contains('-v') || args.contains('--verbose') || veryVerbose;
+  final bool verbose = args.contains('-v') || args.contains('--verbose') || veryVerbose;
   final bool prefixedErrors = args.contains('--prefixed-errors');
 
   final bool doctor = (args.isNotEmpty && args.first == 'doctor') ||

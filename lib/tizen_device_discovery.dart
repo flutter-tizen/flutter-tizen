@@ -33,8 +33,7 @@ class TizenDeviceDiscovery extends PollingDeviceDiscovery {
         _logger = logger,
         _fileSystem = fileSystem,
         _processManager = processManager,
-        _processUtils =
-            ProcessUtils(logger: logger, processManager: processManager),
+        _processUtils = ProcessUtils(logger: logger, processManager: processManager),
         super('Tizen devices');
 
   final TizenSdk? _tizenSdk;
@@ -58,8 +57,7 @@ class TizenDeviceDiscovery extends PollingDeviceDiscovery {
       return <TizenDevice>[];
     }
 
-    final RunResult result =
-        await _processUtils.run(<String>[_tizenSdk.sdb.path, 'devices']);
+    final RunResult result = await _processUtils.run(<String>[_tizenSdk.sdb.path, 'devices']);
     if (result.exitCode != 0) {
       throwToolExit('sdb failed to list attached devices:\n$result');
     }
@@ -113,8 +111,7 @@ class TizenDeviceDiscovery extends PollingDeviceDiscovery {
       return <String>[];
     }
 
-    final RunResult result =
-        await _processUtils.run(<String>[_tizenSdk.sdb.path, 'devices']);
+    final RunResult result = await _processUtils.run(<String>[_tizenSdk.sdb.path, 'devices']);
     if (result.exitCode != 0) {
       return <String>[];
     }
@@ -136,8 +133,7 @@ class TizenDeviceDiscovery extends PollingDeviceDiscovery {
 
       final List<String> splitLine = line.split(_splitPattern);
       if (splitLine.length != 3) {
-        messages.add(
-            'Unexpected failure parsing device information from sdb output:\n$line');
+        messages.add('Unexpected failure parsing device information from sdb output:\n$line');
         continue;
       }
 
