@@ -3,6 +3,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:convert';
+
 import 'package:analyzer/dart/analysis/analysis_context.dart';
 import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
 import 'package:analyzer/dart/analysis/results.dart';
@@ -25,6 +27,7 @@ import 'package:flutter_tools/src/runner/flutter_command.dart';
 import 'package:package_config/package_config.dart';
 import 'package:yaml/yaml.dart';
 
+import 'tizen_cache.dart';
 import 'tizen_project.dart';
 import 'tizen_sdk.dart';
 
@@ -367,6 +370,7 @@ Future<void> injectTizenPlugins(FlutterProject project) async {
         await findTizenPlugins(project, cppOnly: true);
     final List<TizenPlugin> dotnetPlugins =
         await findTizenPlugins(project, dotnetOnly: true);
+    await _writeTizenPluginsExtraInfo(project);
     await _writeTizenPluginRegistrant(tizenProject, cppPlugins, dotnetPlugins);
     if (tizenProject.isDotnet) {
       await _writeIntermediateDotnetFiles(tizenProject, dotnetPlugins);
@@ -628,4 +632,36 @@ Future<void> renderTemplateToFile(
       globals.templateRenderer.renderString(template, context);
   await file.create(recursive: true);
   await file.writeAsString(renderedTemplate);
+}
+
+/// See: [_writeFlutterPluginsList] in flutter_plugins.dart
+Future<void> _writeTizenPluginsExtraInfo(
+  FlutterProject project,
+) async {
+  final File extraInfoFile =
+      project.directory.childFile('.flutter-tizen-plugins-extra-info');
+
+  final List<TizenPlugin> plugins = await findTizenPlugins(project);
+  final List<Map<String, Object>> pluginInfo = <Map<String, Object>>[];
+  for (final TizenPlugin plugin in plugins) {
+    pluginInfo.add(<String, Object>{
+      'name': plugin.name,
+    });
+  }
+
+  final Map<String, Object?> result = <String, Object>{};
+  result['info'] =
+      'This is a generated file; do not edit or check into version control.';
+  result['plugins'] = pluginInfo;
+  result['date_created'] = globals.systemClock.now().toString();
+  result['dart_version'] = globals.flutterVersion.dartSdkVersion;
+  result['flutter_version'] = globals.flutterVersion.frameworkVersion;
+  result['engine_version'] =
+      globals.cache.getStampFor(kTizenEngineStampName) ?? '';
+  result['embedder_version'] =
+      globals.cache.getStampFor(kTizenEmbedderStampName) ?? '';
+
+  const JsonEncoder encoder = JsonEncoder.withIndent('  ');
+  final String formattedJsonString = encoder.convert(result);
+  extraInfoFile.writeAsStringSync(formattedJsonString);
 }

@@ -102,16 +102,19 @@ class DotnetTpk extends TizenPackage {
         getEngineArtifactsDirectory(buildInfo.targetArch, buildMode);
     final Directory embedderDir =
         getEmbedderArtifactsDirectory(apiVersion, buildInfo.targetArch);
-
     final File engineBinary = engineDir.childFile('libflutter_engine.so');
     final File embedder = embedderDir.childFile('libflutter_tizen_$profile.so');
     final File icuData = engineDir.childFile('icudtl.dat');
+    final File pluginsExtraInfo =
+        project.directory.childFile('.flutter-tizen-plugins-extra-info');
 
     engineBinary.copySync(libDir.childFile(engineBinary.basename).path);
     // The embedder so name is statically defined in C# code and cannot be
     // provided at runtime, so the file name must be a constant.
     embedder.copySync(libDir.childFile('libflutter_tizen.so').path);
     icuData.copySync(resDir.childFile(icuData.basename).path);
+    pluginsExtraInfo
+        .copySync(ephemeralDir.childFile(pluginsExtraInfo.basename).path);
 
     if (buildMode.isPrecompiled) {
       final File aotSnapshot = environment.buildDir.childFile('app.so');
@@ -285,10 +288,14 @@ class NativeTpk extends TizenPackage {
     final File engineBinary = engineDir.childFile('libflutter_engine.so');
     final File embedder = embedderDir.childFile('libflutter_tizen_$profile.so');
     final File icuData = engineDir.childFile('icudtl.dat');
+    final File pluginsExtraInfo =
+        project.directory.childFile('.flutter-tizen-plugins-extra-info');
 
     engineBinary.copySync(libDir.childFile(engineBinary.basename).path);
     embedder.copySync(libDir.childFile(embedder.basename).path);
     icuData.copySync(resDir.childFile(icuData.basename).path);
+    pluginsExtraInfo
+        .copySync(ephemeralDir.childFile(pluginsExtraInfo.basename).path);
 
     if (buildMode.isPrecompiled) {
       final File aotSnapshot = environment.buildDir.childFile('app.so');
