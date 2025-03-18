@@ -56,11 +56,12 @@ class TizenCache extends Cache {
     required ProcessManager processManager,
     required FlutterProjectFactory projectFactory,
   }) : super(
-            logger: logger,
-            platform: platform,
-            fileSystem: fileSystem,
-            osUtils: osUtils,
-            artifacts: <ArtifactSet>[]) {
+          logger: logger,
+          platform: platform,
+          fileSystem: fileSystem,
+          osUtils: osUtils,
+          artifacts: <ArtifactSet>[],
+        ) {
     registerArtifact(FontSubsetArtifacts(this, platform: platform));
     registerArtifact(PubDependencies(
       logger: logger,

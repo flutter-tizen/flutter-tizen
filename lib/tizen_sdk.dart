@@ -107,7 +107,7 @@ class TizenSdk {
       .childDirectory('bin')
       .childFile(_platform.isWindows ? 'tizen.bat' : 'tizen');
 
-  File get tzCore => toolsDirectory
+  File get tzCli => toolsDirectory
       .childDirectory('tizen-core')
       .childFile(_platform.isWindows ? 'tz.exe' : 'tz');
 
@@ -229,32 +229,6 @@ class TizenSdk {
     );
   }
 
-  Future<RunResult> buildDotnet(
-    String workingDirectory, {
-    String? configuration,
-    String? sign,
-  }) {
-    _processUtils.run(
-      <String>[
-        tzCore.path,
-        'set',
-        if (configuration != null) ...<String>['-b', configuration],
-        if (sign != null) ...<String>['-s', sign],
-        '-w',
-        workingDirectory,
-      ],
-    );
-
-    return _processUtils.run(
-      <String>[
-        tzCore.path,
-        'build',
-        '-w',
-        workingDirectory,
-      ],
-    );
-  }
-
   Future<RunResult> package(
     String workingDirectory, {
     String type = 'tpk',
@@ -273,6 +247,32 @@ class TizenSdk {
       '--',
       workingDirectory,
     ]);
+  }
+
+  Future<RunResult> tzBuild(
+    String workingDirectory, {
+    String? buildType,
+    String? signingProfile,
+  }) {
+    _processUtils.run(
+      <String>[
+        tzCli.path,
+        'set',
+        if (buildType != null) ...<String>['-b', buildType],
+        if (signingProfile != null) ...<String>['-s', signingProfile],
+        '-w',
+        workingDirectory,
+      ],
+    );
+
+    return _processUtils.run(
+      <String>[
+        tzCli.path,
+        'build',
+        '-w',
+        workingDirectory,
+      ],
+    );
   }
 
   Rootstrap getRootstrap({
