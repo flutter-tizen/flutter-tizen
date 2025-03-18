@@ -47,7 +47,7 @@ jobs:
           sudo apt update
           sudo apt install -y libncurses5 python2.7 libpython2.7 gettext \
             libkf5itemmodels5 libkf5kiowidgets5 libkchart2 dbus-x11 gnome-keyring
-          curl https://download.tizen.org/sdk/Installer/tizen-studio_5.6/web-cli_Tizen_Studio_5.6_ubuntu-64.bin -o install.bin
+          curl https://download.tizen.org/sdk/Installer/tizen-studio_6.0/web-cli_Tizen_Studio_6.0_ubuntu-64.bin -o install.bin
           chmod a+x install.bin
           ./install.bin --accept-license $HOME/tizen-studio
           rm install.bin
@@ -59,11 +59,14 @@ jobs:
       - name: Create a Tizen certificate profile
         run: |
           export PATH=$PATH:$HOME/tizen-studio/tools/ide/bin
-          tizen certificate -a tizen -p tizen -f tizen
+          dbus-run-session -- bash -c "
+          echo tizen | gnome-keyring-daemon --unlock &&
+          tizen certificate -a tizen -p tizen -f tizen &&
           tizen security-profiles add \
             -n tizen \
             -a $HOME/tizen-studio-data/keystore/author/tizen.p12 \
             -p tizen
+          "
       - name: Set up flutter-tizen
         run: |
           export PATH=`pwd`/flutter-tizen/bin:$PATH
@@ -73,9 +76,15 @@ jobs:
         run: |
           flutter-tizen create --tizen-language cpp native_app
           cd native_app
+          dbus-run-session -- bash -c "
+          echo tizen | gnome-keyring-daemon --unlock &&
           flutter-tizen build tpk -pcommon --debug
+          "
       - name: Build .NET TPK
         run: |
           flutter-tizen create --tizen-language csharp dotnet_app
           cd dotnet_app
+          dbus-run-session -- bash -c "
+          echo tizen | gnome-keyring-daemon --unlock &&
           flutter-tizen build tpk -pcommon --debug
+          "
