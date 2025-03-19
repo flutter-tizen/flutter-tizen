@@ -72,10 +72,28 @@ class TizenValidator extends DoctorValidator {
     final String gccVersion = _tizenSdk!.defaultGccVersion;
     final String packageManager = _tizenSdk.packageManagerCli.path;
     final List<String> missingPackages = <String>[];
+    bool result = true;
 
     if (!_tizenSdk.tizenCli.existsSync()) {
       missingPackages.add('NativeCLI');
+    } else {
+      final Version? tizenCliVersion = Version.parse(
+        _processUtils
+            .runSync(<String>[_tizenSdk.tzCli.path, '--version'])
+            .stdout
+            .trim()
+            .split('v')
+            .last,
+      );
+
+      if (tizenCliVersion == null || tizenCliVersion < Version(0, 2, 0)) {
+        messages.add(ValidationMessage.error(
+            'The version of NativeCLI is outdated.\n'
+            'Run `$packageManager update` to update the NativeCLI package.'));
+        result = false;
+      }
     }
+
     if (!_tizenSdk.toolsDirectory
         .childDirectory('arm-linux-gnueabi-gcc-$gccVersion')
         .existsSync()) {
@@ -92,9 +110,9 @@ class TizenValidator extends DoctorValidator {
     if (missingPackages.isNotEmpty) {
       messages.add(ValidationMessage.error('To install missing packages, run:\n'
           '$packageManager install ${missingPackages.join(' ')}'));
-      return false;
+      result = false;
     }
-    return true;
+    return result;
   }
 
   /// See: [AndroidValidator.validate] in `android_workflow.dart`
