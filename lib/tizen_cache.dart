@@ -62,7 +62,6 @@ class TizenCache extends Cache {
           osUtils: osUtils,
           artifacts: <ArtifactSet>[],
         ) {
-    registerArtifact(FontSubsetArtifacts(this, platform: platform));
     registerArtifact(PubDependencies(
       logger: logger,
       // flutter root and pub must be lazily initialized to avoid accessing
