@@ -179,7 +179,13 @@ class DotnetTpk extends TizenPackage {
       signingProfile: securityProfile,
     );
     if (result.exitCode != 0) {
-      throwToolExit('Failed to build .NET application:\n$result');
+      final String message = result
+          .toString()
+          .replaceAllMapped(RegExp(r'(/p:AuthorPass=)[^\s]+'),
+              (Match match) => '${match[1]}******')
+          .replaceAllMapped(RegExp(r'(/p:DistributorPass=)[^\s]+'),
+              (Match match) => '${match[1]}******');
+      throwToolExit('Failed to build .NET application:\n$message');
     }
     final File outputTpk = locateTpk(result.stdout);
 
