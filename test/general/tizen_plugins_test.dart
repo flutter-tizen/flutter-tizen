@@ -361,14 +361,14 @@ dependencies:
 ''');
     await injectTizenPlugins(project);
 
-    final File pluginsExtraInfo =
-        fileSystem.file('.flutter-tizen-plugins-extra-info');
-    expect(pluginsExtraInfo, exists);
-    expect(pluginsExtraInfo.readAsStringSync(), contains('''
+    final File appDepsJson = fileSystem.file('app.deps.json');
+    expect(appDepsJson, exists);
+    expect(appDepsJson.readAsStringSync(), contains('''
   "info": "This is a generated file; do not edit or check into version control.",
   "plugins": [
     {
-      "name": "some_native_plugin"
+      "name": "some_native_plugin",
+      "version": ""
     }
   ],
 '''));
@@ -418,14 +418,14 @@ dependencies:
 ''');
     await injectTizenPlugins(project);
 
-    final File pluginsExtraInfo =
-        fileSystem.file('.flutter-tizen-plugins-extra-info');
-    expect(pluginsExtraInfo, exists);
-    expect(pluginsExtraInfo.readAsStringSync(), contains('''
+    final File appDepsJson = fileSystem.file('app.deps.json');
+    expect(appDepsJson, exists);
+    expect(appDepsJson.readAsStringSync(), contains('''
   "info": "This is a generated file; do not edit or check into version control.",
   "plugins": [
     {
-      "name": "some_native_plugin"
+      "name": "some_native_plugin",
+      "version": ""
     }
   ],
 '''));

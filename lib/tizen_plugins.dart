@@ -638,14 +638,44 @@ Future<void> renderTemplateToFile(
 Future<void> _writeTizenPluginsExtraInfo(
   FlutterProject project,
 ) async {
-  final File extraInfoFile =
-      project.directory.childFile('.flutter-tizen-plugins-extra-info');
+  YamlMap? packagesFromPubspecLock() {
+    final File pubspec = project.directory.childFile('pubspec.lock');
+    if (!pubspec.existsSync()) {
+      return null;
+    }
+
+    Object? contents;
+    try {
+      contents = loadYaml(pubspec.readAsStringSync());
+    } on YamlException catch (err) {
+      globals.printTrace('Failed to parse packages from pubspec.lock: $err');
+    }
+    if (contents == null || contents is! YamlMap) {
+      return null;
+    }
+    final Object? packages = contents['packages'];
+    if (packages == null || packages is! YamlMap) {
+      return null;
+    }
+    return packages;
+  }
+
+  final File appDepsJson = project.directory.childFile('app.deps.json');
 
   final List<TizenPlugin> plugins = await findTizenPlugins(project);
   final List<Map<String, Object>> pluginInfo = <Map<String, Object>>[];
+  final YamlMap? packages = packagesFromPubspecLock();
   for (final TizenPlugin plugin in plugins) {
+    String version = '';
+    if (packages != null && packages.containsKey(plugin.name)) {
+      final YamlMap package = packages[plugin.name] as YamlMap;
+      if (package.containsKey('version')) {
+        version = package['version'] as String;
+      }
+    }
     pluginInfo.add(<String, Object>{
       'name': plugin.name,
+      'version': version,
     });
   }
 
@@ -653,15 +683,32 @@ Future<void> _writeTizenPluginsExtraInfo(
   result['info'] =
       'This is a generated file; do not edit or check into version control.';
   result['plugins'] = pluginInfo;
-  result['date_created'] = globals.systemClock.now().toString();
-  result['dart_version'] = globals.flutterVersion.dartSdkVersion;
-  result['flutter_version'] = globals.flutterVersion.frameworkVersion;
-  result['engine_version'] =
-      globals.cache.getStampFor(kTizenEngineStampName) ?? '';
-  result['embedder_version'] =
+  final Map<String, Object> dart = <String, Object>{};
+  dart['version'] = globals.flutterVersion.dartSdkVersion;
+
+  final Map<String, Object> flutter = <String, Object>{};
+  flutter['version'] = globals.flutterVersion.frameworkVersion;
+
+  final Map<String, Object> flutterTizen = <String, Object>{};
+  flutterTizen['revision'] = globals.flutterVersion.frameworkRevisionShort;
+
+  final Map<String, Object> engine = <String, Object>{};
+  engine['revision'] = globals.flutterVersion.engineRevisionShort;
+
+  final Map<String, Object> embedder = <String, Object>{};
+  final String revision =
       globals.cache.getStampFor(kTizenEmbedderStampName) ?? '';
+  embedder['revision'] =
+      revision.length > 10 ? revision.substring(0, 10) : revision;
+
+  result['dart'] = dart;
+  result['flutter'] = flutter;
+  result['flutter-tizen'] = flutterTizen;
+  result['engine'] = engine;
+  result['embedder'] = embedder;
+  result['date_created'] = globals.systemClock.now().toString();
 
   const JsonEncoder encoder = JsonEncoder.withIndent('  ');
   final String formattedJsonString = encoder.convert(result);
-  extraInfoFile.writeAsStringSync(formattedJsonString);
+  appDepsJson.writeAsStringSync(formattedJsonString);
 }
