@@ -112,8 +112,10 @@ class DotnetTpk extends TizenPackage {
     // provided at runtime, so the file name must be a constant.
     embedder.copySync(libDir.childFile('libflutter_tizen.so').path);
     icuData.copySync(resDir.childFile(icuData.basename).path);
-    appDepsJson.copySync(
-        tizenProject.hostAppRoot.childFile(appDepsJson.basename).path);
+    appDepsJson.copySync(resDir
+        .childDirectory('flutter_assets')
+        .childFile(appDepsJson.basename)
+        .path);
 
     if (buildMode.isPrecompiled) {
       final File aotSnapshot = environment.buildDir.childFile('app.so');
@@ -292,8 +294,10 @@ class NativeTpk extends TizenPackage {
     engineBinary.copySync(libDir.childFile(engineBinary.basename).path);
     embedder.copySync(libDir.childFile(embedder.basename).path);
     icuData.copySync(resDir.childFile(icuData.basename).path);
-    appDepsJson.copySync(
-        tizenProject.hostAppRoot.childFile(appDepsJson.basename).path);
+    appDepsJson.copySync(resDir
+        .childDirectory('flutter_assets')
+        .childFile(appDepsJson.basename)
+        .path);
 
     if (buildMode.isPrecompiled) {
       final File aotSnapshot = environment.buildDir.childFile('app.so');

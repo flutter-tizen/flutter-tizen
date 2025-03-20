@@ -132,7 +132,7 @@ void main() {
           ephemeralDir.childFile('lib/libflutter_engine.so');
       final File embedder = ephemeralDir.childFile('lib/libflutter_tizen.so');
       final File icuData = ephemeralDir.childFile('res/icudtl.dat');
-      final File appDepsJson = projectDir.childFile('tizen/app.deps.json');
+      final File appDepsJson = flutterAssetsDir.childFile('app.deps.json');
       final File aotSnapshot = ephemeralDir.childFile('lib/libapp.so');
       final File pluginsLib =
           ephemeralDir.childFile('lib/libflutter_plugins.so');
@@ -255,7 +255,7 @@ type = app
       final File embedder =
           ephemeralDir.childFile('lib/libflutter_tizen_common.so');
       final File icuData = ephemeralDir.childFile('res/icudtl.dat');
-      final File appDepsJson = projectDir.childFile('tizen/app.deps.json');
+      final File appDepsJson = flutterAssetsDir.childFile('app.deps.json');
       final File aotSnapshot = ephemeralDir.childFile('lib/libapp.so');
       final File pluginsLib =
           ephemeralDir.childFile('lib/libflutter_plugins.so');

@@ -16,11 +16,4 @@
     </TizenTpkUserIncludeFiles>
   </ItemGroup>
 
-  <ItemGroup>
-    <FlutterAppDepsJson Include="app.deps.json" />
-    <TizenTpkUserIncludeFiles Include="@(FlutterAppDepsJson)">
-      <TizenTpkFileName>app.deps.json</TizenTpkFileName>
-    </TizenTpkUserIncludeFiles>
-  </ItemGroup>
-
 </Project>
