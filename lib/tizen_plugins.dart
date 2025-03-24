@@ -370,7 +370,7 @@ Future<void> injectTizenPlugins(FlutterProject project) async {
         await findTizenPlugins(project, cppOnly: true);
     final List<TizenPlugin> dotnetPlugins =
         await findTizenPlugins(project, dotnetOnly: true);
-    await _writeTizenPluginsExtraInfo(project);
+    await _writeAppDepndencyInfo(project);
     await _writeTizenPluginRegistrant(tizenProject, cppPlugins, dotnetPlugins);
     if (tizenProject.isDotnet) {
       await _writeIntermediateDotnetFiles(tizenProject, dotnetPlugins);
@@ -635,7 +635,7 @@ Future<void> renderTemplateToFile(
 }
 
 /// See: [_writeFlutterPluginsList] in flutter_plugins.dart
-Future<void> _writeTizenPluginsExtraInfo(
+Future<void> _writeAppDepndencyInfo(
   FlutterProject project,
 ) async {
   YamlMap? packagesFromPubspecLock() {
@@ -660,8 +660,8 @@ Future<void> _writeTizenPluginsExtraInfo(
     return packages;
   }
 
-  final File appDepsJson = project.directory.childFile('app.deps.json');
-
+  final TizenProject tizenProject = TizenProject.fromFlutter(project);
+  final File appDepsJson = tizenProject.hostAppRoot.childFile('.app.deps.json');
   final List<TizenPlugin> plugins = await findTizenPlugins(project);
   final List<Map<String, Object>> pluginInfo = <Map<String, Object>>[];
   final YamlMap? packages = packagesFromPubspecLock();

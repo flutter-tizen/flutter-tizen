@@ -361,7 +361,7 @@ dependencies:
 ''');
     await injectTizenPlugins(project);
 
-    final File appDepsJson = fileSystem.file('app.deps.json');
+    final File appDepsJson = fileSystem.file('tizen/.app.deps.json');
     expect(appDepsJson, exists);
     expect(appDepsJson.readAsStringSync(), contains('''
   "info": "This is a generated file; do not edit or check into version control.",
@@ -418,7 +418,7 @@ dependencies:
 ''');
     await injectTizenPlugins(project);
 
-    final File appDepsJson = fileSystem.file('app.deps.json');
+    final File appDepsJson = fileSystem.file('tizen/.app.deps.json');
     expect(appDepsJson, exists);
     expect(appDepsJson.readAsStringSync(), contains('''
   "info": "This is a generated file; do not edit or check into version control.",

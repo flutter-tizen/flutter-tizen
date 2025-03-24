@@ -3,3 +3,4 @@ flutter/
 *.user
 bin/
 obj/
+.app.deps.json

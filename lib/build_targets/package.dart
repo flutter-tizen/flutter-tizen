@@ -105,7 +105,8 @@ class DotnetTpk extends TizenPackage {
     final File engineBinary = engineDir.childFile('libflutter_engine.so');
     final File embedder = embedderDir.childFile('libflutter_tizen_$profile.so');
     final File icuData = engineDir.childFile('icudtl.dat');
-    final File appDepsJson = project.directory.childFile('app.deps.json');
+    final File appDepsJson =
+        tizenProject.hostAppRoot.childFile('.app.deps.json');
 
     engineBinary.copySync(libDir.childFile(engineBinary.basename).path);
     // The embedder so name is statically defined in C# code and cannot be
@@ -289,7 +290,8 @@ class NativeTpk extends TizenPackage {
     final File engineBinary = engineDir.childFile('libflutter_engine.so');
     final File embedder = embedderDir.childFile('libflutter_tizen_$profile.so');
     final File icuData = engineDir.childFile('icudtl.dat');
-    final File appDepsJson = project.directory.childFile('app.deps.json');
+    final File appDepsJson =
+        tizenProject.hostAppRoot.childFile('.app.deps.json');
 
     engineBinary.copySync(libDir.childFile(engineBinary.basename).path);
     embedder.copySync(libDir.childFile(embedder.basename).path);
