@@ -156,12 +156,7 @@ class TizenDevice extends Device {
     } else if (usesSecureProtocol) {
       return cpuArch == 'armv7' ? 'arm' : 'arm64';
     } else {
-      // Reading the cpu_arch capability value is not a reliable way to get the
-      // runtime architecture from devices like Raspberry Pi. The following is a
-      // little workaround.
-      final String stdout =
-          runSdbSync(<String>['shell', 'ls', '/usr/lib64']).stdout;
-      return stdout.contains('No such file or directory') ? 'arm' : 'arm64';
+      return getCapability('architecture') == '32' ? 'arm' : 'arm64';
     }
   }();
 
@@ -184,26 +179,20 @@ class TizenDevice extends Device {
   }
 
   Future<String?> _getDeviceAppSignature(TizenTpk app) async {
-    final List<String> rootCandidates = <String>[
-      '/opt/usr/apps',
-      '/opt/usr/globalapps',
-    ];
-    for (final String root in rootCandidates) {
-      final File signatureFile = _fileSystem.systemTempDirectory
-          .createTempSync()
-          .childFile('author-signature.xml');
-      final RunResult result = await runSdbAsync(
-        <String>[
-          'pull',
-          '$root/${app.id}/${signatureFile.basename}',
-          signatureFile.path,
-        ],
-        checked: false,
-      );
-      if (result.exitCode == 0 && signatureFile.existsSync()) {
-        final Signature? signature = Signature.parseFromXml(signatureFile);
-        return signature?.signatureValue;
-      }
+    final File signatureFile = _fileSystem.systemTempDirectory
+        .createTempSync()
+        .childFile('author-signature.xml');
+    final RunResult result = await runSdbAsync(
+      <String>[
+        'pull',
+        '/opt/usr/home/owner/apps_rw/${app.id}/${signatureFile.basename}',
+        signatureFile.path,
+      ],
+      checked: false,
+    );
+    if (result.exitCode == 0 && signatureFile.existsSync()) {
+      final Signature? signature = Signature.parseFromXml(signatureFile);
+      return signature?.signatureValue;
     }
     return null;
   }
@@ -225,6 +214,7 @@ class TizenDevice extends Device {
     if (wasInstalled) {
       if (await isLatestBuildInstalled(app)) {
         _logger.printStatus('Latest build already installed.');
+        await stopApp(app, userIdentifier: userIdentifier);
         return true;
       }
     }
@@ -365,11 +355,6 @@ class TizenDevice extends Device {
     // There was a failure parsing the project information.
     if (package == null) {
       throwToolExit('Problem building Tizen application: see above error(s).');
-    }
-
-    _logger.printTrace("Stopping app '${package.name}' on $name.");
-    if (await isAppInstalled(package)) {
-      await stopApp(package, userIdentifier: userIdentifier);
     }
 
     if (!await installApp(package, userIdentifier: userIdentifier)) {
