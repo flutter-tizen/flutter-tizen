@@ -326,6 +326,113 @@ dependencies:
     FileSystem: () => fileSystem,
     ProcessManager: () => FakeProcessManager.any(),
   }, testOn: 'posix');
+
+  testUsingContext('Generates plugins & extra info file for C++', () async {
+    fileSystem.file('tizen/tizen-manifest.xml').createSync(recursive: true);
+
+    final Directory pluginDir = fileSystem.directory('/some_native_plugin');
+    pluginDir.childFile('pubspec.yaml')
+      ..createSync(recursive: true)
+      ..writeAsStringSync('''
+flutter:
+  plugin:
+    platforms:
+      tizen:
+        pluginClass: SomeNativePlugin
+        fileName: some_native_plugin.h
+''');
+    pubspecFile.writeAsStringSync('''
+dependencies:
+  some_native_plugin:
+    path: ${pluginDir.path}
+''');
+    packageConfigFile.writeAsStringSync('''
+{
+  "configVersion": 2,
+  "packages": [
+    {
+      "name": "some_native_plugin",
+      "rootUri": "${pluginDir.uri}",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    }
+  ]
+}
+''');
+    await injectTizenPlugins(project);
+
+    final File appDepsJson = fileSystem.file('tizen/.app.deps.json');
+    expect(appDepsJson, exists);
+    expect(appDepsJson.readAsStringSync(), contains('''
+  "info": "This is a generated file; do not edit or check into version control.",
+  "plugins": [
+    {
+      "name": "some_native_plugin",
+      "version": ""
+    }
+  ],
+'''));
+  }, overrides: <Type, Generator>{
+    FileSystem: () => fileSystem,
+    ProcessManager: () => FakeProcessManager.any(),
+  }, testOn: 'posix');
+
+  testUsingContext('Generates plugins & extra info file for C#', () async {
+    fileSystem.file('tizen/Runner.csproj').createSync(recursive: true);
+    fileSystem.file('tizen/tizen-manifest.xml').createSync(recursive: true);
+
+    final Directory pluginDir = fileSystem.directory('/some_native_plugin');
+    pluginDir.childFile('pubspec.yaml')
+      ..createSync(recursive: true)
+      ..writeAsStringSync('''
+flutter:
+  plugin:
+    platforms:
+      tizen:
+        pluginClass: SomeNativePlugin
+        fileName: some_native_plugin.h
+''');
+    pluginDir.childFile('tizen/project_def.prop')
+      ..createSync(recursive: true)
+      ..writeAsStringSync('''
+APPNAME = some_native_plugin
+type = staticLib
+''');
+    pubspecFile.writeAsStringSync('''
+dependencies:
+  some_native_plugin:
+    path: ${pluginDir.path}
+''');
+    packageConfigFile.writeAsStringSync('''
+{
+  "configVersion": 2,
+  "packages": [
+    {
+      "name": "some_native_plugin",
+      "rootUri": "${pluginDir.uri}",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    }
+  ]
+}
+''');
+    await injectTizenPlugins(project);
+
+    final File appDepsJson = fileSystem.file('tizen/.app.deps.json');
+    expect(appDepsJson, exists);
+    expect(appDepsJson.readAsStringSync(), contains('''
+  "info": "This is a generated file; do not edit or check into version control.",
+  "plugins": [
+    {
+      "name": "some_native_plugin",
+      "version": ""
+    }
+  ],
+'''));
+  }, overrides: <Type, Generator>{
+    FileSystem: () => fileSystem,
+    ProcessManager: () => FakeProcessManager.any(),
+  }, testOn: 'posix');
 }
 
 class _DummyFlutterCommand extends FlutterCommand with DartPluginRegistry {
