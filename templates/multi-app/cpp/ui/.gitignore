@@ -4,3 +4,4 @@ flutter/
 crash-info/
 Debug/
 Release/
+.app.deps.json

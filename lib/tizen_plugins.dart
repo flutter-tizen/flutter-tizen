@@ -3,6 +3,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:convert';
+
 import 'package:analyzer/dart/analysis/analysis_context.dart';
 import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
 import 'package:analyzer/dart/analysis/results.dart';
@@ -25,6 +27,7 @@ import 'package:flutter_tools/src/runner/flutter_command.dart';
 import 'package:package_config/package_config.dart';
 import 'package:yaml/yaml.dart';
 
+import 'tizen_cache.dart';
 import 'tizen_project.dart';
 import 'tizen_sdk.dart';
 
@@ -367,6 +370,7 @@ Future<void> injectTizenPlugins(FlutterProject project) async {
         await findTizenPlugins(project, cppOnly: true);
     final List<TizenPlugin> dotnetPlugins =
         await findTizenPlugins(project, dotnetOnly: true);
+    await _writeAppDepndencyInfo(project);
     await _writeTizenPluginRegistrant(tizenProject, cppPlugins, dotnetPlugins);
     if (tizenProject.isDotnet) {
       await _writeIntermediateDotnetFiles(tizenProject, dotnetPlugins);
@@ -628,4 +632,83 @@ Future<void> renderTemplateToFile(
       globals.templateRenderer.renderString(template, context);
   await file.create(recursive: true);
   await file.writeAsString(renderedTemplate);
+}
+
+/// See: [_writeFlutterPluginsList] in flutter_plugins.dart
+Future<void> _writeAppDepndencyInfo(
+  FlutterProject project,
+) async {
+  YamlMap? packagesFromPubspecLock() {
+    final File pubspec = project.directory.childFile('pubspec.lock');
+    if (!pubspec.existsSync()) {
+      return null;
+    }
+
+    Object? contents;
+    try {
+      contents = loadYaml(pubspec.readAsStringSync());
+    } on YamlException catch (err) {
+      globals.printTrace('Failed to parse packages from pubspec.lock: $err');
+    }
+    if (contents == null || contents is! YamlMap) {
+      return null;
+    }
+    final Object? packages = contents['packages'];
+    if (packages == null || packages is! YamlMap) {
+      return null;
+    }
+    return packages;
+  }
+
+  final TizenProject tizenProject = TizenProject.fromFlutter(project);
+  final File appDepsJson = tizenProject.hostAppRoot.childFile('.app.deps.json');
+  final List<TizenPlugin> plugins = await findTizenPlugins(project);
+  final List<Map<String, Object>> pluginInfo = <Map<String, Object>>[];
+  final YamlMap? packages = packagesFromPubspecLock();
+  for (final TizenPlugin plugin in plugins) {
+    String version = '';
+    if (packages != null && packages.containsKey(plugin.name)) {
+      final YamlMap package = packages[plugin.name] as YamlMap;
+      if (package.containsKey('version')) {
+        version = package['version'] as String;
+      }
+    }
+    pluginInfo.add(<String, Object>{
+      'name': plugin.name,
+      'version': version,
+    });
+  }
+
+  final Map<String, Object?> result = <String, Object>{};
+  result['info'] =
+      'This is a generated file; do not edit or check into version control.';
+  result['plugins'] = pluginInfo;
+  final Map<String, Object> dart = <String, Object>{};
+  dart['version'] = globals.flutterVersion.dartSdkVersion;
+
+  final Map<String, Object> flutter = <String, Object>{};
+  flutter['version'] = globals.flutterVersion.frameworkVersion;
+
+  final Map<String, Object> flutterTizen = <String, Object>{};
+  flutterTizen['revision'] = globals.flutterVersion.frameworkRevisionShort;
+
+  final Map<String, Object> engine = <String, Object>{};
+  engine['revision'] = globals.flutterVersion.engineRevisionShort;
+
+  final Map<String, Object> embedder = <String, Object>{};
+  final String revision =
+      globals.cache.getStampFor(kTizenEmbedderStampName) ?? '';
+  embedder['revision'] =
+      revision.length > 10 ? revision.substring(0, 10) : revision;
+
+  result['dart'] = dart;
+  result['flutter'] = flutter;
+  result['flutter-tizen'] = flutterTizen;
+  result['engine'] = engine;
+  result['embedder'] = embedder;
+  result['date_created'] = globals.systemClock.now().toString();
+
+  const JsonEncoder encoder = JsonEncoder.withIndent('  ');
+  final String formattedJsonString = encoder.convert(result);
+  appDepsJson.writeAsStringSync(formattedJsonString);
 }
