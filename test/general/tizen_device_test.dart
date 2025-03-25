@@ -75,9 +75,6 @@ void main() {
       FakeCommand(
         command: _sdbCommand(<String>['shell', 'app_launcher', '-l']),
       ),
-      FakeCommand(
-        command: _sdbCommand(<String>['shell', 'app_launcher', '-l']),
-      ),
       FakeCommand(command: _sdbCommand(<String>['install', 'app.tpk'])),
       FakeCommand(
         command: _sdbCommand(<String>[
@@ -182,7 +179,7 @@ User's Application
       FakeCommand(
         command: _sdbCommand(<String>[
           'pull',
-          '/opt/usr/apps/TestPackage/author-signature.xml',
+          '/opt/usr/home/owner/apps_rw/TestPackage/author-signature.xml',
           '/.tmp_rand0/rand0/author-signature.xml',
         ]),
         onRun: (_) {
