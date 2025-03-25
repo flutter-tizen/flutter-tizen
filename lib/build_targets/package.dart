@@ -178,16 +178,19 @@ class DotnetTpk extends TizenPackage {
         'Install the latest .NET SDK from: https://dotnet.microsoft.com/download',
       );
     }
-    final RunResult result = await _processUtils.run(<String>[
-      dotnetCli!.path,
-      'build',
-      '-c',
-      buildConfig,
-      '/p:DefineConstants=${profile.toUpperCase()}_PROFILE',
+    final RunResult result = await tizenSdk!.tzBuild(
       tizenProject.hostAppRoot.path,
-    ]);
+      buildType: buildConfig,
+      signingProfile: securityProfile,
+    );
     if (result.exitCode != 0) {
-      throwToolExit('Failed to build .NET application:\n$result');
+      final String message = result
+          .toString()
+          .replaceAllMapped(RegExp(r'(/p:AuthorPass=)[^\s]+'),
+              (Match match) => '${match[1]}******')
+          .replaceAllMapped(RegExp(r'(/p:DistributorPass=)[^\s]+'),
+              (Match match) => '${match[1]}******');
+      throwToolExit('Failed to build .NET application:\n$message');
     }
     final File outputTpk = locateTpk(result.stdout);
 
@@ -214,14 +217,6 @@ class DotnetTpk extends TizenPackage {
       );
       if (result.exitCode != 0) {
         throwToolExit('Failed to create a TPK:\n$result');
-      }
-    } else {
-      // build-task-tizen signs the output TPK with a dummy profile by default.
-      // We need to regenerate the TPK by signing it with a valid profile.
-      final RunResult result =
-          await tizenSdk!.package(outputTpk.path, sign: securityProfile);
-      if (result.exitCode != 0) {
-        throwToolExit('Failed to sign the TPK:\n$result');
       }
     }
 

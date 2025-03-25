@@ -101,22 +101,34 @@ void main() {
           .childFile('.app.deps.json')
           .createSync(recursive: true);
 
-      processManager.addCommand(FakeCommand(
-        command: <String>[
-          'dotnet',
-          'build',
-          '-c',
-          'Release',
-          '/p:DefineConstants=COMMON_PROFILE',
-          '${projectDir.path}/tizen',
-        ],
-        onRun: (_) {
-          projectDir
-              .childFile('tizen/bin/Release/tizen80/package_id-1.0.0.tpk')
-              .createSync(recursive: true);
-        },
-        stdout: kMsbuildOutput,
-      ));
+      processManager.addCommands(<FakeCommand>[
+        FakeCommand(
+          command: <String>[
+            '/tizen-studio/tools/tizen-core/tz',
+            'set',
+            '-b',
+            'Release',
+            '-s',
+            'test_profile',
+            '-w',
+            '${projectDir.path}/tizen',
+          ],
+        ),
+        FakeCommand(
+          command: <String>[
+            '/tizen-studio/tools/tizen-core/tz',
+            'build',
+            '-w',
+            '${projectDir.path}/tizen',
+          ],
+          onRun: (_) {
+            projectDir
+                .childFile('tizen/bin/Release/tizen80/package_id-1.0.0.tpk')
+                .createSync(recursive: true);
+          },
+          stdout: kMsbuildOutput,
+        )
+      ]);
 
       await DotnetTpk(const TizenBuildInfo(
         BuildInfo.release,
@@ -156,7 +168,8 @@ void main() {
       ProcessManager: () => processManager,
       Cache: () => cache,
       OperatingSystemUtils: () => osUtils,
-      TizenSdk: () => FakeTizenSdk(fileSystem, securityProfile: 'test_profile'),
+      TizenSdk: () => FakeTizenSdk(fileSystem,
+          securityProfile: 'test_profile', processManager: processManager),
     });
 
     testUsingContext('Build fails if no security profile is found', () async {
@@ -177,22 +190,34 @@ void main() {
           .childFile('.app.deps.json')
           .createSync(recursive: true);
 
-      processManager.addCommand(FakeCommand(
-        command: <String>[
-          'dotnet',
-          'build',
-          '-c',
-          'Release',
-          '/p:DefineConstants=COMMON_PROFILE',
-          '${projectDir.path}/tizen',
-        ],
-        onRun: (_) {
-          projectDir
-              .childFile('tizen/bin/Release/tizen80/package_id-1.0.0.tpk')
-              .createSync(recursive: true);
-        },
-        stdout: kMsbuildOutput,
-      ));
+      processManager.addCommands(<FakeCommand>[
+        FakeCommand(
+          command: <String>[
+            '/tizen-studio/tools/tizen-core/tz',
+            'set',
+            '-b',
+            'Release',
+            '-s',
+            'test_profile',
+            '-w',
+            '${projectDir.path}/tizen',
+          ],
+        ),
+        FakeCommand(
+          command: <String>[
+            '/tizen-studio/tools/tizen-core/tz',
+            'build',
+            '-w',
+            '${projectDir.path}/tizen',
+          ],
+          onRun: (_) {
+            projectDir
+                .childFile('tizen/bin/Release/tizen80/package_id-1.0.0.tpk')
+                .createSync(recursive: true);
+          },
+          stdout: kMsbuildOutput,
+        )
+      ]);
 
       await expectLater(
         () => DotnetTpk(const TizenBuildInfo(
@@ -207,7 +232,7 @@ void main() {
       ProcessManager: () => processManager,
       Cache: () => cache,
       OperatingSystemUtils: () => osUtils,
-      TizenSdk: () => FakeTizenSdk(fileSystem),
+      TizenSdk: () => FakeTizenSdk(fileSystem, processManager: processManager),
     });
   });
 

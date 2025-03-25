@@ -107,6 +107,10 @@ class TizenSdk {
       .childDirectory('bin')
       .childFile(_platform.isWindows ? 'tizen.bat' : 'tizen');
 
+  File get tzCli => toolsDirectory
+      .childDirectory('tizen-core')
+      .childFile(_platform.isWindows ? 'tz.exe' : 'tz');
+
   File get emCli => toolsDirectory
       .childDirectory('emulator')
       .childDirectory('bin')
@@ -243,6 +247,32 @@ class TizenSdk {
       '--',
       workingDirectory,
     ]);
+  }
+
+  Future<RunResult> tzBuild(
+    String workingDirectory, {
+    String? buildType,
+    String? signingProfile,
+  }) {
+    _processUtils.run(
+      <String>[
+        tzCli.path,
+        'set',
+        if (buildType != null) ...<String>['-b', buildType],
+        if (signingProfile != null) ...<String>['-s', signingProfile],
+        '-w',
+        workingDirectory,
+      ],
+    );
+
+    return _processUtils.run(
+      <String>[
+        tzCli.path,
+        'build',
+        '-w',
+        workingDirectory,
+      ],
+    );
   }
 
   Rootstrap getRootstrap({
