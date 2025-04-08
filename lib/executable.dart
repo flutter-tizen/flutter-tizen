@@ -58,10 +58,10 @@ import 'tizen_cache.dart';
 import 'tizen_device_manager.dart';
 import 'tizen_doctor.dart';
 import 'tizen_emulator.dart';
+import 'tizen_flutter_version.dart';
 import 'tizen_osutils.dart';
 import 'tizen_pub.dart';
 import 'tizen_sdk.dart';
-import 'tizen_flutter_version.dart';
 
 /// Main entry point for commands.
 ///
