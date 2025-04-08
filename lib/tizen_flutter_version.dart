@@ -20,24 +20,38 @@ class TizenFlutterVersion implements FlutterVersion {
         );
   final FlutterVersion flutterVersion;
 
+  String _flutterTizenTagVersion = '';
+  String get flutterTizenTag {
+    if (_flutterTizenTagVersion.isEmpty) {
+      final Directory workingDirectory = fs.directory(Cache.flutterRoot).parent;
+      final String lastTagRevision = _runGit(
+        'git rev-list --tags --max-count=1',
+        workingDirectory.path,
+      );
+
+      _flutterTizenTagVersion = _runGit(
+        'git describe --tags $lastTagRevision',
+        workingDirectory.path,
+      );
+    }
+    return _flutterTizenTagVersion;
+  }
+
+  String _flutterTizenLatestRevision = '';
+  String get flutterTizenLatestRevision {
+    if (_flutterTizenLatestRevision.isEmpty) {
+      final Directory workingDirectory = fs.directory(Cache.flutterRoot).parent;
+      _flutterTizenLatestRevision = _runGit(
+        'git -c log.showSignature=false log -n 1 --pretty=format:%H',
+        workingDirectory.path,
+      );
+    }
+    return _flutterTizenLatestRevision;
+  }
+
   @override
   String toString() {
-    final Directory workingDirectory = fs.directory(Cache.flutterRoot).parent;
-    final String lastTagRevision = _runGit(
-      'git rev-list --tags --max-count=1',
-      workingDirectory.path,
-    );
-
-    final String flutterTizenVersion = _runGit(
-      'git describe --tags $lastTagRevision',
-      workingDirectory.path,
-    );
-
-    final String flutterTizenRevision = _runGit(
-      'git -c log.showSignature=false log -n 1 --pretty=format:%H',
-      workingDirectory.path,
-    );
-    return 'Flutter-Tizen $flutterTizenVersion • revision ${_shortGitRevision(flutterTizenRevision)}\n$flutterVersion';
+    return 'Flutter-Tizen $flutterTizenTag • revision ${_shortGitRevision(flutterTizenLatestRevision)}\n$flutterVersion';
   }
 
   @override
