@@ -102,12 +102,6 @@ void main() {
           .createSync(recursive: true);
 
       processManager.addCommands(<FakeCommand>[
-        const FakeCommand(
-          command: <String>[
-            'touch',
-            'tizen_dotnet_project.yaml',
-          ],
-        ),
         FakeCommand(
           command: const <String>[
             '/tizen-studio/tools/tizen-core/tz',
@@ -195,12 +189,6 @@ void main() {
           .createSync(recursive: true);
 
       processManager.addCommands(<FakeCommand>[
-        const FakeCommand(
-          command: <String>[
-            'touch',
-            'tizen_dotnet_project.yaml',
-          ],
-        ),
         FakeCommand(
           command: const <String>[
             '/tizen-studio/tools/tizen-core/tz',

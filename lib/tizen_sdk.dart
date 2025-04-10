@@ -265,7 +265,7 @@ class TizenSdk {
     );
 
     if (result.exitCode != 0) {
-      throwToolExit('Failed to build .NET application:\n$result');
+      return result;
     }
 
     return _processUtils.run(

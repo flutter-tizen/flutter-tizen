@@ -184,17 +184,9 @@ class DotnetTpk extends TizenPackage {
     // create it manually and `tz set` command. This will be fixed
     // in the next version of Tizen SDK.
     // https://github.com/flutter-tizen/flutter-tizen/issues/610
-    if (!tizenProject.hostAppRoot
+    tizenProject.hostAppRoot
         .childFile('tizen_dotnet_project.yaml')
-        .existsSync()) {
-      await _processUtils.run(
-        <String>[
-          'touch',
-          'tizen_dotnet_project.yaml',
-        ],
-        workingDirectory: tizenProject.hostAppRoot.path,
-      );
-    }
+        .createSync(recursive: true);
 
     final RunResult result = await tizenSdk!.tzBuild(
       tizenProject.hostAppRoot.path,
