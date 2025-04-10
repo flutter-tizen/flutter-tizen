@@ -81,8 +81,7 @@ class TizenValidator extends DoctorValidator {
       );
 
       if (tizenCliVersion == null || tizenCliVersion < Version(0, 2, 0)) {
-        messages.add(ValidationMessage.error(
-            'The version of NativeCLI is outdated.\n'
+        messages.add(ValidationMessage.error('The version of NativeCLI is outdated.\n'
             'Run `$packageManager update` to update the NativeCLI package.'));
         result = false;
       }

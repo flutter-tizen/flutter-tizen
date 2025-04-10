@@ -102,9 +102,8 @@ class TizenSdk {
       .childDirectory('bin')
       .childFile(_platform.isWindows ? 'tizen.bat' : 'tizen');
 
-  File get tzCli => toolsDirectory
-      .childDirectory('tizen-core')
-      .childFile(_platform.isWindows ? 'tz.exe' : 'tz');
+  File get tzCli =>
+      toolsDirectory.childDirectory('tizen-core').childFile(_platform.isWindows ? 'tz.exe' : 'tz');
 
   File get emCli => toolsDirectory
       .childDirectory('emulator')
