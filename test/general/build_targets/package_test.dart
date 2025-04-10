@@ -102,25 +102,29 @@ void main() {
           .createSync(recursive: true);
 
       processManager.addCommands(<FakeCommand>[
-        FakeCommand(
+        const FakeCommand(
           command: <String>[
+            'touch',
+            'tizen_dotnet_project.yaml',
+          ],
+        ),
+        FakeCommand(
+          command: const <String>[
             '/tizen-studio/tools/tizen-core/tz',
             'set',
             '-b',
             'Release',
             '-s',
             'test_profile',
-            '-w',
-            '${projectDir.path}/tizen',
           ],
+          workingDirectory: '${projectDir.path}/tizen',
         ),
         FakeCommand(
-          command: <String>[
+          command: const <String>[
             '/tizen-studio/tools/tizen-core/tz',
             'build',
-            '-w',
-            '${projectDir.path}/tizen',
           ],
+          workingDirectory: '${projectDir.path}/tizen',
           onRun: (_) {
             projectDir
                 .childFile('tizen/bin/Release/tizen80/package_id-1.0.0.tpk')
@@ -191,25 +195,29 @@ void main() {
           .createSync(recursive: true);
 
       processManager.addCommands(<FakeCommand>[
-        FakeCommand(
+        const FakeCommand(
           command: <String>[
+            'touch',
+            'tizen_dotnet_project.yaml',
+          ],
+        ),
+        FakeCommand(
+          command: const <String>[
             '/tizen-studio/tools/tizen-core/tz',
             'set',
             '-b',
             'Release',
             '-s',
             'test_profile',
-            '-w',
-            '${projectDir.path}/tizen',
           ],
+          workingDirectory: '${projectDir.path}/tizen',
         ),
         FakeCommand(
-          command: <String>[
+          command: const <String>[
             '/tizen-studio/tools/tizen-core/tz',
             'build',
-            '-w',
-            '${projectDir.path}/tizen',
           ],
+          workingDirectory: '${projectDir.path}/tizen',
           onRun: (_) {
             projectDir
                 .childFile('tizen/bin/Release/tizen80/package_id-1.0.0.tpk')
