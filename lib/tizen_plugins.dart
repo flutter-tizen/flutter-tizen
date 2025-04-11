@@ -679,8 +679,7 @@ Future<void> _writeAppDepndencyInfo(
   flutter['revision'] = globals.flutterVersion.frameworkRevisionShort;
 
   final Map<String, Object> flutterTizen = <String, Object>{};
-  final Directory workingDirectory =
-      globals.fs.directory(Cache.flutterRoot).parent;
+  final Directory workingDirectory = globals.fs.directory(Cache.flutterRoot).parent;
   final String frameworkRevision = _runGit(
     'git -c log.showSignature=false log -n 1 --pretty=format:%H',
     workingDirectory.path,

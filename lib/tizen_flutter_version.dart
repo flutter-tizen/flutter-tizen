@@ -40,8 +40,7 @@ class TizenFlutterVersion implements FlutterVersion {
   String get channel => flutterVersion.channel;
 
   @override
-  Future<void> checkFlutterVersionFreshness() =>
-      flutterVersion.checkFlutterVersionFreshness();
+  Future<void> checkFlutterVersionFreshness() => flutterVersion.checkFlutterVersionFreshness();
 
   @override
   String get dartSdkVersion => flutterVersion.dartSdkVersion;
@@ -87,13 +86,12 @@ class TizenFlutterVersion implements FlutterVersion {
   FileSystem get fs => flutterVersion.fs;
 
   @override
-  String getBranchName({bool redactUnknownBranches = false}) => flutterVersion
-      .getBranchName(redactUnknownBranches: redactUnknownBranches);
+  String getBranchName({bool redactUnknownBranches = false}) =>
+      flutterVersion.getBranchName(redactUnknownBranches: redactUnknownBranches);
 
   @override
   String getVersionString({bool redactUnknownBranches = false}) =>
-      flutterVersion.getVersionString(
-          redactUnknownBranches: redactUnknownBranches);
+      flutterVersion.getVersionString(redactUnknownBranches: redactUnknownBranches);
 
   @override
   GitTagVersion get gitTagVersion => flutterVersion.gitTagVersion;
