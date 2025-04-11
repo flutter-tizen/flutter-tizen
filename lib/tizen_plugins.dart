@@ -697,8 +697,6 @@ Future<void> _writeAppDepndencyInfo(
     'git -c log.showSignature=false log -n 1 --pretty=format:%H',
     workingDirectory.path,
   );
-  // TODO(jsuya): https://github.com/flutter-tizen/flutter-tizen/pull/608 is merged, we can use TizenFlutterVersion.flutterTizenVersion.
-  // flutterTizen['revision'] = (globals.flutterVersion as TizenFlutterVersion).flutterTizenVersion;
   flutterTizen['revision'] = _shortGitRevision(frameworkRevision);
 
   final Map<String, Object> engine = <String, Object>{};
@@ -731,9 +729,6 @@ String _runGit(String command, String? workingDirectory) {
 }
 
 /// Source: [_shortGitRevision] in `version.dart`
-String _shortGitRevision(String? revision) {
-  if (revision == null) {
-    return '';
-  }
+String _shortGitRevision(String revision) {
   return revision.length > 10 ? revision.substring(0, 10) : revision;
 }
