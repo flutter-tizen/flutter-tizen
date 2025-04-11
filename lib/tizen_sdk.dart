@@ -253,25 +253,27 @@ class TizenSdk {
     String workingDirectory, {
     String? buildType,
     String? signingProfile,
-  }) {
-    _processUtils.run(
+  }) async {
+    final RunResult result = await _processUtils.run(
       <String>[
         tzCli.path,
         'set',
         if (buildType != null) ...<String>['-b', buildType],
         if (signingProfile != null) ...<String>['-s', signingProfile],
-        '-w',
-        workingDirectory,
       ],
+      workingDirectory: workingDirectory,
     );
+
+    if (result.exitCode != 0) {
+      return result;
+    }
 
     return _processUtils.run(
       <String>[
         tzCli.path,
         'build',
-        '-w',
-        workingDirectory,
       ],
+      workingDirectory: workingDirectory,
     );
   }
 
