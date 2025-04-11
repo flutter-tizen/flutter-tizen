@@ -21,7 +21,6 @@ void main() {
       flutterRoot: Cache.flutterRoot!,
     );
 
-    expect(tizenFlutterVersion.flutterTizenTag, isEmpty);
     expect(tizenFlutterVersion.flutterTizenLatestRevision, isNotEmpty);
   }, overrides: <Type, Generator>{});
 }

@@ -20,23 +20,6 @@ class TizenFlutterVersion implements FlutterVersion {
         );
   final FlutterVersion flutterVersion;
 
-  String _flutterTizenTagVersion = '';
-  String get flutterTizenTag {
-    if (_flutterTizenTagVersion.isEmpty) {
-      final Directory workingDirectory = fs.directory(Cache.flutterRoot).parent;
-      final String lastTagRevision = _runGit(
-        'git rev-list --tags --max-count=1',
-        workingDirectory.path,
-      );
-
-      _flutterTizenTagVersion = _runGit(
-        'git describe --tags $lastTagRevision',
-        workingDirectory.path,
-      );
-    }
-    return _flutterTizenTagVersion;
-  }
-
   String _flutterTizenLatestRevision = '';
   String get flutterTizenLatestRevision {
     if (_flutterTizenLatestRevision.isEmpty) {
@@ -51,15 +34,14 @@ class TizenFlutterVersion implements FlutterVersion {
 
   @override
   String toString() {
-    return 'Flutter-Tizen $flutterTizenTag • revision ${_shortGitRevision(flutterTizenLatestRevision)}\n$flutterVersion';
+    return 'Flutter-Tizen • revision ${_shortGitRevision(flutterTizenLatestRevision)}\n$flutterVersion';
   }
 
   @override
   String get channel => flutterVersion.channel;
 
   @override
-  Future<void> checkFlutterVersionFreshness() =>
-      flutterVersion.checkFlutterVersionFreshness();
+  Future<void> checkFlutterVersionFreshness() => flutterVersion.checkFlutterVersionFreshness();
 
   @override
   String get dartSdkVersion => flutterVersion.dartSdkVersion;
@@ -105,8 +87,7 @@ class TizenFlutterVersion implements FlutterVersion {
   FileSystem get fs => flutterVersion.fs;
 
   @override
-  String getBranchName({bool redactUnknownBranches = false}) =>
-      flutterVersion.getBranchName();
+  String getBranchName({bool redactUnknownBranches = false}) => flutterVersion.getBranchName();
 
   @override
   String getVersionString({bool redactUnknownBranches = false}) =>
