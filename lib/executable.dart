@@ -39,6 +39,7 @@ import 'package:flutter_tools/src/isolated/build_targets.dart';
 import 'package:flutter_tools/src/isolated/mustache_template.dart';
 import 'package:flutter_tools/src/project_validator.dart';
 import 'package:flutter_tools/src/runner/flutter_command.dart';
+import 'package:flutter_tools/src/version.dart';
 import 'package:path/path.dart';
 
 import 'commands/attach.dart';
@@ -57,6 +58,7 @@ import 'tizen_cache.dart';
 import 'tizen_device_manager.dart';
 import 'tizen_doctor.dart';
 import 'tizen_emulator.dart';
+import 'tizen_flutter_version.dart';
 import 'tizen_osutils.dart';
 import 'tizen_pub.dart';
 import 'tizen_sdk.dart';
@@ -204,6 +206,10 @@ Future<void> main(List<String> args) async {
             fileSystem: globals.fs,
             logger: globals.logger,
             processManager: globals.processManager,
+          ),
+      FlutterVersion: () => TizenFlutterVersion(
+            fs: globals.fs,
+            flutterRoot: Cache.flutterRoot!,
           ),
       Logger: () {
         final LoggerFactory loggerFactory = LoggerFactory(
