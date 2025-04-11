@@ -23,7 +23,7 @@ class TizenFlutterVersion implements FlutterVersion {
   String _flutterTizenLatestRevision = '';
   String get flutterTizenLatestRevision {
     if (_flutterTizenLatestRevision.isEmpty) {
-      final Directory workingDirectory = fs.directory(Cache.flutterRoot).parent;
+      final Directory workingDirectory = fs.directory(flutterRoot).parent;
       _flutterTizenLatestRevision = _runGit(
         'git -c log.showSignature=false log -n 1 --pretty=format:%H',
         workingDirectory.path,
@@ -88,12 +88,13 @@ class TizenFlutterVersion implements FlutterVersion {
   FileSystem get fs => flutterVersion.fs;
 
   @override
-  String getBranchName({bool redactUnknownBranches = false}) =>
-      flutterVersion.getBranchName();
+  String getBranchName({bool redactUnknownBranches = false}) => flutterVersion
+      .getBranchName(redactUnknownBranches: redactUnknownBranches);
 
   @override
   String getVersionString({bool redactUnknownBranches = false}) =>
-      flutterVersion.getVersionString();
+      flutterVersion.getVersionString(
+          redactUnknownBranches: redactUnknownBranches);
 
   @override
   GitTagVersion get gitTagVersion => flutterVersion.gitTagVersion;
@@ -114,9 +115,6 @@ String _runGit(String command, String? workingDirectory) {
 }
 
 /// Source: [_shortGitRevision] in `version.dart`
-String _shortGitRevision(String? revision) {
-  if (revision == null) {
-    return '';
-  }
+String _shortGitRevision(String revision) {
   return revision.length > 10 ? revision.substring(0, 10) : revision;
 }
