@@ -21,7 +21,7 @@ import 'package:path/path.dart';
 import 'package:process/process.dart';
 
 const String kTizenEngineStampName = 'tizen-engine';
-const String kTizenEngineRepoName = 'flutter-tizen/engine';
+const String kTizenEngineRepoName = 'flutter-tizen/flutter';
 const String kTizenEmbedderStampName = 'tizen-embedder';
 const String kTizenEmbedderRepoName = 'flutter-tizen/embedder';
 
