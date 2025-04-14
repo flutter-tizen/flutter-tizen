@@ -30,7 +30,6 @@ import 'package:yaml/yaml.dart';
 
 import 'tizen_cache.dart';
 import 'tizen_project.dart';
-import 'tizen_pub.dart';
 import 'tizen_sdk.dart';
 
 /// Constant for 'namespace' key in plugin maps.
@@ -139,7 +138,7 @@ mixin DartPluginRegistry on FlutterCommand {
     final FlutterProject project = FlutterProject.current();
     final TizenProject tizenProject = TizenProject.fromFlutter(project);
     if (_usesTargetOption && tizenProject.existsSync() && !project.isPlugin) {
-      await tizenPub?.get(
+      await pub.get(
         context: PubContext.getVerifyContext(name),
         project: project,
         checkUpToDate: cachePubGet,

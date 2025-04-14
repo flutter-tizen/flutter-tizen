@@ -29,6 +29,7 @@ import 'package:flutter_tools/src/commands/install.dart';
 import 'package:flutter_tools/src/commands/packages.dart';
 import 'package:flutter_tools/src/commands/screenshot.dart';
 import 'package:flutter_tools/src/commands/symbolize.dart';
+import 'package:flutter_tools/src/dart/pub.dart';
 import 'package:flutter_tools/src/device.dart';
 import 'package:flutter_tools/src/doctor.dart';
 import 'package:flutter_tools/src/emulator.dart';
@@ -251,7 +252,7 @@ Future<void> main(List<String> args) async {
             tizenSdk: tizenSdk,
             operatingSystemUtils: globals.os,
           ),
-      TizenPub: () => TizenPub(
+      Pub: () => TizenPub(
             fileSystem: globals.fs,
             logger: globals.logger,
             processManager: globals.processManager,
