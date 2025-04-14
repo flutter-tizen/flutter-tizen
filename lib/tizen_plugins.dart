@@ -138,11 +138,13 @@ mixin DartPluginRegistry on FlutterCommand {
     final FlutterProject project = FlutterProject.current();
     final TizenProject tizenProject = TizenProject.fromFlutter(project);
     if (_usesTargetOption && tizenProject.existsSync() && !project.isPlugin) {
-      await pub.get(
-        context: PubContext.getVerifyContext(name),
-        project: project,
-        checkUpToDate: cachePubGet,
-      );
+      if (shouldRunPub) {
+        await pub.get(
+          context: PubContext.getVerifyContext(name),
+          project: project,
+          checkUpToDate: cachePubGet,
+        );
+      }
 
       final File mainDart = globals.fs.file(super.targetFile);
       final File generatedMainDart =
