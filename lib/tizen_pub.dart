@@ -4,6 +4,7 @@
 
 import 'package:file/file.dart';
 import 'package:flutter_tools/src/base/bot_detector.dart';
+import 'package:flutter_tools/src/base/context.dart';
 import 'package:flutter_tools/src/base/io.dart';
 import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/base/platform.dart';
@@ -14,6 +15,8 @@ import 'package:meta/meta.dart';
 import 'package:process/process.dart';
 
 import 'tizen_plugins.dart';
+
+TizenPub? get tizenPub => context.get<TizenPub>();
 
 class TizenPub implements Pub {
   TizenPub({

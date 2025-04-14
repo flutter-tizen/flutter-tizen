@@ -18,6 +18,7 @@ import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/compile.dart';
 import 'package:flutter_tools/src/dart/language_version.dart';
 import 'package:flutter_tools/src/dart/package_map.dart';
+import 'package:flutter_tools/src/dart/pub.dart';
 import 'package:flutter_tools/src/flutter_plugins.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/platform_plugins.dart';
@@ -29,6 +30,7 @@ import 'package:yaml/yaml.dart';
 
 import 'tizen_cache.dart';
 import 'tizen_project.dart';
+import 'tizen_pub.dart';
 import 'tizen_sdk.dart';
 
 /// Constant for 'namespace' key in plugin maps.
@@ -137,6 +139,12 @@ mixin DartPluginRegistry on FlutterCommand {
     final FlutterProject project = FlutterProject.current();
     final TizenProject tizenProject = TizenProject.fromFlutter(project);
     if (_usesTargetOption && tizenProject.existsSync() && !project.isPlugin) {
+      await tizenPub?.get(
+        context: PubContext.getVerifyContext(name),
+        project: project,
+        checkUpToDate: cachePubGet,
+      );
+
       final File mainDart = globals.fs.file(super.targetFile);
       final File generatedMainDart =
           tizenProject.managedDirectory.childFile('generated_main.dart');

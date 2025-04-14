@@ -252,7 +252,7 @@ Future<void> main(List<String> args) async {
             tizenSdk: tizenSdk,
             operatingSystemUtils: globals.os,
           ),
-      Pub: () => TizenPub(
+      TizenPub: () => TizenPub(
             fileSystem: globals.fs,
             logger: globals.logger,
             processManager: globals.processManager,
