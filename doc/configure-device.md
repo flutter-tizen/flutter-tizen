@@ -46,6 +46,9 @@
 
 ### Install Tizen OS on Raspberry Pi 4
 
+> [!NOTE]
+> Raspberry Pi 3 was not supported since Tizen 8.0. Raspberry Pi 5 (64bit-only) can be using for experimental.
+
 You need a Linux PC (for flashing), a Raspberry Pi 4 board, and a micro SD card with a minimum capacity of 8 GB.
 
 1. Insert an SD card to your PC, and **format** the disk.
@@ -63,53 +66,37 @@ You need a Linux PC (for flashing), a Raspberry Pi 4 board, and a micro SD card 
    └─sdc1        8:33   1  29.3G  0 part
    ```
 
-1. Download a flashing script (`sd_fusing_rpi3.sh`) from one of the following URLs.
-
-   - https://git.tizen.org/cgit/platform/kernel/u-boot/plain/scripts/tizen/sd_fusing_rpi3.sh?h=tizen
-   - https://review.tizen.org/git/?p=platform/kernel/u-boot.git;a=blob_plain;f=scripts/tizen/sd_fusing_rpi3.sh;hb=refs/heads/tizen
-
-   Note: You may notice that the repository also contains a script for Pi 4 (`sd_fusing_rpi4.sh`). Do not use it.
-
-1. Re-partition the SD card (replace `/dev/sdc` with your own device name):
+1. Download a fusing script(`sd_fusing.py`).
 
    ```sh
-   $ chmod 755 sd_fusing_rpi3.sh
-   $ sudo ./sd_fusing_rpi3.sh -d /dev/sdc --format
 
-   Raspberry Pi downloader, version 2.1.0
-
-   Device: /dev/sdc
-
-   /dev/sdc will be formatted, Is it OK? [y/<n>]
-
-   ...
-
-   End /dev/sdc format
+   $ wget "https://review.tizen.org/git/?p=platform/kernel/tizen-fusing-scripts.git;a=blob_plain;f=scripts/sd_fusing.py;hb=HEAD" --output-document=sd_fusing.py
+   $ chmod +x sd_fusing.py
    ```
 
-1. Download a Tizen OS image. Visit the links below and download two `.tar.gz` files.
+1. Re-partition the SD card. (replace `/dev/sdc` with your own device name):
 
-   - [tizen-boot-arm64-rpi4](http://download.tizen.org/releases/milestone/TIZEN/Tizen/Tizen-Unified/latest/images/standard/tizen-boot-arm64-rpi4)
-   - [tizen-headed-aarch64](http://download.tizen.org/releases/milestone/TIZEN/Tizen/Tizen-Unified/latest/images/standard/tizen-headed-aarch64)
+   ```sh
+   $ sudo ./sd_fusing.py -d <SD card device name> -t <Target Board> --format
+   ```
+   For example:
+   ```sh
+   $ sudo ./sd_fusing.py -d /dev/sdc -t rpi4 --format
+   ```
+
+1. [Download a Tizen OS image](https://docs.tizen.org/platform/developing/flashing-rpi/#download-binaries). Visit the links below and download two `.tar.gz` files.
+
+   - [tizen-boot-armv7l-rpi4](https://download.tizen.org/releases/milestone/TIZEN/Tizen/Tizen-Unified/latest/images/standard/tizen-boot-armv7l-rpi4/)
+   - [tizen-headed-armv7l](https://download.tizen.org/releases/milestone/TIZEN/Tizen/Tizen-Unified/latest/images/standard/tizen-headed-armv7l/)
 
 1. Flash the image to the SD card. For example:
 
    ```sh
-   $ sudo ./sd_fusing_rpi3.sh -d /dev/sdc -b tizen-7.0-unified_20221101.000810_tizen-boot-arm64-rpi4.tar.gz \
-       tizen-7.0-unified_20221101.000810_tizen-headed-aarch64.tar.gz
-
-   Raspberry Pi downloader, version 2.1.0
-
-   Device: /dev/sdc
-   Fusing binary:
-
-   ...
-
-   [Fusing user.img (500 MiB)]
-   520093696 bytes (520 MB, 496 MiB) copied, 65 s, 8.0 MB/s
-   125+0 records in
-   125+0 records out
-   524288000 bytes (524 MB, 500 MiB) copied, 65.7336 s, 8.0 MB/s
+   $ sudo ./sd_fusing.py -d <SD card device namee> -b <Boot Image> <Platform Image> -t <Target Board>
+   ```
+   For example:
+   ```sh
+   $ sudo ./sd_fusing.py -d /dev/sdc -b tizen-unified_20241025.103727_tizen-boot-armv7l-rpi4.tar.gz tizen-unified_20241025.103727_tizen-headed-armv7l.tar.gz -t rpi4
    ```
 
 1. Done. Remove the SD card and insert to your Pi device.
