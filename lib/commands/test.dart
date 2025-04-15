@@ -57,13 +57,11 @@ class TizenTestRunner implements FlutterTestRunner {
       findPackageConfigFileOrDefault(project.directory),
       logger: globals.logger,
     );
-    final List<TizenPlugin> dartPlugins =
-        await findTizenPlugins(project, dartOnly: true);
+    final List<TizenPlugin> dartPlugins = await findTizenPlugins(project, dartOnly: true);
     final Directory runnerDir = globals.fs.systemTempDirectory.createTempSync();
 
     final List<Uri> newTestFiles = <Uri>[];
-    for (final File testFile
-        in testFiles.map((Uri uri) => globals.fs.file(uri))) {
+    for (final File testFile in testFiles.map((Uri uri) => globals.fs.file(uri))) {
       final Uri testFileUri = testFile.absolute.uri;
       final LanguageVersion languageVersion = determineLanguageVersion(
         testFile,
@@ -173,7 +171,7 @@ void main() {
       integrationTestUserIdentifier: integrationTestUserIdentifier,
       testTimeRecorder: testTimeRecorder,
       nativeAssetsBuilder: nativeAssetsBuilder,
-      buildInfo: buildInfo,
+      buildInfo: buildInfo!,
     );
   }
 

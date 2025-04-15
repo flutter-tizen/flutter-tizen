@@ -15,8 +15,7 @@ import 'package:xml/xml.dart';
 import 'tizen_project.dart';
 
 /// See: [AndroidApk] in `application_package.dart`
-class TizenTpk extends ApplicationPackage
-    implements PrebuiltApplicationPackage {
+class TizenTpk extends ApplicationPackage implements PrebuiltApplicationPackage {
   TizenTpk({
     required this.applicationPackage,
     required this.manifest,
@@ -143,20 +142,16 @@ class TizenManifest {
   String get profile => _profile.getAttribute('name')!;
 
   late final Iterable<XmlElement> _applications = () {
-    final Iterable<XmlElement> elements = _manifest.children
-        .whereType<XmlElement>()
-        .where((XmlElement element) =>
-            element.name.local.endsWith('-application') &&
-            element.getAttribute('appid') != null);
+    final Iterable<XmlElement> elements = _manifest.children.whereType<XmlElement>().where(
+        (XmlElement element) =>
+            element.name.local.endsWith('-application') && element.getAttribute('appid') != null);
     if (elements.isEmpty) {
-      throwToolExit(
-          'Found no *-application element with appid attribute in tizen-manifest.xml.');
+      throwToolExit('Found no *-application element with appid attribute in tizen-manifest.xml.');
     }
     final XmlElement first = elements.first;
     final String tag = first.name.local;
     if (tag != 'ui-application' && tag != 'service-application') {
-      globals.printTrace(
-          'tizen-manifest.xml: <$tag> is not officially supported.');
+      globals.printTrace('tizen-manifest.xml: <$tag> is not officially supported.');
     }
     final String appid = first.getAttribute('appid')!;
     if (elements.length > 1) {
@@ -199,11 +194,9 @@ class Signature {
       return null;
     }
 
-    final Iterable<XmlElement> values =
-        document.rootElement.findElements('SignatureValue');
+    final Iterable<XmlElement> values = document.rootElement.findElements('SignatureValue');
     if (values.isEmpty) {
-      globals.printError(
-          'No element named SignatureValue found in ${xmlFile.basename}.');
+      globals.printError('No element named SignatureValue found in ${xmlFile.basename}.');
       return null;
     }
     return Signature(values.first.innerText.replaceAll(RegExp(r'\s+'), ''));

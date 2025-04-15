@@ -91,8 +91,7 @@ void main() {
     ]);
 
     final FakeDeviceLogReader deviceLogReader = FakeDeviceLogReader();
-    deviceLogReader
-        .addLine('The Dart VM service is listening on http://127.0.0.1:12345');
+    deviceLogReader.addLine('The Dart VM service is listening on http://127.0.0.1:12345');
     device.setLogReader(deviceLogReader);
     device.portForwarder = const NoOpDevicePortForwarder();
 
@@ -144,8 +143,7 @@ void main() {
     expect(processManager, hasNoRemainingExpectations);
   });
 
-  testWithoutContext(
-      'TizenDevice.installApp uninstalls and reinstalls TPK if installation fails',
+  testWithoutContext('TizenDevice.installApp uninstalls and reinstalls TPK if installation fails',
       () async {
     final TizenDevice device = _createTizenDevice(
       processManager: processManager,
@@ -183,9 +181,7 @@ User's Application
           '/.tmp_rand0/rand0/author-signature.xml',
         ]),
         onRun: (_) {
-          fileSystem
-              .file('/.tmp_rand0/rand0/author-signature.xml')
-              .createSync(recursive: true);
+          fileSystem.file('/.tmp_rand0/rand0/author-signature.xml').createSync(recursive: true);
         },
       ),
       FakeCommand(
@@ -213,8 +209,7 @@ __return_cb req_id[1] pkg_type[tpk] pkgid[TestPackage] key[end] val[ok]
     expect(processManager, hasNoRemainingExpectations);
   });
 
-  testWithoutContext(
-      'TizenDevice.installApp installs TPK twice for TV emulators', () async {
+  testWithoutContext('TizenDevice.installApp installs TPK twice for TV emulators', () async {
     final TizenDevice device = _createTizenDevice(
       processManager: processManager,
       fileSystem: fileSystem,
@@ -245,8 +240,7 @@ __return_cb req_id[1] pkg_type[tpk] pkgid[TestPackage] key[end] val[ok]
     expect(processManager, hasNoRemainingExpectations);
   });
 
-  testWithoutContext(
-      'TizenDevice.isSupported returns true for supported devices', () {
+  testWithoutContext('TizenDevice.isSupported returns true for supported devices', () {
     final TizenDevice commonDevice = _createTizenDevice(
       processManager: processManager,
       fileSystem: fileSystem,
@@ -280,8 +274,7 @@ __return_cb req_id[1] pkg_type[tpk] pkgid[TestPackage] key[end] val[ok]
     expect(tvDevice.isSupported(), isTrue);
   });
 
-  testWithoutContext(
-      'TizenDevice.isSupported returns false for unsupported devices', () {
+  testWithoutContext('TizenDevice.isSupported returns false for unsupported devices', () {
     final TizenDevice mobileDevice = _createTizenDevice(
       processManager: processManager,
       fileSystem: fileSystem,
@@ -315,8 +308,7 @@ __return_cb req_id[1] pkg_type[tpk] pkgid[TestPackage] key[end] val[ok]
     expect(tvDevice.isSupported(), isFalse);
   });
 
-  testWithoutContext(
-      'TizenDevicePortForwarder.forwardedPorts can list forwarded ports', () {
+  testWithoutContext('TizenDevicePortForwarder.forwardedPorts can list forwarded ports', () {
     final TizenDevicePortForwarder forwarder = TizenDevicePortForwarder(
       device: _createTizenDevice(
         processManager: processManager,

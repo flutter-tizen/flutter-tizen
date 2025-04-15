@@ -147,10 +147,8 @@ mixin DartPluginRegistry on FlutterCommand {
       }
 
       final File mainDart = globals.fs.file(super.targetFile);
-      final File generatedMainDart =
-          tizenProject.managedDirectory.childFile('generated_main.dart');
-      await _generateEntrypointWithPluginRegistrant(
-          project, mainDart, generatedMainDart);
+      final File generatedMainDart = tizenProject.managedDirectory.childFile('generated_main.dart');
+      await _generateEntrypointWithPluginRegistrant(project, mainDart, generatedMainDart);
       _targetFile = generatedMainDart.path;
     }
     return super.verifyThenRunCommand(commandPath);
@@ -186,8 +184,7 @@ mixin DartPluginRegistry on FlutterCommand {
               dartPluginRegistrantFileUri.toString();
     }
     // See the engine's FindAndInvokeDartPluginRegistrant().
-    buildInfo.dartDefines
-        .add('flutter.dart_plugin_registrant=$dartPluginRegistrantUri');
+    buildInfo.dartDefines.add('flutter.dart_plugin_registrant=$dartPluginRegistrantUri');
 
     return buildInfo;
   }
@@ -197,15 +194,13 @@ mixin DartPluginRegistry on FlutterCommand {
 /// from [dartFile] and returns their names.
 List<String> _findDartEntrypoints(File dartFile) {
   final String path = dartFile.absolute.path;
-  final String dartSdkPath =
-      globals.artifacts!.getArtifactPath(Artifact.engineDartSdkPath);
+  final String dartSdkPath = globals.artifacts!.getArtifactPath(Artifact.engineDartSdkPath);
   final AnalysisContextCollection collection = AnalysisContextCollection(
     includedPaths: <String>[path],
     sdkPath: dartSdkPath,
   );
   final AnalysisContext context = collection.contextFor(path);
-  final SomeParsedUnitResult parsed =
-      context.currentSession.getParsedUnit(path);
+  final SomeParsedUnitResult parsed = context.currentSession.getParsedUnit(path);
   final List<String> names = <String>['main'];
   if (parsed is ParsedUnitResult) {
     for (final FunctionDeclaration function
@@ -301,14 +296,12 @@ Future<void> _generateEntrypointWithPluginRegistrant(
   );
   final Uri mainUri = packageConfig.toPackageUri(mainFileUri) ?? mainFileUri;
   final List<String> dartEntrypoints = _findDartEntrypoints(mainFile);
-  final List<TizenPlugin> dartPlugins =
-      await findTizenPlugins(project, dartOnly: true);
+  final List<TizenPlugin> dartPlugins = await findTizenPlugins(project, dartOnly: true);
 
   final Map<String, Object> context = <String, Object>{
     'mainImport': mainUri.toString(),
     'dartLanguageVersion': languageVersion.toString(),
-    'dartEntrypoints':
-        dartEntrypoints.map((String name) => <String, String>{'name': name}),
+    'dartEntrypoints': dartEntrypoints.map((String name) => <String, String>{'name': name}),
     'plugins': dartPlugins.map((TizenPlugin plugin) => plugin.toMap()),
   };
   await renderTemplateToFile(
@@ -361,8 +354,7 @@ Future<void> ensureReadyForTizenTooling(FlutterProject project) async {
 }
 
 Future<void> _ensurePluginsReadyForTizenTooling(FlutterProject project) async {
-  final List<TizenPlugin> dotnetPlugins =
-      await findTizenPlugins(project, dotnetOnly: true);
+  final List<TizenPlugin> dotnetPlugins = await findTizenPlugins(project, dotnetOnly: true);
   for (final TizenPlugin plugin in dotnetPlugins) {
     final File? projectFile = findDotnetProjectFile(plugin.directory);
     if (projectFile != null) {
@@ -375,10 +367,8 @@ Future<void> _ensurePluginsReadyForTizenTooling(FlutterProject project) async {
 Future<void> injectTizenPlugins(FlutterProject project) async {
   final TizenProject tizenProject = TizenProject.fromFlutter(project);
   if (tizenProject.existsSync()) {
-    final List<TizenPlugin> cppPlugins =
-        await findTizenPlugins(project, cppOnly: true);
-    final List<TizenPlugin> dotnetPlugins =
-        await findTizenPlugins(project, dotnetOnly: true);
+    final List<TizenPlugin> cppPlugins = await findTizenPlugins(project, cppOnly: true);
+    final List<TizenPlugin> dotnetPlugins = await findTizenPlugins(project, dotnetOnly: true);
     await _writeAppDepndencyInfo(project);
     await _writeTizenPluginRegistrant(tizenProject, cppPlugins, dotnetPlugins);
     if (tizenProject.isDotnet) {
@@ -388,8 +378,7 @@ Future<void> injectTizenPlugins(FlutterProject project) async {
 }
 
 Future<void> _informAvailableTizenPlugins(FlutterProject project) async {
-  final List<String> plugins =
-      (await findPlugins(project)).map((Plugin p) => p.name).toList();
+  final List<String> plugins = (await findPlugins(project)).map((Plugin p) => p.name).toList();
   for (final String plugin in plugins) {
     final String tizenPlugin = '${plugin}_tizen';
     if (_kKnownPlugins.contains(plugin) && !plugins.contains(tizenPlugin)) {
@@ -427,8 +416,7 @@ Future<List<TizenPlugin>> findTizenPlugins(
       continue;
     } else if (cppOnly && (!plugin.hasMethodChannel() || plugin.isDotnet())) {
       continue;
-    } else if (dotnetOnly &&
-        (!plugin.hasMethodChannel() || !plugin.isDotnet())) {
+    } else if (dotnetOnly && (!plugin.hasMethodChannel() || !plugin.isDotnet())) {
       continue;
     }
     plugins.add(plugin);
@@ -458,9 +446,7 @@ Future<TizenPlugin?> _pluginFromPackage(
     return null;
   }
   final Object? flutterConfig = pubspec['flutter'];
-  if (flutterConfig == null ||
-      flutterConfig is! YamlMap ||
-      !flutterConfig.containsKey('plugin')) {
+  if (flutterConfig == null || flutterConfig is! YamlMap || !flutterConfig.containsKey('plugin')) {
     return null;
   }
 
@@ -562,8 +548,7 @@ Future<void> _writeTizenPluginRegistrant(
       await renderTemplateToFile(
         _csharpPluginRegistryTemplate,
         context,
-        project.serviceManagedDirectory
-            .childFile('GeneratedPluginRegistrant.cs'),
+        project.serviceManagedDirectory.childFile('GeneratedPluginRegistrant.cs'),
       );
     }
   } else {
@@ -602,8 +587,7 @@ Future<void> _writeIntermediateDotnetFiles(
   };
 
   final String projectFileName = project.projectFile!.basename;
-  final Directory intermediateDirectory =
-      project.hostAppRoot.childDirectory('obj');
+  final Directory intermediateDirectory = project.hostAppRoot.childDirectory('obj');
   await renderTemplateToFile(
     _intermediateDotnetPropsTemplate,
     context,
@@ -616,11 +600,9 @@ Future<void> _writeIntermediateDotnetFiles(
   );
 
   if (project.isMultiApp) {
-    final File? serviceProjectFile =
-        findDotnetProjectFile(project.serviceAppDirectory);
+    final File? serviceProjectFile = findDotnetProjectFile(project.serviceAppDirectory);
     final String projectFileName = serviceProjectFile!.basename;
-    final Directory intermediateDirectory =
-        project.serviceAppDirectory.childDirectory('obj');
+    final Directory intermediateDirectory = project.serviceAppDirectory.childDirectory('obj');
     await renderTemplateToFile(
       _intermediateDotnetPropsTemplate,
       context,
@@ -635,10 +617,8 @@ Future<void> _writeIntermediateDotnetFiles(
 }
 
 /// Source: [_renderTemplateToFile] in `flutter_plugins.dart`
-Future<void> renderTemplateToFile(
-    String template, Object? context, File file) async {
-  final String renderedTemplate =
-      globals.templateRenderer.renderString(template, context);
+Future<void> renderTemplateToFile(String template, Object? context, File file) async {
+  final String renderedTemplate = globals.templateRenderer.renderString(template, context);
   await file.create(recursive: true);
   await file.writeAsString(renderedTemplate);
 }
@@ -689,8 +669,7 @@ Future<void> _writeAppDepndencyInfo(
   }
 
   final Map<String, Object?> result = <String, Object>{};
-  result['info'] =
-      'This is a generated file; do not edit or check into version control.';
+  result['info'] = 'This is a generated file; do not edit or check into version control.';
   result['plugins'] = pluginInfo;
   final Map<String, Object> dart = <String, Object>{};
   dart['version'] = globals.flutterVersion.dartSdkVersion;
@@ -700,8 +679,7 @@ Future<void> _writeAppDepndencyInfo(
   flutter['revision'] = globals.flutterVersion.frameworkRevisionShort;
 
   final Map<String, Object> flutterTizen = <String, Object>{};
-  final Directory workingDirectory =
-      globals.fs.directory(Cache.flutterRoot).parent;
+  final Directory workingDirectory = globals.fs.directory(Cache.flutterRoot).parent;
   final String frameworkRevision = _runGit(
     'git -c log.showSignature=false log -n 1 --pretty=format:%H',
     workingDirectory.path,
@@ -712,10 +690,8 @@ Future<void> _writeAppDepndencyInfo(
   engine['revision'] = globals.flutterVersion.engineRevisionShort;
 
   final Map<String, Object> embedder = <String, Object>{};
-  final String revision =
-      globals.cache.getStampFor(kTizenEmbedderStampName) ?? '';
-  embedder['revision'] =
-      revision.length > 10 ? revision.substring(0, 10) : revision;
+  final String revision = globals.cache.getStampFor(kTizenEmbedderStampName) ?? '';
+  embedder['revision'] = revision.length > 10 ? revision.substring(0, 10) : revision;
 
   result['dart'] = dart;
   result['flutter'] = flutter;

@@ -27,11 +27,9 @@ void main() {
   });
 
   testUsingContext('Can receive message from the device logger', () async {
-    final ForwardingLogReader logReader =
-        await ForwardingLogReader.createLogReader(
+    final ForwardingLogReader logReader = await ForwardingLogReader.createLogReader(
       device,
-      socketFactory: (String host, int port) async =>
-          _FakeWorkingSocket('Message'),
+      socketFactory: (String host, int port) async => _FakeWorkingSocket('Message'),
     );
     await logReader.start();
 
@@ -40,8 +38,7 @@ void main() {
   });
 
   testUsingContext('The device logger is unresponsive', () async {
-    final ForwardingLogReader logReader =
-        await ForwardingLogReader.createLogReader(
+    final ForwardingLogReader logReader = await ForwardingLogReader.createLogReader(
       device,
       socketFactory: (String host, int port) async => _FakeNoResponseSocket(),
     );
@@ -54,8 +51,7 @@ void main() {
       time.elapse(const Duration(seconds: 20));
       expect(
         logger.errorText,
-        contains(
-            'Connecting to the device logger is taking longer than expected'),
+        contains('Connecting to the device logger is taking longer than expected'),
       );
 
       time.elapse(const Duration(seconds: 20));
@@ -69,8 +65,7 @@ void main() {
   });
 
   testUsingContext('Connection error', () async {
-    final ForwardingLogReader logReader =
-        await ForwardingLogReader.createLogReader(
+    final ForwardingLogReader logReader = await ForwardingLogReader.createLogReader(
       device,
       socketFactory: (String host, int port) => throw Exception('Socket error'),
     );

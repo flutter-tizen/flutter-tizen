@@ -42,13 +42,10 @@ class TizenCreateCommand extends CreateCommand {
       'app-type',
       allowed: <String>['ui', 'service', 'multi'],
       allowedHelp: <String, String>{
-        'ui':
-            '(default) Generate an application with a graphical user interface '
-                'that runs in the foreground.',
-        'service':
-            'Generate a service application that runs in the background.',
-        'multi':
-            'Generate a multi-project application that consists of both UI and service parts.',
+        'ui': '(default) Generate an application with a graphical user interface '
+            'that runs in the foreground.',
+        'service': 'Generate a service application that runs in the background.',
+        'multi': 'Generate a multi-project application that consists of both UI and service parts.',
       },
       help: 'Select a type of application template.',
     );
@@ -63,10 +60,8 @@ class TizenCreateCommand extends CreateCommand {
     return stringArg('template') == 'plugin' ? 'cpp' : 'csharp';
   }
 
-  Directory get _tizenTemplates => globals.fs
-      .directory(Cache.flutterRoot)
-      .parent
-      .childDirectory('templates');
+  Directory get _tizenTemplates =>
+      globals.fs.directory(Cache.flutterRoot).parent.childDirectory('templates');
 
   Directory get _flutterTemplates => globals.fs
       .directory(Cache.flutterRoot)
@@ -76,15 +71,21 @@ class TizenCreateCommand extends CreateCommand {
 
   /// See: [CreateCommand._getProjectType] in `create.dart`
   bool get _shouldGeneratePlugin {
-    FlutterProjectType? template;
+    FlutterTemplateType? template;
     final String? templateArgument = stringArg('template');
     if (templateArgument != null) {
-      template = FlutterProjectType.fromCliName(templateArgument);
+      final ParsedFlutterTemplateType? templateType = ParsedFlutterTemplateType.fromCliName(
+        templateArgument,
+      );
+      template = switch (templateType) {
+        RemovedFlutterTemplateType() || null => null,
+        FlutterTemplateType() => templateType,
+      };
     }
     if (projectDir.existsSync() && projectDir.listSync().isNotEmpty) {
       template = determineTemplateType();
     }
-    return template == FlutterProjectType.plugin;
+    return template == FlutterTemplateType.plugin;
   }
 
   @override
@@ -158,7 +159,7 @@ class TizenCreateCommand extends CreateCommand {
     bool pluginExampleApp = false,
     bool printStatusWhenWriting = true,
     bool generateMetadata = true,
-    FlutterProjectType? projectType,
+    FlutterTemplateType? projectType,
   }) async {
     if (pluginExampleApp) {
       // Reset to the updated identifier for the example app.
@@ -255,12 +256,8 @@ class TizenCreateCommand extends CreateCommand {
     }
 
     final String templateName = template == 'app' ? '$appType-app' : template;
-    if (!_tizenTemplates
-        .childDirectory(templateName)
-        .childDirectory(tizenLanguage)
-        .existsSync()) {
-      throwToolExit(
-          'Could not locate a template: $templateName/$tizenLanguage');
+    if (!_tizenTemplates.childDirectory(templateName).childDirectory(tizenLanguage).existsSync()) {
+      throwToolExit('Could not locate a template: $templateName/$tizenLanguage');
     }
   }
 
@@ -355,19 +352,14 @@ class TizenCreateCommand extends CreateCommand {
     // Copy application template to the flutter_tools/templates directory.
     // Even if the requested template type is plugin, an app template is
     // required for generating the example app.
-    final Directory appTemplate =
-        _tizenTemplates.childDirectory('$appType-app');
+    final Directory appTemplate = _tizenTemplates.childDirectory('$appType-app');
     _copyDirectoryIfExists(
       appTemplate.childDirectory('cpp'),
-      _flutterTemplates
-          .childDirectory('app_shared')
-          .childDirectory('tizen-cpp.tmpl'),
+      _flutterTemplates.childDirectory('app').childDirectory('tizen-cpp.tmpl'),
     );
     _copyDirectoryIfExists(
       appTemplate.childDirectory('csharp'),
-      _flutterTemplates
-          .childDirectory('app_shared')
-          .childDirectory('tizen-csharp.tmpl'),
+      _flutterTemplates.childDirectory('app').childDirectory('tizen-csharp.tmpl'),
     );
     _copyDirectoryIfExists(
       appTemplate.childDirectory('lib'),
@@ -378,15 +370,11 @@ class TizenCreateCommand extends CreateCommand {
     final Directory pluginTemplate = _tizenTemplates.childDirectory('plugin');
     _copyDirectoryIfExists(
       pluginTemplate.childDirectory('cpp'),
-      _flutterTemplates
-          .childDirectory('plugin')
-          .childDirectory('tizen-cpp.tmpl'),
+      _flutterTemplates.childDirectory('plugin').childDirectory('tizen-cpp.tmpl'),
     );
     _copyDirectoryIfExists(
       pluginTemplate.childDirectory('csharp'),
-      _flutterTemplates
-          .childDirectory('plugin')
-          .childDirectory('tizen-csharp.tmpl'),
+      _flutterTemplates.childDirectory('plugin').childDirectory('tizen-csharp.tmpl'),
     );
 
     // Apply patches if found.

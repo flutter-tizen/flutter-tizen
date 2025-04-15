@@ -28,20 +28,16 @@ class TizenOperatingSystemUtils implements OperatingSystemUtils {
   final Platform _platform;
 
   @override
-  void chmod(FileSystemEntity entity, String mode) =>
-      _osUtils.chmod(entity, mode);
+  void chmod(FileSystemEntity entity, String mode) => _osUtils.chmod(entity, mode);
 
   @override
-  Future<int> findFreePort({bool ipv6 = false}) =>
-      _osUtils.findFreePort(ipv6: ipv6);
+  Future<int> findFreePort({bool ipv6 = false}) => _osUtils.findFreePort(ipv6: ipv6);
 
   @override
-  int? getDirectorySize(Directory directory) =>
-      _osUtils.getDirectorySize(directory);
+  int? getDirectorySize(Directory directory) => _osUtils.getDirectorySize(directory);
 
   @override
-  Stream<List<int>> gzipLevel1Stream(Stream<List<int>> stream) =>
-      _osUtils.gzipLevel1Stream(stream);
+  Stream<List<int>> gzipLevel1Stream(Stream<List<int>> stream) => _osUtils.gzipLevel1Stream(stream);
 
   @override
   HostPlatform get hostPlatform => _osUtils.hostPlatform;

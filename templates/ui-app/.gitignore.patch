@@ -1,7 +1,7 @@
-diff --git a/packages/flutter_tools/templates/app_shared/.gitignore.tmpl b/packages/flutter_tools/templates/app_shared/.gitignore.tmpl
+diff --git a/packages/flutter_tools/templates/app/.gitignore.tmpl b/packages/flutter_tools/templates/app/.gitignore.tmpl
 index 0fa6b675c0..eadf111d1f 100644
---- a/packages/flutter_tools/templates/app_shared/.gitignore.tmpl
-+++ b/packages/flutter_tools/templates/app_shared/.gitignore.tmpl
+--- a/packages/flutter_tools/templates/app/.gitignore.tmpl
++++ b/packages/flutter_tools/templates/app/.gitignore.tmpl
 @@ -15,10 +15,8 @@
  *.iws
  .idea/

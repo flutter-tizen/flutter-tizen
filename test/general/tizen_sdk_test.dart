@@ -65,10 +65,8 @@ void main() {
     expect(tizenSdk.sdkVersion, equals('9.9.9'));
   });
 
-  testWithoutContext(
-      'TizenSdk.securityProfiles returns null if manifest file is missing', () {
-    final Directory dataDir = fileSystem.systemTempDirectory
-        .createTempSync('tizen-studio-data')
+  testWithoutContext('TizenSdk.securityProfiles returns null if manifest file is missing', () {
+    final Directory dataDir = fileSystem.systemTempDirectory.createTempSync('tizen-studio-data')
       ..createSync(recursive: true);
     tizenSdk.directory.childFile('sdk.info')
       ..createSync(recursive: true)
@@ -77,13 +75,10 @@ void main() {
     expect(tizenSdk.securityProfiles, isNull);
   });
 
-  testUsingContext(
-      'TizenSdk.getPathVariable prepends msys2 directory to PATH on Windows',
-      () {
+  testUsingContext('TizenSdk.getPathVariable prepends msys2 directory to PATH on Windows', () {
     final TizenSdk? tizenSdk = TizenSdk.locateSdk();
     expect(tizenSdk, isNotNull);
-    expect(
-        tizenSdk!.getPathVariable(), equals('/tools/msys2/usr/bin;/my/path'));
+    expect(tizenSdk!.getPathVariable(), equals('/tools/msys2/usr/bin;/my/path'));
   }, overrides: <Type, Generator>{
     FileSystem: () => fileSystem,
     ProcessManager: () => FakeProcessManager.any(),
@@ -93,8 +88,7 @@ void main() {
         ),
   });
 
-  testWithoutContext('TizenSdk.buildApp invokes the build-app command',
-      () async {
+  testWithoutContext('TizenSdk.buildApp invokes the build-app command', () async {
     processManager.addCommand(FakeCommand(
       command: <String>[
         '/tizen-studio/tools/ide/bin/tizen',
@@ -148,8 +142,7 @@ void main() {
     expect(processManager, hasNoRemainingExpectations);
   });
 
-  testWithoutContext('TizenSdk.buildNative invokes the build-native command',
-      () async {
+  testWithoutContext('TizenSdk.buildNative invokes the build-native command', () async {
     processManager.addCommand(FakeCommand(
       command: <String>[
         '/tizen-studio/tools/ide/bin/tizen',
@@ -218,8 +211,7 @@ void main() {
     expect(processManager, hasNoRemainingExpectations);
   });
 
-  testWithoutContext('TizenSdk.getRootstrap fails if IoT Headed SDK is missing',
-      () {
+  testWithoutContext('TizenSdk.getRootstrap fails if IoT Headed SDK is missing', () {
     expect(
       () => tizenSdk.getRootstrap(
         profile: 'common',
@@ -227,15 +219,12 @@ void main() {
         arch: 'arm64',
       ),
       throwsToolExit(
-        message:
-            'The rootstrap iot-headed-6.0-device64.core could not be found.',
+        message: 'The rootstrap iot-headed-6.0-device64.core could not be found.',
       ),
     );
   });
 
-  testWithoutContext(
-      'TizenSdk.getRootstrap falls back to IoT-Headed SDK if TV SDK is missing',
-      () {
+  testWithoutContext('TizenSdk.getRootstrap falls back to IoT-Headed SDK if TV SDK is missing', () {
     tizenSdk.platformsDirectory
         .childDirectory('tizen-6.0')
         .childDirectory('iot-headed')
@@ -251,8 +240,7 @@ void main() {
     expect(rootstrap.isValid, isTrue);
   });
 
-  testWithoutContext('SecurityProfiles.parseFromXml can detect active profile',
-      () async {
+  testWithoutContext('SecurityProfiles.parseFromXml can detect active profile', () async {
     final File xmlFile = fileSystem.file('profiles.xml')
       ..createSync(recursive: true)
       ..writeAsStringSync('''
@@ -268,8 +256,7 @@ void main() {
     expect(profiles.active, equals('test_profile'));
   });
 
-  testUsingContext('SecurityProfiles.parseFromXml fails on corrupted input',
-      () {
+  testUsingContext('SecurityProfiles.parseFromXml fails on corrupted input', () {
     final File xmlFile = fileSystem.file('profiles.xml')
       ..createSync(recursive: true)
       ..writeAsStringSync('INVALID_XML');

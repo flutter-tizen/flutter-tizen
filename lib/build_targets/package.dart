@@ -56,16 +56,15 @@ abstract class TizenPackage extends Target {
 class DotnetTpk extends TizenPackage {
   DotnetTpk(super.tizenBuildInfo);
 
-  final ProcessUtils _processUtils = ProcessUtils(
-      logger: globals.logger, processManager: globals.processManager);
+  final ProcessUtils _processUtils =
+      ProcessUtils(logger: globals.logger, processManager: globals.processManager);
 
   @override
   String get name => 'tizen_dotnet_tpk';
 
   @override
   Future<void> build(Environment environment) async {
-    final FlutterProject project =
-        FlutterProject.fromDirectory(environment.projectDir);
+    final FlutterProject project = FlutterProject.fromDirectory(environment.projectDir);
     final TizenProject tizenProject = TizenProject.fromFlutter(project);
 
     // Clean up the intermediate and output directories.
@@ -73,10 +72,8 @@ class DotnetTpk extends TizenPackage {
     if (ephemeralDir.existsSync()) {
       ephemeralDir.deleteSync(recursive: true);
     }
-    final Directory resDir = ephemeralDir.childDirectory('res')
-      ..createSync(recursive: true);
-    final Directory libDir = ephemeralDir.childDirectory('lib')
-      ..createSync(recursive: true);
+    final Directory resDir = ephemeralDir.childDirectory('res')..createSync(recursive: true);
+    final Directory libDir = ephemeralDir.childDirectory('lib')..createSync(recursive: true);
 
     final Directory outputDir = environment.outputDir;
     if (outputDir.existsSync()) {
@@ -90,41 +87,34 @@ class DotnetTpk extends TizenPackage {
       resDir.childDirectory('flutter_assets'),
     );
 
-    final TizenManifest tizenManifest =
-        TizenManifest.parseFromXml(tizenProject.manifestFile);
+    final TizenManifest tizenManifest = TizenManifest.parseFromXml(tizenProject.manifestFile);
     final String profile = buildInfo.deviceProfile;
     final String? apiVersion = tizenManifest.apiVersion;
 
     final BuildMode buildMode = buildInfo.buildInfo.mode;
     final String buildConfig = getBuildConfig(buildMode);
 
-    final Directory engineDir =
-        getEngineArtifactsDirectory(buildInfo.targetArch, buildMode);
-    final Directory embedderDir =
-        getEmbedderArtifactsDirectory(apiVersion, buildInfo.targetArch);
+    final Directory engineDir = getEngineArtifactsDirectory(buildInfo.targetArch, buildMode);
+    final Directory embedderDir = getEmbedderArtifactsDirectory(apiVersion, buildInfo.targetArch);
     final File engineBinary = engineDir.childFile('libflutter_engine.so');
     final File embedder = embedderDir.childFile('libflutter_tizen_$profile.so');
     final File icuData = engineDir.childFile('icudtl.dat');
-    final File appDepsJson =
-        tizenProject.hostAppRoot.childFile('.app.deps.json');
+    final File appDepsJson = tizenProject.hostAppRoot.childFile('.app.deps.json');
 
     engineBinary.copySync(libDir.childFile(engineBinary.basename).path);
     // The embedder so name is statically defined in C# code and cannot be
     // provided at runtime, so the file name must be a constant.
     embedder.copySync(libDir.childFile('libflutter_tizen.so').path);
     icuData.copySync(resDir.childFile(icuData.basename).path);
-    appDepsJson.copySync(resDir
-        .childDirectory('flutter_assets')
-        .childFile(appDepsJson.basename)
-        .path);
+    appDepsJson
+        .copySync(resDir.childDirectory('flutter_assets').childFile(appDepsJson.basename).path);
 
     if (buildMode.isPrecompiled) {
       final File aotSnapshot = environment.buildDir.childFile('app.so');
       aotSnapshot.copySync(libDir.childFile('libapp.so').path);
     }
 
-    final Directory pluginsDir =
-        environment.buildDir.childDirectory('tizen_plugins');
+    final Directory pluginsDir = environment.buildDir.childDirectory('tizen_plugins');
     final Directory pluginsResDir = pluginsDir.childDirectory('res');
     if (pluginsResDir.existsSync()) {
       copyDirectory(pluginsResDir, resDir);
@@ -140,8 +130,7 @@ class DotnetTpk extends TizenPackage {
     String? securityProfile = buildInfo.securityProfile;
     final SecurityProfiles? securityProfiles = tizenSdk!.securityProfiles;
     if (securityProfile != null) {
-      if (securityProfiles == null ||
-          !securityProfiles.contains(securityProfile)) {
+      if (securityProfiles == null || !securityProfiles.contains(securityProfile)) {
         throwToolExit('The profile $securityProfile does not exist.');
       }
     }
@@ -149,8 +138,7 @@ class DotnetTpk extends TizenPackage {
       securityProfile = securityProfiles.active;
     }
     if (securityProfile != null) {
-      environment.logger
-          .printStatus('The $securityProfile profile is used for signing.');
+      environment.logger.printStatus('The $securityProfile profile is used for signing.');
     } else {
       throwToolExit(
         'No certificate profile found. You can create one using the Certificate Manager.\n'
@@ -166,8 +154,7 @@ class DotnetTpk extends TizenPackage {
       }
       final File tpkFile = environment.fileSystem.file(match.group(1));
       if (!tpkFile.existsSync()) {
-        throwToolExit(
-            'Build succeeded but the expected TPK not found:\n$stdout');
+        throwToolExit('Build succeeded but the expected TPK not found:\n$stdout');
       }
       return tpkFile;
     }
@@ -184,9 +171,7 @@ class DotnetTpk extends TizenPackage {
     // create it manually and `tz set` command. This will be fixed
     // in the next version of Tizen SDK.
     // https://github.com/flutter-tizen/flutter-tizen/issues/610
-    tizenProject.hostAppRoot
-        .childFile('tizen_dotnet_project.yaml')
-        .createSync(recursive: true);
+    tizenProject.hostAppRoot.childFile('tizen_dotnet_project.yaml').createSync(recursive: true);
 
     final RunResult result = await tizenSdk!.tzBuild(
       tizenProject.hostAppRoot.path,
@@ -196,10 +181,9 @@ class DotnetTpk extends TizenPackage {
     if (result.exitCode != 0) {
       final String message = result
           .toString()
-          .replaceAllMapped(RegExp(r'(/p:AuthorPass=)[^\s]+'),
-              (Match match) => '${match[1]}******')
-          .replaceAllMapped(RegExp(r'(/p:DistributorPass=)[^\s]+'),
-              (Match match) => '${match[1]}******');
+          .replaceAllMapped(RegExp(r'(/p:AuthorPass=)[^\s]+'), (Match match) => '${match[1]}******')
+          .replaceAllMapped(
+              RegExp(r'(/p:DistributorPass=)[^\s]+'), (Match match) => '${match[1]}******');
       throwToolExit('Failed to build .NET application:\n$message');
     }
     final File outputTpk = locateTpk(result.stdout);
@@ -253,8 +237,7 @@ class NativeTpk extends TizenPackage {
 
   @override
   Future<void> build(Environment environment) async {
-    final FlutterProject project =
-        FlutterProject.fromDirectory(environment.projectDir);
+    final FlutterProject project = FlutterProject.fromDirectory(environment.projectDir);
     final TizenProject tizenProject = TizenProject.fromFlutter(project);
 
     // Clean up the intermediate and output directories.
@@ -262,10 +245,8 @@ class NativeTpk extends TizenPackage {
     if (ephemeralDir.existsSync()) {
       ephemeralDir.deleteSync(recursive: true);
     }
-    final Directory resDir = ephemeralDir.childDirectory('res')
-      ..createSync(recursive: true);
-    final Directory libDir = ephemeralDir.childDirectory('lib')
-      ..createSync(recursive: true);
+    final Directory resDir = ephemeralDir.childDirectory('res')..createSync(recursive: true);
+    final Directory libDir = ephemeralDir.childDirectory('lib')..createSync(recursive: true);
 
     final Directory outputDir = environment.outputDir;
     if (outputDir.existsSync()) {
@@ -279,40 +260,33 @@ class NativeTpk extends TizenPackage {
       resDir.childDirectory('flutter_assets'),
     );
 
-    final TizenManifest tizenManifest =
-        TizenManifest.parseFromXml(tizenProject.manifestFile);
+    final TizenManifest tizenManifest = TizenManifest.parseFromXml(tizenProject.manifestFile);
     final String profile = buildInfo.deviceProfile;
     final String? apiVersion = tizenManifest.apiVersion;
 
     final BuildMode buildMode = buildInfo.buildInfo.mode;
     final String buildConfig = getBuildConfig(buildMode);
 
-    final Directory engineDir =
-        getEngineArtifactsDirectory(buildInfo.targetArch, buildMode);
-    final Directory embedderDir =
-        getEmbedderArtifactsDirectory(apiVersion, buildInfo.targetArch);
+    final Directory engineDir = getEngineArtifactsDirectory(buildInfo.targetArch, buildMode);
+    final Directory embedderDir = getEmbedderArtifactsDirectory(apiVersion, buildInfo.targetArch);
 
     final File engineBinary = engineDir.childFile('libflutter_engine.so');
     final File embedder = embedderDir.childFile('libflutter_tizen_$profile.so');
     final File icuData = engineDir.childFile('icudtl.dat');
-    final File appDepsJson =
-        tizenProject.hostAppRoot.childFile('.app.deps.json');
+    final File appDepsJson = tizenProject.hostAppRoot.childFile('.app.deps.json');
 
     engineBinary.copySync(libDir.childFile(engineBinary.basename).path);
     embedder.copySync(libDir.childFile(embedder.basename).path);
     icuData.copySync(resDir.childFile(icuData.basename).path);
-    appDepsJson.copySync(resDir
-        .childDirectory('flutter_assets')
-        .childFile(appDepsJson.basename)
-        .path);
+    appDepsJson
+        .copySync(resDir.childDirectory('flutter_assets').childFile(appDepsJson.basename).path);
 
     if (buildMode.isPrecompiled) {
       final File aotSnapshot = environment.buildDir.childFile('app.so');
       aotSnapshot.copySync(libDir.childFile('libapp.so').path);
     }
 
-    final Directory pluginsDir =
-        environment.buildDir.childDirectory('tizen_plugins');
+    final Directory pluginsDir = environment.buildDir.childDirectory('tizen_plugins');
     final Directory pluginsResDir = pluginsDir.childDirectory('res');
     if (pluginsResDir.existsSync()) {
       copyDirectory(pluginsResDir, resDir);
@@ -331,8 +305,7 @@ class NativeTpk extends TizenPackage {
 
     // Prepare for build.
     final Directory commonDir = getCommonArtifactsDirectory();
-    final Directory clientWrapperDir =
-        commonDir.childDirectory('cpp_client_wrapper');
+    final Directory clientWrapperDir = commonDir.childDirectory('cpp_client_wrapper');
     final Directory publicDir = commonDir.childDirectory('public');
 
     final Directory dartSdkDir = getDartSdkDirectory();
@@ -344,8 +317,7 @@ class NativeTpk extends TizenPackage {
       arch: buildInfo.targetArch,
     );
 
-    final Directory embeddingDir =
-        environment.buildDir.childDirectory('tizen_embedding');
+    final Directory embeddingDir = environment.buildDir.childDirectory('tizen_embedding');
     final File embeddingLib = embeddingDir.childFile('libembedding_cpp.a');
     const List<String> embeddingDependencies = <String>[
       'appcore-agent',
@@ -357,8 +329,7 @@ class NativeTpk extends TizenPackage {
       'evas',
     ];
 
-    final Directory buildDir =
-        tizenProject.hostAppRoot.childDirectory(buildConfig);
+    final Directory buildDir = tizenProject.hostAppRoot.childDirectory(buildConfig);
     if (buildDir.existsSync()) {
       buildDir.deleteSync(recursive: true);
     }
@@ -378,8 +349,7 @@ class NativeTpk extends TizenPackage {
     String? securityProfile = buildInfo.securityProfile;
     final SecurityProfiles? securityProfiles = tizenSdk!.securityProfiles;
     if (securityProfile != null) {
-      if (securityProfiles == null ||
-          !securityProfiles.contains(securityProfile)) {
+      if (securityProfiles == null || !securityProfiles.contains(securityProfile)) {
         throwToolExit('The profile $securityProfile does not exist.');
       }
     }
@@ -387,8 +357,7 @@ class NativeTpk extends TizenPackage {
       securityProfile = securityProfiles.active;
     }
     if (securityProfile != null) {
-      environment.logger
-          .printStatus('The $securityProfile profile is used for signing.');
+      environment.logger.printStatus('The $securityProfile profile is used for signing.');
     } else {
       throwToolExit(
         'No certificate profile found. You can create one using the Certificate Manager.\n'
@@ -419,8 +388,7 @@ class NativeTpk extends TizenPackage {
       build: <String, Object>{
         'name': 'b1',
         'methods': <String>['m1'],
-        'targets':
-            tizenProject.isMultiApp ? <String>['ui', 'service'] : <String>['.'],
+        'targets': tizenProject.isMultiApp ? <String>['ui', 'service'] : <String>['.'],
       },
       method: <String, Object>{
         'name': 'm1',
@@ -489,8 +457,7 @@ class DotnetModule extends TizenPackage {
 
   @override
   Future<void> build(Environment environment) async {
-    final FlutterProject project =
-        FlutterProject.fromDirectory(environment.projectDir);
+    final FlutterProject project = FlutterProject.fromDirectory(environment.projectDir);
     final TizenProject tizenProject = TizenProject.fromFlutter(project);
 
     final Directory outputDir = environment.outputDir;
@@ -498,12 +465,9 @@ class DotnetModule extends TizenPackage {
       outputDir.deleteSync(recursive: true);
     }
     outputDir.createSync(recursive: true);
-    final Directory resDir = outputDir.childDirectory('res')
-      ..createSync(recursive: true);
-    final Directory libDir = outputDir.childDirectory('lib')
-      ..createSync(recursive: true);
-    final Directory srcDir = outputDir.childDirectory('src')
-      ..createSync(recursive: true);
+    final Directory resDir = outputDir.childDirectory('res')..createSync(recursive: true);
+    final Directory libDir = outputDir.childDirectory('lib')..createSync(recursive: true);
+    final Directory srcDir = outputDir.childDirectory('src')..createSync(recursive: true);
 
     // Copy necessary files.
     copyDirectory(
@@ -511,16 +475,13 @@ class DotnetModule extends TizenPackage {
       resDir.childDirectory('flutter_assets'),
     );
 
-    final TizenManifest tizenManifest =
-        TizenManifest.parseFromXml(tizenProject.manifestFile);
+    final TizenManifest tizenManifest = TizenManifest.parseFromXml(tizenProject.manifestFile);
     final String profile = buildInfo.deviceProfile;
     final String? apiVersion = tizenManifest.apiVersion;
 
     final BuildMode buildMode = buildInfo.buildInfo.mode;
-    final Directory engineDir =
-        getEngineArtifactsDirectory(buildInfo.targetArch, buildMode);
-    final Directory embedderDir =
-        getEmbedderArtifactsDirectory(apiVersion, buildInfo.targetArch);
+    final Directory engineDir = getEngineArtifactsDirectory(buildInfo.targetArch, buildMode);
+    final Directory embedderDir = getEmbedderArtifactsDirectory(apiVersion, buildInfo.targetArch);
 
     final File engineBinary = engineDir.childFile('libflutter_engine.so');
     final File embedder = embedderDir.childFile('libflutter_tizen_$profile.so');
@@ -540,11 +501,9 @@ class DotnetModule extends TizenPackage {
     final File generatedPluginRegistrant =
         tizenProject.managedDirectory.childFile('GeneratedPluginRegistrant.cs');
     assert(generatedPluginRegistrant.existsSync());
-    generatedPluginRegistrant
-        .copySync(srcDir.childFile(generatedPluginRegistrant.basename).path);
+    generatedPluginRegistrant.copySync(srcDir.childFile(generatedPluginRegistrant.basename).path);
 
-    final Directory pluginsDir =
-        environment.buildDir.childDirectory('tizen_plugins');
+    final Directory pluginsDir = environment.buildDir.childDirectory('tizen_plugins');
     final Directory pluginsResDir = pluginsDir.childDirectory('res');
     if (pluginsResDir.existsSync()) {
       copyDirectory(pluginsResDir, resDir);
@@ -570,8 +529,7 @@ class NativeModule extends TizenPackage {
 
   @override
   Future<void> build(Environment environment) async {
-    final FlutterProject project =
-        FlutterProject.fromDirectory(environment.projectDir);
+    final FlutterProject project = FlutterProject.fromDirectory(environment.projectDir);
     final TizenProject tizenProject = TizenProject.fromFlutter(project);
 
     final BuildMode buildMode = buildInfo.buildInfo.mode;
@@ -582,14 +540,10 @@ class NativeModule extends TizenPackage {
       outputDir.deleteSync(recursive: true);
     }
     outputDir.createSync(recursive: true);
-    final Directory incDir = outputDir.childDirectory('inc')
-      ..createSync(recursive: true);
-    final Directory resDir = outputDir.childDirectory('res')
-      ..createSync(recursive: true);
-    final Directory libDir = outputDir.childDirectory('lib')
-      ..createSync(recursive: true);
-    final Directory buildDir = outputDir.childDirectory(buildConfig)
-      ..createSync(recursive: true);
+    final Directory incDir = outputDir.childDirectory('inc')..createSync(recursive: true);
+    final Directory resDir = outputDir.childDirectory('res')..createSync(recursive: true);
+    final Directory libDir = outputDir.childDirectory('lib')..createSync(recursive: true);
+    final Directory buildDir = outputDir.childDirectory(buildConfig)..createSync(recursive: true);
 
     // Copy necessary files.
     copyDirectory(
@@ -597,15 +551,12 @@ class NativeModule extends TizenPackage {
       resDir.childDirectory('flutter_assets'),
     );
 
-    final TizenManifest tizenManifest =
-        TizenManifest.parseFromXml(tizenProject.manifestFile);
+    final TizenManifest tizenManifest = TizenManifest.parseFromXml(tizenProject.manifestFile);
     final String profile = buildInfo.deviceProfile;
     final String? apiVersion = tizenManifest.apiVersion;
 
-    final Directory engineDir =
-        getEngineArtifactsDirectory(buildInfo.targetArch, buildMode);
-    final Directory embedderDir =
-        getEmbedderArtifactsDirectory(apiVersion, buildInfo.targetArch);
+    final Directory engineDir = getEngineArtifactsDirectory(buildInfo.targetArch, buildMode);
+    final Directory embedderDir = getEmbedderArtifactsDirectory(apiVersion, buildInfo.targetArch);
 
     final File engineBinary = engineDir.childFile('libflutter_engine.so');
     final File embedder = embedderDir.childFile('libflutter_tizen_$profile.so');
@@ -620,14 +571,12 @@ class NativeModule extends TizenPackage {
       aotSnapshot.copySync(libDir.childFile('libapp.so').path);
     }
 
-    final File generatedPluginRegistrant = tizenProject.managedDirectory
-        .childFile('generated_plugin_registrant.h');
+    final File generatedPluginRegistrant =
+        tizenProject.managedDirectory.childFile('generated_plugin_registrant.h');
     assert(generatedPluginRegistrant.existsSync());
-    generatedPluginRegistrant
-        .copySync(incDir.childFile(generatedPluginRegistrant.basename).path);
+    generatedPluginRegistrant.copySync(incDir.childFile(generatedPluginRegistrant.basename).path);
 
-    final Directory pluginsDir =
-        environment.buildDir.childDirectory('tizen_plugins');
+    final Directory pluginsDir = environment.buildDir.childDirectory('tizen_plugins');
     final Directory pluginsIncludeDir = pluginsDir.childDirectory('include');
     if (pluginsIncludeDir.existsSync()) {
       copyDirectory(pluginsIncludeDir, incDir);
@@ -642,14 +591,12 @@ class NativeModule extends TizenPackage {
     }
 
     final Directory commonDir = getCommonArtifactsDirectory();
-    final Directory clientWrapperDir =
-        commonDir.childDirectory('cpp_client_wrapper');
+    final Directory clientWrapperDir = commonDir.childDirectory('cpp_client_wrapper');
     final Directory publicDir = commonDir.childDirectory('public');
     copyDirectory(clientWrapperDir.childDirectory('include'), incDir);
     copyDirectory(publicDir, incDir);
 
-    final Directory embeddingDir =
-        environment.buildDir.childDirectory('tizen_embedding');
+    final Directory embeddingDir = environment.buildDir.childDirectory('tizen_embedding');
     copyDirectory(embeddingDir.childDirectory('include'), incDir);
 
     final File embeddingLib = embeddingDir.childFile('libembedding_cpp.a');
