@@ -6,7 +6,7 @@
 
 1. Enable the developer mode.(OS version: Tizen 9.0)
 
-   1. Move **Apss** page and open **Apps Settings** application.
+   1. Move **Apps** page and open **App Settings** application.
 
       ![Apps](images/tv-developer-option-1.png)
 
