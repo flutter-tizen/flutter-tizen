@@ -47,7 +47,7 @@
 ### Install Tizen OS on Raspberry Pi 4
 
 > [!NOTE]
-> Raspberry Pi 3 was not supported since Tizen 8.0. Raspberry Pi 5 (64bit-only) can be using for experimental.
+> Raspberry Pi 3 was not supported since Tizen 8.0. Raspberry Pi 5 (64bit-only) can be used for experimental.
 
 You need a Linux PC (for flashing), a Raspberry Pi 4 board, and a micro SD card with a minimum capacity of 8 GB.
 
