@@ -4,9 +4,9 @@
 
 1. Make sure your host PC and TV are on the same network (connected to the same access point).
 
-1. Enable the developer mode.(OS version: Tizen 9.0)
+1. Enable the developer mode. (The images below are from a Tizen 9.0 TV. They may look different on other TVs.)
 
-   1. Move **Apps** page and open **App Settings** application.
+   1. Go to **Apps** and click the  **App Settings** icon.
 
       ![Apps](images/tv-developer-option-1.png)
 
@@ -20,7 +20,7 @@
 
       ![Enter IP address](images/tv-developer-option-4.png)
 
-   1. Restart the TV. You will see **Develop Mode** enabled in **Apps** after the TV restarts.
+   1. Restart the TV. You will see **Develop Mode** enabled after the TV restarts.
 
       ![Develop mode enabled](images/tv-developer-option-5.png)
 
@@ -47,7 +47,7 @@
 ### Install Tizen OS on Raspberry Pi 4
 
 > [!NOTE]
-> Raspberry Pi 3 was not supported since Tizen 8.0. Raspberry Pi 5 (64bit-only) can be used for experimental.
+> Raspberry Pi 3 is not supported since Tizen 8.0. Raspberry Pi 5 (64bit-only) can be used for experimental.
 
 You need a Linux PC (for flashing), a Raspberry Pi 4 board, and a micro SD card with a minimum capacity of 8 GB.
 
@@ -66,7 +66,7 @@ You need a Linux PC (for flashing), a Raspberry Pi 4 board, and a micro SD card 
    └─sdc1        8:33   1  29.3G  0 part
    ```
 
-1. Download a fusing script(`sd_fusing.py`).
+1. Download a fusing script (`sd_fusing.py`).
 
    ```sh
 
@@ -74,7 +74,7 @@ You need a Linux PC (for flashing), a Raspberry Pi 4 board, and a micro SD card 
    $ chmod +x sd_fusing.py
    ```
 
-1. Re-partition the SD card. (replace `/dev/sdc` with your own device name):
+1. Re-partition the SD card.
 
    ```sh
    $ sudo ./sd_fusing.py -d <SD card device name> -t <Target Board> --format
@@ -89,7 +89,7 @@ You need a Linux PC (for flashing), a Raspberry Pi 4 board, and a micro SD card 
    - [tizen-boot-armv7l-rpi4](https://download.tizen.org/releases/milestone/TIZEN/Tizen/Tizen-Unified/latest/images/standard/tizen-boot-armv7l-rpi4/)
    - [tizen-headed-armv7l](https://download.tizen.org/releases/milestone/TIZEN/Tizen/Tizen-Unified/latest/images/standard/tizen-headed-armv7l/)
 
-1. Flash the image to the SD card. For example:
+1. Flash the image to the SD card.
 
    ```sh
    $ sudo ./sd_fusing.py -d <SD card device namee> -b <Boot Image> <Platform Image> -t <Target Board>
