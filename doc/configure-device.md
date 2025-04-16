@@ -10,7 +10,7 @@
 
       ![Apps](images/tv-developer-option-1.png)
 
-      ![Apps Settings](images/tv-developer-option-2.png)
+      ![App Settings](images/tv-developer-option-2.png)
 
    1. Enter the number **12345** using the remote control or on-screen number pad.
 
