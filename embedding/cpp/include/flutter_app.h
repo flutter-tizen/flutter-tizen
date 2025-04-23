@@ -122,6 +122,11 @@ class FlutterApp : public flutter::PluginRegistry {
   FlutterExternalOutputType external_output_type_ =
       FlutterExternalOutputType::kNone;
 
+  // The user-defined pixel ratio.
+  //
+  //  Defaults to the device pixel ratio if the value is 0.
+  double user_pixel_ratio_ = 0.0;
+
  private:
   // The optional entrypoint in the Dart project.
   //

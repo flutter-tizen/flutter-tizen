@@ -111,6 +111,11 @@ namespace Tizen.Flutter.Embedding
         /// </summary>
         protected FlutterExternalOutputType ExternalOutputType { get; set; } = FlutterExternalOutputType.None;
 
+        /// <summary>
+        /// The user-defined pixel ratio. Defaults to the device pixel ratio if the value is 0.
+        /// </summary>
+        protected double UserPixelRatio { get; set; } = 0.0;
+
         /// <InheritDoc/>
         public override void Run(string[] args)
         {
@@ -166,6 +171,7 @@ namespace Tizen.Flutter.Embedding
                 top_level = IsTopLevel,
                 renderer_type = (FlutterDesktopRendererType)RendererType,
                 external_output_type = (FlutterDesktopExternalOutputType)ExternalOutputType,
+                user_pixel_ratio = UserPixelRatio < 0.0 ? 0.0 : UserPixelRatio,
             };
 
             View = FlutterDesktopViewCreateFromNewWindow(ref windowProperties, Engine.Engine);
