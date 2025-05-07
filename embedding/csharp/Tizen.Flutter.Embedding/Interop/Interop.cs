@@ -45,6 +45,7 @@ namespace Tizen.Flutter.Embedding
             public bool top_level;
             public FlutterDesktopRendererType renderer_type;
             public FlutterDesktopExternalOutputType external_output_type;
+            public double user_pixel_ratio;
         }
 
         [StructLayout(LayoutKind.Sequential)]
