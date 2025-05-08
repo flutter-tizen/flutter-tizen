@@ -409,7 +409,10 @@ Future<void> _informAvailableTizenPlugins(FlutterProject project) async {
   final List<String> plugins = (await findPlugins(project)).map((Plugin p) => p.name).toList();
   for (final String plugin in plugins) {
     final String tizenPlugin = '${plugin}_tizen';
-    if (_kKnownPlugins.containsKey(plugin) && !plugins.contains(tizenPlugin)) {
+    if (_kKnownPlugins.containsKey(plugin) &&
+        !plugins.contains(tizenPlugin) &&
+        !_kKnownPlugins[plugin]!
+            .any((String recommendedPlugin) => plugins.contains(recommendedPlugin))) {
       final List<String> recommendedPlugins = _kKnownPlugins[plugin]!;
       if (recommendedPlugins.isEmpty) {
         globals.printWarning(
