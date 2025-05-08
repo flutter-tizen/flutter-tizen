@@ -347,7 +347,7 @@ const Map<String, List<String>> _kKnownPlugins = <String, List<String>>{
   'shared_preferences': <String>[],
   'sqflite': <String>[],
   'url_launcher': <String>[],
-  'video_player': <String>['video_player_tizen', 'video_player_videohole', 'video_player_avplay'],
+  'video_player': <String>[],
   'wakelock_plus': <String>[],
   'webview_flutter': <String>['webview_flutter_tizen', 'webview_flutter_lwe'],
 };
