@@ -419,7 +419,7 @@ Future<void> _informAvailableTizenPlugins(FlutterProject project) async {
             '$tizenPlugin is available on pub.dev. Did you forget to add to pubspec.yaml?');
       } else {
         globals.printWarning(
-            '[${recommendedPlugins.join(', ')}] are available in pub.dev. Did you forget to add to pubspec.yaml?');
+            '[${recommendedPlugins.sublist(0, recommendedPlugins.length - 1).join(', ')} or ${recommendedPlugins.last}] are available on pub.dev. Did you forget to add to pubspec.yaml?');
       }
     }
   }
