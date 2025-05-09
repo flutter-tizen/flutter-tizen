@@ -52,14 +52,15 @@ void main() {
       ..writeAsStringSync('''
 <manifest package="package_id" version="9.9.9" api-version="4.0">
     <profile name="common"/>
-    <ui-application appid="app_id_1" exec="runner" type="capp"/>
-    <service-application appid="app_id_2" exec="runner" type="capp"/>
-    <service-application appid="app_id_3" exec="runner" type="capp"/>
+    <ui-application appid="app_id_1" exec="runner" type="capp-flutter"/>
+    <service-application appid="app_id_2" exec="runner" type="capp-flutter"/>
+    <service-application appid="app_id_3" exec="runner" type="capp-flutter"/>
 </manifest>
 ''');
 
     final TizenManifest manifest = TizenManifest.parseFromXml(xmlFile);
     expect(manifest.applicationId, equals('app_id_1'));
+    expect(manifest.applicationType, equals('capp-flutter'));
     expect(logger.traceText, contains('tizen-manifest.xml: Found 3 application declarations.'));
   }, overrides: <Type, Generator>{
     Logger: () => logger,
