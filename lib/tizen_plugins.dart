@@ -323,30 +323,34 @@ Future<void> _generateEntrypointWithPluginRegistrant(
 }
 
 /// https://github.com/flutter-tizen/plugins
-const List<String> _kKnownPlugins = <String>[
-  'audioplayers',
-  'battery_plus',
-  'camera',
-  'connectivity_plus',
-  'device_info_plus',
-  'flutter_app_badger',
-  'flutter_secure_storage',
-  'flutter_tts',
-  'geolocator',
-  'google_maps_flutter',
-  'google_sign_in',
-  'image_picker',
-  'integration_test',
-  'network_info_plus',
-  'package_info_plus',
-  'path_provider',
-  'permission_handler',
-  'sensors_plus',
-  'shared_preferences',
-  'sqflite',
-  'url_launcher',
-  'wakelock',
-];
+const Map<String, List<String>> _kKnownPlugins = <String, List<String>>{
+  'audioplayers': <String>[],
+  'battery_plus': <String>[],
+  'camera': <String>[],
+  'connectivity_plus': <String>[],
+  'device_info_plus': <String>[],
+  'flutter_app_badger': <String>[],
+  'flutter_secure_storage': <String>[],
+  'flutter_tts': <String>[],
+  'flutter_webrtc': <String>[],
+  'geolocator': <String>[],
+  'google_maps_flutter': <String>[],
+  'google_sign_in': <String>[],
+  'image_picker': <String>[],
+  'in_app_purchase': <String>[],
+  'integration_test': <String>[],
+  'network_info_plus': <String>[],
+  'package_info_plus': <String>[],
+  'path_provider': <String>[],
+  'permission_handler': <String>[],
+  'sensors_plus': <String>[],
+  'shared_preferences': <String>[],
+  'sqflite': <String>[],
+  'url_launcher': <String>[],
+  'video_player': <String>[],
+  'wakelock_plus': <String>[],
+  'webview_flutter': <String>['webview_flutter_tizen', 'webview_flutter_lwe'],
+};
 
 /// This function is expected to be called whenever
 /// [FlutterProject.ensureReadyForPlatformSpecificTooling] is called.
@@ -405,9 +409,18 @@ Future<void> _informAvailableTizenPlugins(FlutterProject project) async {
   final List<String> plugins = (await findPlugins(project)).map((Plugin p) => p.name).toList();
   for (final String plugin in plugins) {
     final String tizenPlugin = '${plugin}_tizen';
-    if (_kKnownPlugins.contains(plugin) && !plugins.contains(tizenPlugin)) {
-      globals.printWarning(
-          '$tizenPlugin is available on pub.dev. Did you forget to add to pubspec.yaml?');
+    if (_kKnownPlugins.containsKey(plugin) &&
+        !plugins.contains(tizenPlugin) &&
+        !_kKnownPlugins[plugin]!
+            .any((String recommendedPlugin) => plugins.contains(recommendedPlugin))) {
+      final List<String> recommendedPlugins = _kKnownPlugins[plugin]!;
+      if (recommendedPlugins.isEmpty) {
+        globals.printWarning(
+            '$tizenPlugin is available on pub.dev. Did you forget to add to pubspec.yaml?');
+      } else {
+        globals.printWarning(
+            '[${recommendedPlugins.sublist(0, recommendedPlugins.length - 1).join(', ')} or ${recommendedPlugins.last}] is available on pub.dev. Did you forget to add to pubspec.yaml?');
+      }
     }
   }
 }
