@@ -9,7 +9,7 @@
 
   <PropertyGroup>
     <PackageId>Tizen.Flutter.Embedding</PackageId>
-    <Version>1.2.1</Version>
+    <Version>1.2.2</Version>
     <Authors>Samsung Electronics</Authors>
     <Description>Provides APIs for embedding Flutter into Tizen apps.</Description>
     <PackageLicenseExpression>BSD-3-Clause</PackageLicenseExpression>
