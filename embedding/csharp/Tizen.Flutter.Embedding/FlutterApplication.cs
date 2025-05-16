@@ -160,6 +160,14 @@ namespace Tizen.Flutter.Embedding
                 throw new Exception("Impeller is not supported by FlutterRendererType::kEvasGL type renderer.");
             }
 
+            var daliApp = ApplicationNewManual4(0, "", "", 1 /* transparent */);
+            var daliWindow = GetWindow(daliApp);
+            IntPtr wlWindow = IntPtr.Zero;
+            if (HasBody(daliWindow))
+            {
+                wlWindow = GetNativeWindowHandler(daliWindow);
+            }
+
             var windowProperties = new FlutterDesktopWindowProperties
             {
                 x = WindowOffsetX,
@@ -172,6 +180,7 @@ namespace Tizen.Flutter.Embedding
                 renderer_type = (FlutterDesktopRendererType)RendererType,
                 external_output_type = (FlutterDesktopExternalOutputType)ExternalOutputType,
                 user_pixel_ratio = UserPixelRatio < 0.0 ? 0.0 : UserPixelRatio,
+                window_handle = wlWindow,
             };
 
             View = FlutterDesktopViewCreateFromNewWindow(ref windowProperties, Engine.Engine);
