@@ -86,7 +86,6 @@ class TizenBuilder {
       logger: globals.logger,
       processManager: globals.processManager,
       platform: globals.platform,
-      usage: globals.flutterUsage,
       analytics: globals.analytics,
       generateDartPluginRegistry: false,
     );
@@ -213,7 +212,6 @@ class TizenBuilder {
       logger: globals.logger,
       processManager: globals.processManager,
       platform: globals.platform,
-      usage: globals.flutterUsage,
       analytics: globals.analytics,
       generateDartPluginRegistry: false,
     );

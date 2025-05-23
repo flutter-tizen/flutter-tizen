@@ -18,13 +18,11 @@ import '../tizen_plugins.dart';
 
 class TizenBuildCommand extends BuildCommand {
   TizenBuildCommand({
-    required super.artifacts,
     required super.fileSystem,
     required super.buildSystem,
     required super.osUtils,
     required Logger logger,
     required super.androidSdk,
-    required super.processUtils,
     bool verboseHelp = false,
   }) : super(logger: logger, verboseHelp: verboseHelp) {
     addSubcommand(BuildTpkCommand(logger: logger, verboseHelp: verboseHelp));
@@ -78,7 +76,6 @@ class BuildTpkCommand extends BuildSubCommand with DartPluginRegistry, TizenRequ
       securityProfile: stringArg('security-profile'),
     );
     _validateBuild(tizenBuildInfo);
-    displayNullSafetyMode(buildInfo);
 
     await tizenBuilder?.buildTpk(
       project: FlutterProject.current(),
@@ -97,7 +94,6 @@ class BuildModuleCommand extends BuildSubCommand with DartPluginRegistry, TizenR
     addBuildModeFlags(verboseHelp: verboseHelp);
     addDartObfuscationOption();
     addEnableExperimentation(hide: !verboseHelp);
-    addNullSafetyModeOptions(hide: !verboseHelp);
     addSplitDebugInfoOption();
     addTreeShakeIconsFlag();
     usesDartDefineOption();
@@ -140,7 +136,6 @@ class BuildModuleCommand extends BuildSubCommand with DartPluginRegistry, TizenR
       deviceProfile: stringArg('device-profile')!,
     );
     _validateBuild(tizenBuildInfo);
-    displayNullSafetyMode(buildInfo);
 
     await tizenBuilder?.buildModule(
       project: FlutterProject.current(),

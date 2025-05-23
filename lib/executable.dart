@@ -137,11 +137,9 @@ Future<void> main(List<String> args) async {
         fileSystem: globals.fs,
       ),
       TizenBuildCommand(
-        artifacts: globals.artifacts!,
         fileSystem: globals.fs,
         buildSystem: globals.buildSystem,
         osUtils: globals.os,
-        processUtils: globals.processUtils,
         verboseHelp: verboseHelp,
         androidSdk: globals.androidSdk,
         logger: globals.logger,
@@ -154,6 +152,8 @@ Future<void> main(List<String> args) async {
         logger: globals.logger,
         platform: globals.platform,
         signals: globals.signals,
+        terminal: globals.terminal,
+        outputPreferences: globals.outputPreferences,
       ),
       TizenPrecacheCommand(
         verboseHelp: verboseHelp,
@@ -257,7 +257,6 @@ Future<void> main(List<String> args) async {
             processManager: globals.processManager,
             platform: globals.platform,
             botDetector: globals.botDetector,
-            usage: globals.flutterUsage,
           ),
     },
     shutdownHooks: globals.shutdownHooks,

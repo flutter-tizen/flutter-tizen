@@ -101,6 +101,12 @@ class TizenFlutterVersion implements FlutterVersion {
 
   @override
   Map<String, Object> toJson() => flutterVersion.toJson();
+
+  @override
+  String get engineAge => flutterVersion.engineAge;
+
+  @override
+  String? get engineCommitDate => flutterVersion.engineCommitDate;
 }
 
 /// Source: [_runGit] in `version.dart`

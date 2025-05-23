@@ -9,7 +9,6 @@ import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/base/platform.dart';
 import 'package:flutter_tools/src/dart/pub.dart';
 import 'package:flutter_tools/src/project.dart';
-import 'package:flutter_tools/src/reporting/reporting.dart';
 import 'package:meta/meta.dart';
 import 'package:process/process.dart';
 
@@ -22,14 +21,12 @@ class TizenPub implements Pub {
     required ProcessManager processManager,
     required Platform platform,
     required BotDetector botDetector,
-    required Usage usage,
   }) : _pub = Pub(
           fileSystem: fileSystem,
           logger: logger,
           processManager: processManager,
           platform: platform,
           botDetector: botDetector,
-          usage: usage,
         );
 
   @visibleForTesting
@@ -39,7 +36,6 @@ class TizenPub implements Pub {
     required ProcessManager processManager,
     required Platform platform,
     required BotDetector botDetector,
-    required Usage usage,
     required Stdio stdio,
   }) :
         // ignore: invalid_use_of_visible_for_testing_member
@@ -49,7 +45,6 @@ class TizenPub implements Pub {
           processManager: processManager,
           platform: platform,
           botDetector: botDetector,
-          usage: usage,
           stdio: stdio,
         );
 
@@ -97,7 +92,7 @@ class TizenPub implements Pub {
   }
 
   @override
-  Future<Map<String, Object?>> deps(FlutterProject project) {
+  Future<Map<String, Object?>?> deps(FlutterProject project) {
     return _pub.deps(project);
   }
 

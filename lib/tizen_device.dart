@@ -388,8 +388,6 @@ class TizenDevice extends Device {
         debuggingOptions.traceToFile!,
       ],
       if (debuggingOptions.endlessTraceBuffer) '--endless-trace-buffer',
-      if (debuggingOptions.dumpSkpOnShaderCompilation) '--dump-skp-on-shader-compilation',
-      if (debuggingOptions.cacheSkSL) '--cache-sksl',
       if (debuggingOptions.purgePersistentCache) '--purge-persistent-cache',
       if (debuggingOptions.enableImpeller == ImpellerStatus.enabled) '--enable-impeller',
       if (debuggingOptions.enableVulkanValidation) '--enable-vulkan-validation',

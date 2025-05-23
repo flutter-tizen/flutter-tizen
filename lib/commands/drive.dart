@@ -14,5 +14,7 @@ class TizenDriveCommand extends DriveCommand with DartPluginRegistry, TizenRequi
     required super.logger,
     required super.platform,
     required super.signals,
+    required super.terminal,
+    required super.outputPreferences,
   });
 }
