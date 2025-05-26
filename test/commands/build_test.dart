@@ -7,11 +7,9 @@ import 'package:file/memory.dart';
 import 'package:flutter_tizen/commands/build.dart';
 import 'package:flutter_tizen/tizen_build_info.dart';
 import 'package:flutter_tizen/tizen_builder.dart';
-import 'package:flutter_tools/src/artifacts.dart';
 import 'package:flutter_tools/src/base/analyze_size.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/base/logger.dart';
-import 'package:flutter_tools/src/base/process.dart';
 import 'package:flutter_tools/src/build_system/build_system.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/project.dart';
@@ -26,9 +24,6 @@ import '../src/test_flutter_command_runner.dart';
 void main() {
   late FileSystem fileSystem;
   late FakeProcessManager processManager;
-  late ProcessUtils processUtils;
-  late Logger logger;
-  late Artifacts artifacts;
   late _FakeTizenBuilder tizenBuilder;
 
   setUpAll(() {
@@ -43,27 +38,18 @@ void main() {
       ..createSync(recursive: true)
       ..writeAsStringSync('{"configVersion": 2, "packages": []}');
 
-    artifacts = Artifacts.test(fileSystem: fileSystem);
-    logger = BufferLogger.test();
     processManager = FakeProcessManager.empty();
-    processUtils = ProcessUtils(
-      logger: logger,
-      processManager: processManager,
-    );
-
     tizenBuilder = _FakeTizenBuilder();
   });
 
   group('BuildTpkCommand', () {
     testUsingContext('Cannot build for x86 in release mode', () async {
       final TizenBuildCommand command = TizenBuildCommand(
-        artifacts: artifacts,
         fileSystem: fileSystem,
         buildSystem: TestBuildSystem.all(BuildResult(success: true)),
         osUtils: FakeOperatingSystemUtils(),
         logger: BufferLogger.test(),
         androidSdk: FakeAndroidSdk(),
-        processUtils: processUtils,
       );
       final CommandRunner<void> runner = createTestCommandRunner(command);
 
@@ -84,13 +70,11 @@ void main() {
 
     testUsingContext('Can compute build info', () async {
       final TizenBuildCommand command = TizenBuildCommand(
-        artifacts: artifacts,
         fileSystem: fileSystem,
         buildSystem: TestBuildSystem.all(BuildResult(success: true)),
         osUtils: FakeOperatingSystemUtils(),
         logger: BufferLogger.test(),
         androidSdk: FakeAndroidSdk(),
-        processUtils: processUtils,
       );
       fileSystem.file('test_main.dart').createSync(recursive: true);
 
@@ -116,13 +100,11 @@ void main() {
   group('BuildModuleCommand', () {
     testUsingContext('Can compute build info', () async {
       final TizenBuildCommand command = TizenBuildCommand(
-        artifacts: artifacts,
         fileSystem: fileSystem,
         buildSystem: TestBuildSystem.all(BuildResult(success: true)),
         osUtils: FakeOperatingSystemUtils(),
         logger: BufferLogger.test(),
         androidSdk: FakeAndroidSdk(),
-        processUtils: processUtils,
       );
 
       await createTestCommandRunner(command).run(<String>[
