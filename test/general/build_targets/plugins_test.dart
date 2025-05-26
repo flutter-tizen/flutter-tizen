@@ -13,9 +13,11 @@ import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/build_info.dart';
 import 'package:flutter_tools/src/build_system/build_system.dart';
 import 'package:flutter_tools/src/cache.dart';
+import 'package:flutter_tools/src/dart/pub.dart';
 
 import '../../src/common.dart';
 import '../../src/context.dart';
+import '../../src/fake_pub_deps.dart';
 import '../../src/fake_tizen_sdk.dart';
 
 void main() {
@@ -173,6 +175,7 @@ dependencies:
   }, overrides: <Type, Generator>{
     FileSystem: () => fileSystem,
     ProcessManager: () => processManager,
+    Pub: FakePubWithPrimedDeps.new,
     Cache: () => cache,
     TizenSdk: () => FakeTizenSdk(fileSystem),
   });
@@ -215,6 +218,7 @@ dependencies:
     FileSystem: () => fileSystem,
     ProcessManager: () => processManager,
     Cache: () => cache,
+    Pub: FakePubWithPrimedDeps.new,
     TizenSdk: () => FakeTizenSdk(fileSystem),
   });
 }
