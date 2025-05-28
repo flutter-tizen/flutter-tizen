@@ -22,13 +22,6 @@ enum class FlutterRendererType {
   kEGL,
 };
 
-enum class FlutterExternalOutputType {
-  // No external output.
-  kNone,
-  // Display to the HDMI external output.
-  kHDMI,
-};
-
 // The app base class for headed Flutter execution.
 class FlutterApp : public flutter::PluginRegistry {
  public:
@@ -115,12 +108,6 @@ class FlutterApp : public flutter::PluginRegistry {
   //
   // Defaults to kEGL.
   FlutterRendererType renderer_type_ = FlutterRendererType::kEGL;
-
-  // The external output type of the window.
-  //
-  // Defaults to kNone.
-  FlutterExternalOutputType external_output_type_ =
-      FlutterExternalOutputType::kNone;
 
   // The user-defined pixel ratio.
   //
