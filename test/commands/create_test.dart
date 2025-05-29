@@ -249,7 +249,6 @@ void main() {
           processManager: globals.processManager,
           platform: globals.platform,
           botDetector: globals.botDetector,
-          usage: globals.flutterUsage,
           stdio: FakeStdio(),
         ),
   });
@@ -273,7 +272,6 @@ void main() {
           processManager: globals.processManager,
           platform: globals.platform,
           botDetector: globals.botDetector,
-          usage: globals.flutterUsage,
           stdio: FakeStdio(),
         ),
   });
