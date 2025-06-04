@@ -25,21 +25,6 @@ namespace Tizen.Flutter.Embedding
     }
 
     /// <summary>
-    /// Enumeration for the external output type of the window.
-    /// </summary>
-    public enum FlutterExternalOutputType
-    {
-        /// <summary>
-        /// No external output.
-        /// </summary>
-        None = 0,
-        /// <summary>
-        /// Display to the HDMI external output.
-        /// </summary>
-        HDMI,
-    }
-
-    /// <summary>
     /// The app base class for headed Flutter execution.
     /// </summary>
     public class FlutterApplication : CoreUIApplication, IPluginRegistry
@@ -107,11 +92,6 @@ namespace Tizen.Flutter.Embedding
         protected FlutterRendererType RendererType { get; set; } = FlutterRendererType.EGL;
 
         /// <summary>
-        /// The external output type of the window. Defaults to None.
-        /// </summary>
-        protected FlutterExternalOutputType ExternalOutputType { get; set; } = FlutterExternalOutputType.None;
-
-        /// <summary>
         /// The user-defined pixel ratio. Defaults to the device pixel ratio if the value is 0.
         /// </summary>
         protected double UserPixelRatio { get; set; } = 0.0;
@@ -150,11 +130,6 @@ namespace Tizen.Flutter.Embedding
                 throw new Exception("Could not create a Flutter engine.");
             }
 
-            if (RendererType == FlutterRendererType.EGL && ExternalOutputType != FlutterExternalOutputType.None)
-            {
-                throw new Exception("External output is not supported by FlutterRendererType::kEGL type renderer.");
-            }
-
             if (RendererType == FlutterRendererType.EvasGL && Engine.IsImpellerEnabled)
             {
                 throw new Exception("Impeller is not supported by FlutterRendererType::kEvasGL type renderer.");
@@ -178,7 +153,6 @@ namespace Tizen.Flutter.Embedding
                 focusable = IsWindowFocusable,
                 top_level = IsTopLevel,
                 renderer_type = (FlutterDesktopRendererType)RendererType,
-                external_output_type = (FlutterDesktopExternalOutputType)ExternalOutputType,
                 user_pixel_ratio = UserPixelRatio < 0.0 ? 0.0 : UserPixelRatio,
                 window_handle = wlWindow,
             };

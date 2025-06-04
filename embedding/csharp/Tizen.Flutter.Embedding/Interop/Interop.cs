@@ -24,12 +24,6 @@ namespace Tizen.Flutter.Embedding
             kPointerMove,
         };
 
-        public enum FlutterDesktopExternalOutputType
-        {
-            kNone,
-            kHDMI,
-        };
-
         [StructLayout(LayoutKind.Sequential)]
         public struct FlutterDesktopWindowProperties
         {
@@ -44,7 +38,6 @@ namespace Tizen.Flutter.Embedding
             [MarshalAs(UnmanagedType.U1)]
             public bool top_level;
             public FlutterDesktopRendererType renderer_type;
-            public FlutterDesktopExternalOutputType external_output_type;
             public double user_pixel_ratio;
             public IntPtr window_handle;
         }
