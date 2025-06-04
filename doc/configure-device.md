@@ -85,9 +85,8 @@ You need a Linux PC (for flashing), a Raspberry Pi 4 board, and a micro SD card 
    ```
 
 1. [Download a Tizen OS image](https://docs.tizen.org/platform/developing/flashing-rpi/#download-binaries). Visit the links below and download two `.tar.gz` files.
-
-   - [tizen-boot-armv7l-rpi4](https://download.tizen.org/releases/milestone/TIZEN/Tizen/Tizen-Unified/latest/images/standard/tizen-boot-armv7l-rpi4/)
-   - [tizen-headed-armv7l](https://download.tizen.org/releases/milestone/TIZEN/Tizen/Tizen-Unified/latest/images/standard/tizen-headed-armv7l/)
+   - [tizen-boot-armv7l-rpi4](https://download.tizen.org/releases/milestone/TIZEN/Tizen-9.0/Tizen-9.0-Unified/latest/images/standard/tizen-boot-armv7l-rpi4//)
+   - [tizen-headed-armv7l](https://download.tizen.org/releases/milestone/TIZEN/Tizen-9.0/Tizen-9.0-Unified/latest/images/standard/tizen-headed-armv7l/)
 
 1. Flash the image to the SD card.
 
@@ -96,7 +95,7 @@ You need a Linux PC (for flashing), a Raspberry Pi 4 board, and a micro SD card 
    ```
    For example:
    ```sh
-   $ sudo ./sd_fusing.py -d /dev/sdc -b tizen-unified_20241025.103727_tizen-boot-armv7l-rpi4.tar.gz tizen-unified_20241025.103727_tizen-headed-armv7l.tar.gz -t rpi4
+   $ sudo ./sd_fusing.py -d /dev/sdc -b tizen-9.0-unified_20241030.071206_tizen-boot-armv7l-rpi4.tar.gz tizen-9.0-unified_20241030.071206_tizen-headed-armv7l.tar.gz -t rpi4
    ```
 
 1. Done. Remove the SD card and insert to your Pi device.
