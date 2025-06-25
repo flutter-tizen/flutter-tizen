@@ -16,6 +16,7 @@ namespace Tizen.Flutter.Embedding
     public class FlutterEngine : IPluginRegistry
     {
         private const string MetadataKeyEnableImepeller = "http://tizen.org/metadata/flutter_tizen/enable_impeller";
+        private const string MetadataKeyEnableMergedPlatformUIThread = "http://tizen.org/metadata/flutter_tizen/enable_merged_platform_ui_thread";
 
         /// <summary>
         /// Creates a <see cref="FlutterEngine"/> with an optional entrypoint name and entrypoint arguments.
@@ -47,6 +48,7 @@ namespace Tizen.Flutter.Embedding
                     entrypoint = dartEntrypoint,
                     dart_entrypoint_argc = entrypointArgs.Length,
                     dart_entrypoint_argv = entrypointArgs.Handle,
+                    merged_platform_ui_thread = MergedPlatformUIThread,
                 };
 
                 Engine = FlutterDesktopEngineCreate(ref engineProperties);
@@ -62,6 +64,12 @@ namespace Tizen.Flutter.Embedding
         /// Whether the impeller is enabled or not.
         /// </summary>
         public bool IsImpellerEnabled { get; private set; } = false;
+
+        /// <summary>
+        /// Whether the MergedPlatformUIThread is enabled or not.
+        /// </summary>
+        internal bool MergedPlatformUIThread { get; private set; } = false;
+
 
         /// <summary>
         /// Handle for interacting with the C API's engine reference.
@@ -196,6 +204,7 @@ namespace Tizen.Flutter.Embedding
 
             string appId = appInfo.ApplicationId;
             bool enableImpellerKeyExist = appInfo.Metadata.ContainsKey(MetadataKeyEnableImepeller);
+            bool enableMergedPlatformUIThreadKeyExist = appInfo.Metadata.ContainsKey(MetadataKeyEnableMergedPlatformUIThread);
             string tempPath = $"/home/owner/share/tmp/sdk_tools/{appId}.rpm";
 
             if (File.Exists(tempPath))
@@ -233,6 +242,12 @@ namespace Tizen.Flutter.Embedding
                     result.Remove("--enable-impeller");
                 }
             }
+
+            if (enableMergedPlatformUIThreadKeyExist && appInfo.Metadata[MetadataKeyEnableMergedPlatformUIThread] == "true")
+            {
+                MergedPlatformUIThread = true;
+            }
+
 
             foreach (string flag in result)
             {
