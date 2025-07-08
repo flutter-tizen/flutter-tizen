@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'package:crypto/crypto.dart';
 import 'package:flutter_tools/src/base/common.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/base/process.dart';
@@ -116,50 +117,91 @@ class NativePlugins extends Target {
     final List<String> pluginClasses = <String>[];
 
     for (final TizenPlugin plugin in nativePlugins) {
+      final StringBuffer hashBuffer = StringBuffer();
+      final Iterable<File> hashingFiles =
+          plugin.directory.listSync(recursive: true).whereType<File>().where((File f) {
+        final String path = f.path;
+        final bool isTizenPath = path.contains('/tizen/');
+        // Refer to tizen/.gitignore.
+        final bool isExcludedPath = path.contains('/Release/') ||
+            path.contains('/Debug/') ||
+            path.contains('/crash-info/') ||
+            path.endsWith('.cproject') ||
+            path.endsWith('.sign');
+        return isTizenPath && !isExcludedPath;
+      });
+
+      for (final File hashingFile in hashingFiles) {
+        String content = '';
+        try {
+          content = hashingFile.readAsStringSync();
+        } on FileSystemException catch (_) {
+          try {
+            content = hashingFile.readAsBytesSync().take(1024).toString();
+          } on FileSystemException catch (_) {
+            environment.logger.printStatus('$hashingFile skips hashing.');
+          }
+        }
+        hashBuffer.writeln(hashingFile.path);
+        hashBuffer.writeln(content);
+      }
+      final String currentHash = md5.convert(hashBuffer.toString().codeUnits).toString();
+      final File hashCacheFile = outputDir.childFile('${plugin.libName}_tizen_native_plugin.hash');
+      final String lastHash = hashCacheFile.existsSync() ? hashCacheFile.readAsStringSync() : '';
+      bool canSkip = false;
+      if (lastHash == currentHash) {
+        canSkip = true;
+        environment.logger.printTrace('Skipping ${plugin.libName} native build.');
+      }
+      hashCacheFile.writeAsStringSync(currentHash);
+
       inputs.add(plugin.projectFile);
 
       final Directory buildDir = plugin.directory.childDirectory(buildConfig);
-      if (buildDir.existsSync()) {
-        buildDir.deleteSync(recursive: true);
-      }
-      final RunResult result = await tizenSdk!.buildNative(
-        plugin.directory.path,
-        configuration: buildConfig,
-        arch: getTizenCliArch(buildInfo.targetArch),
-        predefines: <String>[
-          '${profile.toUpperCase()}_PROFILE',
-        ],
-        extraOptions: <String>[
-          if (!plugin.isSharedLib) '-fPIC',
-          '-I${clientWrapperDir.childDirectory('include').path.toPosixPath()}',
-          '-I${publicDir.path.toPosixPath()}',
-          '-I${dartSdkDir.childDirectory('include').path.toPosixPath()}',
-          if (plugin.isSharedLib) ...<String>[
-            '-l${getLibNameForFileName(embedder.basename)}',
-            '-L${embedderDir.path.toPosixPath()}',
-            embeddingLib.path.toPosixPath(),
-          ],
-        ],
-        rootstrap: rootstrap.id,
-        environment: <String, String>{
-          'FLUTTER_BUILD_DIR': environment.buildDir.path.toPosixPath(''),
-          'API_VERSION': apiVersion ?? '',
-        },
-      );
-      if (result.exitCode != 0) {
-        throwToolExit('Failed to build ${plugin.name} plugin:\n$result');
-      }
-
-      assert(plugin.libName != null);
       final File libFile = plugin.isSharedLib
           ? buildDir.childFile('lib${plugin.libName!}.so')
           : buildDir.childFile('lib${plugin.libName!}.a');
-      if (!libFile.existsSync()) {
-        throwToolExit(
-          'Build succeeded but the file ${libFile.path} is not found:\n'
-          '${result.stdout}',
+      if (!canSkip) {
+        if (buildDir.existsSync()) {
+          buildDir.deleteSync(recursive: true);
+        }
+        final RunResult result = await tizenSdk!.buildNative(
+          plugin.directory.path,
+          configuration: buildConfig,
+          arch: getTizenCliArch(buildInfo.targetArch),
+          predefines: <String>[
+            '${profile.toUpperCase()}_PROFILE',
+          ],
+          extraOptions: <String>[
+            if (!plugin.isSharedLib) '-fPIC',
+            '-I${clientWrapperDir.childDirectory('include').path.toPosixPath()}',
+            '-I${publicDir.path.toPosixPath()}',
+            '-I${dartSdkDir.childDirectory('include').path.toPosixPath()}',
+            if (plugin.isSharedLib) ...<String>[
+              '-l${getLibNameForFileName(embedder.basename)}',
+              '-L${embedderDir.path.toPosixPath()}',
+              embeddingLib.path.toPosixPath(),
+            ],
+          ],
+          rootstrap: rootstrap.id,
+          environment: <String, String>{
+            'FLUTTER_BUILD_DIR': environment.buildDir.path.toPosixPath(''),
+            'API_VERSION': apiVersion ?? '',
+          },
         );
+        if (result.exitCode != 0) {
+          throwToolExit('Failed to build ${plugin.name} plugin:\n$result');
+        }
+        assert(plugin.libName != null);
+
+        if (!libFile.existsSync()) {
+          throwToolExit(
+            'Build succeeded but the file ${libFile.path} is not found:\n'
+            '${result.stdout}',
+          );
+        }
       }
+
       libFile.copySync(libDir.childFile(libFile.basename).path);
       userLibs.add(plugin.libName!);
 

@@ -9,6 +9,7 @@ environment:
 dependencies:
   analyzer:
   archive:
+  crypto:
   fake_async:
   flutter_tools:
     path: flutter/packages/flutter_tools
