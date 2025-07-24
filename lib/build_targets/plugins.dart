@@ -238,7 +238,7 @@ type = sharedLib
 profile = $profile-$apiVersion
 
 USER_LFLAGS = -Wl,-rpath='\$\$ORIGIN'
-USER_LIBS = pthread ${userLibs.join(' ')}
+USER_LIBS = stdc++ pthread ${userLibs.join(' ')}
 ''');
 
       final Directory buildDir = outputDir.childDirectory(buildConfig);
