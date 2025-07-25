@@ -27,7 +27,6 @@ jobs:
           exempt-issue-labels: |
             bug
             enhancement
-            feature
             keep
           close-issue-message: >
             This page has been automatically locked since there has not been any recent activity after it was closed. If you are still experiencing a similar issue, please open a new issue with additional information about the issue.
