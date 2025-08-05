@@ -18,7 +18,6 @@ const String _kLaunchJson = r'''
             "name": "flutter-tizen: Attach",
             "request": "attach",
             "type": "dart",
-            "deviceId": "flutter-tester",
             "cwd": "${workspaceFolder}",
             "vmServiceUri": "http://127.0.0.1:12345"
         }

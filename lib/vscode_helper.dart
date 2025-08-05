@@ -51,7 +51,6 @@ void updateLaunchJsonFile(FlutterProject project, Uri vmServiceUri) {
       'name': kConfigNameAttach,
       'request': 'attach',
       'type': 'dart',
-      'deviceId': 'flutter-tester',
     });
   }
   for (final Object? config in configs) {
