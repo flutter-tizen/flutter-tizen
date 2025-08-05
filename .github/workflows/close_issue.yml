@@ -29,7 +29,7 @@ jobs:
             enhancement
             keep
           close-issue-message: >
-            This page has been automatically locked since there has not been any recent activity after it was closed. If you are still experiencing a similar issue, please open a new issue with additional information about the issue.
+            This page has been automatically closed since there has not been any recent activity. If you are still experiencing a similar issue, please open a new issue with additional information about the issue.
           operations-per-run: 100
           stale-pr-message: ""
           days-before-pr-stale: -1
