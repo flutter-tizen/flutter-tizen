@@ -1,3 +1,7 @@
+# Copyright 2025 Samsung Electronics Co., Ltd. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 name: Analyze
 
 on: [push, pull_request]
@@ -25,6 +29,6 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-dotnet@v2
         with:
-          dotnet-version: '6.0.x'
+          dotnet-version: "6.0.x"
       - name: Verify formatting
         run: dotnet format --verify-no-changes embedding/csharp

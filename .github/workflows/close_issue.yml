@@ -1,0 +1,36 @@
+# Copyright 2025 Samsung Electronics Co., Ltd. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# Configuration for close stale issues - https://github.com/actions/stale
+
+name: Close stale issues
+
+permissions:
+  issues: write
+
+on:
+  schedule:
+    - cron: "0 * * * *"
+  workflow_dispatch:
+
+jobs:
+  lock:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/stale@v9
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          days-before-stale: 60
+          days-before-close: 0
+          only-issue-labels: ""
+          exempt-issue-labels: |
+            bug
+            enhancement
+            keep
+          close-issue-message: >
+            This page has been automatically closed since there has not been any recent activity. If you are still experiencing a similar issue, please open a new issue with additional information about the issue.
+          operations-per-run: 100
+          stale-pr-message: ""
+          days-before-pr-stale: -1
+          days-before-pr-close: -1
