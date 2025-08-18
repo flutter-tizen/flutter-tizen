@@ -1,3 +1,7 @@
+## 0.2.5
+
+* Add `isTvProfile` and `isTizenProfile` APIs that can check Tizen Profile.
+
 ## 0.2.4
 
 * Add apiVersion to flutter-tizen.dart.
