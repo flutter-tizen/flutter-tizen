@@ -11,6 +11,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  String _tizenProfile = 'Unknown';
   String _isTizen = 'Unknown';
   String _apiVersion = 'Unknown';
 
@@ -18,6 +19,7 @@ class _MyAppState extends State<MyApp> {
   initState() {
     super.initState();
     setState(() {
+      _tizenProfile = isTvProfile ? 'TV' : (isTizenProfile ? 'Tizen' : 'Unknown');
       _isTizen = isTizen.toString();
       _apiVersion = apiVersion;
     });
@@ -37,6 +39,7 @@ class _MyAppState extends State<MyApp> {
             children: <Widget>[
               Text('isTizen : $_isTizen\n'),
               Text('apiVersion : $_apiVersion\n'),
+              Text('Profile : $_tizenProfile\n'),
             ],
           ),
         ),
