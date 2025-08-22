@@ -40,6 +40,10 @@ namespace Tizen.Flutter.Embedding
             public FlutterDesktopRendererType renderer_type;
             public double user_pixel_ratio;
             public IntPtr window_handle;
+            [MarshalAs(UnmanagedType.U1)]
+            public bool pointing_device_support;
+            [MarshalAs(UnmanagedType.U1)]
+            public bool floating_menu_support;
         }
 
         [StructLayout(LayoutKind.Sequential)]
