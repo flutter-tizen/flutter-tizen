@@ -114,7 +114,7 @@ class FlutterApp : public flutter::PluginRegistry {
   // Defaults to the device pixel ratio if the value is 0.
   double user_pixel_ratio_ = 0.0;
 
-  // Whether the app should be supported pointing device(mouse) or not.
+  // Whether the app should support pointing devices (mouse).
   //
   // If false, pointing device input will not work and and the D-PAD will show
   // with the floating menu. If true and is_floating_menu_support is false,
@@ -123,7 +123,7 @@ class FlutterApp : public flutter::PluginRegistry {
   // It only works on TV.
   bool is_pointing_device_support = true;
 
-  // Whether the app should be supported floating menu or not.
+  // Whether the app should support floating menus.
   //
   // If false, pointing device input will not work and the floating menu will
   // not be displayed. If false and is_pointing_device_support is true, pointing
