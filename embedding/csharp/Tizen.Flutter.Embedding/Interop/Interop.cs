@@ -64,6 +64,8 @@ namespace Tizen.Flutter.Embedding
             public string entrypoint;
             public int dart_entrypoint_argc;
             public IntPtr dart_entrypoint_argv;
+            public bool merged_platform_ui_thread;
+
         }
 
         [DllImport("flutter_tizen.so")]
