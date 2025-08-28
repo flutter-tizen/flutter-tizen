@@ -87,6 +87,24 @@ namespace Tizen.Flutter.Embedding
         protected bool IsTopLevel { get; set; } = false;
 
         /// <summary>
+        /// Whether the app should support pointing devices (mouse).
+        /// If false, pointing device input will not work and and the D-PAD will show with the floating menu.
+        /// If true and IsFloatingMenuSupport is false, pointing device input will not work.
+        /// 
+        /// It only works on TV.
+        /// </summary>
+        protected bool IsPointingDeviceSupport { get; set; } = true;
+
+        /// <summary>
+        /// Whether the app should support floating menus.
+        /// If false, pointing device input will not work and the floating menu will not be displayed.
+        /// If false and IsPointingDeviceSupport is true, pointing device input will not work.
+        /// 
+        /// It only works on TV.
+        /// </summary>
+        protected bool IsFloatingMenuSupport { get; set; } = true;
+
+        /// <summary>
         /// The renderer type of the engine. Defaults to EGL.
         /// </summary>
         protected FlutterRendererType RendererType { get; set; } = FlutterRendererType.EGL;
@@ -155,6 +173,8 @@ namespace Tizen.Flutter.Embedding
                 renderer_type = (FlutterDesktopRendererType)RendererType,
                 user_pixel_ratio = UserPixelRatio < 0.0 ? 0.0 : UserPixelRatio,
                 window_handle = wlWindow,
+                pointing_device_support = IsPointingDeviceSupport,
+                floating_menu_support = IsFloatingMenuSupport,
             };
 
             View = FlutterDesktopViewCreateFromNewWindow(ref windowProperties, Engine.Engine);
