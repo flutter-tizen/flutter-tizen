@@ -189,6 +189,34 @@ class NativePlugins extends Target {
         );
       }
 
+      Map<String, String> parseCustomDefProp(File file) {
+        final Map<String, String> properties = <String, String>{};
+        if (!file.existsSync()) {
+          return properties;
+        }
+        final List<String> lines = file.readAsLinesSync();
+        for (final String line in lines) {
+          final String trimmedLine = line.trim();
+          if (trimmedLine.isEmpty || trimmedLine.startsWith('#')) {
+            continue;
+          }
+          final int separatorIndex = trimmedLine.indexOf('=');
+          if (separatorIndex != -1) {
+            final String key = trimmedLine.substring(0, separatorIndex).trim();
+            final String value = trimmedLine.substring(separatorIndex + 1).trim();
+            if (key.isNotEmpty) {
+              properties[key] = value;
+            }
+          }
+        }
+        return properties;
+      }
+
+      // TODO(jsuya): Add the path to the user's libs to be copied. If ./gen/custom_def.prop exists
+      // in the native path, it will be parsed and added to `USER_LIB_PATH` as the path.
+      final Map<String, String> customDef =
+          parseCustomDefProp(plugin.directory.childDirectory('.gen').childFile('custom_def.prop'));
+
       // Copy user libraries.
       // TODO(swift-kim): Remove user libs support for staticLib projects.
       final Directory pluginLibDir = plugin.directory.childDirectory('lib');
@@ -198,6 +226,8 @@ class NativePlugins extends Target {
         pluginLibDir.childDirectory(buildInfo.targetArch),
         pluginLibDir.childDirectory(buildArch),
         if (apiVersion != null) pluginLibDir.childDirectory(buildArch).childDirectory(apiVersion),
+        if (customDef['USER_LIB_PATH'] != null)
+          pluginLibDir.childDirectory(buildArch).childDirectory(customDef['USER_LIB_PATH']!),
       ];
       for (final Directory directory in pluginLibDirs.where((Directory dir) => dir.existsSync())) {
         for (final File lib in directory.listSync().whereType<File>()) {
