@@ -76,6 +76,7 @@ class TizenPub implements Pub {
     String? flutterRootOverride,
     bool checkUpToDate = false,
     bool shouldSkipThirdPartyGenerator = true,
+    bool enforceLockfile = false,
     PubOutputMode outputMode = PubOutputMode.all,
   }) async {
     await _pub.get(
@@ -86,6 +87,7 @@ class TizenPub implements Pub {
       flutterRootOverride: flutterRootOverride,
       checkUpToDate: checkUpToDate,
       shouldSkipThirdPartyGenerator: shouldSkipThirdPartyGenerator,
+      enforceLockfile: enforceLockfile,
       outputMode: outputMode,
     );
     await _postPub(project);
