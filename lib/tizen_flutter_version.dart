@@ -107,6 +107,12 @@ class TizenFlutterVersion implements FlutterVersion {
 
   @override
   String? get engineCommitDate => flutterVersion.engineCommitDate;
+
+  @override
+  String? get engineBuildDate => flutterVersion.engineBuildDate;
+
+  @override
+  String? get engineContentHash => flutterVersion.engineContentHash;
 }
 
 /// Source: [_runGit] in `version.dart`
