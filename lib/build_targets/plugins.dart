@@ -8,7 +8,6 @@ import 'package:flutter_tools/src/base/process.dart';
 import 'package:flutter_tools/src/build_info.dart';
 import 'package:flutter_tools/src/build_system/build_system.dart';
 import 'package:flutter_tools/src/build_system/depfile.dart';
-import 'package:flutter_tools/src/features.dart';
 import 'package:flutter_tools/src/project.dart';
 
 import '../tizen_build_info.dart';
@@ -61,15 +60,7 @@ class NativePlugins extends Target {
     final TizenProject tizenProject = TizenProject.fromFlutter(project);
 
     // Check if there's anything to build.
-    final bool isRelease = buildInfo.buildInfo.mode.isRelease;
-    final bool determineDevDependencies = featureFlags.isExplicitPackageDependenciesEnabled;
-    final bool releaseMode = isRelease && determineDevDependencies;
-    List<TizenPlugin> nativePlugins =
-        await findTizenPlugins(project, cppOnly: true, releaseMode: releaseMode);
-    if (releaseMode) {
-      nativePlugins = nativePlugins.where((TizenPlugin p) => !p.isDevDependency).toList();
-    }
-
+    final List<TizenPlugin> nativePlugins = await findTizenPlugins(project, cppOnly: true);
     if (nativePlugins.isEmpty) {
       depfileService.writeToFile(
         Depfile(inputs, outputs),

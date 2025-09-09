@@ -16,11 +16,9 @@ import 'package:flutter_tools/src/build_info.dart';
 import 'package:flutter_tools/src/build_system/targets/web.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/compile.dart';
-import 'package:flutter_tools/src/compute_dev_dependencies.dart';
 import 'package:flutter_tools/src/dart/language_version.dart';
 import 'package:flutter_tools/src/dart/package_map.dart';
 import 'package:flutter_tools/src/dart/pub.dart';
-import 'package:flutter_tools/src/features.dart';
 import 'package:flutter_tools/src/flutter_plugins.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/platform_plugins.dart';
@@ -64,15 +62,9 @@ class TizenPlugin extends PluginPlatform implements NativeOrDartPlugin {
     this.pluginClass,
     this.dartPluginClass,
     this.fileName,
-    required this.isDevDependency,
   }) : assert(pluginClass != null || dartPluginClass != null);
 
-  static TizenPlugin fromYaml(
-    String name,
-    Directory directory,
-    YamlMap yaml, {
-    required bool isDevDependency,
-  }) {
+  static TizenPlugin fromYaml(String name, Directory directory, YamlMap yaml) {
     assert(validate(yaml));
     return TizenPlugin(
       name: name,
@@ -81,7 +73,6 @@ class TizenPlugin extends PluginPlatform implements NativeOrDartPlugin {
       pluginClass: yaml[kPluginClass] as String?,
       dartPluginClass: yaml[kDartPluginClass] as String?,
       fileName: yaml[kFileName] as String?,
-      isDevDependency: isDevDependency,
     );
   }
 
@@ -97,7 +88,6 @@ class TizenPlugin extends PluginPlatform implements NativeOrDartPlugin {
   final String? pluginClass;
   final String? dartPluginClass;
   final String? fileName;
-  final bool isDevDependency;
 
   @override
   bool hasMethodChannel() => pluginClass != null;
@@ -148,8 +138,7 @@ mixin DartPluginRegistry on FlutterCommand {
     final FlutterProject project = FlutterProject.current();
     final TizenProject tizenProject = TizenProject.fromFlutter(project);
     if (_usesTargetOption && tizenProject.existsSync() && !project.isPlugin) {
-      final File packageConfigFile = globals.fs.file(packageConfigPath());
-      if (!packageConfigFile.existsSync() && shouldRunPub) {
+      if (shouldRunPub) {
         await pub.get(
           context: PubContext.getVerifyContext(name),
           project: project,
@@ -360,18 +349,11 @@ Future<void> ensureReadyForTizenTooling(FlutterProject project) async {
   if (!project.directory.existsSync() || project.isPlugin) {
     return;
   }
-
   final TizenProject tizenProject = TizenProject.fromFlutter(project);
   await tizenProject.ensureReadyForPlatformSpecificTooling();
-  await _ensurePluginsReadyForTizenTooling(project);
 
-  final bool isRelease = FlutterCommand.current?.getBuildMode().isRelease ?? false;
-  final bool determineDevDependencies = featureFlags.isExplicitPackageDependenciesEnabled;
-  final bool releaseMode = isRelease && determineDevDependencies;
-  await injectTizenPlugins(
-    project,
-    releaseMode: releaseMode,
-  );
+  await _ensurePluginsReadyForTizenTooling(project);
+  await injectTizenPlugins(project);
   await _informAvailableTizenPlugins(project);
 }
 
@@ -386,19 +368,13 @@ Future<void> _ensurePluginsReadyForTizenTooling(FlutterProject project) async {
 }
 
 /// See: [injectPlugins] in `flutter_plugins.dart`
-Future<void> injectTizenPlugins(
-  FlutterProject project, {
-  bool releaseMode = false,
-}) async {
+Future<void> injectTizenPlugins(FlutterProject project) async {
   final TizenProject tizenProject = TizenProject.fromFlutter(project);
   if (tizenProject.existsSync()) {
-    final List<TizenPlugin> cppPlugins =
-        await findTizenPlugins(project, cppOnly: true, releaseMode: releaseMode);
-    final List<TizenPlugin> dotnetPlugins =
-        await findTizenPlugins(project, dotnetOnly: true, releaseMode: releaseMode);
+    final List<TizenPlugin> cppPlugins = await findTizenPlugins(project, cppOnly: true);
+    final List<TizenPlugin> dotnetPlugins = await findTizenPlugins(project, dotnetOnly: true);
     await _writeAppDepndencyInfo(project);
-    await _writeTizenPluginRegistrant(tizenProject, cppPlugins, dotnetPlugins,
-        releaseMode: releaseMode);
+    await _writeTizenPluginRegistrant(tizenProject, cppPlugins, dotnetPlugins);
     if (tizenProject.isDotnet) {
       await _writeIntermediateDotnetFiles(tizenProject, dotnetPlugins);
     }
@@ -432,7 +408,6 @@ Future<List<TizenPlugin>> findTizenPlugins(
   bool cppOnly = false,
   bool dotnetOnly = false,
   bool throwOnError = true,
-  bool releaseMode = false,
 }) async {
   final List<TizenPlugin> plugins = <TizenPlugin>[];
   final FileSystem fs = project.directory.fileSystem;
@@ -441,24 +416,11 @@ Future<List<TizenPlugin>> findTizenPlugins(
     logger: globals.logger,
     throwOnError: throwOnError,
   );
-
-  final Set<String> devDependencies;
-  if (!releaseMode) {
-    devDependencies = <String>{};
-  } else {
-    devDependencies = await computeExclusiveDevDependencies(
-      pub,
-      logger: globals.logger,
-      project: project,
-    );
-  }
-
   for (final Package package in packageConfig.packages) {
     final Uri packageRoot = package.packageUriRoot.resolve('..');
     final TizenPlugin? plugin = await _pluginFromPackage(
       package.name,
       packageRoot,
-      devDependencies: devDependencies,
       fileSystem: fs,
     );
     if (plugin == null) {
@@ -479,7 +441,6 @@ Future<List<TizenPlugin>> findTizenPlugins(
 Future<TizenPlugin?> _pluginFromPackage(
   String name,
   Uri packageRoot, {
-  required Set<String> devDependencies,
   FileSystem? fileSystem,
 }) async {
   final FileSystem fs = fileSystem ?? globals.fs;
@@ -517,7 +478,6 @@ Future<TizenPlugin?> _pluginFromPackage(
     name,
     packageDir.childDirectory('tizen'),
     platformsYaml[TizenPlugin.kConfigKey]! as YamlMap,
-    isDevDependency: devDependencies.contains(name),
   );
 }
 
@@ -583,14 +543,8 @@ internal class GeneratedPluginRegistrant
 Future<void> _writeTizenPluginRegistrant(
   TizenProject project,
   List<TizenPlugin> cppPlugins,
-  List<TizenPlugin> dotnetPlugins, {
-  required bool releaseMode,
-}) async {
-  if (releaseMode) {
-    cppPlugins = cppPlugins.where((TizenPlugin p) => !p.isDevDependency).toList();
-    dotnetPlugins = dotnetPlugins.where((TizenPlugin p) => !p.isDevDependency).toList();
-  }
-
+  List<TizenPlugin> dotnetPlugins,
+) async {
   final Map<String, Object> context = <String, Object>{
     'cppPlugins': cppPlugins.map((TizenPlugin plugin) => plugin.toMap()),
     'dotnetPlugins': dotnetPlugins.map((TizenPlugin plugin) => plugin.toMap()),
