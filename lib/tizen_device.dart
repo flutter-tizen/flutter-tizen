@@ -523,7 +523,7 @@ class TizenDevice extends Device {
   }
 
   @override
-  bool isSupported() {
+  Future<bool> isSupported() async {
     final Version? platformVersion = Version.parse(_platformVersion);
     if (platformVersion == null) {
       return false;
