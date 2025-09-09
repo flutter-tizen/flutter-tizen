@@ -100,7 +100,6 @@ class TizenPub implements Pub {
     required PubContext context,
     required String command,
     bool touchesPackageConfig = false,
-    bool generateSyntheticPackage = false,
     PubOutputMode outputMode = PubOutputMode.all,
   }) async {
     await _pub.interactively(
@@ -109,7 +108,6 @@ class TizenPub implements Pub {
       context: context,
       command: command,
       touchesPackageConfig: touchesPackageConfig,
-      generateSyntheticPackage: generateSyntheticPackage,
       outputMode: outputMode,
     );
     if (project != null) {
