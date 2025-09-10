@@ -14,6 +14,7 @@ import 'package:flutter_tools/src/build_system/targets/android.dart';
 import 'package:flutter_tools/src/build_system/targets/assets.dart';
 import 'package:flutter_tools/src/build_system/targets/common.dart';
 import 'package:flutter_tools/src/build_system/targets/icon_tree_shaker.dart';
+import 'package:flutter_tools/src/build_system/targets/native_assets.dart';
 import 'package:flutter_tools/src/compile.dart';
 import 'package:flutter_tools/src/dart/package_map.dart';
 import 'package:package_config/src/package_config.dart';
@@ -126,6 +127,7 @@ abstract class TizenAssetBundle extends Target {
   @override
   List<Target> get dependencies => const <Target>[
         TizenKernelSnapshot(),
+        InstallCodeAssets(),
       ];
 
   @override
