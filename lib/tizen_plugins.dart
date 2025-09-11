@@ -148,7 +148,7 @@ mixin DartPluginRegistry on FlutterCommand {
 
       final File mainDart = globals.fs.file(super.targetFile);
       final File generatedMainDart = tizenProject.managedDirectory.childFile('generated_main.dart');
-      await _generateEntrypointWithPluginRegistrant(project, mainDart, generatedMainDart);
+      await generateEntrypointWithPluginRegistrant(project, mainDart, generatedMainDart);
       _targetFile = generatedMainDart.path;
     }
     return super.verifyThenRunCommand(commandPath);
@@ -272,7 +272,7 @@ void {{name}}(List<String> args) {
 /// See:
 /// - [WebEntrypointTarget.build] in `web.dart`
 /// - [generateMainDartWithPluginRegistrant] in `flutter_plugins.dart`
-Future<void> _generateEntrypointWithPluginRegistrant(
+Future<void> generateEntrypointWithPluginRegistrant(
   FlutterProject project,
   File mainFile,
   File newMainFile,
@@ -629,14 +629,14 @@ Future<void> _writeIntermediateDotnetFiles(
   }
 }
 
-/// Source: [_renderTemplateToFile] in `flutter_plugins.dart`
+/// See: _renderTemplateToFile in `flutter_plugins.dart`
 Future<void> renderTemplateToFile(String template, Object? context, File file) async {
   final String renderedTemplate = globals.templateRenderer.renderString(template, context);
   await file.create(recursive: true);
   await file.writeAsString(renderedTemplate);
 }
 
-/// See: [_writeFlutterPluginsList] in flutter_plugins.dart
+/// See: _writeFlutterPluginsList in flutter_plugins.dart
 Future<void> _writeAppDepndencyInfo(
   FlutterProject project,
 ) async {

@@ -22,7 +22,7 @@ import 'tizen_sdk.dart';
 TizenWorkflow? get tizenWorkflow => context.get<TizenWorkflow>();
 TizenValidator? get tizenValidator => context.get<TizenValidator>();
 
-/// See: [_DefaultDoctorValidatorsProvider] in `doctor.dart`
+/// See: [DoctorValidatorsProvider] in `doctor.dart`
 class TizenDoctorValidatorsProvider implements DoctorValidatorsProvider {
   @override
   List<DoctorValidator> get validators {

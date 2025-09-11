@@ -50,7 +50,7 @@ class TizenTestRunner implements FlutterTestRunner {
 
   bool isIntegrationTest = false;
 
-  /// See: [_generateEntrypointWithPluginRegistrant] in `tizen_plugins.dart`
+  /// See: [generateEntrypointWithPluginRegistrant] in `tizen_plugins.dart`
   Future<List<Uri>> _generateEntrypointWrappers(List<Uri> testFiles) async {
     final FlutterProject project = FlutterProject.current();
     final PackageConfig packageConfig = await loadPackageConfigWithLogging(
