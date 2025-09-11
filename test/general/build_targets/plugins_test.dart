@@ -175,7 +175,7 @@ dependencies:
   }, overrides: <Type, Generator>{
     FileSystem: () => fileSystem,
     ProcessManager: () => processManager,
-    Pub: FakePubWithPrimedDeps.new,
+    Pub: ThrowingPub.new,
     Cache: () => cache,
     TizenSdk: () => FakeTizenSdk(fileSystem),
   });
@@ -218,7 +218,7 @@ dependencies:
     FileSystem: () => fileSystem,
     ProcessManager: () => processManager,
     Cache: () => cache,
-    Pub: FakePubWithPrimedDeps.new,
+    Pub: ThrowingPub.new,
     TizenSdk: () => FakeTizenSdk(fileSystem),
   });
 }
