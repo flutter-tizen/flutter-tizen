@@ -27,7 +27,7 @@ class TizenKernelSnapshotProgram extends KernelSnapshot {
   /// Source: [KernelSnapshot.build] in `common.dart`
   @override
   Future<void> build(Environment environment) async {
-    final KernelCompiler compiler = KernelCompiler(
+    final compiler = KernelCompiler(
       fileSystem: environment.fileSystem,
       logger: environment.logger,
       processManager: environment.processManager,
@@ -38,14 +38,14 @@ class TizenKernelSnapshotProgram extends KernelSnapshot {
     if (buildModeEnvironment == null) {
       throw MissingDefineException(kBuildMode, 'kernel_snapshot');
     }
-    final BuildMode buildMode = BuildMode.fromCliName(buildModeEnvironment);
+    final buildMode = BuildMode.fromCliName(buildModeEnvironment);
     final String targetFile =
         environment.defines[kTargetFile] ?? environment.fileSystem.path.join('lib', 'main.dart');
     final File packagesFile =
         environment.projectDir.childDirectory('.dart_tool').childFile('package_config.json');
     final String targetFileAbsolute = environment.fileSystem.file(targetFile).absolute.path;
     // everything besides 'false' is considered to be enabled.
-    final bool trackWidgetCreation = environment.defines[kTrackWidgetCreation] != 'false';
+    final trackWidgetCreation = environment.defines[kTrackWidgetCreation] != 'false';
 
     // This configuration is all optional.
     final String? frontendServerStarterPath = environment.defines[kFrontendServerStarterPath];
@@ -134,7 +134,7 @@ abstract class TizenAssetBundle extends Target {
     if (buildModeEnvironment == null) {
       throw MissingDefineException(kBuildMode, name);
     }
-    final BuildMode buildMode = BuildMode.fromCliName(buildModeEnvironment);
+    final buildMode = BuildMode.fromCliName(buildModeEnvironment);
     final Directory outputDirectory = environment.buildDir.childDirectory('flutter_assets')
       ..createSync(recursive: true);
 
@@ -161,7 +161,7 @@ abstract class TizenAssetBundle extends Target {
       buildMode: buildMode,
       flavor: environment.defines[kFlavor],
     );
-    final DepfileService depfileService = DepfileService(
+    final depfileService = DepfileService(
       fileSystem: environment.fileSystem,
       logger: environment.logger,
     );

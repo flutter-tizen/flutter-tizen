@@ -18,7 +18,7 @@ import '../src/fake_devices.dart';
 import '../src/fake_process_manager.dart';
 import '../src/fake_tizen_sdk.dart';
 
-const String _kDeviceId = 'TestDeviceId';
+const _kDeviceId = 'TestDeviceId';
 
 TizenDevice _createTizenDevice({
   ProcessManager? processManager,
@@ -57,7 +57,7 @@ void main() {
       fileSystem: fileSystem,
     );
     final TizenManifest tizenManifest = _FakeTizenManifest();
-    final TizenTpk tpk = TizenTpk(
+    final tpk = TizenTpk(
       applicationPackage: fileSystem.file('app.tpk')..createSync(),
       manifest: tizenManifest,
     );
@@ -90,7 +90,7 @@ void main() {
       ),
     ]);
 
-    final FakeDeviceLogReader deviceLogReader = FakeDeviceLogReader();
+    final deviceLogReader = FakeDeviceLogReader();
     deviceLogReader.addLine('The Dart VM service is listening on http://127.0.0.1:12345');
     device.setLogReader(deviceLogReader);
     device.portForwarder = const NoOpDevicePortForwarder();
@@ -115,7 +115,7 @@ void main() {
       fileSystem: fileSystem,
       logger: logger,
     );
-    final TizenTpk tpk = TizenTpk(
+    final tpk = TizenTpk(
       applicationPackage: fileSystem.file('app.tpk')..createSync(),
       manifest: _FakeTizenManifest(),
     );
@@ -150,7 +150,7 @@ void main() {
       fileSystem: fileSystem,
       logger: logger,
     );
-    final TizenTpk tpk = TizenTpk(
+    final tpk = TizenTpk(
       applicationPackage: fileSystem.file('app.tpk')..createSync(),
       manifest: _FakeTizenManifest(),
     );
@@ -214,7 +214,7 @@ __return_cb req_id[1] pkg_type[tpk] pkgid[TestPackage] key[end] val[ok]
       processManager: processManager,
       fileSystem: fileSystem,
     );
-    final TizenTpk tpk = TizenTpk(
+    final tpk = TizenTpk(
       applicationPackage: fileSystem.file('app.tpk')..createSync(),
       manifest: _FakeTizenManifest(),
     );
@@ -309,7 +309,7 @@ __return_cb req_id[1] pkg_type[tpk] pkgid[TestPackage] key[end] val[ok]
   });
 
   testWithoutContext('TizenDevicePortForwarder.forwardedPorts can list forwarded ports', () {
-    final TizenDevicePortForwarder forwarder = TizenDevicePortForwarder(
+    final forwarder = TizenDevicePortForwarder(
       device: _createTizenDevice(
         processManager: processManager,
         fileSystem: fileSystem,
@@ -365,10 +365,10 @@ class _FakeTizenManifest extends Fake implements TizenManifest {
   _FakeTizenManifest();
 
   @override
-  String packageId = 'TestPackage';
+  var packageId = 'TestPackage';
 
   @override
-  String applicationId = 'TestApplication';
+  var applicationId = 'TestApplication';
 
   @override
   String? apiVersion = '6.0';

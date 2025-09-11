@@ -33,16 +33,16 @@ import 'tizen_project.dart';
 import 'tizen_sdk.dart';
 
 /// Constant for 'namespace' key in plugin maps.
-const String kNamespace = 'namespace';
+const kNamespace = 'namespace';
 
 /// Constant for 'fileName' key in plugin maps.
-const String kFileName = 'fileName';
+const kFileName = 'fileName';
 
 /// Constant for 'filePath' key in plugin maps.
-const String kFilePath = 'filePath';
+const kFilePath = 'filePath';
 
 /// Constant for 'libName' key in plugin maps.
-const String kLibName = 'libName';
+const kLibName = 'libName';
 
 /// Contains the parameters to template a Tizen plugin.
 ///
@@ -80,7 +80,7 @@ class TizenPlugin extends PluginPlatform implements NativeOrDartPlugin {
     return yaml[kPluginClass] is String || yaml[kDartPluginClass] is String;
   }
 
-  static const String kConfigKey = 'tizen';
+  static const kConfigKey = 'tizen';
 
   final String name;
   final Directory directory;
@@ -136,7 +136,7 @@ mixin DartPluginRegistry on FlutterCommand {
   @override
   Future<FlutterCommandResult> verifyThenRunCommand(String? commandPath) async {
     final FlutterProject project = FlutterProject.current();
-    final TizenProject tizenProject = TizenProject.fromFlutter(project);
+    final tizenProject = TizenProject.fromFlutter(project);
     if (_usesTargetOption && tizenProject.existsSync() && !project.isPlugin) {
       if (shouldRunPub) {
         await pub.get(
@@ -195,13 +195,13 @@ mixin DartPluginRegistry on FlutterCommand {
 List<String> _findDartEntrypoints(File dartFile) {
   final String path = dartFile.absolute.path;
   final String dartSdkPath = globals.artifacts!.getArtifactPath(Artifact.engineDartSdkPath);
-  final AnalysisContextCollection collection = AnalysisContextCollection(
+  final collection = AnalysisContextCollection(
     includedPaths: <String>[path],
     sdkPath: dartSdkPath,
   );
   final AnalysisContext context = collection.contextFor(path);
   final SomeParsedUnitResult parsed = context.currentSession.getParsedUnit(path);
-  final List<String> names = <String>['main'];
+  final names = <String>['main'];
   if (parsed is ParsedUnitResult) {
     for (final FunctionDeclaration function
         in parsed.unit.declarations.whereType<FunctionDeclaration>()) {
@@ -224,7 +224,7 @@ List<String> _findDartEntrypoints(File dartFile) {
   return names;
 }
 
-const String _generatedMainTemplate = '''
+const _generatedMainTemplate = '''
 //
 // Generated file. Do not edit.
 //
@@ -298,7 +298,7 @@ Future<void> generateEntrypointWithPluginRegistrant(
   final List<String> dartEntrypoints = _findDartEntrypoints(mainFile);
   final List<TizenPlugin> dartPlugins = await findTizenPlugins(project, dartOnly: true);
 
-  final Map<String, Object> context = <String, Object>{
+  final context = <String, Object>{
     'mainImport': mainUri.toString(),
     'dartLanguageVersion': languageVersion.toString(),
     'dartEntrypoints': dartEntrypoints.map((String name) => <String, String>{'name': name}),
@@ -312,7 +312,7 @@ Future<void> generateEntrypointWithPluginRegistrant(
 }
 
 /// https://github.com/flutter-tizen/plugins
-const Map<String, List<String>> _kKnownPlugins = <String, List<String>>{
+const _kKnownPlugins = <String, List<String>>{
   'audioplayers': <String>[],
   'battery_plus': <String>[],
   'camera': <String>[],
@@ -349,7 +349,7 @@ Future<void> ensureReadyForTizenTooling(FlutterProject project) async {
   if (!project.directory.existsSync() || project.isPlugin) {
     return;
   }
-  final TizenProject tizenProject = TizenProject.fromFlutter(project);
+  final tizenProject = TizenProject.fromFlutter(project);
   await tizenProject.ensureReadyForPlatformSpecificTooling();
 
   await _ensurePluginsReadyForTizenTooling(project);
@@ -359,7 +359,7 @@ Future<void> ensureReadyForTizenTooling(FlutterProject project) async {
 
 Future<void> _ensurePluginsReadyForTizenTooling(FlutterProject project) async {
   final List<TizenPlugin> dotnetPlugins = await findTizenPlugins(project, dotnetOnly: true);
-  for (final TizenPlugin plugin in dotnetPlugins) {
+  for (final plugin in dotnetPlugins) {
     final File? projectFile = findDotnetProjectFile(plugin.directory);
     if (projectFile != null) {
       updateDotnetUserProjectFile(projectFile);
@@ -369,7 +369,7 @@ Future<void> _ensurePluginsReadyForTizenTooling(FlutterProject project) async {
 
 /// See: [injectPlugins] in `flutter_plugins.dart`
 Future<void> injectTizenPlugins(FlutterProject project) async {
-  final TizenProject tizenProject = TizenProject.fromFlutter(project);
+  final tizenProject = TizenProject.fromFlutter(project);
   if (tizenProject.existsSync()) {
     final List<TizenPlugin> cppPlugins = await findTizenPlugins(project, cppOnly: true);
     final List<TizenPlugin> dotnetPlugins = await findTizenPlugins(project, dotnetOnly: true);
@@ -383,8 +383,8 @@ Future<void> injectTizenPlugins(FlutterProject project) async {
 
 Future<void> _informAvailableTizenPlugins(FlutterProject project) async {
   final List<String> plugins = (await findPlugins(project)).map((Plugin p) => p.name).toList();
-  for (final String plugin in plugins) {
-    final String tizenPlugin = '${plugin}_tizen';
+  for (final plugin in plugins) {
+    final tizenPlugin = '${plugin}_tizen';
     if (_kKnownPlugins.containsKey(plugin) &&
         !plugins.contains(tizenPlugin) &&
         !_kKnownPlugins[plugin]!
@@ -409,7 +409,7 @@ Future<List<TizenPlugin>> findTizenPlugins(
   bool dotnetOnly = false,
   bool throwOnError = true,
 }) async {
-  final List<TizenPlugin> plugins = <TizenPlugin>[];
+  final plugins = <TizenPlugin>[];
   final FileSystem fs = project.directory.fileSystem;
   final PackageConfig packageConfig = await loadPackageConfigWithLogging(
     findPackageConfigFileOrDefault(project.directory),
@@ -466,11 +466,11 @@ Future<TizenPlugin?> _pluginFromPackage(
   final Directory packageDir = fs.directory(packageRoot);
   globals.printTrace('Found plugin $name at ${packageDir.path}');
 
-  final YamlMap? pluginYaml = flutterConfig['plugin'] as YamlMap?;
+  final pluginYaml = flutterConfig['plugin'] as YamlMap?;
   if (pluginYaml == null || pluginYaml['platforms'] == null) {
     return null;
   }
-  final YamlMap? platformsYaml = pluginYaml['platforms'] as YamlMap?;
+  final platformsYaml = pluginYaml['platforms'] as YamlMap?;
   if (platformsYaml == null || platformsYaml[TizenPlugin.kConfigKey] == null) {
     return null;
   }
@@ -481,7 +481,7 @@ Future<TizenPlugin?> _pluginFromPackage(
   );
 }
 
-const String _cppPluginRegistryTemplate = '''
+const _cppPluginRegistryTemplate = '''
 //
 // Generated file. Do not edit.
 //
@@ -508,7 +508,7 @@ void RegisterPlugins(flutter::PluginRegistry *registry) {
 #endif  // GENERATED_PLUGIN_REGISTRANT_
 ''';
 
-const String _csharpPluginRegistryTemplate = '''
+const _csharpPluginRegistryTemplate = '''
 //
 // Generated file. Do not edit.
 //
@@ -545,7 +545,7 @@ Future<void> _writeTizenPluginRegistrant(
   List<TizenPlugin> cppPlugins,
   List<TizenPlugin> dotnetPlugins,
 ) async {
-  final Map<String, Object> context = <String, Object>{
+  final context = <String, Object>{
     'cppPlugins': cppPlugins.map((TizenPlugin plugin) => plugin.toMap()),
     'dotnetPlugins': dotnetPlugins.map((TizenPlugin plugin) => plugin.toMap()),
   };
@@ -574,13 +574,13 @@ Future<void> _writeTizenPluginRegistrant(
 }
 
 // Reserved for future use.
-const String _intermediateDotnetPropsTemplate = '''
+const _intermediateDotnetPropsTemplate = '''
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 </Project>
 ''';
 
-const String _intermediateDotnetTargetsTemplate = '''
+const _intermediateDotnetTargetsTemplate = '''
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
@@ -595,7 +595,7 @@ Future<void> _writeIntermediateDotnetFiles(
   TizenProject project,
   List<TizenPlugin> dotnetPlugins,
 ) async {
-  final Map<String, Object> context = <String, Object>{
+  final context = <String, Object>{
     'dotnetPlugins': dotnetPlugins.map((TizenPlugin plugin) => plugin.toMap()),
   };
 
@@ -662,15 +662,15 @@ Future<void> _writeAppDepndencyInfo(
     return packages;
   }
 
-  final TizenProject tizenProject = TizenProject.fromFlutter(project);
+  final tizenProject = TizenProject.fromFlutter(project);
   final File appDepsJson = tizenProject.hostAppRoot.childFile('.app.deps.json');
   final List<TizenPlugin> plugins = await findTizenPlugins(project);
-  final List<Map<String, Object>> pluginInfo = <Map<String, Object>>[];
+  final pluginInfo = <Map<String, Object>>[];
   final YamlMap? packages = packagesFromPubspecLock();
-  for (final TizenPlugin plugin in plugins) {
-    String version = '';
+  for (final plugin in plugins) {
+    var version = '';
     if (packages != null && packages.containsKey(plugin.name)) {
-      final YamlMap package = packages[plugin.name] as YamlMap;
+      final package = packages[plugin.name] as YamlMap;
       if (package.containsKey('version')) {
         version = package['version'] as String;
       }
@@ -684,14 +684,14 @@ Future<void> _writeAppDepndencyInfo(
   final Map<String, Object?> result = <String, Object>{};
   result['info'] = 'This is a generated file; do not edit or check into version control.';
   result['plugins'] = pluginInfo;
-  final Map<String, Object> dart = <String, Object>{};
+  final dart = <String, Object>{};
   dart['version'] = globals.flutterVersion.dartSdkVersion;
 
-  final Map<String, Object> flutter = <String, Object>{};
+  final flutter = <String, Object>{};
   flutter['version'] = globals.flutterVersion.frameworkVersion;
   flutter['revision'] = globals.flutterVersion.frameworkRevisionShort;
 
-  final Map<String, Object> flutterTizen = <String, Object>{};
+  final flutterTizen = <String, Object>{};
   final Directory workingDirectory = globals.fs.directory(Cache.flutterRoot).parent;
   final String frameworkRevision = _runGit(
     'git -c log.showSignature=false log -n 1 --pretty=format:%H',
@@ -699,10 +699,10 @@ Future<void> _writeAppDepndencyInfo(
   );
   flutterTizen['revision'] = _shortGitRevision(frameworkRevision);
 
-  final Map<String, Object> engine = <String, Object>{};
+  final engine = <String, Object>{};
   engine['revision'] = globals.flutterVersion.engineRevisionShort;
 
-  final Map<String, Object> embedder = <String, Object>{};
+  final embedder = <String, Object>{};
   final String revision = globals.cache.getStampFor(kTizenEmbedderStampName) ?? '';
   embedder['revision'] = revision.length > 10 ? revision.substring(0, 10) : revision;
 
@@ -713,7 +713,7 @@ Future<void> _writeAppDepndencyInfo(
   result['embedder'] = embedder;
   result['date_created'] = globals.systemClock.now().toString();
 
-  const JsonEncoder encoder = JsonEncoder.withIndent('  ');
+  const encoder = JsonEncoder.withIndent('  ');
   final String formattedJsonString = encoder.convert(result);
   appDepsJson.writeAsStringSync(formattedJsonString);
 }

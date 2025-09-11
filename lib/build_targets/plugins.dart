@@ -49,15 +49,15 @@ class NativePlugins extends Target {
 
   @override
   Future<void> build(Environment environment) async {
-    final List<File> inputs = <File>[];
-    final List<File> outputs = <File>[];
-    final DepfileService depfileService = DepfileService(
+    final inputs = <File>[];
+    final outputs = <File>[];
+    final depfileService = DepfileService(
       fileSystem: environment.fileSystem,
       logger: environment.logger,
     );
 
     final FlutterProject project = FlutterProject.fromDirectory(environment.projectDir);
-    final TizenProject tizenProject = TizenProject.fromFlutter(project);
+    final tizenProject = TizenProject.fromFlutter(project);
 
     // Check if there's anything to build.
     final List<TizenPlugin> nativePlugins = await findTizenPlugins(project, cppOnly: true);
@@ -103,10 +103,10 @@ class NativePlugins extends Target {
     final Directory embeddingDir = environment.buildDir.childDirectory('tizen_embedding');
     final File embeddingLib = embeddingDir.childFile('libembedding_cpp.a');
 
-    final List<String> userLibs = <String>[];
-    final List<String> pluginClasses = <String>[];
+    final userLibs = <String>[];
+    final pluginClasses = <String>[];
 
-    for (final TizenPlugin plugin in nativePlugins) {
+    for (final plugin in nativePlugins) {
       inputs.add(plugin.projectFile);
 
       final Directory buildDir = plugin.directory.childDirectory(buildConfig);
@@ -184,7 +184,7 @@ class NativePlugins extends Target {
       // TODO(swift-kim): Remove user libs support for staticLib projects.
       final Directory pluginLibDir = plugin.directory.childDirectory('lib');
       final String buildArch = getTizenBuildArch(buildInfo.targetArch);
-      final List<Directory> pluginLibDirs = <Directory>[
+      final pluginLibDirs = <Directory>[
         pluginLibDir,
         pluginLibDir.childDirectory(buildInfo.targetArch),
         pluginLibDir.childDirectory(buildArch),

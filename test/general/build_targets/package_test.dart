@@ -21,7 +21,7 @@ import '../../src/context.dart';
 import '../../src/fake_process_manager.dart';
 import '../../src/fake_tizen_sdk.dart';
 
-const String kMsbuildOutput = '''
+const kMsbuildOutput = '''
 MSBuild version 17.3.0+92e077650 for .NET
   Determining projects to restore...
   All projects are up-to-date for restore.
@@ -78,7 +78,7 @@ void main() {
   group('DotnetTpk', () {
     testUsingContext('Build succeeds', () async {
       final Directory outputDir = projectDir.childDirectory('out');
-      final Environment environment = Environment.test(
+      final environment = Environment.test(
         projectDir,
         outputDir: outputDir,
         fileSystem: fileSystem,
@@ -160,7 +160,7 @@ void main() {
     });
 
     testUsingContext('Build fails if no security profile is found', () async {
-      final Environment environment = Environment.test(
+      final environment = Environment.test(
         projectDir,
         outputDir: projectDir.childDirectory('out'),
         fileSystem: fileSystem,
@@ -228,7 +228,7 @@ type = app
 
     testUsingContext('Build succeeds', () async {
       final Directory outputDir = projectDir.childDirectory('out');
-      final Environment environment = Environment.test(
+      final environment = Environment.test(
         projectDir,
         outputDir: outputDir,
         fileSystem: fileSystem,
@@ -279,7 +279,7 @@ type = app
     });
 
     testUsingContext('Build fails if no security profile is found', () async {
-      final Environment environment = Environment.test(
+      final environment = Environment.test(
         projectDir,
         outputDir: projectDir.childDirectory('out'),
         fileSystem: fileSystem,
@@ -309,7 +309,7 @@ type = app
   group('DotnetModule', () {
     testUsingContext('Build succeeds', () async {
       final Directory outputDir = projectDir.childDirectory('out');
-      final Environment environment = Environment.test(
+      final environment = Environment.test(
         projectDir,
         outputDir: outputDir,
         fileSystem: fileSystem,
@@ -359,7 +359,7 @@ type = app
   group('NativeModule', () {
     testUsingContext('Build succeeds', () async {
       final Directory outputDir = projectDir.childDirectory('out');
-      final Environment environment = Environment.test(
+      final environment = Environment.test(
         projectDir,
         outputDir: outputDir,
         fileSystem: fileSystem,
@@ -418,13 +418,13 @@ type = app
 }
 
 void _installFakeEngineArtifacts(Directory engineArtifactDir) {
-  for (final String directory in <String>[
+  for (final directory in <String>[
     'tizen-common/cpp_client_wrapper/include',
     'tizen-common/public',
   ]) {
     engineArtifactDir.childDirectory(directory).createSync(recursive: true);
   }
-  for (final String file in <String>[
+  for (final file in <String>[
     'tizen-arm/6.0/libflutter_tizen_common.so',
     'tizen-arm-debug/icudtl.dat',
     'tizen-arm-debug/libflutter_engine.so',

@@ -98,7 +98,7 @@ dependencies:
   });
 
   testUsingContext('Can build staticLib project', () async {
-    final Environment environment = Environment.test(
+    final environment = Environment.test(
       projectDir,
       fileSystem: fileSystem,
       logger: logger,
@@ -127,7 +127,7 @@ dependencies:
     projectDef
         .writeAsStringSync(projectDef.readAsStringSync().replaceFirst('staticLib', 'sharedLib'));
 
-    final Environment environment = Environment.test(
+    final environment = Environment.test(
       projectDir,
       fileSystem: fileSystem,
       logger: logger,
@@ -154,7 +154,7 @@ dependencies:
   });
 
   testUsingContext('Copies resource files recursively', () async {
-    final Environment environment = Environment.test(
+    final environment = Environment.test(
       projectDir,
       fileSystem: fileSystem,
       logger: logger,
@@ -181,7 +181,7 @@ dependencies:
   });
 
   testUsingContext('Can link and copy user libraries', () async {
-    final Environment environment = Environment.test(
+    final environment = Environment.test(
       projectDir,
       fileSystem: fileSystem,
       logger: logger,
@@ -228,7 +228,7 @@ void _createFakeIncludeDirs(Cache cache) {
   dartSdkDir.childDirectory('include').createSync(recursive: true);
 
   final Directory engineArtifactDir = cache.getArtifactDirectory('engine');
-  for (final String directory in <String>[
+  for (final directory in <String>[
     'tizen-common/cpp_client_wrapper/include',
     'tizen-common/public',
   ]) {

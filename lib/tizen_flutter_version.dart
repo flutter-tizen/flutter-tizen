@@ -19,7 +19,7 @@ class TizenFlutterVersion implements FlutterVersion {
         );
   final FlutterVersion flutterVersion;
 
-  String _flutterTizenLatestRevision = '';
+  var _flutterTizenLatestRevision = '';
   String get flutterTizenLatestRevision {
     if (_flutterTizenLatestRevision.isEmpty) {
       final Directory workingDirectory = fs.directory(flutterRoot).parent;

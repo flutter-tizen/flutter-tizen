@@ -44,7 +44,7 @@ void main() {
 
   group('BuildTpkCommand', () {
     testUsingContext('Cannot build for x86 in release mode', () async {
-      final TizenBuildCommand command = TizenBuildCommand(
+      final command = TizenBuildCommand(
         fileSystem: fileSystem,
         buildSystem: TestBuildSystem.all(BuildResult(success: true)),
         osUtils: FakeOperatingSystemUtils(),
@@ -69,7 +69,7 @@ void main() {
     });
 
     testUsingContext('Can compute build info', () async {
-      final TizenBuildCommand command = TizenBuildCommand(
+      final command = TizenBuildCommand(
         fileSystem: fileSystem,
         buildSystem: TestBuildSystem.all(BuildResult(success: true)),
         osUtils: FakeOperatingSystemUtils(),
@@ -99,7 +99,7 @@ void main() {
 
   group('BuildModuleCommand', () {
     testUsingContext('Can compute build info', () async {
-      final TizenBuildCommand command = TizenBuildCommand(
+      final command = TizenBuildCommand(
         fileSystem: fileSystem,
         buildSystem: TestBuildSystem.all(BuildResult(success: true)),
         osUtils: FakeOperatingSystemUtils(),

@@ -46,9 +46,9 @@ class TizenTestCommand extends TestCommand with TizenRequiredArtifacts {
 class TizenTestRunner implements FlutterTestRunner {
   TizenTestRunner();
 
-  final FlutterTestRunner testRunner = const FlutterTestRunner();
+  final testRunner = const FlutterTestRunner();
 
-  bool isIntegrationTest = false;
+  var isIntegrationTest = false;
 
   /// See: [generateEntrypointWithPluginRegistrant] in `tizen_plugins.dart`
   Future<List<Uri>> _generateEntrypointWrappers(List<Uri> testFiles) async {
@@ -60,7 +60,7 @@ class TizenTestRunner implements FlutterTestRunner {
     final List<TizenPlugin> dartPlugins = await findTizenPlugins(project, dartOnly: true);
     final Directory runnerDir = globals.fs.systemTempDirectory.createTempSync();
 
-    final List<Uri> newTestFiles = <Uri>[];
+    final newTestFiles = <Uri>[];
     for (final File testFile in testFiles.map((Uri uri) => globals.fs.file(uri))) {
       final Uri testFileUri = testFile.absolute.uri;
       final LanguageVersion languageVersion = determineLanguageVersion(
@@ -68,7 +68,7 @@ class TizenTestRunner implements FlutterTestRunner {
         packageConfig.packageOf(testFileUri),
         Cache.flutterRoot!,
       );
-      final Map<String, Object> context = <String, Object>{
+      final context = <String, Object>{
         'mainImport': testFileUri.toString(),
         'dartLanguageVersion': languageVersion.toString(),
         'plugins': dartPlugins.map((TizenPlugin plugin) => plugin.toMap()),

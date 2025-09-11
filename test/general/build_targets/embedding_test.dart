@@ -48,7 +48,7 @@ type = staticLib
   });
 
   testUsingContext('Build succeeds', () async {
-    final Environment environment = Environment.test(
+    final environment = Environment.test(
       fileSystem.currentDirectory,
       fileSystem: fileSystem,
       logger: BufferLogger.test(),
@@ -78,7 +78,7 @@ void _createFakeIncludeDirs(Cache cache) {
   dartSdkDir.childDirectory('include').createSync(recursive: true);
 
   final Directory engineArtifactDir = cache.getArtifactDirectory('engine');
-  for (final String directory in <String>[
+  for (final directory in <String>[
     'tizen-common/cpp_client_wrapper/include',
     'tizen-common/public',
   ]) {

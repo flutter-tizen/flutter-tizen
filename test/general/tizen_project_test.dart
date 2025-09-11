@@ -31,7 +31,7 @@ void main() {
 
     await project.ensureReadyForPlatformSpecificTooling();
 
-    final XmlDocument xmlDocument = XmlDocument.parse(userFile.readAsStringSync());
+    final xmlDocument = XmlDocument.parse(userFile.readAsStringSync());
     expect(xmlDocument.findAllElements('FlutterEmbeddingPath'), isNotEmpty);
   });
 
@@ -51,7 +51,7 @@ void main() {
 
     await project.ensureReadyForPlatformSpecificTooling();
 
-    final XmlDocument xmlDocument = XmlDocument.parse(userFile.readAsStringSync());
+    final xmlDocument = XmlDocument.parse(userFile.readAsStringSync());
     expect(
       xmlDocument.findAllElements('FlutterEmbeddingPath').first.innerText,
       endsWith('Tizen.Flutter.Embedding.csproj'),

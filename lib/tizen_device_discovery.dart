@@ -49,7 +49,7 @@ class TizenDeviceDiscovery extends PollingDeviceDiscovery {
   @override
   bool get canListAnything => _tizenWorkflow.canListDevices;
 
-  final RegExp _splitPattern = RegExp(r'\s{2,}|\t');
+  final _splitPattern = RegExp(r'\s{2,}|\t');
 
   @override
   Future<List<Device>> pollingGetDevices({Duration? timeout}) async {
@@ -63,7 +63,7 @@ class TizenDeviceDiscovery extends PollingDeviceDiscovery {
     }
     final String stdout = result.stdout.trim();
 
-    final List<TizenDevice> devices = <TizenDevice>[];
+    final devices = <TizenDevice>[];
     for (final String line in LineSplitter.split(stdout)) {
       if (line.startsWith('List of devices')) {
         continue;
@@ -82,7 +82,7 @@ class TizenDeviceDiscovery extends PollingDeviceDiscovery {
         continue;
       }
 
-      final TizenDevice device = TizenDevice(
+      final device = TizenDevice(
         deviceId,
         modelId: deviceModel,
         logger: _logger,
@@ -115,12 +115,12 @@ class TizenDeviceDiscovery extends PollingDeviceDiscovery {
     if (result.exitCode != 0) {
       return <String>[];
     }
-    final String output = result.toString();
+    final output = result.toString();
     if (!output.contains('List of devices')) {
       return <String>[output];
     }
 
-    final List<String> messages = <String>[];
+    final messages = <String>[];
     for (final String line in LineSplitter.split(output)) {
       if (line.startsWith('List of devices')) {
         continue;

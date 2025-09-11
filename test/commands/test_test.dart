@@ -41,8 +41,8 @@ void main() {
   });
 
   testUsingContext('Integration test requires Tizen artifacts', () async {
-    final _FakeTestWrapper testWrapper = _FakeTestWrapper();
-    final TizenTestCommand command = TizenTestCommand(testWrapper: testWrapper);
+    final testWrapper = _FakeTestWrapper();
+    final command = TizenTestCommand(testWrapper: testWrapper);
     final CommandRunner<void> runner = createTestCommandRunner(command);
 
     packageConfigFile.writeAsStringSync('''
@@ -81,8 +81,8 @@ void main() {
   }, testOn: 'posix');
 
   testUsingContext('Can generate entrypoint wrapper for integration test', () async {
-    final _FakeTestWrapper testWrapper = _FakeTestWrapper();
-    final TizenTestCommand command = TizenTestCommand(testWrapper: testWrapper);
+    final testWrapper = _FakeTestWrapper();
+    final command = TizenTestCommand(testWrapper: testWrapper);
     final CommandRunner<void> runner = createTestCommandRunner(command);
 
     final Directory pluginDir = fileSystem.directory('/some_dart_plugin');
@@ -169,7 +169,7 @@ class _FakeDeviceManager extends DeviceManager {
 }
 
 class _FakeTestWrapper implements TestWrapper {
-  List<String> lastArgs = <String>[];
+  var lastArgs = <String>[];
 
   @override
   Future<void> main(List<String> args) async {

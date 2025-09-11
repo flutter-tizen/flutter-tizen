@@ -10,7 +10,7 @@ import 'package:flutter_tools/src/project.dart';
 
 import '../src/common.dart';
 
-const String _kLaunchJson = r'''
+const _kLaunchJson = r'''
 {
     "version": "0.2.0",
     "configurations": [
@@ -24,7 +24,7 @@ const String _kLaunchJson = r'''
     ]
 }''';
 
-const String _kEmptyLaunchJson = r'''
+const _kEmptyLaunchJson = r'''
 {
     // This comment will be deleted.
     "version": "0.2.0",
