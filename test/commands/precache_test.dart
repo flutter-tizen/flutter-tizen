@@ -40,6 +40,7 @@ void main() {
         DevelopmentArtifact.androidMaven,
         DevelopmentArtifact.androidInternalBuild,
         DevelopmentArtifact.iOS,
+        DevelopmentArtifact.informative,
         TizenDevelopmentArtifact.tizen,
       }),
     );

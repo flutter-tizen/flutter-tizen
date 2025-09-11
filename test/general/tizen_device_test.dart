@@ -240,7 +240,7 @@ __return_cb req_id[1] pkg_type[tpk] pkgid[TestPackage] key[end] val[ok]
     expect(processManager, hasNoRemainingExpectations);
   });
 
-  testWithoutContext('TizenDevice.isSupported returns true for supported devices', () {
+  testWithoutContext('TizenDevice.isSupported returns true for supported devices', () async {
     final TizenDevice commonDevice = _createTizenDevice(
       processManager: processManager,
       fileSystem: fileSystem,
@@ -255,7 +255,7 @@ __return_cb req_id[1] pkg_type[tpk] pkgid[TestPackage] key[end] val[ok]
       ].join('\n'),
     ));
     expect(commonDevice.deviceProfile, equals('common'));
-    expect(commonDevice.isSupported(), isTrue);
+    expect(await commonDevice.isSupported(), isTrue);
 
     final TizenDevice tvDevice = _createTizenDevice(
       processManager: processManager,
@@ -271,10 +271,10 @@ __return_cb req_id[1] pkg_type[tpk] pkgid[TestPackage] key[end] val[ok]
       ].join('\n'),
     ));
     expect(tvDevice.deviceProfile, equals('tv'));
-    expect(tvDevice.isSupported(), isTrue);
+    expect(await tvDevice.isSupported(), isTrue);
   });
 
-  testWithoutContext('TizenDevice.isSupported returns false for unsupported devices', () {
+  testWithoutContext('TizenDevice.isSupported returns false for unsupported devices', () async {
     final TizenDevice mobileDevice = _createTizenDevice(
       processManager: processManager,
       fileSystem: fileSystem,
@@ -289,7 +289,7 @@ __return_cb req_id[1] pkg_type[tpk] pkgid[TestPackage] key[end] val[ok]
       ].join('\n'),
     ));
     expect(mobileDevice.deviceProfile, equals('mobile'));
-    expect(mobileDevice.isSupported(), isFalse);
+    expect(await mobileDevice.isSupported(), isFalse);
 
     final TizenDevice tvDevice = _createTizenDevice(
       processManager: processManager,
@@ -305,7 +305,7 @@ __return_cb req_id[1] pkg_type[tpk] pkgid[TestPackage] key[end] val[ok]
       ].join('\n'),
     ));
     expect(tvDevice.deviceProfile, equals('tv'));
-    expect(tvDevice.isSupported(), isFalse);
+    expect(await tvDevice.isSupported(), isFalse);
   });
 
   testWithoutContext('TizenDevicePortForwarder.forwardedPorts can list forwarded ports', () {
