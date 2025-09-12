@@ -25,6 +25,7 @@ String getArchForTargetPlatform(TargetPlatform platform) {
     TargetPlatform.android_arm => 'arm',
     TargetPlatform.android_arm64 => 'arm64',
     TargetPlatform.android_x86 => 'x86',
+    TargetPlatform.android_x64 => 'x64',
     _ => throw ArgumentError('Unexpected platform $platform'),
   };
 }
@@ -35,6 +36,8 @@ TargetPlatform getTargetPlatformForArch(String arch) {
     'arm' => TargetPlatform.android_arm,
     'arm64' => TargetPlatform.android_arm64,
     'x86' => TargetPlatform.android_x86,
+    'x86_64' => TargetPlatform.android_x64,
+    'x64' => TargetPlatform.android_x64,
     _ => throw ArgumentError('Unexpected arch name $arch'),
   };
 }

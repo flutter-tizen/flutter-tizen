@@ -101,7 +101,8 @@ class TizenDevice extends Device {
     return _capabilities![name]!;
   }
 
-  bool get _isLocalEmulator => getCapability('cpu_arch') == 'x86';
+  bool get _isLocalEmulator =>
+      getCapability('cpu_arch') == 'x86' || getCapability('cpu_arch') == 'x86_64';
 
   @override
   Future<bool> get isLocalEmulator async => _isLocalEmulator;
@@ -119,11 +120,11 @@ class TizenDevice extends Device {
 
   @override
   Future<bool> supportsRuntimeMode(BuildMode buildMode) async {
-    if (_isLocalEmulator) {
-      return buildMode == BuildMode.debug;
-    } else {
-      return buildMode != BuildMode.jitRelease;
-    }
+    // if (_isLocalEmulator) {
+    //   return buildMode == BuildMode.debug;
+    // } else {
+    return buildMode != BuildMode.jitRelease;
+    // }
   }
 
   late final String _platformVersion = () {
@@ -150,6 +151,9 @@ class TizenDevice extends Device {
   late final String architecture = () {
     final String cpuArch = getCapability('cpu_arch');
     if (_isLocalEmulator) {
+      if (cpuArch == 'x86_64') {
+        return 'x64';
+      }
       return cpuArch;
     } else if (usesSecureProtocol) {
       return cpuArch == 'armv7' ? 'arm' : 'arm64';
@@ -319,10 +323,10 @@ class TizenDevice extends Device {
     bool ipv6 = false,
     String? userIdentifier,
   }) async {
-    if (!debuggingOptions.buildInfo.isDebug && await isLocalEmulator) {
-      _logger.printError('Profile and release builds are not supported on emulator targets.');
-      return LaunchResult.failed();
-    }
+    // if (!debuggingOptions.buildInfo.isDebug && await isLocalEmulator) {
+    //   _logger.printError('Profile and release builds are not supported on emulator targets.');
+    //   return LaunchResult.failed();
+    // }
 
     // Build project if target application binary is not specified explicitly.
     if (!prebuiltApplication) {

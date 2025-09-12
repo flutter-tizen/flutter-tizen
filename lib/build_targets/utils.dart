@@ -42,6 +42,9 @@ Directory getEmbedderArtifactsDirectory(String? apiVersion, String arch) {
   } else {
     apiVersion = '6.0';
   }
+  if (arch == 'x86_64') {
+    arch = 'x64';
+  }
   return globals.cache
       .getArtifactDirectory('engine')
       .childDirectory('tizen-$arch')

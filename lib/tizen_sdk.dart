@@ -304,6 +304,7 @@ class TizenSdk {
     }
 
     final String type = switch (arch) {
+      'x64' => 'emulator64',
       'x86' => 'emulator',
       'arm64' => 'device64',
       _ => 'device',
@@ -368,6 +369,8 @@ String getTizenBuildArch(String arch) {
       return 'aarch64';
     case 'x86':
       return 'i586';
+    case 'x64':
+      return 'x86_64';
     default:
       return arch;
   }
@@ -382,6 +385,8 @@ String getTizenCliArch(String arch) {
       return 'aarch64';
     case 'x86':
       return 'x86';
+    case 'x64':
+      return 'x86_64';
     default:
       return arch;
   }
