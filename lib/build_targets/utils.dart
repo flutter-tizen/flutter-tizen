@@ -30,6 +30,9 @@ String getBuildConfig(BuildMode buildMode) {
 }
 
 Directory getEngineArtifactsDirectory(String arch, BuildMode mode) {
+  if (arch == 'x86_64') {
+    arch = 'x64';
+  }
   return globals.artifacts!.usesLocalArtifacts
       ? globals.fs.directory(globals.artifacts!.localEngineInfo!.targetOutPath)
       : globals.cache.getArtifactDirectory('engine').childDirectory('tizen-$arch-${mode.name}');
