@@ -304,9 +304,8 @@ class TizenSdk {
     }
 
     final String type = switch (arch) {
-      'x86_64' => 'emulator64',
-      'x64' => 'emulator64',
       'x86' => 'emulator',
+      'x86_64' => 'emulator64',
       'arm64' => 'device64',
       _ => 'device',
     };

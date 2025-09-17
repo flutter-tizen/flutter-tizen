@@ -120,11 +120,11 @@ class TizenDevice extends Device {
 
   @override
   Future<bool> supportsRuntimeMode(BuildMode buildMode) async {
-    // if (_isLocalEmulator) {
-    //   return buildMode == BuildMode.debug;
-    // } else {
-    return buildMode != BuildMode.jitRelease;
-    // }
+    if (getCapability('cpu_arch') == 'x86') {
+      return buildMode == BuildMode.debug;
+    } else {
+      return buildMode != BuildMode.jitRelease;
+    }
   }
 
   late final String _platformVersion = () {
@@ -323,10 +323,16 @@ class TizenDevice extends Device {
     bool ipv6 = false,
     String? userIdentifier,
   }) async {
-    // if (!debuggingOptions.buildInfo.isDebug && await isLocalEmulator) {
-    //   _logger.printError('Profile and release builds are not supported on emulator targets.');
-    //   return LaunchResult.failed();
-    // }
+    if (!debuggingOptions.buildInfo.isDebug && architecture == 'x86') {
+      _logger.printError('Profile and release builds are not supported on x86 emulator targets.');
+      return LaunchResult.failed();
+    }
+
+    if (!debuggingOptions.buildInfo.isDebug && architecture == 'x64' && !globals.platform.isLinux) {
+      _logger.printError(
+          'x64 emulator target profile and release builds are supported only on Linux hosts.');
+      return LaunchResult.failed();
+    }
 
     // Build project if target application binary is not specified explicitly.
     if (!prebuiltApplication) {
