@@ -283,6 +283,9 @@ class TizenEngineArtifacts extends TizenCachedArtifacts {
       <String>['tizen-arm64-profile', 'tizen-arm64-profile.zip'],
       <String>['tizen-arm64-release', 'tizen-arm64-release.zip'],
       <String>['tizen-x86-debug', 'tizen-x86-debug.zip'],
+      <String>['tizen-x64-debug', 'tizen-x64-debug.zip'],
+      <String>['tizen-x64-profile', 'tizen-x64-profile.zip'],
+      <String>['tizen-x64-release', 'tizen-x64-release.zip'],
       if (_platform.isWindows)
         ..._binaryDirsForHostPlatform('windows-x64')
       else if (_platform.isMacOS)
@@ -298,6 +301,10 @@ class TizenEngineArtifacts extends TizenCachedArtifacts {
       <String>['tizen-arm-release/$platform', 'tizen-arm-release_$platform.zip'],
       <String>['tizen-arm64-profile/$platform', 'tizen-arm64-profile_$platform.zip'],
       <String>['tizen-arm64-release/$platform', 'tizen-arm64-release_$platform.zip'],
+      if (platform == 'linux-x64')
+        <String>['tizen-x64-profile/$platform', 'tizen-x64-profile_$platform.zip'],
+      if (platform == 'linux-x64')
+        <String>['tizen-x64-release/$platform', 'tizen-x64-release_$platform.zip'],
     ];
   }
 }
@@ -355,6 +362,7 @@ class TizenEmbedderArtifacts extends TizenCachedArtifacts {
       <String>['tizen-arm64/6.5', 'tizen-6.5-arm64.zip'],
       <String>['tizen-x86/6.0', 'tizen-6.0-x86.zip'],
       <String>['tizen-x86/6.5', 'tizen-6.5-x86.zip'],
+      <String>['tizen-x64/8.0', 'tizen-8.0-x64.zip'],
     ];
   }
 }

@@ -39,12 +39,15 @@ Directory getEngineArtifactsDirectory(String arch, BuildMode mode) {
 }
 
 Directory getEmbedderArtifactsDirectory(String? apiVersion, String arch) {
-  final Version? version = Version.parse(apiVersion);
-  if (version != null && version >= Version(6, 5, 0)) {
+  final Version version = Version.parse(apiVersion) ?? Version(6, 0, 0);
+  if (arch == 'x64' && version >= Version(8, 0, 0)) {
+    apiVersion = '8.0';
+  } else if (version >= Version(6, 5, 0)) {
     apiVersion = '6.5';
   } else {
     apiVersion = '6.0';
   }
+
   if (arch == 'x86_64') {
     arch = 'x64';
   }
