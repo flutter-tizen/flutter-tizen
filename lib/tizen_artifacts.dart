@@ -22,6 +22,9 @@ class TizenArtifacts extends CachedArtifacts {
 
   /// See: [CachedArtifacts._getEngineArtifactsPath]
   Directory _getEngineArtifactsDirectory(String arch, BuildMode mode) {
+    if (arch == 'x86_64') {
+      arch = 'x64';
+    }
     return _cache.getArtifactDirectory('engine').childDirectory('tizen-$arch-${mode.name}');
   }
 
