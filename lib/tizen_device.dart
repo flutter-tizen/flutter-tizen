@@ -120,7 +120,7 @@ class TizenDevice extends Device {
 
   @override
   Future<bool> supportsRuntimeMode(BuildMode buildMode) async {
-    if (getCapability('cpu_arch') == 'x86') {
+    if (getCapability('cpu_arch') == 'x86' || getCapability('cpu_arch') == 'x86_64') {
       return buildMode == BuildMode.debug;
     } else {
       return buildMode != BuildMode.jitRelease;

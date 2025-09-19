@@ -45,13 +45,6 @@ class TizenArtifacts extends CachedArtifacts {
       final HostPlatform hostPlatform = getCurrentHostPlatform();
       assert(hostPlatform != HostPlatform.linux_arm64,
           'Artifact $artifact not available on Linux arm64.');
-      // if (arch == 'x64') {
-      //   return _cache
-      //       .getArtifactDirectory('engine')
-      //       .childDirectory(getNameForHostPlatform(hostPlatform))
-      //       .childFile('gen_snapshot')
-      //       .path;
-      // }
       return _getEngineArtifactsDirectory(arch, mode!)
           .childDirectory(getNameForHostPlatform(hostPlatform))
           .childFile('gen_snapshot')
