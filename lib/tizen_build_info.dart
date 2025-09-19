@@ -24,7 +24,9 @@ String getArchForTargetPlatform(TargetPlatform platform) {
   return switch (platform) {
     TargetPlatform.android_arm => 'arm',
     TargetPlatform.android_arm64 => 'arm64',
-    TargetPlatform.android_x86 => 'x86',
+    // NOTE(jsuya) : Android x86 support has been removed. Use `tester` instead of `android_x86`.
+    // https://github.com/flutter/flutter/pull/169884
+    TargetPlatform.tester => 'x86',
     TargetPlatform.android_x64 => 'x64',
     _ => throw ArgumentError('Unexpected platform $platform'),
   };
@@ -35,7 +37,9 @@ TargetPlatform getTargetPlatformForArch(String arch) {
   return switch (arch) {
     'arm' => TargetPlatform.android_arm,
     'arm64' => TargetPlatform.android_arm64,
-    'x86' => TargetPlatform.android_x86,
+    // NOTE(jsuya) : Android x86 support has been removed. Use `tester` instead of `android_x86`.
+    // https://github.com/flutter/flutter/pull/169884
+    'x86' => TargetPlatform.tester,
     'x86_64' => TargetPlatform.android_x64,
     'x64' => TargetPlatform.android_x64,
     _ => throw ArgumentError('Unexpected arch name $arch'),

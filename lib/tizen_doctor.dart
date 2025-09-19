@@ -22,7 +22,7 @@ import 'tizen_sdk.dart';
 TizenWorkflow? get tizenWorkflow => context.get<TizenWorkflow>();
 TizenValidator? get tizenValidator => context.get<TizenValidator>();
 
-/// See: [_DefaultDoctorValidatorsProvider] in `doctor.dart`
+/// See: [DoctorValidatorsProvider] in `doctor.dart`
 class TizenDoctorValidatorsProvider implements DoctorValidatorsProvider {
   @override
   List<DoctorValidator> get validators {
@@ -65,8 +65,8 @@ class TizenValidator extends DoctorValidator {
   bool _validatePackages(List<ValidationMessage> messages) {
     final String gccVersion = _tizenSdk!.defaultGccVersion;
     final String packageManager = _tizenSdk.packageManagerCli.path;
-    final List<String> missingPackages = <String>[];
-    bool result = true;
+    final missingPackages = <String>[];
+    var result = true;
 
     if (!_tizenSdk.tizenCli.existsSync()) {
       missingPackages.add('NativeCLI');
@@ -111,14 +111,14 @@ class TizenValidator extends DoctorValidator {
   /// See: [AndroidValidator.validate] in `android_workflow.dart`
   @override
   Future<ValidationResult> validateImpl() async {
-    final List<ValidationMessage> messages = <ValidationMessage>[];
+    final messages = <ValidationMessage>[];
 
     final Directory workingDirectory = _fileSystem.directory(Cache.flutterRoot).parent;
     final String revision = _runGit(
       'git -c log.showSignature=false log -n 1 --pretty=format:%H',
       workingDirectory.path,
     );
-    final FlutterVersion version = FlutterVersion.fromRevision(
+    final version = FlutterVersion.fromRevision(
       flutterRoot: workingDirectory.path,
       frameworkRevision: revision,
       fs: _fileSystem,
@@ -151,7 +151,7 @@ class TizenValidator extends DoctorValidator {
       ));
       return ValidationResult(ValidationType.missing, messages);
     } else {
-      final String versionText = sdkVersion != null ? ' $sdkVersion' : '';
+      final versionText = sdkVersion != null ? ' $sdkVersion' : '';
       messages.add(ValidationMessage(
         'Tizen Studio$versionText at ${_tizenSdk.directory.path}',
       ));

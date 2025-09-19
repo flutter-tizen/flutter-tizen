@@ -23,7 +23,7 @@ import '../src/fakes.dart';
 import '../src/pubspec_schema.dart';
 import '../src/test_flutter_command_runner.dart';
 
-const String _kNoPlatformsMessage =
+const _kNoPlatformsMessage =
     "You've created a plugin project that doesn't yet support any platforms.";
 
 void main() {
@@ -43,7 +43,7 @@ void main() {
 
   testUsingContext('Can list samples', () async {
     final File outputFile = tempDir.childFile('flutter_samples.json');
-    final TizenCreateCommand command = TizenCreateCommand();
+    final command = TizenCreateCommand();
     final CommandRunner<void> runner = createTestCommandRunner(command);
     await runner.run(<String>[
       'create',
@@ -67,7 +67,7 @@ void main() {
   });
 
   testUsingContext('Can create a default project', () async {
-    final TizenCreateCommand command = TizenCreateCommand();
+    final command = TizenCreateCommand();
     final CommandRunner<void> runner = createTestCommandRunner(command);
     await runner.run(<String>[
       'create',
@@ -84,7 +84,7 @@ void main() {
   }, overrides: <Type, Generator>{});
 
   testUsingContext('Can create a C++ service app project', () async {
-    final TizenCreateCommand command = TizenCreateCommand();
+    final command = TizenCreateCommand();
     final CommandRunner<void> runner = createTestCommandRunner(command);
     await runner.run(<String>[
       'create',
@@ -107,7 +107,7 @@ void main() {
   }, overrides: <Type, Generator>{});
 
   testUsingContext('Can create a C++ multi app project', () async {
-    final TizenCreateCommand command = TizenCreateCommand();
+    final command = TizenCreateCommand();
     final CommandRunner<void> runner = createTestCommandRunner(command);
     await runner.run(<String>[
       'create',
@@ -122,7 +122,7 @@ void main() {
     expect(mainDart.readAsStringSync(), contains('Tizen Multi App Demo'));
 
     final String rawPubspec = projectDir.childFile('pubspec.yaml').readAsStringSync();
-    final Pubspec pubspec = Pubspec.parse(rawPubspec);
+    final pubspec = Pubspec.parse(rawPubspec);
     expect(pubspec.dependencies, contains('tizen_app_control'));
     expect(pubspec.dependencies, contains('messageport_tizen'));
 
@@ -131,7 +131,7 @@ void main() {
   }, overrides: <Type, Generator>{});
 
   testUsingContext('Can create a C++ plugin project', () async {
-    final TizenCreateCommand command = TizenCreateCommand();
+    final command = TizenCreateCommand();
     final CommandRunner<void> runner = createTestCommandRunner(command);
     await runner.run(<String>[
       'create',
@@ -161,7 +161,7 @@ void main() {
   });
 
   testUsingContext('Can create a C# plugin project', () async {
-    final TizenCreateCommand command = TizenCreateCommand();
+    final command = TizenCreateCommand();
     final CommandRunner<void> runner = createTestCommandRunner(command);
     await runner.run(<String>[
       'create',
@@ -190,7 +190,7 @@ void main() {
   });
 
   testUsingContext('Cannot create a plugin project with --app-type=multi option', () async {
-    final TizenCreateCommand command = TizenCreateCommand();
+    final command = TizenCreateCommand();
     final CommandRunner<void> runner = createTestCommandRunner(command);
     await expectLater(
       () => runner.run(<String>[
@@ -206,7 +206,7 @@ void main() {
   }, overrides: <Type, Generator>{});
 
   testUsingContext('Can add Tizen platform to existing plugin project', () async {
-    final TizenCreateCommand command = TizenCreateCommand();
+    final command = TizenCreateCommand();
     final CommandRunner<void> runner = createTestCommandRunner(command);
     await runner.run(<String>[
       'create',
@@ -232,7 +232,7 @@ void main() {
   });
 
   testUsingContext('Can create a C# module project', () async {
-    final TizenCreateCommand command = TizenCreateCommand();
+    final command = TizenCreateCommand();
     final CommandRunner<void> runner = createTestCommandRunner(command);
     await runner.run(<String>[
       'create',
@@ -254,7 +254,7 @@ void main() {
   });
 
   testUsingContext('Can create a C++ module project', () async {
-    final TizenCreateCommand command = TizenCreateCommand();
+    final command = TizenCreateCommand();
     final CommandRunner<void> runner = createTestCommandRunner(command);
     await runner.run(<String>[
       'create',

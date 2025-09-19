@@ -30,7 +30,7 @@ import 'tizen_project.dart';
 import 'tizen_sdk.dart';
 
 /// The define to control what Tizen device is built for.
-const String kDeviceProfile = 'DeviceProfile';
+const kDeviceProfile = 'DeviceProfile';
 
 TizenBuilder? get tizenBuilder => context.get<TizenBuilder>();
 
@@ -48,7 +48,7 @@ class TizenBuilder {
     required String targetFile,
     SizeAnalyzer? sizeAnalyzer,
   }) async {
-    final TizenProject tizenProject = TizenProject.fromFlutter(project);
+    final tizenProject = TizenProject.fromFlutter(project);
     if (!tizenProject.existsSync()) {
       throwToolExit('This project is not configured for Tizen.');
     }
@@ -65,7 +65,7 @@ class TizenBuilder {
     final String targetPlatform =
         getNameForTargetPlatform(getTargetPlatformForArch(tizenBuildInfo.targetArch));
 
-    final Environment environment = Environment(
+    final environment = Environment(
       projectDir: project.directory,
       packageConfigPath: findPackageConfigFileOrDefault(project.directory).path,
       outputDir: outputDir,
@@ -168,7 +168,7 @@ class TizenBuilder {
     required String targetFile,
     String? outputDirectory,
   }) async {
-    final TizenProject tizenProject = TizenProject.fromFlutter(project);
+    final tizenProject = TizenProject.fromFlutter(project);
     if (!tizenProject.existsSync()) {
       throwToolExit('This project is not configured for Tizen.');
     }
@@ -192,7 +192,7 @@ class TizenBuilder {
     final String targetPlatform =
         getNameForTargetPlatform(getTargetPlatformForArch(tizenBuildInfo.targetArch));
 
-    final Environment environment = Environment(
+    final environment = Environment(
       projectDir: project.directory,
       packageConfigPath: findPackageConfigFileOrDefault(project.directory).path,
       outputDir: outputDir,

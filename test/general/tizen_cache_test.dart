@@ -33,7 +33,7 @@ void main() {
   });
 
   testWithoutContext('gen_snapshot artifacts for host platform (Windows)', () {
-    final TizenEngineArtifacts artifacts = TizenEngineArtifacts(
+    final artifacts = TizenEngineArtifacts(
       cache: cache,
       logger: BufferLogger.test(),
       fileSystem: fileSystem,
@@ -54,7 +54,7 @@ void main() {
   });
 
   testWithoutContext('Makes gen_snapshot binaries executable', () async {
-    final TizenEngineArtifacts artifacts = TizenEngineArtifacts(
+    final artifacts = TizenEngineArtifacts(
       cache: cache,
       logger: BufferLogger.test(),
       fileSystem: fileSystem,
@@ -62,8 +62,8 @@ void main() {
       osUtils: FakeOperatingSystemUtils(),
       processManager: FakeProcessManager.any(),
     );
-    final _FakeArtifactUpdater artifactUpdater = _FakeArtifactUpdater();
-    final FakeOperatingSystemUtils osUtils = FakeOperatingSystemUtils();
+    final artifactUpdater = _FakeArtifactUpdater();
+    final osUtils = FakeOperatingSystemUtils();
 
     artifacts.artifactUpdater = artifactUpdater;
     artifactUpdater.onDownload = (String message, Uri url, Directory location) {
@@ -84,7 +84,7 @@ void main() {
   });
 
   testWithoutContext('Fails if GitHub CLI is not installed', () async {
-    final TizenEngineArtifacts artifacts = TizenEngineArtifacts(
+    final artifacts = TizenEngineArtifacts(
       cache: cache,
       logger: BufferLogger.test(),
       fileSystem: fileSystem,

@@ -40,6 +40,7 @@ void main() {
         DevelopmentArtifact.androidMaven,
         DevelopmentArtifact.androidInternalBuild,
         DevelopmentArtifact.iOS,
+        DevelopmentArtifact.informative,
         TizenDevelopmentArtifact.tizen,
       }),
     );
@@ -67,12 +68,12 @@ void main() {
 }
 
 class _FakeCache extends Fake implements Cache {
-  Set<DevelopmentArtifact> artifacts = <DevelopmentArtifact>{};
+  var artifacts = <DevelopmentArtifact>{};
   String? engineStamp;
   String? embedderStamp;
 
   @override
-  bool includeAllPlatforms = false;
+  var includeAllPlatforms = false;
 
   @override
   Set<String>? platformOverrideArtifacts = <String>{};

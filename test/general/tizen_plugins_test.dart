@@ -35,7 +35,7 @@ void main() {
   });
 
   testUsingContext('Generates Dart plugin registrant', () async {
-    final _DummyFlutterCommand command = _DummyFlutterCommand();
+    final command = _DummyFlutterCommand();
     final CommandRunner<void> runner = createTestCommandRunner(command);
 
     fileSystem.file('tizen/tizen-manifest.xml').createSync(recursive: true);
@@ -307,13 +307,13 @@ dependencies:
 ''');
     await injectTizenPlugins(project);
 
-    final List<File> intermediateFiles = <File>[
+    final intermediateFiles = <File>[
       fileSystem.file('tizen/ui/flutter/GeneratedPluginRegistrant.cs'),
       fileSystem.file('tizen/ui/obj/Runner.csproj.flutter.targets'),
       fileSystem.file('tizen/service/flutter/GeneratedPluginRegistrant.cs'),
       fileSystem.file('tizen/service/obj/RunnerService.csproj.flutter.targets'),
     ];
-    for (final File file in intermediateFiles) {
+    for (final file in intermediateFiles) {
       expect(file, exists);
     }
   }, overrides: <Type, Generator>{
@@ -435,10 +435,10 @@ class _DummyFlutterCommand extends FlutterCommand with DartPluginRegistry {
   }
 
   @override
-  String name = 'dummy';
+  var name = 'dummy';
 
   @override
-  String description = '';
+  var description = '';
 
   @override
   Future<FlutterCommandResult> runCommand() async {

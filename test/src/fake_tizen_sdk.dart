@@ -50,7 +50,7 @@ class FakeTizenSdk extends TizenSdk {
     String? sign,
     Map<String, String> environment = const <String, String>{},
   }) async {
-    final List<String>? buildConfigs = method['configs'] as List<String>?;
+    final buildConfigs = method['configs'] as List<String>?;
     expect(buildConfigs, isNotNull);
     expect(buildConfigs, isNotEmpty);
 
@@ -79,7 +79,7 @@ class FakeTizenSdk extends TizenSdk {
     expect(libName, isNotNull);
     expect(libType, isNotNull);
 
-    String outPath = '$configuration/lib$libName';
+    var outPath = '$configuration/lib$libName';
     if (libType == 'staticLib') {
       outPath += '.a';
     } else if (libType == 'sharedLib') {

@@ -50,12 +50,12 @@ class ForwardingLogReader extends DeviceLogReader {
   final SocketFactory _socketFactory;
   Socket? _socket;
 
-  final StreamController<String> _linesController = StreamController<String>.broadcast();
+  final _linesController = StreamController<String>.broadcast();
 
   @override
   Stream<String> get logLines => _linesController.stream;
 
-  final RegExp _logFormat = RegExp(r'^(\[[IWEF]\]).*');
+  final _logFormat = RegExp(r'^(\[[IWEF]\]).*');
 
   String _colorizePrefix(String message) {
     if (!globals.terminal.supportsColor) {
@@ -79,7 +79,7 @@ class ForwardingLogReader extends DeviceLogReader {
     return message.replaceFirst(prefix, globals.terminal.color(prefix, color));
   }
 
-  final List<RegExp> _filteredTexts = <RegExp>[
+  final _filteredTexts = <RegExp>[
     // Issue: https://github.com/flutter-tizen/engine/issues/91
     RegExp('xkbcommon: ERROR:'),
     RegExp("couldn't find a Compose file for locale"),
@@ -95,8 +95,8 @@ class ForwardingLogReader extends DeviceLogReader {
     globals.printTrace('Connecting to localhost:$hostPort...');
     Socket? socket = await _socketFactory('localhost', hostPort);
 
-    const Utf8Decoder decoder = Utf8Decoder(allowMalformed: true);
-    final Completer<void> completer = Completer<void>();
+    const decoder = Utf8Decoder(allowMalformed: true);
+    final completer = Completer<void>();
 
     socket.listen(
       (Uint8List data) {
@@ -154,7 +154,7 @@ class ForwardingLogReader extends DeviceLogReader {
     // is disposed.
     await _portForwarder.forward(hostPort, hostPort: hostPort);
 
-    int attempts = 0;
+    var attempts = 0;
     try {
       while (true) {
         attempts += 1;

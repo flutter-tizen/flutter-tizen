@@ -83,7 +83,7 @@ class _FakeDevice extends Fake implements Device {
   _FakeDevice();
 
   @override
-  final String name = 'Device';
+  final name = 'Device';
 
   @override
   final DevicePortForwarder portForwarder = const NoOpDevicePortForwarder();
@@ -112,7 +112,7 @@ class _FakeNoResponseSocket extends _FakeSocket {
     void Function()? onDone,
     bool? cancelOnError,
   }) {
-    const Stream<Uint8List> stream = Stream<Uint8List>.empty();
+    const stream = Stream<Uint8List>.empty();
     return stream.listen(
       onData,
       onError: onError,
@@ -134,8 +134,8 @@ class _FakeWorkingSocket extends _FakeSocket {
     void Function()? onDone,
     bool? cancelOnError,
   }) {
-    const Utf8Encoder encoder = Utf8Encoder();
-    final Stream<Uint8List> stream = Stream<Uint8List>.fromIterable(<Uint8List>[
+    const encoder = Utf8Encoder();
+    final stream = Stream<Uint8List>.fromIterable(<Uint8List>[
       encoder.convert('ACCEPTED'),
       encoder.convert(_message),
     ]);

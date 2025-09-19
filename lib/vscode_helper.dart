@@ -9,13 +9,13 @@ import 'package:flutter_tools/src/convert.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/project.dart';
 
-const String kConfigNameAttach = 'flutter-tizen: Attach';
+const kConfigNameAttach = 'flutter-tizen: Attach';
 
 String _processJson(String jsonString) {
   // The extended JSON format used by launch.json files allows comments and
   // trailing commas. Remove them to prevent decoding errors.
-  final RegExp comments = RegExp(r'(?<![:"/])(/\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*+/|//.*\n?)');
-  final RegExp trailingCommas = RegExp(r',(?=\s*?[\}\]])');
+  final comments = RegExp(r'(?<![:"/])(/\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*+/|//.*\n?)');
+  final trailingCommas = RegExp(r',(?=\s*?[\}\]])');
   return jsonString.replaceAll(comments, '').replaceAll(trailingCommas, '').trim();
 }
 
@@ -28,12 +28,12 @@ void updateLaunchJsonFile(FlutterProject project, Uri vmServiceUri) {
   }
 
   final File launchJsonFile = project.directory.childDirectory('.vscode').childFile('launch.json');
-  String jsonString = '';
+  var jsonString = '';
   if (launchJsonFile.existsSync()) {
     jsonString = _processJson(launchJsonFile.readAsStringSync());
   }
 
-  Map<Object?, Object?> decoded = <Object?, Object?>{};
+  var decoded = <Object?, Object?>{};
   if (jsonString.isNotEmpty) {
     try {
       decoded = jsonDecode(jsonString) as Map<Object?, Object?>;
@@ -45,7 +45,7 @@ void updateLaunchJsonFile(FlutterProject project, Uri vmServiceUri) {
   decoded['version'] ??= '0.2.0';
   decoded['configurations'] ??= <Object?>[];
 
-  final List<Object?> configs = decoded['configurations']! as List<Object?>;
+  final configs = decoded['configurations']! as List<Object?>;
   if (!configs.any((Object? config) => config is Map && config['name'] == kConfigNameAttach)) {
     configs.add(<String, String>{
       'name': kConfigNameAttach,
@@ -53,7 +53,7 @@ void updateLaunchJsonFile(FlutterProject project, Uri vmServiceUri) {
       'type': 'dart',
     });
   }
-  for (final Object? config in configs) {
+  for (final config in configs) {
     if (config is! Map || config['name'] != kConfigNameAttach) {
       continue;
     }
@@ -61,7 +61,7 @@ void updateLaunchJsonFile(FlutterProject project, Uri vmServiceUri) {
     config['vmServiceUri'] = vmServiceUri.toString();
   }
 
-  const JsonEncoder encoder = JsonEncoder.withIndent('    ');
+  const encoder = JsonEncoder.withIndent('    ');
   launchJsonFile
     ..createSync(recursive: true)
     ..writeAsStringSync(encoder.convert(decoded));

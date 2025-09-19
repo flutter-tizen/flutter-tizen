@@ -16,12 +16,12 @@ import 'package:flutter_tools/src/test/test_wrapper.dart';
 
 import '../src/context.dart';
 import '../src/fake_devices.dart';
+import '../src/package_config.dart';
 import '../src/test_flutter_command_runner.dart';
 
 void main() {
   late FileSystem fileSystem;
   late File pubspecFile;
-  late File packageConfigFile;
   late DeviceManager deviceManager;
 
   setUpAll(() {
@@ -31,9 +31,8 @@ void main() {
   setUp(() {
     fileSystem = MemoryFileSystem.test();
     pubspecFile = fileSystem.file('pubspec.yaml')..createSync(recursive: true);
-    packageConfigFile = fileSystem.file('.dart_tool/package_config.json')
-      ..createSync(recursive: true);
     fileSystem.file('integration_test/some_integration_test.dart').createSync(recursive: true);
+    writePackageConfigFiles(mainLibName: 'foo', directory: fileSystem.currentDirectory);
 
     deviceManager = _FakeDeviceManager(<Device>[
       FakeDevice('ephemeral', 'ephemeral', type: PlatformType.custom),
@@ -41,29 +40,10 @@ void main() {
   });
 
   testUsingContext('Integration test requires Tizen artifacts', () async {
-    final _FakeTestWrapper testWrapper = _FakeTestWrapper();
-    final TizenTestCommand command = TizenTestCommand(testWrapper: testWrapper);
+    final testWrapper = _FakeTestWrapper();
+    final command = TizenTestCommand(testWrapper: testWrapper);
     final CommandRunner<void> runner = createTestCommandRunner(command);
 
-    packageConfigFile.writeAsStringSync('''
-{
-  "configVersion": 2,
-  "packages": [
-    {
-      "name": "test_api",
-      "rootUri": "file:///path/to/pubcache/.pub-cache/hosted/pub.dartlang.org/test_api-0.2.19",
-      "packageUri": "lib/",
-      "languageVersion": "2.12"
-    },
-    {
-      "name": "integration_test",
-      "rootUri": "file:///path/to/flutter/packages/integration_test",
-      "packageUri": "lib/",
-      "languageVersion": "2.12"
-    }
-  ]
-}
-''');
     await runner.run(const <String>[
       'test',
       '--no-pub',
@@ -81,8 +61,8 @@ void main() {
   }, testOn: 'posix');
 
   testUsingContext('Can generate entrypoint wrapper for integration test', () async {
-    final _FakeTestWrapper testWrapper = _FakeTestWrapper();
-    final TizenTestCommand command = TizenTestCommand(testWrapper: testWrapper);
+    final testWrapper = _FakeTestWrapper();
+    final command = TizenTestCommand(testWrapper: testWrapper);
     final CommandRunner<void> runner = createTestCommandRunner(command);
 
     final Directory pluginDir = fileSystem.directory('/some_dart_plugin');
@@ -101,31 +81,7 @@ dependencies:
   some_dart_plugin:
     path: ${pluginDir.path}
 ''');
-    packageConfigFile.writeAsStringSync('''
-{
-  "configVersion": 2,
-  "packages": [
-    {
-      "name": "test_api",
-      "rootUri": "file:///path/to/pubcache/.pub-cache/hosted/pub.dartlang.org/test_api-0.2.19",
-      "packageUri": "lib/",
-      "languageVersion": "2.12"
-    },
-    {
-      "name": "integration_test",
-      "rootUri": "file:///path/to/flutter/packages/integration_test",
-      "packageUri": "lib/",
-      "languageVersion": "2.12"
-    },
-    {
-      "name": "some_dart_plugin",
-      "rootUri": "${pluginDir.uri}",
-      "packageUri": "lib/",
-      "languageVersion": "2.12"
-    }
-  ]
-}
-''');
+
     await runner.run(const <String>[
       'test',
       '--no-pub',
@@ -169,7 +125,7 @@ class _FakeDeviceManager extends DeviceManager {
 }
 
 class _FakeTestWrapper implements TestWrapper {
-  List<String> lastArgs = <String>[];
+  var lastArgs = <String>[];
 
   @override
   Future<void> main(List<String> args) async {

@@ -16,7 +16,7 @@ void main() {
   });
 
   testUsingContext('Detects flutter-tizen tag and revision.', () async {
-    final TizenFlutterVersion tizenFlutterVersion = TizenFlutterVersion(
+    final tizenFlutterVersion = TizenFlutterVersion(
       fs: globals.fs,
       flutterRoot: Cache.flutterRoot!,
     );
