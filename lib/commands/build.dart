@@ -69,13 +69,9 @@ class BuildTpkCommand extends BuildSubCommand with DartPluginRegistry, TizenRequ
   @override
   Future<FlutterCommandResult> runCommand() async {
     final BuildInfo buildInfo = await getBuildInfo();
-    String arch = stringArg('target-arch')!;
-    if (arch == 'x64') {
-      arch = 'x86_64';
-    }
     final TizenBuildInfo tizenBuildInfo = TizenBuildInfo(
       buildInfo,
-      targetArch: arch,
+      targetArch: stringArg('target-arch')!,
       deviceProfile: stringArg('device-profile')!,
       securityProfile: stringArg('security-profile'),
     );
