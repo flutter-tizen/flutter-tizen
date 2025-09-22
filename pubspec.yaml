@@ -25,5 +25,10 @@ dependencies:
 dev_dependencies:
   args:
   file_testing:
+  flutter_test:
+    sdk: flutter
   pubspec_parse:
   test:
+
+dependency_overrides:
+  meta: ^1.17.0
