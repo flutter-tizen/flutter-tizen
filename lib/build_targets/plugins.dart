@@ -31,7 +31,8 @@ class NativePlugins extends Target {
   List<Source> get inputs => const <Source>[
         Source.pattern('{FLUTTER_ROOT}/../lib/build_targets/plugins.dart'),
         Source.pattern('{FLUTTER_ROOT}/../lib/tizen_sdk.dart'),
-        Source.pattern('{WORKSPACE_DIR}/.dart_tool/package_config_subset'),
+        Source.pattern('{WORKSPACE_DIR}/.dart_tool/package_config.json'),
+        Source.pattern('{WORKSPACE_DIR}/.dart_tool/package_graph.json'),
       ];
 
   @override
