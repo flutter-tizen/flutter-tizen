@@ -45,6 +45,7 @@ void main() {
     final testWrapper = _FakeTestWrapper();
     final command = TizenTestCommand(testWrapper: testWrapper);
     final CommandRunner<void> runner = createTestCommandRunner(command);
+
     packageConfigFile.writeAsStringSync('''
 {
   "configVersion": 2,
@@ -82,18 +83,14 @@ void main() {
 
   testUsingContext('Can generate entrypoint wrapper for integration test', () async {
     final testWrapper = _FakeTestWrapper();
-
     final command = TizenTestCommand(testWrapper: testWrapper);
     final CommandRunner<void> runner = createTestCommandRunner(command);
-
-    // for .dart_tool/package_graph.json
-    writePackageConfigFiles(
-        mainLibName: 'some_dart_plugin', directory: fileSystem.currentDirectory);
-
     final Directory pluginDir = fileSystem.currentDirectory;
-    pluginDir.childFile('pubspec.yaml')
-      ..createSync(recursive: true)
-      ..writeAsStringSync('''
+
+    // To generate .dart_tool/package_graph.json
+    writePackageConfigFiles(mainLibName: 'some_dart_plugin', directory: pluginDir);
+
+    pubspecFile.writeAsStringSync('''
 name: some_dart_plugin
 flutter:
   plugin:
@@ -109,7 +106,6 @@ dev_dependencies:
     sdk: flutter
   test: any
 ''');
-
     packageConfigFile.writeAsStringSync('''
 {
   "configVersion": 2,
@@ -135,7 +131,6 @@ dev_dependencies:
   ]
 }
 ''');
-
     await runner.run(const <String>[
       'test',
       '--no-pub',
