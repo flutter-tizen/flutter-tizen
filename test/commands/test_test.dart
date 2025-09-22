@@ -22,6 +22,7 @@ import '../src/test_flutter_command_runner.dart';
 void main() {
   late FileSystem fileSystem;
   late File pubspecFile;
+  late File packageConfigFile;
   late DeviceManager deviceManager;
 
   setUpAll(() {
@@ -31,8 +32,9 @@ void main() {
   setUp(() {
     fileSystem = MemoryFileSystem.test();
     pubspecFile = fileSystem.file('pubspec.yaml')..createSync(recursive: true);
+    packageConfigFile = fileSystem.file('.dart_tool/package_config.json')
+      ..createSync(recursive: true);
     fileSystem.file('integration_test/some_integration_test.dart').createSync(recursive: true);
-    writePackageConfigFiles(mainLibName: 'foo', directory: fileSystem.currentDirectory);
 
     deviceManager = _FakeDeviceManager(<Device>[
       FakeDevice('ephemeral', 'ephemeral', type: PlatformType.custom),
@@ -43,7 +45,25 @@ void main() {
     final testWrapper = _FakeTestWrapper();
     final command = TizenTestCommand(testWrapper: testWrapper);
     final CommandRunner<void> runner = createTestCommandRunner(command);
-
+    packageConfigFile.writeAsStringSync('''
+{
+  "configVersion": 2,
+  "packages": [
+    {
+      "name": "test_api",
+      "rootUri": "file:///path/to/pubcache/.pub-cache/hosted/pub.dartlang.org/test_api-0.2.19",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "integration_test",
+      "rootUri": "file:///path/to/flutter/packages/integration_test",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    }
+  ]
+}
+''');
     await runner.run(const <String>[
       'test',
       '--no-pub',
@@ -62,24 +82,58 @@ void main() {
 
   testUsingContext('Can generate entrypoint wrapper for integration test', () async {
     final testWrapper = _FakeTestWrapper();
+
     final command = TizenTestCommand(testWrapper: testWrapper);
     final CommandRunner<void> runner = createTestCommandRunner(command);
 
-    final Directory pluginDir = fileSystem.directory('/some_dart_plugin');
+    // for .dart_tool/package_graph.json
+    writePackageConfigFiles(
+        mainLibName: 'some_dart_plugin', directory: fileSystem.currentDirectory);
+
+    final Directory pluginDir = fileSystem.currentDirectory;
     pluginDir.childFile('pubspec.yaml')
       ..createSync(recursive: true)
       ..writeAsStringSync('''
+name: some_dart_plugin
 flutter:
   plugin:
     platforms:
       tizen:
         dartPluginClass: SomeDartPlugin
         fileName: some_dart_plugin.dart
-''');
-    pubspecFile.writeAsStringSync('''
 dependencies:
   some_dart_plugin:
     path: ${pluginDir.path}
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  test: any
+''');
+
+    packageConfigFile.writeAsStringSync('''
+{
+  "configVersion": 2,
+  "packages": [
+    {
+      "name": "test_api",
+      "rootUri": "file:///path/to/pubcache/.pub-cache/hosted/pub.dartlang.org/test_api-0.2.19",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "integration_test",
+      "rootUri": "file:///path/to/flutter/packages/integration_test",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "some_dart_plugin",
+      "rootUri": "${pluginDir.uri}",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    }
+  ]
+}
 ''');
 
     await runner.run(const <String>[
@@ -92,6 +146,11 @@ dependencies:
         fileSystem.file('/.tmp_rand0/rand0/some_integration_test.dart');
     expect(testWrapper.lastArgs, contains(generatedEntrypoint.uri.toString()));
     expect(generatedEntrypoint.readAsStringSync(), contains('''
+//
+// Generated file. Do not edit.
+//
+// @dart = 2.12
+
 import 'file:///integration_test/some_integration_test.dart' as entrypoint;
 import 'package:some_dart_plugin/some_dart_plugin.dart';
 
