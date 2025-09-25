@@ -32,7 +32,7 @@ void main() {
   });
 
   testUsingContext('Detects missing SDK', () async {
-    final TizenValidator tizenValidator = TizenValidator(
+    final tizenValidator = TizenValidator(
       tizenSdk: null, // ignore: avoid_redundant_argument_values
       dotnetCli: fileSystem.file('dotnet'),
       fileSystem: fileSystem,
@@ -50,10 +50,10 @@ void main() {
   });
 
   testUsingContext('Detects minimum required SDK version', () async {
-    final _FakeTizenSdk tizenSdk = _FakeTizenSdk(fileSystem);
+    final tizenSdk = _FakeTizenSdk(fileSystem);
     tizenSdk.sdkVersion = '4.5';
 
-    final TizenValidator tizenValidator = TizenValidator(
+    final tizenValidator = TizenValidator(
       tizenSdk: tizenSdk,
       dotnetCli: fileSystem.file('dotnet'),
       fileSystem: fileSystem,
@@ -71,7 +71,7 @@ void main() {
   });
 
   testUsingContext('Detects missing packages', () async {
-    final TizenValidator tizenValidator = TizenValidator(
+    final tizenValidator = TizenValidator(
       tizenSdk: _FakeTizenSdk(fileSystem),
       dotnetCli: fileSystem.file('dotnet'),
       fileSystem: fileSystem,
@@ -89,7 +89,7 @@ void main() {
   });
 
   testWithoutContext('TizenWorkflow handles null SDK', () {
-    final TizenWorkflow tizenWorkflow = TizenWorkflow(
+    final tizenWorkflow = TizenWorkflow(
       tizenSdk: null, // ignore: avoid_redundant_argument_values
       operatingSystemUtils: FakeOperatingSystemUtils(),
     );
@@ -100,8 +100,8 @@ void main() {
   });
 
   testWithoutContext('TizenWorkflow can list emulators', () {
-    final _FakeTizenSdk tizenSdk = _FakeTizenSdk(fileSystem);
-    final TizenWorkflow tizenWorkflow = TizenWorkflow(
+    final tizenSdk = _FakeTizenSdk(fileSystem);
+    final tizenWorkflow = TizenWorkflow(
       tizenSdk: tizenSdk,
       operatingSystemUtils: FakeOperatingSystemUtils(),
     );

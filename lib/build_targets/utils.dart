@@ -14,7 +14,7 @@ extension PathUtils on String {
   /// On Windows, converts Windows-style path (e.g. 'C:\x\y') into POSIX path
   /// ('/c/x/y') and encloses with [encloseWith].
   String toPosixPath([String encloseWith = '"']) {
-    String path = this;
+    var path = this;
     if (globals.platform.isWindows) {
       path = path.replaceAll(r'\', '/');
       if (path.startsWith(':', 1)) {

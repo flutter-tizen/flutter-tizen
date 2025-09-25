@@ -17,8 +17,9 @@ import 'package:flutter_tools/src/dart/pub.dart';
 
 import '../../src/common.dart';
 import '../../src/context.dart';
-import '../../src/fake_pub_deps.dart';
 import '../../src/fake_tizen_sdk.dart';
+import '../../src/package_config.dart';
+import '../../src/throwing_pub.dart';
 
 void main() {
   late FileSystem fileSystem;
@@ -42,6 +43,7 @@ void main() {
       fileSystem: fileSystem,
       processManager: FakeProcessManager.any(),
     );
+    writePackageConfigFiles(mainLibName: 'foo', directory: fileSystem.currentDirectory);
 
     pluginDir = fileSystem.directory('/some_native_plugin');
     pluginDir.childFile('pubspec.yaml')
@@ -98,7 +100,7 @@ dependencies:
   });
 
   testUsingContext('Can build staticLib project', () async {
-    final Environment environment = Environment.test(
+    final environment = Environment.test(
       projectDir,
       fileSystem: fileSystem,
       logger: logger,
@@ -127,7 +129,7 @@ dependencies:
     projectDef
         .writeAsStringSync(projectDef.readAsStringSync().replaceFirst('staticLib', 'sharedLib'));
 
-    final Environment environment = Environment.test(
+    final environment = Environment.test(
       projectDir,
       fileSystem: fileSystem,
       logger: logger,
@@ -154,7 +156,7 @@ dependencies:
   });
 
   testUsingContext('Copies resource files recursively', () async {
-    final Environment environment = Environment.test(
+    final environment = Environment.test(
       projectDir,
       fileSystem: fileSystem,
       logger: logger,
@@ -175,13 +177,13 @@ dependencies:
   }, overrides: <Type, Generator>{
     FileSystem: () => fileSystem,
     ProcessManager: () => processManager,
-    Pub: FakePubWithPrimedDeps.new,
+    Pub: ThrowingPub.new,
     Cache: () => cache,
     TizenSdk: () => FakeTizenSdk(fileSystem),
   });
 
   testUsingContext('Can link and copy user libraries', () async {
-    final Environment environment = Environment.test(
+    final environment = Environment.test(
       projectDir,
       fileSystem: fileSystem,
       logger: logger,
@@ -218,7 +220,7 @@ dependencies:
     FileSystem: () => fileSystem,
     ProcessManager: () => processManager,
     Cache: () => cache,
-    Pub: FakePubWithPrimedDeps.new,
+    Pub: ThrowingPub.new,
     TizenSdk: () => FakeTizenSdk(fileSystem),
   });
 }
@@ -228,7 +230,7 @@ void _createFakeIncludeDirs(Cache cache) {
   dartSdkDir.childDirectory('include').createSync(recursive: true);
 
   final Directory engineArtifactDir = cache.getArtifactDirectory('engine');
-  for (final String directory in <String>[
+  for (final directory in <String>[
     'tizen-common/cpp_client_wrapper/include',
     'tizen-common/public',
   ]) {

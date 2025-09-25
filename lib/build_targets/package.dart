@@ -56,7 +56,7 @@ abstract class TizenPackage extends Target {
 class DotnetTpk extends TizenPackage {
   DotnetTpk(super.tizenBuildInfo);
 
-  final ProcessUtils _processUtils =
+  final _processUtils =
       ProcessUtils(logger: globals.logger, processManager: globals.processManager);
 
   @override
@@ -65,7 +65,7 @@ class DotnetTpk extends TizenPackage {
   @override
   Future<void> build(Environment environment) async {
     final FlutterProject project = FlutterProject.fromDirectory(environment.projectDir);
-    final TizenProject tizenProject = TizenProject.fromFlutter(project);
+    final tizenProject = TizenProject.fromFlutter(project);
 
     // Clean up the intermediate and output directories.
     final Directory ephemeralDir = tizenProject.ephemeralDirectory;
@@ -238,7 +238,7 @@ class NativeTpk extends TizenPackage {
   @override
   Future<void> build(Environment environment) async {
     final FlutterProject project = FlutterProject.fromDirectory(environment.projectDir);
-    final TizenProject tizenProject = TizenProject.fromFlutter(project);
+    final tizenProject = TizenProject.fromFlutter(project);
 
     // Clean up the intermediate and output directories.
     final Directory ephemeralDir = tizenProject.ephemeralDirectory;
@@ -292,7 +292,7 @@ class NativeTpk extends TizenPackage {
       copyDirectory(pluginsResDir, resDir);
     }
     final Directory pluginsLibDir = pluginsDir.childDirectory('lib');
-    final List<String> pluginLibs = <String>[];
+    final pluginLibs = <String>[];
     if (pluginsLibDir.existsSync()) {
       copyDirectory(
         pluginsLibDir,
@@ -319,7 +319,7 @@ class NativeTpk extends TizenPackage {
 
     final Directory embeddingDir = environment.buildDir.childDirectory('tizen_embedding');
     final File embeddingLib = embeddingDir.childFile('libembedding_cpp.a');
-    const List<String> embeddingDependencies = <String>[
+    const embeddingDependencies = <String>[
       'appcore-agent',
       'capi-appfw-app-common',
       'capi-appfw-application',
@@ -365,7 +365,7 @@ class NativeTpk extends TizenPackage {
       );
     }
 
-    final List<String> extraOptions = <String>[
+    final extraOptions = <String>[
       // The extra quotation marks ("") for linker flags are required due to
       // https://github.com/flutter-tizen/flutter-tizen/issues/218.
       '"-Wl,--unresolved-symbols=ignore-in-shared-libs"',
@@ -458,7 +458,7 @@ class DotnetModule extends TizenPackage {
   @override
   Future<void> build(Environment environment) async {
     final FlutterProject project = FlutterProject.fromDirectory(environment.projectDir);
-    final TizenProject tizenProject = TizenProject.fromFlutter(project);
+    final tizenProject = TizenProject.fromFlutter(project);
 
     final Directory outputDir = environment.outputDir;
     if (outputDir.existsSync()) {
@@ -530,7 +530,7 @@ class NativeModule extends TizenPackage {
   @override
   Future<void> build(Environment environment) async {
     final FlutterProject project = FlutterProject.fromDirectory(environment.projectDir);
-    final TizenProject tizenProject = TizenProject.fromFlutter(project);
+    final tizenProject = TizenProject.fromFlutter(project);
 
     final BuildMode buildMode = buildInfo.buildInfo.mode;
     final String buildConfig = getBuildConfig(buildMode);

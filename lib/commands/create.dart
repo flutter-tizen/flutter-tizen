@@ -18,7 +18,7 @@ import 'package:flutter_tools/src/template.dart';
 
 import '../tizen_project.dart';
 
-const List<String> _kAvailablePlatforms = <String>[
+const _kAvailablePlatforms = <String>[
   'tizen',
   'ios',
   'android',
@@ -255,7 +255,7 @@ class TizenCreateCommand extends CreateCommand {
       throwToolExit('Creating an FFI plugin or package is not yet supported.');
     }
 
-    final String templateName = template == 'app' ? '$appType-app' : template;
+    final templateName = template == 'app' ? '$appType-app' : template;
     if (!_tizenTemplates.childDirectory(templateName).childDirectory(tizenLanguage).existsSync()) {
       throwToolExit('Could not locate a template: $templateName/$tizenLanguage');
     }
@@ -271,7 +271,7 @@ class TizenCreateCommand extends CreateCommand {
     if (_shouldGeneratePlugin) {
       // Generate .csproj.user file if the plugin is a dotnet project.
       final FlutterProject project = FlutterProject.fromDirectory(projectDir);
-      final TizenProject tizenProject = TizenProject.fromFlutter(project);
+      final tizenProject = TizenProject.fromFlutter(project);
       if (tizenProject.existsSync() && tizenProject.isDotnet) {
         updateDotnetUserProjectFile(tizenProject.projectFile!);
       }
@@ -378,7 +378,7 @@ class TizenCreateCommand extends CreateCommand {
     );
 
     // Apply patches if found.
-    for (final Directory template in <Directory>[
+    for (final template in <Directory>[
       appTemplate,
       pluginTemplate,
       _tizenTemplates.childDirectory('module'),

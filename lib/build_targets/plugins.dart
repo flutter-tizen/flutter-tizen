@@ -8,7 +8,6 @@ import 'package:flutter_tools/src/base/process.dart';
 import 'package:flutter_tools/src/build_info.dart';
 import 'package:flutter_tools/src/build_system/build_system.dart';
 import 'package:flutter_tools/src/build_system/depfile.dart';
-import 'package:flutter_tools/src/features.dart';
 import 'package:flutter_tools/src/project.dart';
 
 import '../tizen_build_info.dart';
@@ -32,7 +31,8 @@ class NativePlugins extends Target {
   List<Source> get inputs => const <Source>[
         Source.pattern('{FLUTTER_ROOT}/../lib/build_targets/plugins.dart'),
         Source.pattern('{FLUTTER_ROOT}/../lib/tizen_sdk.dart'),
-        Source.pattern('{WORKSPACE_DIR}/.dart_tool/package_config_subset'),
+        Source.pattern('{WORKSPACE_DIR}/.dart_tool/package_config.json'),
+        Source.pattern('{WORKSPACE_DIR}/.dart_tool/package_graph.json'),
       ];
 
   @override
@@ -50,26 +50,18 @@ class NativePlugins extends Target {
 
   @override
   Future<void> build(Environment environment) async {
-    final List<File> inputs = <File>[];
-    final List<File> outputs = <File>[];
-    final DepfileService depfileService = DepfileService(
+    final inputs = <File>[];
+    final outputs = <File>[];
+    final depfileService = DepfileService(
       fileSystem: environment.fileSystem,
       logger: environment.logger,
     );
 
     final FlutterProject project = FlutterProject.fromDirectory(environment.projectDir);
-    final TizenProject tizenProject = TizenProject.fromFlutter(project);
+    final tizenProject = TizenProject.fromFlutter(project);
 
     // Check if there's anything to build.
-    final bool isRelease = buildInfo.buildInfo.mode.isRelease;
-    final bool determineDevDependencies = featureFlags.isExplicitPackageDependenciesEnabled;
-    final bool releaseMode = isRelease && determineDevDependencies;
-    List<TizenPlugin> nativePlugins =
-        await findTizenPlugins(project, cppOnly: true, releaseMode: releaseMode);
-    if (releaseMode) {
-      nativePlugins = nativePlugins.where((TizenPlugin p) => !p.isDevDependency).toList();
-    }
-
+    final List<TizenPlugin> nativePlugins = await findTizenPlugins(project, cppOnly: true);
     if (nativePlugins.isEmpty) {
       depfileService.writeToFile(
         Depfile(inputs, outputs),
@@ -112,10 +104,10 @@ class NativePlugins extends Target {
     final Directory embeddingDir = environment.buildDir.childDirectory('tizen_embedding');
     final File embeddingLib = embeddingDir.childFile('libembedding_cpp.a');
 
-    final List<String> userLibs = <String>[];
-    final List<String> pluginClasses = <String>[];
+    final userLibs = <String>[];
+    final pluginClasses = <String>[];
 
-    for (final TizenPlugin plugin in nativePlugins) {
+    for (final plugin in nativePlugins) {
       inputs.add(plugin.projectFile);
 
       final Directory buildDir = plugin.directory.childDirectory(buildConfig);
@@ -193,7 +185,7 @@ class NativePlugins extends Target {
       // TODO(swift-kim): Remove user libs support for staticLib projects.
       final Directory pluginLibDir = plugin.directory.childDirectory('lib');
       final String buildArch = getTizenBuildArch(buildInfo.targetArch);
-      final List<Directory> pluginLibDirs = <Directory>[
+      final pluginLibDirs = <Directory>[
         pluginLibDir,
         pluginLibDir.childDirectory(buildInfo.targetArch),
         pluginLibDir.childDirectory(buildArch),

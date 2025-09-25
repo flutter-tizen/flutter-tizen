@@ -119,9 +119,9 @@ class TizenSdk {
     return SecurityProfiles.parseFromXml(manifest);
   }
 
-  final String defaultNativeCompiler = 'llvm-10.0';
+  final defaultNativeCompiler = 'llvm-10.0';
 
-  final String defaultGccVersion = '9.2';
+  final defaultGccVersion = '9.2';
 
   /// On non-Windows, returns the PATH environment variable.
   ///
@@ -311,7 +311,7 @@ class TizenSdk {
     };
 
     Rootstrap findRootstrap(String profile, String apiVersion, String type) {
-      final String id = '$profile-$apiVersion-$type.core';
+      final id = '$profile-$apiVersion-$type.core';
       final Directory rootDir = platformsDirectory
           .childDirectory('tizen-$apiVersion')
           .childDirectory(profile)
@@ -423,7 +423,7 @@ class SecurityProfiles {
       active = null;
     }
 
-    final List<String> profiles = <String>[];
+    final profiles = <String>[];
     for (final XmlElement profile in document.rootElement.findAllElements('profile')) {
       final String? name = profile.getAttribute('name');
       if (name != null) {
@@ -441,7 +441,7 @@ class SecurityProfiles {
 }
 
 Map<String, String> parseIniFile(File file) {
-  final Map<String, String> result = <String, String>{};
+  final result = <String, String>{};
   if (file.existsSync()) {
     for (String line in file.readAsLinesSync()) {
       line = line.trim();

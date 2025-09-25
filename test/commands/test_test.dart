@@ -16,6 +16,7 @@ import 'package:flutter_tools/src/test/test_wrapper.dart';
 
 import '../src/context.dart';
 import '../src/fake_devices.dart';
+import '../src/package_config.dart';
 import '../src/test_flutter_command_runner.dart';
 
 void main() {
@@ -41,8 +42,8 @@ void main() {
   });
 
   testUsingContext('Integration test requires Tizen artifacts', () async {
-    final _FakeTestWrapper testWrapper = _FakeTestWrapper();
-    final TizenTestCommand command = TizenTestCommand(testWrapper: testWrapper);
+    final testWrapper = _FakeTestWrapper();
+    final command = TizenTestCommand(testWrapper: testWrapper);
     final CommandRunner<void> runner = createTestCommandRunner(command);
 
     packageConfigFile.writeAsStringSync('''
@@ -81,25 +82,29 @@ void main() {
   }, testOn: 'posix');
 
   testUsingContext('Can generate entrypoint wrapper for integration test', () async {
-    final _FakeTestWrapper testWrapper = _FakeTestWrapper();
-    final TizenTestCommand command = TizenTestCommand(testWrapper: testWrapper);
+    final testWrapper = _FakeTestWrapper();
+    final command = TizenTestCommand(testWrapper: testWrapper);
     final CommandRunner<void> runner = createTestCommandRunner(command);
+    final Directory pluginDir = fileSystem.currentDirectory;
 
-    final Directory pluginDir = fileSystem.directory('/some_dart_plugin');
-    pluginDir.childFile('pubspec.yaml')
-      ..createSync(recursive: true)
-      ..writeAsStringSync('''
+    // To generate .dart_tool/package_graph.json
+    writePackageConfigFiles(mainLibName: 'some_dart_plugin', directory: pluginDir);
+
+    pubspecFile.writeAsStringSync('''
+name: some_dart_plugin
 flutter:
   plugin:
     platforms:
       tizen:
         dartPluginClass: SomeDartPlugin
         fileName: some_dart_plugin.dart
-''');
-    pubspecFile.writeAsStringSync('''
 dependencies:
   some_dart_plugin:
     path: ${pluginDir.path}
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  test: any
 ''');
     packageConfigFile.writeAsStringSync('''
 {
@@ -136,6 +141,11 @@ dependencies:
         fileSystem.file('/.tmp_rand0/rand0/some_integration_test.dart');
     expect(testWrapper.lastArgs, contains(generatedEntrypoint.uri.toString()));
     expect(generatedEntrypoint.readAsStringSync(), contains('''
+//
+// Generated file. Do not edit.
+//
+// @dart = 2.12
+
 import 'file:///integration_test/some_integration_test.dart' as entrypoint;
 import 'package:some_dart_plugin/some_dart_plugin.dart';
 
@@ -169,7 +179,7 @@ class _FakeDeviceManager extends DeviceManager {
 }
 
 class _FakeTestWrapper implements TestWrapper {
-  List<String> lastArgs = <String>[];
+  var lastArgs = <String>[];
 
   @override
   Future<void> main(List<String> args) async {

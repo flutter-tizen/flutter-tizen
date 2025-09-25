@@ -44,15 +44,15 @@ class NativeEmbedding extends Target {
 
   @override
   Future<void> build(Environment environment) async {
-    final List<File> inputs = <File>[];
-    final List<File> outputs = <File>[];
-    final DepfileService depfileService = DepfileService(
+    final inputs = <File>[];
+    final outputs = <File>[];
+    final depfileService = DepfileService(
       fileSystem: environment.fileSystem,
       logger: environment.logger,
     );
 
     final FlutterProject project = FlutterProject.fromDirectory(environment.projectDir);
-    final TizenProject tizenProject = TizenProject.fromFlutter(project);
+    final tizenProject = TizenProject.fromFlutter(project);
 
     final Directory outputDir = environment.buildDir.childDirectory('tizen_embedding')
       ..createSync(recursive: true);

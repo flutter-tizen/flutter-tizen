@@ -23,7 +23,7 @@ void main() {
     fileSystem = MemoryFileSystem.test();
     processManager = FakeProcessManager.empty();
 
-    final FakeTizenSdk tizenSdk = FakeTizenSdk(fileSystem);
+    final tizenSdk = FakeTizenSdk(fileSystem);
     discovery = TizenDeviceDiscovery(
       tizenSdk: tizenSdk,
       tizenWorkflow: TizenWorkflow(

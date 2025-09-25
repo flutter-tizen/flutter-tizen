@@ -86,7 +86,7 @@ class TizenDevice extends Device {
     if (_capabilities == null) {
       final String stdout = runSdbSync(<String>['capability']).stdout.trim();
 
-      final Map<String, String> capabilities = <String, String>{};
+      final capabilities = <String, String>{};
       for (final String line in LineSplitter.split(stdout)) {
         final List<String> splitLine = line.trim().split(':');
         if (splitLine.length >= 2) {
@@ -169,7 +169,7 @@ class TizenDevice extends Device {
     String? userIdentifier,
   }) async {
     try {
-      final List<String> command = usesSecureProtocol
+      final command = usesSecureProtocol
           ? <String>['shell', '0', 'applist']
           : <String>['shell', 'app_launcher', '-l'];
       final RunResult result = await runSdbAsync(command);
@@ -304,7 +304,7 @@ class TizenDevice extends Device {
   ) async {
     final File localFile = _fileSystem.systemTempDirectory.createTempSync().childFile(filename);
     localFile.writeAsStringSync(arguments.join('\n'));
-    final String remotePath = '/home/owner/share/tmp/sdk_tools/$filename';
+    final remotePath = '/home/owner/share/tmp/sdk_tools/$filename';
     final RunResult result = await runSdbAsync(<String>['push', localFile.path, remotePath]);
     if (!result.stdout.contains('file(s) pushed')) {
       _logger.printError('Failed to push a file: $result');
@@ -377,7 +377,7 @@ class TizenDevice extends Device {
       );
     }
 
-    final List<String> engineArgs = <String>[
+    final engineArgs = <String>[
       if (debuggingOptions.enableDartProfiling) '--enable-dart-profiling',
       if (traceStartup) '--trace-startup',
       if (route != null) ...<String>['--route', route],
@@ -422,7 +422,7 @@ class TizenDevice extends Device {
     // See: https://github.com/flutter-tizen/flutter-tizen/pull/19
     await _writeEngineArguments(engineArgs, '${package.applicationId}.rpm');
 
-    final List<String> command = usesSecureProtocol
+    final command = usesSecureProtocol
         ? <String>['shell', '0', 'execute', package.applicationId]
         : <String>['shell', 'app_launcher', '-e', package.applicationId];
     final String stdout = (await runSdbAsync(command)).stdout;
@@ -477,7 +477,7 @@ class TizenDevice extends Device {
       return false;
     }
     try {
-      final List<String> command = usesSecureProtocol
+      final command = usesSecureProtocol
           ? <String>['shell', '0', 'kill', app.id]
           : <String>['shell', 'app_launcher', '-k', app.applicationId];
       final String stdout = (await runSdbAsync(command)).stdout;
@@ -523,7 +523,7 @@ class TizenDevice extends Device {
   }
 
   @override
-  bool isSupported() {
+  Future<bool> isSupported() async {
     final Version? platformVersion = Version.parse(_platformVersion);
     if (platformVersion == null) {
       return false;
@@ -569,7 +569,7 @@ class TizenDevicePortForwarder extends DevicePortForwarder {
 
   @override
   List<ForwardedPort> get forwardedPorts {
-    final List<ForwardedPort> ports = <ForwardedPort>[];
+    final ports = <ForwardedPort>[];
 
     String stdout;
     try {

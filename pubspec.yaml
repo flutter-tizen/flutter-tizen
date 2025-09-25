@@ -29,3 +29,6 @@ dev_dependencies:
     sdk: flutter
   pubspec_parse:
   test:
+
+dependency_overrides:
+  meta: ^1.17.0

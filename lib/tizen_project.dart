@@ -204,7 +204,7 @@ File? findDotnetProjectFile(Directory directory) {
 
 void updateDotnetUserProjectFile(File projectFile) {
   final File userFile = projectFile.parent.childFile('${projectFile.basename}.user');
-  const String initialXmlContent = '''
+  const initialXmlContent = '''
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 </Project>
@@ -231,7 +231,7 @@ void updateDotnetUserProjectFile(File projectFile) {
   final Iterable<XmlElement> elements = document.findAllElements('FlutterEmbeddingPath');
   if (elements.isEmpty) {
     // Create an element if not exists.
-    final XmlBuilder builder = XmlBuilder();
+    final builder = XmlBuilder();
     builder.element('PropertyGroup', nest: () {
       builder.element(
         'FlutterEmbeddingPath',
@@ -241,7 +241,7 @@ void updateDotnetUserProjectFile(File projectFile) {
     document.rootElement.children.add(builder.buildFragment());
   } else {
     // Update existing element(s).
-    for (final XmlElement element in elements) {
+    for (final element in elements) {
       element.innerText = embeddingProjectFile.absolute.path;
     }
   }

@@ -45,7 +45,7 @@ class TizenTpk extends ApplicationPackage implements PrebuiltApplicationPackage 
   }
 
   static TizenTpk fromProject(FlutterProject flutterProject) {
-    final TizenProject project = TizenProject.fromFlutter(flutterProject);
+    final project = TizenProject.fromFlutter(flutterProject);
     if (!project.existsSync()) {
       throwToolExit('This project is not configured for Tizen.');
     }
@@ -128,7 +128,7 @@ class TizenManifest {
 
   late final XmlElement _profile = () {
     if (_manifest.findElements('profile').isEmpty) {
-      final XmlBuilder builder = XmlBuilder();
+      final builder = XmlBuilder();
       builder.element(
         'profile',
         attributes: <String, String>{'name': 'common'},

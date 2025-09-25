@@ -76,6 +76,7 @@ class TizenPub implements Pub {
     String? flutterRootOverride,
     bool checkUpToDate = false,
     bool shouldSkipThirdPartyGenerator = true,
+    bool enforceLockfile = false,
     PubOutputMode outputMode = PubOutputMode.all,
   }) async {
     await _pub.get(
@@ -86,14 +87,10 @@ class TizenPub implements Pub {
       flutterRootOverride: flutterRootOverride,
       checkUpToDate: checkUpToDate,
       shouldSkipThirdPartyGenerator: shouldSkipThirdPartyGenerator,
+      enforceLockfile: enforceLockfile,
       outputMode: outputMode,
     );
     await _postPub(project);
-  }
-
-  @override
-  Future<Map<String, Object?>?> deps(FlutterProject project) {
-    return _pub.deps(project);
   }
 
   @override
@@ -103,7 +100,6 @@ class TizenPub implements Pub {
     required PubContext context,
     required String command,
     bool touchesPackageConfig = false,
-    bool generateSyntheticPackage = false,
     PubOutputMode outputMode = PubOutputMode.all,
   }) async {
     await _pub.interactively(
@@ -112,7 +108,6 @@ class TizenPub implements Pub {
       context: context,
       command: command,
       touchesPackageConfig: touchesPackageConfig,
-      generateSyntheticPackage: generateSyntheticPackage,
       outputMode: outputMode,
     );
     if (project != null) {

@@ -58,7 +58,7 @@ class TizenOperatingSystemUtils implements OperatingSystemUtils {
   void unpack(File gzippedTarFile, Directory targetDirectory) =>
       _osUtils.unpack(gzippedTarFile, targetDirectory);
 
-  /// Source: [_WindowsUtils._unpackArchive] in `os.dart`
+  /// Source: [unzip] in `os.dart`
   @override
   void unzip(File file, Directory targetDirectory) {
     // Unzipping a native TPK using _osUtils.unzip() fails on Windows.

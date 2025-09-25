@@ -29,7 +29,7 @@ void main() {
   });
 
   testUsingContext('Debug bundle contains expected resources', () async {
-    final Environment environment = Environment.test(
+    final environment = Environment.test(
       fileSystem.currentDirectory,
       defines: <String, String>{kBuildMode: 'debug'},
       fileSystem: fileSystem,

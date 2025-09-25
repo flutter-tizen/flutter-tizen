@@ -125,15 +125,15 @@ emulator_id
 
   group('TizenEmulator', () {
     testWithoutContext('Can launch only once', () async {
-      final BufferLogger logger = BufferLogger.test();
-      final TizenEmulator emulator = TizenEmulator(
+      final logger = BufferLogger.test();
+      final emulator = TizenEmulator(
         'emulator_id',
         logger: logger,
         processManager: processManager,
         tizenSdk: tizenSdk,
       );
 
-      const List<String> launchCommand = <String>[
+      const launchCommand = <String>[
         '/tizen-studio/tools/emulator/bin/em-cli',
         'launch',
         '--name',

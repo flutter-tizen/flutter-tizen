@@ -19,7 +19,7 @@ class TizenFlutterVersion implements FlutterVersion {
         );
   final FlutterVersion flutterVersion;
 
-  String _flutterTizenLatestRevision = '';
+  var _flutterTizenLatestRevision = '';
   String get flutterTizenLatestRevision {
     if (_flutterTizenLatestRevision.isEmpty) {
       final Directory workingDirectory = fs.directory(flutterRoot).parent;
@@ -107,6 +107,12 @@ class TizenFlutterVersion implements FlutterVersion {
 
   @override
   String? get engineCommitDate => flutterVersion.engineCommitDate;
+
+  @override
+  String? get engineBuildDate => flutterVersion.engineBuildDate;
+
+  @override
+  String? get engineContentHash => flutterVersion.engineContentHash;
 }
 
 /// Source: [_runGit] in `version.dart`

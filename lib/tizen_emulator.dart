@@ -53,13 +53,13 @@ class TizenEmulatorManager extends EmulatorManager {
   @override
   Future<CreateEmulatorResult> createEmulator({String? name}) async {
     if (name == null || name.isEmpty) {
-      const String autoName = 'flutter_emulator';
+      const autoName = 'flutter_emulator';
       final List<Emulator> all = await getAllAvailableEmulators();
       final Set<String> takenNames = all
           .map<String>((Emulator e) => e.id)
           .where((String id) => id.startsWith(autoName))
           .toSet();
-      int suffix = 1;
+      var suffix = 1;
       name = autoName;
       while (takenNames.contains(name)) {
         name = '${autoName}_${++suffix}';
@@ -105,7 +105,7 @@ class TizenEmulatorManager extends EmulatorManager {
     );
     final Map<String, Map<String, String>> parsed = parseEmCliOutput(result.stdout);
 
-    final List<PlatformImage> platformImages = <PlatformImage>[];
+    final platformImages = <PlatformImage>[];
     parsed.forEach((String name, Map<String, String> properties) {
       if (properties.containsKey('Profile') && properties.containsKey('Version')) {
         platformImages.add(PlatformImage(
@@ -192,7 +192,7 @@ class TizenEmulators extends EmulatorDiscovery {
     );
     final Map<String, Map<String, String>> parsed = parseEmCliOutput(result.stdout);
 
-    final List<Emulator> emulators = <Emulator>[];
+    final emulators = <Emulator>[];
     parsed.forEach((String id, Map<String, String> properties) {
       emulators.add(TizenEmulator(
         id,
@@ -258,7 +258,7 @@ class TizenEmulator extends Emulator {
 
 @visibleForTesting
 Map<String, Map<String, String>> parseEmCliOutput(String lines) {
-  final Map<String, Map<String, String>> result = <String, Map<String, String>>{};
+  final result = <String, Map<String, String>>{};
   String? lastId;
   for (final String line in LineSplitter.split(lines)) {
     if (line.trim().isEmpty) {
