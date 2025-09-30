@@ -117,6 +117,18 @@ namespace Tizen.Flutter.Embedding
         }
 
         /// <summary>
+        /// Notifies that the engine is detached from any host views.
+        /// This method notifies the running Flutter app that it is "detached" as per the Flutter app lifecycle.
+        /// </summary>
+        public void NotifyAppIsDetached()
+        {
+            if (IsValid)
+            {
+                FlutterDesktopEngineNotifyAppIsDetached(Engine);
+            }
+        }
+
+        /// <summary>
         /// Notifies that the host app received an app control.
         /// This method notifies the running Flutter app that it is "paused" as per the Flutter app lifecycle.
         /// </summary>
