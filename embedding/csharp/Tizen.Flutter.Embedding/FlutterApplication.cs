@@ -211,6 +211,8 @@ namespace Tizen.Flutter.Embedding
 
             Debug.Assert(IsRunning);
 
+            Engine.NotifyAppIsDetached();
+
             DotnetPluginRegistry.Instance.RemoveAllPlugins();
             FlutterDesktopViewDestroy(View);
             Engine = null;

@@ -186,6 +186,12 @@ void FlutterEngine::NotifyAppIsPaused() {
   }
 }
 
+void FlutterEngine::NotifyAppIsDetached() {
+  if (engine_) {
+    FlutterDesktopEngineNotifyAppIsDetached(engine_);
+  }
+}
+
 void FlutterEngine::NotifyAppControl(app_control_h app_control) {
   if (engine_) {
     FlutterDesktopEngineNotifyAppControl(engine_, app_control);

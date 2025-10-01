@@ -55,6 +55,12 @@ class FlutterEngine : public flutter::PluginRegistry {
   // the Flutter app lifecycle.
   void NotifyAppIsPaused();
 
+  // Notifies that the engine is detached from any host views.
+  //
+  // This method notifies the running Flutter app that it is "detached" as per
+  // the Flutter app lifecycle.
+  void NotifyAppIsDetached();
+
   // Notifies that the host app received an app control.
   //
   // This method sends the app control to Flutter over the "app control event

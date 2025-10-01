@@ -100,6 +100,9 @@ namespace Tizen.Flutter.Embedding
         public static extern void FlutterDesktopEngineNotifyAppIsPaused(FlutterDesktopEngine engine);
 
         [DllImport("flutter_tizen.so")]
+        public static extern void FlutterDesktopEngineNotifyAppIsDetached(FlutterDesktopEngine engine);
+
+        [DllImport("flutter_tizen.so")]
         public static extern FlutterDesktopView FlutterDesktopViewCreateFromNewWindow(
             ref FlutterDesktopWindowProperties window_properties, FlutterDesktopEngine engine);
 

@@ -62,6 +62,7 @@ void FlutterApp::OnPause() {
 
 void FlutterApp::OnTerminate() {
   assert(IsRunning());
+  engine_->NotifyAppIsDetached();
   FlutterDesktopViewDestroy(view_);
   engine_ = nullptr;
   view_ = nullptr;
