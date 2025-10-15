@@ -24,6 +24,13 @@ namespace Tizen.Flutter.Embedding
             kPointerMove,
         };
 
+        public enum FlutterDesktopUIThreadPolicy
+        {
+            kDefault,
+            kRunOnPlatformThread,
+            kRunOnSeparateThread,
+        }
+
         [StructLayout(LayoutKind.Sequential)]
         public struct FlutterDesktopWindowProperties
         {
@@ -64,7 +71,7 @@ namespace Tizen.Flutter.Embedding
             public string entrypoint;
             public int dart_entrypoint_argc;
             public IntPtr dart_entrypoint_argv;
-            public bool merged_platform_ui_thread;
+            public FlutterDesktopUIThreadPolicy ui_thread_policy;
 
         }
 

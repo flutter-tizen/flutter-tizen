@@ -16,8 +16,6 @@ namespace {
 
 static inline const char* kMetadataKeyEnableImepeller =
     "http://tizen.org/metadata/flutter_tizen/enable_impeller";
-static inline const char* kMetadataKeyEnableMergedPlatformUIThread =
-    "http://tizen.org/metadata/flutter_tizen/enable_merged_platform_ui_thread";
 
 // Reads metadata from tizen-manifest.xml
 std::map<std::string, std::string> GetMetadata(std::string app_id) {
@@ -44,8 +42,7 @@ std::map<std::string, std::string> GetMetadata(std::string app_id) {
 }
 
 // Reads engine arguments passed from the flutter-tizen tool.
-std::vector<std::string> ParseEngineArgs(bool* is_impeller_enabled,
-                                         bool* merged_platform_ui_thread) {
+std::vector<std::string> ParseEngineArgs(bool* is_impeller_enabled) {
   std::vector<std::string> engine_args;
   char* id;
   if (app_get_id(&id) != 0) {
@@ -94,11 +91,6 @@ std::vector<std::string> ParseEngineArgs(bool* is_impeller_enabled,
     }
   }
 
-  it = metadata.find(kMetadataKeyEnableMergedPlatformUIThread);
-  if (it != metadata.end() && it->second == "true") {
-    *merged_platform_ui_thread = true;
-  }
-
   for (const std::string& arg : engine_args) {
     TizenLog::Info("Enabled: %s", arg.c_str());
   }
@@ -140,8 +132,7 @@ FlutterEngine::FlutterEngine(
   engine_prop.icu_data_path = icu_data_path.c_str();
   engine_prop.aot_library_path = aot_library_path.c_str();
 
-  std::vector<std::string> engine_args =
-      ParseEngineArgs(&is_impeller_enabled_, &merged_platform_ui_thread_);
+  std::vector<std::string> engine_args = ParseEngineArgs(&is_impeller_enabled_);
   std::vector<const char*> switches;
   for (const std::string& arg : engine_args) {
     switches.push_back(arg.c_str());
@@ -159,7 +150,7 @@ FlutterEngine::FlutterEngine(
 
   engine_prop.dart_entrypoint_argc = entrypoint_args.size();
   engine_prop.dart_entrypoint_argv = entrypoint_args.data();
-  engine_prop.merged_platform_ui_thread = merged_platform_ui_thread_;
+  engine_prop.ui_thread_policy = FlutterDesktopUIThreadPolicy::kDefault;
 
   engine_ = FlutterDesktopEngineCreate(engine_prop);
 }

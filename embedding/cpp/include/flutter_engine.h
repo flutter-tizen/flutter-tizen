@@ -103,9 +103,6 @@ class FlutterEngine : public flutter::PluginRegistry {
 
   // Whether the impeller is enabled or not.
   bool is_impeller_enabled_ = false;
-
-  // Whether the UI isolate should run on the platform thread.
-  bool merged_platform_ui_thread_ = false;
 };
 
 #endif /* FLUTTER_TIZEN_EMBEDDING_CPP_INCLUDE_FLUTTER_ENGINE_H_ */
