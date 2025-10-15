@@ -19,6 +19,7 @@ import 'package:flutter_tools/src/dart/package_map.dart';
 import 'package:package_config/src/package_config.dart';
 
 import '../tizen_build_info.dart';
+import 'native_assets.dart';
 import 'plugins.dart';
 
 class TizenKernelSnapshotProgram extends KernelSnapshot {
@@ -126,6 +127,7 @@ abstract class TizenAssetBundle extends Target {
   @override
   List<Target> get dependencies => const <Target>[
         TizenKernelSnapshot(),
+        TizenInstallCodeAssets(),
       ];
 
   @override
