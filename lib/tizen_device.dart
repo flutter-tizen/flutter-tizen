@@ -400,6 +400,7 @@ class TizenDevice extends Device {
       if (debuggingOptions.endlessTraceBuffer) '--endless-trace-buffer',
       if (debuggingOptions.purgePersistentCache) '--purge-persistent-cache',
       if (debuggingOptions.enableImpeller == ImpellerStatus.enabled) '--enable-impeller',
+      if (debuggingOptions.enableFlutterGpu) '--enable-flutter-gpu',
       if (debuggingOptions.enableVulkanValidation) '--enable-vulkan-validation',
       if (debuggingOptions.debuggingEnabled) ...<String>[
         '--enable-checked-mode',
