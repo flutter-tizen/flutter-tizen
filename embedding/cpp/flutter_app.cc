@@ -18,10 +18,18 @@ bool FlutterApp::OnCreate() {
   }
 
   if (renderer_type_ == FlutterRendererType::kEvasGL &&
-      engine_->IsImpellerEnabled()) {
+      engine_->GetArguments().IsImpellerEnabled()) {
     TizenLog::Error(
         "Impeller is not supported by FlutterRendererType::kEvasGL type "
         "renderer.");
+    return false;
+  }
+
+  if (engine_->GetArguments().IsFlutterGpuEnabled() &&
+      !engine_->GetArguments().IsImpellerEnabled()) {
+    TizenLog::Error(
+        "flutter_gpu requires Impeller. Enable Impeller using the "
+        "--enable-impeller flag.");
     return false;
   }
 
