@@ -15,6 +15,8 @@
 #include <string>
 #include <vector>
 
+#include "flutter_engine_arguments.h"
+
 // The engine for Flutter execution.
 class FlutterEngine : public flutter::PluginRegistry {
  public:
@@ -85,8 +87,11 @@ class FlutterEngine : public flutter::PluginRegistry {
   FlutterDesktopPluginRegistrarRef GetRegistrarForPlugin(
       const std::string& plugin_name) override;
 
-  // Whether the impeller is enabled or not.
-  bool IsImpellerEnabled() { return is_impeller_enabled_; }
+  // The engine arguments instance containing parsed arguments and metadata
+  // flags.
+  const FlutterEngineArguments& GetArguments() const {
+    return *engine_arguments_;
+  }
 
  private:
   FlutterEngine(const std::string& assets_path,
@@ -101,8 +106,8 @@ class FlutterEngine : public flutter::PluginRegistry {
   // Whether or not this wrapper owns |engine_|.
   bool owns_engine_ = true;
 
-  // Whether the impeller is enabled or not.
-  bool is_impeller_enabled_ = false;
+  // The engine arguments instance.
+  std::unique_ptr<FlutterEngineArguments> engine_arguments_;
 };
 
 #endif /* FLUTTER_TIZEN_EMBEDDING_CPP_INCLUDE_FLUTTER_ENGINE_H_ */

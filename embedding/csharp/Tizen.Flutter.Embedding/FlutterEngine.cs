@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-using System;
 using System.Collections.Generic;
-using System.IO;
 using Tizen.Applications;
 using static Tizen.Flutter.Embedding.Interop;
 
@@ -15,7 +13,7 @@ namespace Tizen.Flutter.Embedding
     /// </summary>
     public class FlutterEngine : IPluginRegistry
     {
-        private const string MetadataKeyEnableImepeller = "http://tizen.org/metadata/flutter_tizen/enable_impeller";
+        private readonly FlutterEngineArguments _engineArguments;
 
         /// <summary>
         /// Creates a <see cref="FlutterEngine"/> with an optional entrypoint name and entrypoint arguments.
@@ -33,8 +31,9 @@ namespace Tizen.Flutter.Embedding
             List<string> dartEntrypointArgs = null)
         {
             dartEntrypointArgs = dartEntrypointArgs ?? new List<string>();
+            _engineArguments = new FlutterEngineArguments();
 
-            using (var switches = new StringArray(ParseEngineArgs()))
+            using (var switches = new StringArray(_engineArguments.Arguments))
             using (var entrypointArgs = new StringArray(dartEntrypointArgs))
             {
                 var engineProperties = new FlutterDesktopEngineProperties
@@ -59,9 +58,9 @@ namespace Tizen.Flutter.Embedding
         public bool IsValid => !Engine.IsInvalid;
 
         /// <summary>
-        /// Whether the impeller is enabled or not.
+        /// The engine arguments instance containing parsed arguments and metadata flags.
         /// </summary>
-        public bool IsImpellerEnabled { get; private set; } = false;
+        public FlutterEngineArguments Arguments => _engineArguments;
 
         /// <summary>
         /// Handle for interacting with the C API's engine reference.
@@ -186,59 +185,5 @@ namespace Tizen.Flutter.Embedding
             return new FlutterDesktopMessenger();
         }
 
-        /// <summary>
-        /// Reads engine arguments passed from the flutter-tizen tool.
-        /// </summary>
-        private IList<string> ParseEngineArgs()
-        {
-            var result = new List<string>();
-            var appInfo = Application.Current.ApplicationInfo;
-
-            string appId = appInfo.ApplicationId;
-            bool enableImpellerKeyExist = appInfo.Metadata.ContainsKey(MetadataKeyEnableImepeller);
-            string tempPath = $"/home/owner/share/tmp/sdk_tools/{appId}.rpm";
-
-            if (File.Exists(tempPath))
-            {
-                try
-                {
-                    var lines = File.ReadAllText(tempPath).Trim().Split('\n');
-                    foreach (string line in lines)
-                    {
-                        result.Add(line);
-                    }
-                    File.Delete(tempPath);
-                }
-                catch (Exception ex)
-                {
-                    TizenLog.Warn($"Error while processing a file: {ex}");
-                }
-            }
-
-            if (result.Contains("--enable-impeller"))
-            {
-                IsImpellerEnabled = true;
-            }
-
-            if (enableImpellerKeyExist)
-            {
-                if (!result.Contains("--enable-impeller") && appInfo.Metadata[MetadataKeyEnableImepeller] == "true")
-                {
-                    IsImpellerEnabled = true;
-                    result.Insert(0, "--enable-impeller");
-                }
-                else if (result.Contains("--enable-impeller") && appInfo.Metadata[MetadataKeyEnableImepeller] == "false")
-                {
-                    IsImpellerEnabled = false;
-                    result.Remove("--enable-impeller");
-                }
-            }
-
-            foreach (string flag in result)
-            {
-                TizenLog.Info($"Enabled: {flag}");
-            }
-            return result;
-        }
     }
 }

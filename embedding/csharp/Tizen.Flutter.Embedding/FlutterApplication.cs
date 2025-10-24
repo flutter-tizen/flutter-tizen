@@ -148,9 +148,14 @@ namespace Tizen.Flutter.Embedding
                 throw new Exception("Could not create a Flutter engine.");
             }
 
-            if (RendererType == FlutterRendererType.EvasGL && Engine.IsImpellerEnabled)
+            if (RendererType == FlutterRendererType.EvasGL && Engine.Arguments.IsImpellerEnabled)
             {
                 throw new Exception("Impeller is not supported by FlutterRendererType::kEvasGL type renderer.");
+            }
+
+            if (Engine.Arguments.IsFlutterGpuEnabled && !Engine.Arguments.IsImpellerEnabled)
+            {
+                throw new Exception("flutter_gpu requires Impeller. Enable Impeller using the --enable-impeller flag.");
             }
 
             var daliApp = ApplicationNewManual4(0, "", "", 1 /* transparent */);
