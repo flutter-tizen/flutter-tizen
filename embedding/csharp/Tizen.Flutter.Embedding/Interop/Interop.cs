@@ -46,6 +46,13 @@ namespace Tizen.Flutter.Embedding
             public bool floating_menu_support;
         }
 
+        public enum FlutterDesktopUIThreadPolicy
+        {
+            kDefault,
+            kRunOnPlatformThread,
+            kRunOnSeparateThread,
+        }
+
         [StructLayout(LayoutKind.Sequential)]
         public struct FlutterDesktopViewProperties
         {
@@ -64,6 +71,7 @@ namespace Tizen.Flutter.Embedding
             public string entrypoint;
             public int dart_entrypoint_argc;
             public IntPtr dart_entrypoint_argv;
+            public FlutterDesktopUIThreadPolicy ui_thread_policy;
         }
 
         [DllImport("flutter_tizen.so")]
