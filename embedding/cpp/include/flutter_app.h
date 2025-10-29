@@ -16,8 +16,6 @@
 #include "flutter_engine.h"
 
 enum class FlutterRendererType {
-  // The renderer based on EvasGL.
-  kEvasGL,
   // The renderer based on EGL.
   kEGL,
 };

@@ -15,10 +15,6 @@ namespace Tizen.Flutter.Embedding
     public enum FlutterRendererType
     {
         /// <summary>
-        /// The renderer based on EvasGL.
-        /// </summary>
-        EvasGL = 0,
-        /// <summary>
         /// The renderer based on EGL.
         /// </summary>
         EGL,
@@ -146,11 +142,6 @@ namespace Tizen.Flutter.Embedding
             if (!Engine.IsValid)
             {
                 throw new Exception("Could not create a Flutter engine.");
-            }
-
-            if (RendererType == FlutterRendererType.EvasGL && Engine.Arguments.IsImpellerEnabled)
-            {
-                throw new Exception("Impeller is not supported by FlutterRendererType::kEvasGL type renderer.");
             }
 
             if (Engine.Arguments.IsFlutterGpuEnabled && !Engine.Arguments.IsImpellerEnabled)

@@ -13,7 +13,6 @@ namespace Tizen.Flutter.Embedding
         #region flutter_tizen.h
         public enum FlutterDesktopRendererType
         {
-            kEvasGL,
             kEGL,
         };
 

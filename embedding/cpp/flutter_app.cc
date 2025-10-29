@@ -17,14 +17,6 @@ bool FlutterApp::OnCreate() {
     return false;
   }
 
-  if (renderer_type_ == FlutterRendererType::kEvasGL &&
-      engine_->GetArguments().IsImpellerEnabled()) {
-    TizenLog::Error(
-        "Impeller is not supported by FlutterRendererType::kEvasGL type "
-        "renderer.");
-    return false;
-  }
-
   if (engine_->GetArguments().IsFlutterGpuEnabled() &&
       !engine_->GetArguments().IsImpellerEnabled()) {
     TizenLog::Error(
