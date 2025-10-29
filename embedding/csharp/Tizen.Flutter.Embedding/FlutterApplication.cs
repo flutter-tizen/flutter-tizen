@@ -152,7 +152,9 @@ namespace Tizen.Flutter.Embedding
             var daliApp = ApplicationNewManual4(0, "", "", 1 /* transparent */);
             var daliWindow = GetWindow(daliApp);
             IntPtr wlWindow = IntPtr.Zero;
-            if (HasBody(daliWindow))
+            // FIXME(jsuya): There is an issue where window geometry settings are not applied when using precreated windows.
+            // Precreated windows are only used when the window size and position have not been set.
+            if (WindowOffsetX == 0 && WindowOffsetY == 0 && WindowWidth == 0 && WindowHeight == 0 && HasBody(daliWindow))
             {
                 wlWindow = GetNativeWindowHandler(daliWindow);
             }
