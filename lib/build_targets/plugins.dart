@@ -84,7 +84,11 @@ class NativePlugins extends Target {
     final String buildConfig = getBuildConfig(buildMode);
 
     final Directory embedderDir = getEmbedderArtifactsDirectory(apiVersion, buildInfo.targetArch);
-    final File embedder = embedderDir.childFile('libflutter_tizen_$profile.so');
+    final bool isTizenExperimentalEnabled =
+        getIsTizenExperimentalEnabled(buildInfo.buildInfo.dartDefines);
+    final File embedder = embedderDir.childFile(isTizenExperimentalEnabled
+        ? 'libflutter_tizen_${profile}_experimental.so'
+        : 'libflutter_tizen_$profile.so');
     inputs.add(embedder);
 
     final Directory commonDir = getCommonArtifactsDirectory();
