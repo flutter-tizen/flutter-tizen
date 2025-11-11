@@ -398,6 +398,7 @@ class TizenDevice extends Device {
         debuggingOptions.traceToFile!,
       ],
       if (debuggingOptions.endlessTraceBuffer) '--endless-trace-buffer',
+      if (debuggingOptions.profileMicrotasks) '--profile-microtasks',
       if (debuggingOptions.purgePersistentCache) '--purge-persistent-cache',
       if (debuggingOptions.enableImpeller == ImpellerStatus.enabled) '--enable-impeller',
       if (debuggingOptions.enableFlutterGpu) '--enable-flutter-gpu',
