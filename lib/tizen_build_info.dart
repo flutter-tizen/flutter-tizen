@@ -4,6 +4,8 @@
 
 import 'package:flutter_tools/src/build_info.dart';
 
+const kUseFlutterTizenExperimental = 'USE_FLUTTER_TIZEN_EXPERIMENTAL';
+
 /// See: [AndroidBuildInfo] in `build_info.dart`
 class TizenBuildInfo {
   const TizenBuildInfo(
@@ -44,4 +46,18 @@ TargetPlatform getTargetPlatformForArch(String arch) {
     'x64' => TargetPlatform.android_x64,
     _ => throw ArgumentError('Unexpected arch name $arch'),
   };
+}
+
+bool getIsTizenExperimentalEnabled(List<String> dartDefines) {
+  for (final define in dartDefines) {
+    if (define.startsWith('$kUseFlutterTizenExperimental=')) {
+      final String value = define.split('=')[1].toLowerCase();
+      if (value == 'true') {
+        return true;
+      } else if (value == 'false') {
+        break;
+      }
+    }
+  }
+  return false;
 }
