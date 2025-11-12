@@ -61,7 +61,8 @@ FlutterEngine::FlutterEngine(
 
   engine_prop.dart_entrypoint_argc = entrypoint_args.size();
   engine_prop.dart_entrypoint_argv = entrypoint_args.data();
-  engine_prop.ui_thread_policy = FlutterDesktopUIThreadPolicy::kDefault;
+  engine_prop.ui_thread_policy =
+      FlutterDesktopUIThreadPolicy::kRunOnSeparateThread;
 
   engine_ = FlutterDesktopEngineCreate(engine_prop);
 }
