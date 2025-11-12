@@ -46,7 +46,7 @@ namespace Tizen.Flutter.Embedding
                     entrypoint = dartEntrypoint,
                     dart_entrypoint_argc = entrypointArgs.Length,
                     dart_entrypoint_argv = entrypointArgs.Handle,
-                    ui_thread_policy = FlutterDesktopUIThreadPolicy.kDefault,
+                    ui_thread_policy = FlutterDesktopUIThreadPolicy.kRunOnSeparateThread,
                 };
 
                 Engine = FlutterDesktopEngineCreate(ref engineProperties);
