@@ -69,7 +69,7 @@ flutter-tizen run --release
 
 #### Tizen Home: A New Era Built with Flutter
 
-With the release of Tizen 10.0 SDK, Tizen introduces new home, a redesigned entry experience for Tizen devices - and it is built entirely with Flutter using Flutter-tizen.
+With the release of [Tizen 10.0 SDK](https://samsungtizenos.com/release-notes/tizen-sdk-10-0/), Tizen introduces new home, a redesigned entry experience for Tizen devices - and it is built entirely with Flutter using Flutter-tizen.
 By leveraging Flutter’s expressive UI framework and Tizen’s robust native capabilities, Tizen Home delivers:
 
 - Faster responsiveness
