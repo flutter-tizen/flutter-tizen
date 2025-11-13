@@ -65,6 +65,24 @@ flutter-tizen run --release
 - [Publishing apps on Samsung Galaxy Store and TV Seller Office](doc/publish-app.md)
 - [Wiki](https://github.com/flutter-tizen/flutter-tizen/wiki)
 
+## Showcases
+
+#### Tizen Home: A New Era Built with Flutter
+
+With the release of Tizen 10.0 SDK, Tizen introduces new home, a redesigned entry experience for Tizen devices - and it is built entirely with Flutter using Flutter-tizen.
+By leveraging Flutter’s expressive UI framework and Tizen’s robust native capabilities, Tizen Home delivers:
+
+- Faster responsiveness
+- A refined and modern interface
+- A more scalable and adaptable UX
+
+Tizen Home demonstrates how Flutter can power high-performance, production-grade system experiences on Tizen. It stands as a real-world example of how Flutter-tizen enables developers to create seamless, interactive, and visually rich applications for millions of Tizen devices.
+
+<p align="center">
+<img src="doc/images/in_practice_tizen_home.png" width="600"/>
+<img src="doc/images/in_practice_tizen_home_media_list.png" width="600"/>
+</p>
+
 ## Issues
 
 If you run into any problem, post an [issue](../../issues) in this repository to get help. If your issue is clearly not Tizen-specific (i.e. it's reproducible with the regular `flutter` command), you may file an issue in https://github.com/flutter/flutter/issues.
