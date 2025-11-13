@@ -418,6 +418,8 @@ class TizenDevice extends Device {
         '--tizen-logging-port',
         logReader.hostPort.toString(),
       ],
+      if (debuggingOptions.buildInfo.dartDefines.contains('$kUseFlutterTizenExperimental=true'))
+        '--dart-define=$kUseFlutterTizenExperimental=true',
     ];
 
     // Pass engine arguments to the app by writing to a temporary file.
