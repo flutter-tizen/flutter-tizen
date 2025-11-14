@@ -80,9 +80,7 @@ Tizen Home demonstrates how Flutter can power high-performance, production-grade
 
 <p align="center">
 <img src="doc/images/showcases_tizen_home.png" width="600"/>
-<video src="doc/images/showcases_tizen_home_demo.mp4" width="600" controls>
-Tizen New Home Demo Video
-</video>
+<img src="doc/images/showcases_tizen_home_demo.webp" width="600"/>
 </p>
 
 ## Issues
