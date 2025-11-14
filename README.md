@@ -67,9 +67,9 @@ flutter-tizen run --release
 
 ## Showcases
 
-#### Tizen Home: A New Era Built with Flutter
+#### [Tizen Home](https://samsungtizenos.com/blog/a-new-era-for-tizen-introducing-our-enhanced-home-experience-and-optimized-system-ui-apps/): A New Era Built with Flutter
 
-With the release of [Tizen 10.0 SDK](https://samsungtizenos.com/release-notes/tizen-sdk-10-0/), Tizen introduces new home, a redesigned entry experience for Tizen devices - and it is built entirely with Flutter using Flutter-tizen.
+With the release of [Tizen 10.0 SDK](https://samsungtizenos.com/release-notes/tizen-sdk-10-0/), Tizen introduces new home, a redesigned entry experience for Tizen devices - and it is built with Flutter using Flutter-tizen.
 By leveraging Flutter’s expressive UI framework and Tizen’s robust native capabilities, Tizen Home delivers:
 
 - Faster responsiveness
@@ -79,8 +79,10 @@ By leveraging Flutter’s expressive UI framework and Tizen’s robust native ca
 Tizen Home demonstrates how Flutter can power high-performance, production-grade system experiences on Tizen. It stands as a real-world example of how Flutter-tizen enables developers to create seamless, interactive, and visually rich applications for millions of Tizen devices.
 
 <p align="center">
-<img src="doc/images/in_practice_tizen_home.png" width="600"/>
-<img src="doc/images/in_practice_tizen_home_media_list.png" width="600"/>
+<img src="doc/images/showcases_tizen_home.png" width="600"/>
+<video src="doc/images/showcases_tizen_home_demo.mp4" width="600" controls>
+Tizen New Home Demo Video
+</video>
 </p>
 
 ## Issues
