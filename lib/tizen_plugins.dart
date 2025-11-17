@@ -11,6 +11,7 @@ import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:file/file.dart';
 import 'package:flutter_tools/src/artifacts.dart';
+import 'package:flutter_tools/src/base/common.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/build_info.dart';
 import 'package:flutter_tools/src/build_system/targets/web.dart';
@@ -21,6 +22,7 @@ import 'package:flutter_tools/src/dart/package_map.dart';
 import 'package:flutter_tools/src/dart/pub.dart';
 import 'package:flutter_tools/src/flutter_plugins.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
+import 'package:flutter_tools/src/package_graph.dart';
 import 'package:flutter_tools/src/platform_plugins.dart';
 import 'package:flutter_tools/src/plugins.dart';
 import 'package:flutter_tools/src/project.dart';
@@ -62,9 +64,15 @@ class TizenPlugin extends PluginPlatform implements NativeOrDartPlugin {
     this.pluginClass,
     this.dartPluginClass,
     this.fileName,
+    required this.isDevDependency,
   }) : assert(pluginClass != null || dartPluginClass != null);
 
-  static TizenPlugin fromYaml(String name, Directory directory, YamlMap yaml) {
+  static TizenPlugin fromYaml(
+    String name,
+    Directory directory,
+    YamlMap yaml, {
+    required bool isDevDependency,
+  }) {
     assert(validate(yaml));
     return TizenPlugin(
       name: name,
@@ -73,6 +81,7 @@ class TizenPlugin extends PluginPlatform implements NativeOrDartPlugin {
       pluginClass: yaml[kPluginClass] as String?,
       dartPluginClass: yaml[kDartPluginClass] as String?,
       fileName: yaml[kFileName] as String?,
+      isDevDependency: isDevDependency,
     );
   }
 
@@ -88,6 +97,7 @@ class TizenPlugin extends PluginPlatform implements NativeOrDartPlugin {
   final String? pluginClass;
   final String? dartPluginClass;
   final String? fileName;
+  final bool isDevDependency;
 
   @override
   bool hasMethodChannel() => pluginClass != null;
@@ -104,6 +114,7 @@ class TizenPlugin extends PluginPlatform implements NativeOrDartPlugin {
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
       'name': name,
+      'isDevDependency': isDevDependency,
       if (namespace != null) kNamespace: namespace,
       if (pluginClass != null) kPluginClass: pluginClass,
       if (dartPluginClass != null) kDartPluginClass: dartPluginClass,
@@ -371,8 +382,13 @@ Future<void> _ensurePluginsReadyForTizenTooling(FlutterProject project) async {
 Future<void> injectTizenPlugins(FlutterProject project) async {
   final tizenProject = TizenProject.fromFlutter(project);
   if (tizenProject.existsSync()) {
-    final List<TizenPlugin> cppPlugins = await findTizenPlugins(project, cppOnly: true);
-    final List<TizenPlugin> dotnetPlugins = await findTizenPlugins(project, dotnetOnly: true);
+    List<TizenPlugin> cppPlugins = await findTizenPlugins(project, cppOnly: true);
+    List<TizenPlugin> dotnetPlugins = await findTizenPlugins(project, dotnetOnly: true);
+    final bool releaseMode = FlutterCommand.current?.getBuildMode().isRelease ?? false;
+    if (releaseMode) {
+      cppPlugins = cppPlugins.where((TizenPlugin p) => !p.isDevDependency).toList();
+      dotnetPlugins = dotnetPlugins.where((TizenPlugin p) => !p.isDevDependency).toList();
+    }
     await _writeAppDepndencyInfo(project);
     await _writeTizenPluginRegistrant(tizenProject, cppPlugins, dotnetPlugins);
     if (tizenProject.isDotnet) {
@@ -416,11 +432,27 @@ Future<List<TizenPlugin>> findTizenPlugins(
     logger: globals.logger,
     throwOnError: throwOnError,
   );
-  for (final Package package in packageConfig.packages) {
-    final Uri packageRoot = package.packageUriRoot.resolve('..');
+
+  final List<Dependency> transitiveDependencies = computeTransitiveDependencies(
+    project,
+    packageConfig,
+  );
+
+  for (final dependency in transitiveDependencies) {
+    final String packageName = dependency.name;
+    final Package? package = packageConfig[packageName];
+    if (package == null) {
+      if (throwOnError) {
+        throwToolExit('Could not locate package:$packageName. Try running `flutter pub get`');
+      } else {
+        globals.logger.printTrace('Could not locate package:$packageName');
+        continue;
+      }
+    }
     final TizenPlugin? plugin = await _pluginFromPackage(
-      package.name,
-      packageRoot,
+      packageName,
+      dependency.rootUri,
+      isDevDependency: dependency.isExclusiveDevDependency,
       fileSystem: fs,
     );
     if (plugin == null) {
@@ -441,6 +473,7 @@ Future<List<TizenPlugin>> findTizenPlugins(
 Future<TizenPlugin?> _pluginFromPackage(
   String name,
   Uri packageRoot, {
+  required bool isDevDependency,
   FileSystem? fileSystem,
 }) async {
   final FileSystem fs = fileSystem ?? globals.fs;
@@ -478,6 +511,7 @@ Future<TizenPlugin?> _pluginFromPackage(
     name,
     packageDir.childDirectory('tizen'),
     platformsYaml[TizenPlugin.kConfigKey]! as YamlMap,
+    isDevDependency: isDevDependency,
   );
 }
 

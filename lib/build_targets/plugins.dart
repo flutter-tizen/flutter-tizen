@@ -61,7 +61,11 @@ class NativePlugins extends Target {
     final tizenProject = TizenProject.fromFlutter(project);
 
     // Check if there's anything to build.
-    final List<TizenPlugin> nativePlugins = await findTizenPlugins(project, cppOnly: true);
+    List<TizenPlugin> nativePlugins = await findTizenPlugins(project, cppOnly: true);
+    final bool releaseMode = buildInfo.buildInfo.mode.isRelease;
+    if (releaseMode) {
+      nativePlugins = nativePlugins.where((TizenPlugin p) => !p.isDevDependency).toList();
+    }
     if (nativePlugins.isEmpty) {
       depfileService.writeToFile(
         Depfile(inputs, outputs),
