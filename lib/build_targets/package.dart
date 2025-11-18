@@ -97,7 +97,11 @@ class DotnetTpk extends TizenPackage {
     final Directory engineDir = getEngineArtifactsDirectory(buildInfo.targetArch, buildMode);
     final Directory embedderDir = getEmbedderArtifactsDirectory(apiVersion, buildInfo.targetArch);
     final File engineBinary = engineDir.childFile('libflutter_engine.so');
-    final File embedder = embedderDir.childFile('libflutter_tizen_$profile.so');
+    final bool isTizenExperimentalEnabled =
+        getIsTizenExperimentalEnabled(buildInfo.buildInfo.dartDefines);
+    final File embedder = embedderDir.childFile(isTizenExperimentalEnabled
+        ? 'libflutter_tizen_${profile}_experimental.so'
+        : 'libflutter_tizen_$profile.so');
     final File icuData = engineDir.childFile('icudtl.dat');
     final File appDepsJson = tizenProject.hostAppRoot.childFile('.app.deps.json');
 
@@ -271,7 +275,11 @@ class NativeTpk extends TizenPackage {
     final Directory embedderDir = getEmbedderArtifactsDirectory(apiVersion, buildInfo.targetArch);
 
     final File engineBinary = engineDir.childFile('libflutter_engine.so');
-    final File embedder = embedderDir.childFile('libflutter_tizen_$profile.so');
+    final bool isTizenExperimentalEnabled =
+        getIsTizenExperimentalEnabled(buildInfo.buildInfo.dartDefines);
+    final File embedder = embedderDir.childFile(isTizenExperimentalEnabled
+        ? 'libflutter_tizen_${profile}_experimental.so'
+        : 'libflutter_tizen_$profile.so');
     final File icuData = engineDir.childFile('icudtl.dat');
     final File appDepsJson = tizenProject.hostAppRoot.childFile('.app.deps.json');
 
@@ -375,7 +383,10 @@ class NativeTpk extends TizenPackage {
       '-I${embeddingDir.childDirectory('include').path.toPosixPath()}',
       embeddingLib.path.toPosixPath(),
       '-L${libDir.path.toPosixPath()}',
-      '-lflutter_tizen_$profile',
+      if (isTizenExperimentalEnabled)
+        '-lflutter_tizen_${profile}_experimental'
+      else
+        '-lflutter_tizen_$profile',
       for (final String lib in embeddingDependencies) '-l$lib',
       '-I${tizenProject.managedDirectory.path.toPosixPath()}',
       '-I${pluginsDir.childDirectory('include').path.toPosixPath()}',
