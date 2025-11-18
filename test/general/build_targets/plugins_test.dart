@@ -43,12 +43,12 @@ void main() {
       fileSystem: fileSystem,
       processManager: FakeProcessManager.any(),
     );
-    writePackageConfigFiles(mainLibName: 'foo', directory: fileSystem.currentDirectory);
 
     pluginDir = fileSystem.directory('/some_native_plugin');
     pluginDir.childFile('pubspec.yaml')
       ..createSync(recursive: true)
       ..writeAsStringSync('''
+name: some_native_plugin
 flutter:
   plugin:
     platforms:
@@ -68,9 +68,28 @@ type = staticLib
     projectDir.childFile('pubspec.yaml')
       ..createSync(recursive: true)
       ..writeAsStringSync('''
+name: plugin_test
 dependencies:
   some_native_plugin:
     path: ${pluginDir.path}
+''');
+    projectDir.childFile('.dart_tool/package_graph.json')
+      ..createSync(recursive: true)
+      ..writeAsStringSync('''
+{
+  "roots": ["plugin_test"],
+  "packages": [
+    {
+      "name": "plugin_test",
+      "dependencies": ["some_native_plugin"]
+    },
+    {
+      "name": "some_native_plugin",
+      "dependencies": []
+    }
+  ],
+  "configVersion": 1
+}
 ''');
     projectDir.childFile('.dart_tool/package_config.json')
       ..createSync(recursive: true)
@@ -78,6 +97,12 @@ dependencies:
 {
   "configVersion": 2,
   "packages": [
+    {
+      "name": "plugin_test",
+      "rootUri": "${projectDir.uri}",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
     {
       "name": "some_native_plugin",
       "rootUri": "${pluginDir.uri}",
