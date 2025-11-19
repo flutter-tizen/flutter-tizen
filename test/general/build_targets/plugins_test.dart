@@ -18,7 +18,6 @@ import 'package:flutter_tools/src/dart/pub.dart';
 import '../../src/common.dart';
 import '../../src/context.dart';
 import '../../src/fake_tizen_sdk.dart';
-import '../../src/package_config.dart';
 import '../../src/throwing_pub.dart';
 
 void main() {
