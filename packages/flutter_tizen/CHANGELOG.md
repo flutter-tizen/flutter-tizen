@@ -1,3 +1,7 @@
+## 0.2.6
+
+* Update readme.md.
+
 ## 0.2.5
 
 * Add `isTvProfile` and `isTizenProfile` APIs that can check Tizen Profile.
