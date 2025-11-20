@@ -62,8 +62,7 @@ class NativePlugins extends Target {
 
     // Check if there's anything to build.
     List<TizenPlugin> nativePlugins = await findTizenPlugins(project, cppOnly: true);
-    final bool releaseMode = buildInfo.buildInfo.mode.isRelease;
-    if (releaseMode) {
+    if (buildInfo.buildInfo.mode.isRelease) {
       nativePlugins = nativePlugins.where((TizenPlugin p) => !p.isDevDependency).toList();
     }
     if (nativePlugins.isEmpty) {

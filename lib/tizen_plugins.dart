@@ -384,8 +384,7 @@ Future<void> injectTizenPlugins(FlutterProject project) async {
   if (tizenProject.existsSync()) {
     List<TizenPlugin> cppPlugins = await findTizenPlugins(project, cppOnly: true);
     List<TizenPlugin> dotnetPlugins = await findTizenPlugins(project, dotnetOnly: true);
-    final bool releaseMode = FlutterCommand.current?.getBuildMode().isRelease ?? false;
-    if (releaseMode) {
+    if (FlutterCommand.current?.getBuildMode().isRelease ?? false) {
       cppPlugins = cppPlugins.where((TizenPlugin p) => !p.isDevDependency).toList();
       dotnetPlugins = dotnetPlugins.where((TizenPlugin p) => !p.isDevDependency).toList();
     }
