@@ -18,6 +18,8 @@
 enum class FlutterRendererType {
   // The renderer based on EGL.
   kEGL,
+  // The renderer based on Vulkan.
+  kEVulkan,
 };
 
 // The app base class for headed Flutter execution.

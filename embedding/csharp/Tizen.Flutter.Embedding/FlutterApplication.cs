@@ -18,6 +18,10 @@ namespace Tizen.Flutter.Embedding
         /// The renderer based on EGL.
         /// </summary>
         EGL,
+        /// <summary>
+        /// The renderer based on Vulkan.
+        /// </summary>
+        EVulkan,
     }
 
     /// <summary>
@@ -147,6 +151,11 @@ namespace Tizen.Flutter.Embedding
             if (Engine.Arguments.IsFlutterGpuEnabled && !Engine.Arguments.IsImpellerEnabled)
             {
                 throw new Exception("flutter_gpu requires Impeller. Enable Impeller using the --enable-impeller flag.");
+            }
+
+            if (RendererType == FlutterRendererType.EVulkan && !Engine.Arguments.IsFlutterTizenExperimentalEnabled)
+            {
+                throw new Exception("Vulkan renderer requires USE_FLUTTER_TIZEN_EXPERIMENTAL. Enable flutter tizen experimental using the --dart-define=USE_FLUTTER_TIZEN_EXPERIMENTAL=true.");
             }
 
             var daliApp = ApplicationNewManual4(0, "", "", 1 /* transparent */);

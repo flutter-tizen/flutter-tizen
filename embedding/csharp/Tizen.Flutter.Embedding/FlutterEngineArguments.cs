@@ -33,6 +33,11 @@ namespace Tizen.Flutter.Embedding
         public bool IsFlutterGpuEnabled { get; private set; } = false;
 
         /// <summary>
+        /// Gets whether the flutter tizen experimental is enabled or not.
+        /// </summary>
+        public bool IsFlutterTizenExperimentalEnabled { get; private set; } = false;
+
+        /// <summary>
         /// Creates a <see cref="FlutterEngineArguments"/> instance and parses engine arguments.
         /// </summary>
         public FlutterEngineArguments()
@@ -68,6 +73,7 @@ namespace Tizen.Flutter.Embedding
 
             IsImpellerEnabled = ProcessMetadataFlag(result, "--enable-impeller", MetadataKeyEnableImepeller);
             IsFlutterGpuEnabled = ProcessMetadataFlag(result, "--enable-flutter-gpu", MetadataKeyEnableFlutterGpu);
+            IsFlutterTizenExperimentalEnabled = result.Contains("--dart-define=USE_FLUTTER_TIZEN_EXPERIMENTAL=true");
 
             foreach (string flag in result)
             {
