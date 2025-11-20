@@ -22,6 +22,7 @@ import '../src/test_flutter_command_runner.dart';
 void main() {
   late FileSystem fileSystem;
   late File pubspecFile;
+  late File packageGraphFile;
   late File packageConfigFile;
   late DeviceManager deviceManager;
 
@@ -32,6 +33,8 @@ void main() {
   setUp(() {
     fileSystem = MemoryFileSystem.test();
     pubspecFile = fileSystem.file('pubspec.yaml')..createSync(recursive: true);
+    packageGraphFile = fileSystem.file('.dart_tool/package_graph.json')
+      ..createSync(recursive: true);
     packageConfigFile = fileSystem.file('.dart_tool/package_config.json')
       ..createSync(recursive: true);
     fileSystem.file('integration_test/some_integration_test.dart').createSync(recursive: true);
@@ -46,6 +49,34 @@ void main() {
     final command = TizenTestCommand(testWrapper: testWrapper);
     final CommandRunner<void> runner = createTestCommandRunner(command);
 
+    pubspecFile.writeAsStringSync('''
+name: test_api
+flutter:
+  plugin:
+    platforms:
+      tizen:
+        dartPluginClass: TestApi
+        fileName: test_api.dart
+dependencies:
+  integration_test:
+    sdk: flutter
+''');
+    packageGraphFile.writeAsStringSync('''
+{
+  "roots": ["test_api"],
+  "packages": [
+    {
+      "name": "test_api",
+      "dependencies": ["integration_test"]
+    },
+    {
+      "name": "integration_test",
+      "dependencies": []
+    }
+  ],
+  "configVersion": 1
+}
+''');
     packageConfigFile.writeAsStringSync('''
 {
   "configVersion": 2,
