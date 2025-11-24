@@ -64,6 +64,7 @@ flutter-tizen run --release
 
 - [Publishing apps on Samsung Galaxy Store and TV Seller Office](doc/publish-app.md)
 - [Wiki](https://github.com/flutter-tizen/flutter-tizen/wiki)
+- [AI Rules](doc/ai_rules.md)
 
 ## Showcases
 
