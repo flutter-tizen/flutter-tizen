@@ -28,3 +28,10 @@ migrate_working_dir/
 .dart_tool/
 .packages
 build/
+
+# Tizen Core CLI (tz) related files
+tizen_dotnet_project.yaml
+*.csproj.backup
+
+# Flutter-tizen dependency information file
+.app.deps.json

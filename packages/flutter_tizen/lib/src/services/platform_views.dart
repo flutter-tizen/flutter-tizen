@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// ignore_for_file: public_member_api_docs
+// ignore_for_file: public_member_api_docs, comment_references
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
@@ -48,8 +48,7 @@ abstract class TizenViewController extends PlatformViewController {
 
   final MessageCodec<dynamic>? _creationParamsCodec;
 
-  final List<PlatformViewCreatedCallback> _platformViewCreatedCallbacks =
-      <PlatformViewCreatedCallback>[];
+  final _platformViewCreatedCallbacks = <PlatformViewCreatedCallback>[];
 
   Future<void> _sendDisposeMessage();
 
@@ -140,7 +139,7 @@ abstract class TizenViewController extends PlatformViewController {
       return;
     }
 
-    int eventType = 0;
+    var eventType = 0;
     if (event is PointerDownEvent) {
       eventType = 0;
     } else if (event is PointerMoveEvent) {
@@ -151,7 +150,7 @@ abstract class TizenViewController extends PlatformViewController {
       throw UnimplementedError('Not Implemented');
     }
 
-    final Map<String, dynamic> args = <String, dynamic>{
+    final args = <String, dynamic>{
       'id': viewId,
       'event': <dynamic>[
         eventType,
@@ -260,7 +259,7 @@ class TextureTizenViewController extends TizenViewController {
     assert(!size.isEmpty,
         'trying to create $TextureTizenViewController without setting a valid size.');
 
-    final Map<String, dynamic> args = <String, dynamic>{
+    final args = <String, dynamic>{
       'id': viewId,
       'viewType': _viewType,
       'width': size.width,
@@ -298,16 +297,15 @@ class PlatformViewsServiceTizen {
   PlatformViewsServiceTizen._() {
     SystemChannels.platform_views.setMethodCallHandler(_onMethodCall);
   }
-  static final PlatformViewsServiceTizen _instance = PlatformViewsServiceTizen._();
+  static final _instance = PlatformViewsServiceTizen._();
 
   Future<void> _onMethodCall(MethodCall call) {
     switch (call.method) {
       case 'viewFocused':
-        final int id = call.arguments as int;
+        final id = call.arguments as int;
         if (_focusCallbacks.containsKey(id)) {
           _focusCallbacks[id]!();
         }
-        break;
       default:
         throw UnimplementedError(
             "${call.method} was invoked but isn't implemented by PlatformViewsService");
@@ -315,7 +313,7 @@ class PlatformViewsServiceTizen {
     return Future<void>.value();
   }
 
-  final Map<int, VoidCallback> _focusCallbacks = <int, VoidCallback>{};
+  final _focusCallbacks = <int, VoidCallback>{};
 
   static TextureTizenViewController initTizenView({
     required int id,
@@ -330,7 +328,7 @@ class PlatformViewsServiceTizen {
     assert(layoutDirection != null);
     assert(creationParams == null || creationParamsCodec != null);
 
-    final TextureTizenViewController controller = TextureTizenViewController._(
+    final controller = TextureTizenViewController._(
       viewId: id,
       viewType: viewType,
       layoutDirection: layoutDirection,

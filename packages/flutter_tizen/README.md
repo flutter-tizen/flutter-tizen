@@ -12,7 +12,7 @@ To use this package, add `flutter_tizen` as a dependency in your `pubspec.yaml` 
 
 ```yaml
 dependencies:
-  flutter_tizen: ^0.2.6
+  flutter_tizen: ^0.2.7
 ```
 
 ### Checking Tizen environment

@@ -1,3 +1,7 @@
+## 0.2.7
+
+* Fix dart analyze issues.
+
 ## 0.2.6
 
 * Update readme.md.

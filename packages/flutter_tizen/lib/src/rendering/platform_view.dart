@@ -47,7 +47,7 @@ class RenderTizenView extends PlatformViewRenderBox {
 
   Size? _currentTextureSize;
 
-  bool _isDisposed = false;
+  var _isDisposed = false;
 
   @override
   TextureTizenViewController get controller => _viewController;
@@ -164,7 +164,7 @@ class RenderTizenView extends PlatformViewRenderBox {
     _paintTexture(context, offset);
   }
 
-  final LayerHandle<ClipRectLayer> _clipRectLayer = LayerHandle<ClipRectLayer>();
+  final _clipRectLayer = LayerHandle<ClipRectLayer>();
 
   @override
   void dispose() {
