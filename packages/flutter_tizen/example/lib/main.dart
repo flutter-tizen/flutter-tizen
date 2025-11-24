@@ -1,3 +1,9 @@
+// Copyright 2025 Samsung Electronics Co., Ltd. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// ignore_for_file: public_member_api_docs
+
 import 'package:flutter/material.dart';
 import 'package:flutter_tizen/flutter_tizen.dart';
 
@@ -11,12 +17,12 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  String _tizenProfile = 'Unknown';
-  String _isTizen = 'Unknown';
-  String _apiVersion = 'Unknown';
+  var _tizenProfile = 'Unknown';
+  var _isTizen = 'Unknown';
+  var _apiVersion = 'Unknown';
 
   @override
-  initState() {
+  void initState() {
     super.initState();
     setState(() {
       _tizenProfile = isTvProfile ? 'TV' : (isTizenProfile ? 'Tizen' : 'Unknown');
@@ -35,7 +41,6 @@ class _MyAppState extends State<MyApp> {
         body: SizedBox.expand(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
               Text('isTizen : $_isTizen\n'),
               Text('apiVersion : $_apiVersion\n'),

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// ignore_for_file: public_member_api_docs
+// ignore_for_file: public_member_api_docs, comment_references
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
@@ -52,11 +52,10 @@ class _TizenViewState extends State<TizenView> {
   int? _id;
   late TextureTizenViewController _controller;
   TextDirection? _layoutDirection;
-  bool _initialized = false;
+  var _initialized = false;
   FocusNode? _focusNode;
 
-  static final Set<Factory<OneSequenceGestureRecognizer>> _emptyRecognizersSet =
-      <Factory<OneSequenceGestureRecognizer>>{};
+  static final _emptyRecognizersSet = <Factory<OneSequenceGestureRecognizer>>{};
 
   @override
   Widget build(BuildContext context) {
@@ -85,7 +84,7 @@ class _TizenViewState extends State<TizenView> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     final TextDirection newLayoutDirection = _findLayoutDirection();
-    final bool didChangeLayoutDirection = _layoutDirection != newLayoutDirection;
+    final didChangeLayoutDirection = _layoutDirection != newLayoutDirection;
     _layoutDirection = newLayoutDirection;
 
     _initializeOnce();
@@ -99,7 +98,7 @@ class _TizenViewState extends State<TizenView> {
     super.didUpdateWidget(oldWidget);
 
     final TextDirection newLayoutDirection = _findLayoutDirection();
-    final bool didChangeLayoutDirection = _layoutDirection != newLayoutDirection;
+    final didChangeLayoutDirection = _layoutDirection != newLayoutDirection;
     _layoutDirection = newLayoutDirection;
 
     if (widget.viewType != oldWidget.viewType) {
