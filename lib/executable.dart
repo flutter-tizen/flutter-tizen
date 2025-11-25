@@ -46,6 +46,7 @@ import 'commands/attach.dart';
 import 'commands/build.dart';
 import 'commands/clean.dart';
 import 'commands/create.dart';
+import 'commands/devices.dart';
 import 'commands/drive.dart';
 import 'commands/precache.dart';
 import 'commands/run.dart';
@@ -112,7 +113,7 @@ Future<void> main(List<String> args) async {
       ),
       ConfigCommand(verboseHelp: verboseHelp),
       DaemonCommand(hidden: !verboseHelp),
-      DevicesCommand(verboseHelp: verboseHelp),
+      TizenDevicesCommand(verboseHelp: verboseHelp),
       DoctorCommand(verbose: verbose),
       EmulatorsCommand(),
       GenerateLocalizationsCommand(
