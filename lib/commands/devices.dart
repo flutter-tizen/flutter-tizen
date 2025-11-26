@@ -63,8 +63,8 @@ class TizenDevicesCommandOutput {
     required DeviceManager? deviceManager,
     required this.deviceDiscoveryTimeout,
     required this.deviceConnectionInterface,
-  }) : _deviceManager = deviceManager,
-       _logger = logger;
+  })  : _deviceManager = deviceManager,
+        _logger = logger;
 
   final DeviceManager? _deviceManager;
   final Logger _logger;
@@ -151,7 +151,8 @@ class TizenDevicesCommandOutput {
         status.writeln();
       }
     }
-    status.writeln('Run "flutter-tizen emulators" to list and start any available device emulators.');
+    status
+        .writeln('Run "flutter-tizen emulators" to list and start any available device emulators.');
     status.writeln();
     status.write(
       'If you expected ${foundAny ? 'another' : 'a'} device to be detected, please run "flutter-tizen doctor" to diagnose potential issues. ',

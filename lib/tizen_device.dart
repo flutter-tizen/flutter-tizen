@@ -598,8 +598,7 @@ class TizenDevice extends Device {
       for (final List<String> row in table)
         indices
             .map<String>((int i) => row[i].padRight(widths[i]))
-            .followedBy(<String>[row.last])
-            .join(' • '),
+            .followedBy(<String>[row.last]).join(' • '),
     ];
   }
 
