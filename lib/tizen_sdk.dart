@@ -33,30 +33,49 @@ class TizenSdk {
     Directory? tizenHomeDir;
     final Map<String, String> environment = globals.platform.environment;
     final File? sdb = globals.os.which('sdb');
-    if (environment.containsKey('TIZEN_SDK')) {
-      tizenHomeDir = globals.fs.directory(environment['TIZEN_SDK']);
-    } else if (sdb != null && sdb.parent.basename == 'tools') {
-      tizenHomeDir = sdb.parent.parent;
-    } else if (globals.platform.isLinux || globals.platform.isMacOS) {
-      if (globals.fsUtils.homeDirPath != null) {
-        tizenHomeDir =
-            globals.fs.directory(globals.fsUtils.homeDirPath).childDirectory('tizen-studio');
-      }
-    } else if (globals.platform.isWindows) {
-      if (environment.containsKey('SystemDrive')) {
-        tizenHomeDir =
-            globals.fs.directory(environment['SystemDrive']).childDirectory('tizen-studio');
+
+    final findTizenHomeDirFuncs = <Directory? Function()>[
+      () {
+        if (environment.containsKey('TIZEN_SDK')) {
+          return globals.fs.directory(environment['TIZEN_SDK']);
+        }
+        return null;
+      },
+      () {
+        if (sdb != null && sdb.parent.basename == 'tools') {
+          return sdb.parent.parent;
+        }
+        return null;
+      },
+      () {
+        if (globals.platform.isLinux || globals.platform.isMacOS) {
+          if (globals.fsUtils.homeDirPath != null) {
+            return globals.fs.directory(globals.fsUtils.homeDirPath).childDirectory('tizen-studio');
+          }
+        }
+        return null;
+      },
+      () {
+        if (globals.platform.isWindows) {
+          if (environment.containsKey('SystemDrive')) {
+            return globals.fs.directory(environment['SystemDrive']).childDirectory('tizen-studio');
+          }
+        }
+        return null;
+      },
+    ];
+    for (final findTizenHomeDirFunc in findTizenHomeDirFuncs) {
+      tizenHomeDir = findTizenHomeDirFunc();
+      if (tizenHomeDir != null && tizenHomeDir.existsSync()) {
+        return TizenSdk(
+          tizenHomeDir,
+          logger: globals.logger,
+          platform: globals.platform,
+          processManager: globals.processManager,
+        );
       }
     }
-    if (tizenHomeDir == null || !tizenHomeDir.existsSync()) {
-      return null;
-    }
-    return TizenSdk(
-      tizenHomeDir,
-      logger: globals.logger,
-      platform: globals.platform,
-      processManager: globals.processManager,
-    );
+    return null;
   }
 
   final Directory directory;
