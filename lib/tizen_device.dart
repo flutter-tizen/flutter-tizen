@@ -554,6 +554,7 @@ class TizenDevice extends Device {
     await _portForwarder?.dispose();
   }
 
+  /// Source: [Device.descriptions] in device.dart
   static Future<List<String>> descriptions(List<Device> devices) async {
     if (devices.isEmpty) {
       return const <String>[];
@@ -602,6 +603,7 @@ class TizenDevice extends Device {
     ];
   }
 
+  /// Source: [Device.printDevices] in device.dart
   static Future<void> printDevices(
     List<Device> devices,
     Logger logger, {
