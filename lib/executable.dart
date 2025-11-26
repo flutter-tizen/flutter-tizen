@@ -21,7 +21,6 @@ import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/commands/analyze.dart';
 import 'package:flutter_tools/src/commands/config.dart';
 import 'package:flutter_tools/src/commands/daemon.dart';
-import 'package:flutter_tools/src/commands/devices.dart';
 import 'package:flutter_tools/src/commands/doctor.dart';
 import 'package:flutter_tools/src/commands/emulators.dart';
 import 'package:flutter_tools/src/commands/generate_localizations.dart';
@@ -46,6 +45,7 @@ import 'commands/attach.dart';
 import 'commands/build.dart';
 import 'commands/clean.dart';
 import 'commands/create.dart';
+import 'commands/devices.dart';
 import 'commands/drive.dart';
 import 'commands/precache.dart';
 import 'commands/run.dart';
@@ -112,7 +112,7 @@ Future<void> main(List<String> args) async {
       ),
       ConfigCommand(verboseHelp: verboseHelp),
       DaemonCommand(hidden: !verboseHelp),
-      DevicesCommand(verboseHelp: verboseHelp),
+      TizenDevicesCommand(verboseHelp: verboseHelp),
       DoctorCommand(verbose: verbose),
       EmulatorsCommand(),
       GenerateLocalizationsCommand(

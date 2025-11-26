@@ -5,6 +5,7 @@
 
 import 'dart:async';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:file/file.dart';
 import 'package:flutter_tools/src/android/android_device.dart';
@@ -551,6 +552,66 @@ class TizenDevice extends Device {
   Future<void> dispose() async {
     _logReader?.dispose();
     await _portForwarder?.dispose();
+  }
+
+  /// Source: [Device.descriptions] in device.dart
+  static Future<List<String>> descriptions(List<Device> devices) async {
+    if (devices.isEmpty) {
+      return const <String>[];
+    }
+
+    // Extract device information
+    final table = <List<String>>[];
+    for (final device in devices) {
+      var supportIndicator = await device.isSupported() ? '' : ' (unsupported)';
+      final TargetPlatform targetPlatform = await device.targetPlatform;
+      if (await device.isLocalEmulator) {
+        final type = targetPlatform == TargetPlatform.ios ? 'simulator' : 'emulator';
+        supportIndicator += ' ($type)';
+      }
+      var category = device.category.toString();
+      // Tizen device category is printed tizen device profile.
+      if (device is TizenDevice) {
+        category = device.deviceProfile;
+      }
+      // Tizen device target platform is printed tizen device architecture.
+      String targetPlatformDisplayName = await device.targetPlatformDisplayName;
+      if (device is TizenDevice) {
+        targetPlatformDisplayName = 'tizen-${device.architecture}';
+      }
+      table.add(<String>[
+        '${device.displayName} ($category)',
+        device.id,
+        targetPlatformDisplayName,
+        '${await device.sdkNameAndVersion}$supportIndicator',
+      ]);
+    }
+
+    // Calculate column widths
+    final indices = List<int>.generate(table[0].length - 1, (int i) => i);
+    List<int> widths = indices.map<int>((int i) => 0).toList();
+    for (final row in table) {
+      widths = indices.map<int>((int i) => max(widths[i], row[i].length)).toList();
+    }
+
+    // Join columns into lines of text
+    return <String>[
+      for (final List<String> row in table)
+        indices
+            .map<String>((int i) => row[i].padRight(widths[i]))
+            .followedBy(<String>[row.last]).join(' • '),
+    ];
+  }
+
+  /// Source: [Device.printDevices] in device.dart
+  static Future<void> printDevices(
+    List<Device> devices,
+    Logger logger, {
+    String prefix = '',
+  }) async {
+    for (final String line in await descriptions(devices)) {
+      logger.printStatus('$prefix$line');
+    }
   }
 }
 
