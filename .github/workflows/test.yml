@@ -51,7 +51,7 @@ jobs:
           sudo apt update
           sudo apt install -y libncurses5 python3.8 libpython3.8 gettext \
             libkf5itemmodels5 libkf5kiowidgets5 libkchart2 dbus-x11 gnome-keyring
-          curl https://download.tizen.org/sdk/Installer/tizen-studio_6.0/web-cli_Tizen_Studio_6.0_ubuntu-64.bin -o install.bin
+          curl https://download.tizen.org/sdk/Installer/tizen-sdk_10.0/web-cli_Tizen_SDK_10.0_ubuntu-64.bin -o install.bin
           chmod a+x install.bin
           ./install.bin --accept-license $HOME/tizen-studio
           rm install.bin
