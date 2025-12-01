@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:convert';
+
 import 'package:args/command_runner.dart';
 import 'package:file/memory.dart';
 import 'package:file_testing/file_testing.dart';
@@ -14,12 +16,23 @@ import 'package:flutter_tools/src/runner/flutter_command.dart';
 import '../src/context.dart';
 import '../src/test_flutter_command_runner.dart';
 
+enum PluginType {
+  none,
+  dart,
+  dotnet,
+  native,
+}
+
+typedef Package = ({
+  String name,
+  PluginType pluginType,
+  List<String> dependencies,
+  List<String> devDependencies
+});
+
 void main() {
   late FileSystem fileSystem;
   late FlutterProject project;
-  late File pubspecFile;
-  late File packageGraphFile;
-  late File packageConfigFile;
 
   setUpAll(() {
     Cache.disableLocking();
@@ -27,14 +40,113 @@ void main() {
 
   setUp(() {
     fileSystem = MemoryFileSystem.test();
-
-    pubspecFile = fileSystem.file('pubspec.yaml')..createSync(recursive: true);
-    packageGraphFile = fileSystem.file('.dart_tool/package_graph.json')
-      ..createSync(recursive: true);
-    packageConfigFile = fileSystem.file('.dart_tool/package_config.json')
-      ..createSync(recursive: true);
     fileSystem.file('lib/main.dart').createSync(recursive: true);
   });
+
+  String snakeToCamel(String snakeCase) {
+    final List<String> parts = snakeCase.split('_');
+    if (parts.isEmpty) {
+      return snakeCase;
+    }
+    final Iterable<String> capitalizedParts = parts.map((part) {
+      if (part.isEmpty) {
+        return '';
+      }
+      return part[0].toUpperCase() + part.substring(1).toLowerCase();
+    });
+
+    return capitalizedParts.join();
+  }
+
+  String getPubspecString(Package package) {
+    final PluginType type = package.pluginType;
+    var platformsField = '';
+    if (type == PluginType.dart) {
+      platformsField = '''
+flutter:
+  plugin:
+    platforms:
+      tizen:
+        dartPluginClass: ${snakeToCamel(package.name)}
+        fileName: ${package.name}.dart
+''';
+    } else if (type == PluginType.dotnet) {
+      platformsField = '''
+flutter:
+  plugin:
+    platforms:
+      tizen:
+        namespace: ${snakeToCamel(package.name)}
+        pluginClass: ${snakeToCamel(package.name)}
+        fileName: ${snakeToCamel(package.name)}.csproj
+''';
+    } else if (type == PluginType.native) {
+      platformsField = '''
+flutter:
+  plugin:
+    platforms:
+      tizen:
+        pluginClass: ${snakeToCamel(package.name)}
+        fileName: ${package.name}.h
+''';
+    }
+
+    return '''
+name: ${package.name}
+$platformsField
+dependencies:
+${package.dependencies.map((String d) => '  $d: {path: $d}').join('\n')}
+dev_dependencies:
+${package.devDependencies.map((String d) => '  $d: {path: $d}').join('\n')}
+''';
+  }
+
+  /// Source: [writePubspecs] in `package_graph_test.dart`
+  void writePubspecs(List<Package> graph) {
+    final packageConfigMap = <String, Object?>{'configVersion': 2};
+    for (final package in graph) {
+      fileSystem.file(fileSystem.path
+          .join(package.pluginType != PluginType.none ? package.name : '', 'pubspec.yaml'))
+        ..createSync(recursive: true)
+        ..writeAsStringSync(getPubspecString(package));
+      ((packageConfigMap['packages'] ??= <Object?>[]) as List<Object?>).add(<String, Object?>{
+        'name': package.name,
+        'rootUri': '../${package.pluginType != PluginType.none ? package.name : ''}',
+        'packageUri': 'lib/',
+        'languageVersion': '3.7',
+      });
+    }
+    fileSystem.file(fileSystem.path.join('.dart_tool', 'package_config.json'))
+      ..createSync(recursive: true)
+      ..writeAsStringSync(jsonEncode(packageConfigMap));
+  }
+
+  /// Source: [writePackageGraph] in `package_graph_test.dart`
+  void writePackageGraph(List<Package> graph) {
+    fileSystem.file(fileSystem.path.join('.dart_tool', 'package_graph.json'))
+      ..createSync(recursive: true)
+      ..writeAsStringSync(
+        jsonEncode(<String, Object?>{
+          'configVersion': 1,
+          'packages': <Object?>[
+            for (final Package package in graph)
+              <String, Object?>{
+                'name': package.name,
+                'dependencies': package.dependencies,
+                'devDependencies': package.devDependencies,
+              },
+          ],
+        }),
+      );
+  }
+
+  /// Source: [validatesComputeTransitiveDependencies] in `package_graph_test.dart`
+  Future<void> validatesComputeTransitiveDependencies(
+    List<Package> graph,
+  ) async {
+    writePubspecs(graph);
+    writePackageGraph(graph);
+  }
 
   testUsingContext('Generates Dart plugin registrant', () async {
     final command = _DummyFlutterCommand();
@@ -42,59 +154,20 @@ void main() {
 
     fileSystem.file('tizen/tizen-manifest.xml').createSync(recursive: true);
 
-    final Directory pluginDir = fileSystem.directory('/some_dart_plugin');
-    pluginDir.childFile('pubspec.yaml')
-      ..createSync(recursive: true)
-      ..writeAsStringSync('''
-name: some_dart_plugin
-flutter:
-  plugin:
-    platforms:
-      tizen:
-        dartPluginClass: SomeDartPlugin
-        fileName: some_dart_plugin.dart
-''');
-    pubspecFile.writeAsStringSync('''
-name: plugin_test
-dependencies:
-  some_dart_plugin:
-    path: ${pluginDir.path}
-''');
-    packageGraphFile.writeAsStringSync('''
-{
-  "roots": ["plugin_test"],
-  "packages": [
-    {
-      "name": "plugin_test",
-      "dependencies": ["some_dart_plugin"]
-    },
-    {
-      "name": "some_dart_plugin",
-      "dependencies": []
-    }
-  ],
-  "configVersion": 1
-}
-''');
-    packageConfigFile.writeAsStringSync('''
-{
-  "configVersion": 2,
-  "packages": [
-    {
-      "name": "plugin_test",
-      "rootUri": "file:///",
-      "packageUri": "lib/",
-      "languageVersion": "2.12"
-    },
-    {
-      "name": "some_dart_plugin",
-      "rootUri": "${pluginDir.uri}",
-      "packageUri": "lib/",
-      "languageVersion": "2.12"
-    }
-  ]
-}
-''');
+    await validatesComputeTransitiveDependencies(<Package>[
+      (
+        name: 'my_app',
+        pluginType: PluginType.none,
+        dependencies: <String>['some_dart_plugin'],
+        devDependencies: <String>[],
+      ),
+      (
+        name: 'some_dart_plugin',
+        pluginType: PluginType.dart,
+        dependencies: <String>[],
+        devDependencies: <String>[],
+      ),
+    ]);
     await runner.run(<String>['dummy']);
 
     final File generatedMain = fileSystem.file('tizen/flutter/generated_main.dart');
@@ -119,59 +192,20 @@ class _PluginRegistrant {
   testUsingContext('Generates native plugin registrant for C++', () async {
     fileSystem.file('tizen/tizen-manifest.xml').createSync(recursive: true);
 
-    final Directory pluginDir = fileSystem.directory('/some_native_plugin');
-    pluginDir.childFile('pubspec.yaml')
-      ..createSync(recursive: true)
-      ..writeAsStringSync('''
-name: some_native_plugin
-flutter:
-  plugin:
-    platforms:
-      tizen:
-        pluginClass: SomeNativePlugin
-        fileName: some_native_plugin.h
-''');
-    pubspecFile.writeAsStringSync('''
-name: plugin_test
-dependencies:
-  some_native_plugin:
-    path: ${pluginDir.path}
-''');
-    packageGraphFile.writeAsStringSync('''
-{
-  "roots": ["plugin_test"],
-  "packages": [
-    {
-      "name": "plugin_test",
-      "dependencies": ["some_native_plugin"]
-    },
-    {
-      "name": "some_native_plugin",
-      "dependencies": []
-    }
-  ],
-  "configVersion": 1
-}
-''');
-    packageConfigFile.writeAsStringSync('''
-{
-  "configVersion": 2,
-  "packages": [
-    {
-      "name": "plugin_test",
-      "rootUri": "file:///",
-      "packageUri": "lib/",
-      "languageVersion": "2.12"
-    },
-    {
-      "name": "some_native_plugin",
-      "rootUri": "${pluginDir.uri}",
-      "packageUri": "lib/",
-      "languageVersion": "2.12"
-    }
-  ]
-}
-''');
+    await validatesComputeTransitiveDependencies(<Package>[
+      (
+        name: 'my_app',
+        pluginType: PluginType.none,
+        dependencies: <String>['some_native_plugin'],
+        devDependencies: <String>[],
+      ),
+      (
+        name: 'some_native_plugin',
+        pluginType: PluginType.native,
+        dependencies: <String>[],
+        devDependencies: <String>[],
+      ),
+    ]);
     project = FlutterProject.fromDirectoryTest(fileSystem.currentDirectory);
     await injectTizenPlugins(project);
 
@@ -196,63 +230,25 @@ void RegisterPlugins(flutter::PluginRegistry *registry) {
     fileSystem.file('tizen/tizen-manifest.xml').createSync(recursive: true);
 
     final Directory pluginDir = fileSystem.directory('/some_native_plugin');
-    pluginDir.childFile('pubspec.yaml')
-      ..createSync(recursive: true)
-      ..writeAsStringSync('''
-name: some_native_plugin
-flutter:
-  plugin:
-    platforms:
-      tizen:
-        pluginClass: SomeNativePlugin
-        fileName: some_native_plugin.h
-''');
+    await validatesComputeTransitiveDependencies(<Package>[
+      (
+        name: 'my_app',
+        pluginType: PluginType.none,
+        dependencies: <String>['some_native_plugin'],
+        devDependencies: <String>[],
+      ),
+      (
+        name: 'some_native_plugin',
+        pluginType: PluginType.native,
+        dependencies: <String>[],
+        devDependencies: <String>[],
+      ),
+    ]);
     pluginDir.childFile('tizen/project_def.prop')
       ..createSync(recursive: true)
       ..writeAsStringSync('''
 APPNAME = some_native_plugin
 type = staticLib
-''');
-    pubspecFile.writeAsStringSync('''
-name: plugin_test
-dependencies:
-  some_native_plugin:
-    path: ${pluginDir.path}
-''');
-    packageGraphFile.writeAsStringSync('''
-{
-  "roots": ["plugin_test"],
-  "packages": [
-    {
-      "name": "plugin_test",
-      "dependencies": ["some_native_plugin"]
-    },
-    {
-      "name": "some_native_plugin",
-      "dependencies": []
-    }
-  ],
-  "configVersion": 1
-}
-''');
-    packageConfigFile.writeAsStringSync('''
-{
-  "configVersion": 2,
-  "packages": [
-    {
-      "name": "plugin_test",
-      "rootUri": "file:///",
-      "packageUri": "lib/",
-      "languageVersion": "2.12"
-    },
-    {
-      "name": "some_native_plugin",
-      "rootUri": "${pluginDir.uri}",
-      "packageUri": "lib/",
-      "languageVersion": "2.12"
-    }
-  ]
-}
 ''');
     project = FlutterProject.fromDirectoryTest(fileSystem.currentDirectory);
     await injectTizenPlugins(project);
@@ -284,59 +280,20 @@ internal class GeneratedPluginRegistrant
     fileSystem.file('tizen/tizen-manifest.xml').createSync(recursive: true);
 
     final Directory pluginDir = fileSystem.directory('/some_dotnet_plugin');
-    pluginDir.childFile('pubspec.yaml')
-      ..createSync(recursive: true)
-      ..writeAsStringSync('''
-name: some_dotnet_plugin
-flutter:
-  plugin:
-    platforms:
-      tizen:
-        namespace: Some.Plugin.Namespace
-        pluginClass: SomeDotnetPlugin
-        fileName: SomeDotnetPlugin.csproj
-''');
-    pubspecFile.writeAsStringSync('''
-name: plugin_test
-dependencies:
-  some_dotnet_plugin:
-    path: ${pluginDir.path}
-''');
-    packageGraphFile.writeAsStringSync('''
-{
-  "roots": ["plugin_test"],
-  "packages": [
-    {
-      "name": "plugin_test",
-      "dependencies": ["some_dotnet_plugin"]
-    },
-    {
-      "name": "some_dotnet_plugin",
-      "dependencies": []
-    }
-  ],
-  "configVersion": 1
-}
-''');
-    packageConfigFile.writeAsStringSync('''
-{
-  "configVersion": 2,
-  "packages": [
-    {
-      "name": "plugin_test",
-      "rootUri": "file:///",
-      "packageUri": "lib/",
-      "languageVersion": "2.12"
-    },
-    {
-      "name": "some_dotnet_plugin",
-      "rootUri": "${pluginDir.uri}",
-      "packageUri": "lib/",
-      "languageVersion": "2.12"
-    }
-  ]
-}
-''');
+    await validatesComputeTransitiveDependencies(<Package>[
+      (
+        name: 'my_app',
+        pluginType: PluginType.none,
+        dependencies: <String>['some_dotnet_plugin'],
+        devDependencies: <String>[],
+      ),
+      (
+        name: 'some_dotnet_plugin',
+        pluginType: PluginType.dotnet,
+        dependencies: <String>[],
+        devDependencies: <String>[],
+      ),
+    ]);
     project = FlutterProject.fromDirectoryTest(fileSystem.currentDirectory);
     await injectTizenPlugins(project);
 
@@ -349,7 +306,7 @@ internal class GeneratedPluginRegistrant
     public static void RegisterPlugins(IPluginRegistry registry)
     {
         DotnetPluginRegistry.Instance.AddPlugin(
-            new global::Some.Plugin.Namespace.SomeDotnetPlugin());
+            new global::SomeDotnetPlugin.SomeDotnetPlugin());
     }
 }
 '''));
@@ -376,60 +333,20 @@ internal class GeneratedPluginRegistrant
     fileSystem.file('tizen/service/RunnerService.csproj').createSync(recursive: true);
     fileSystem.file('tizen/service/tizen-manifest.xml').createSync(recursive: true);
 
-    final Directory pluginDir = fileSystem.directory('/some_dotnet_plugin');
-    pluginDir.childFile('pubspec.yaml')
-      ..createSync(recursive: true)
-      ..writeAsStringSync('''
-name: some_dotnet_plugin
-flutter:
-  plugin:
-    platforms:
-      tizen:
-        namespace: Some.Plugin.Namespace
-        pluginClass: SomeDotnetPlugin
-        fileName: SomeDotnetPlugin.csproj
-''');
-    pubspecFile.writeAsStringSync('''
-name: plugin_test
-dependencies:
-  some_dotnet_plugin:
-    path: ${pluginDir.path}
-''');
-    packageGraphFile.writeAsStringSync('''
-{
-  "roots": ["plugin_test"],
-  "packages": [
-    {
-      "name": "plugin_test",
-      "dependencies": ["some_dotnet_plugin"]
-    },
-    {
-      "name": "some_dotnet_plugin",
-      "dependencies": []
-    }
-  ],
-  "configVersion": 1
-}
-''');
-    packageConfigFile.writeAsStringSync('''
-{
-  "configVersion": 2,
-  "packages": [
-    {
-      "name": "plugin_test",
-      "rootUri": "file:///",
-      "packageUri": "lib/",
-      "languageVersion": "2.12"
-    },
-    {
-      "name": "some_dotnet_plugin",
-      "rootUri": "${pluginDir.uri}",
-      "packageUri": "lib/",
-      "languageVersion": "2.12"
-    }
-  ]
-}
-''');
+    await validatesComputeTransitiveDependencies(<Package>[
+      (
+        name: 'my_app',
+        pluginType: PluginType.none,
+        dependencies: <String>['some_dotnet_plugin'],
+        devDependencies: <String>[],
+      ),
+      (
+        name: 'some_dotnet_plugin',
+        pluginType: PluginType.dotnet,
+        dependencies: <String>[],
+        devDependencies: <String>[],
+      ),
+    ]);
     project = FlutterProject.fromDirectoryTest(fileSystem.currentDirectory);
     await injectTizenPlugins(project);
 
@@ -450,59 +367,20 @@ dependencies:
   testUsingContext('Generates plugins & extra info file for C++', () async {
     fileSystem.file('tizen/tizen-manifest.xml').createSync(recursive: true);
 
-    final Directory pluginDir = fileSystem.directory('/some_native_plugin');
-    pluginDir.childFile('pubspec.yaml')
-      ..createSync(recursive: true)
-      ..writeAsStringSync('''
-name: some_native_plugin
-flutter:
-  plugin:
-    platforms:
-      tizen:
-        pluginClass: SomeNativePlugin
-        fileName: some_native_plugin.h
-''');
-    pubspecFile.writeAsStringSync('''
-name: plugin_test
-dependencies:
-  some_native_plugin:
-    path: ${pluginDir.path}
-''');
-    packageGraphFile.writeAsStringSync('''
-{
-  "roots": ["plugin_test"],
-  "packages": [
-    {
-      "name": "plugin_test",
-      "dependencies": ["some_native_plugin"]
-    },
-    {
-      "name": "some_native_plugin",
-      "dependencies": []
-    }
-  ],
-  "configVersion": 1
-}
-''');
-    packageConfigFile.writeAsStringSync('''
-{
-  "configVersion": 2,
-  "packages": [
-    {
-      "name": "plugin_test",
-      "rootUri": "${fileSystem.currentDirectory}",
-      "packageUri": "lib/",
-      "languageVersion": "2.12"
-    },
-    {
-      "name": "some_native_plugin",
-      "rootUri": "${pluginDir.uri}",
-      "packageUri": "lib/",
-      "languageVersion": "2.12"
-    }
-  ]
-}
-''');
+    await validatesComputeTransitiveDependencies(<Package>[
+      (
+        name: 'my_app',
+        pluginType: PluginType.none,
+        dependencies: <String>['some_native_plugin'],
+        devDependencies: <String>[],
+      ),
+      (
+        name: 'some_native_plugin',
+        pluginType: PluginType.native,
+        dependencies: <String>[],
+        devDependencies: <String>[],
+      ),
+    ]);
     project = FlutterProject.fromDirectoryTest(fileSystem.currentDirectory);
     await injectTizenPlugins(project);
 
@@ -526,64 +404,25 @@ dependencies:
     fileSystem.file('tizen/Runner.csproj').createSync(recursive: true);
     fileSystem.file('tizen/tizen-manifest.xml').createSync(recursive: true);
 
-    final Directory pluginDir = fileSystem.directory('/some_native_plugin');
-    pluginDir.childFile('pubspec.yaml')
-      ..createSync(recursive: true)
-      ..writeAsStringSync('''
-name: some_native_plugin
-flutter:
-  plugin:
-    platforms:
-      tizen:
-        pluginClass: SomeNativePlugin
-        fileName: some_native_plugin.h
-''');
-    pluginDir.childFile('tizen/project_def.prop')
+    await validatesComputeTransitiveDependencies(<Package>[
+      (
+        name: 'my_app',
+        pluginType: PluginType.none,
+        dependencies: <String>['some_native_plugin'],
+        devDependencies: <String>[],
+      ),
+      (
+        name: 'some_native_plugin',
+        pluginType: PluginType.native,
+        dependencies: <String>[],
+        devDependencies: <String>[],
+      ),
+    ]);
+    fileSystem.directory('/some_native_plugin').childFile('tizen/project_def.prop')
       ..createSync(recursive: true)
       ..writeAsStringSync('''
 APPNAME = some_native_plugin
 type = staticLib
-''');
-    pubspecFile.writeAsStringSync('''
-name: plugin_test
-dependencies:
-  some_native_plugin:
-    path: ${pluginDir.path}
-''');
-    packageGraphFile.writeAsStringSync('''
-{
-  "roots": ["plugin_test"],
-  "packages": [
-    {
-      "name": "plugin_test",
-      "dependencies": ["some_native_plugin"]
-    },
-    {
-      "name": "some_native_plugin",
-      "dependencies": []
-    }
-  ],
-  "configVersion": 1
-}
-''');
-    packageConfigFile.writeAsStringSync('''
-{
-  "configVersion": 2,
-  "packages": [
-    {
-      "name": "plugin_test",
-      "rootUri": "file:///",
-      "packageUri": "lib/",
-      "languageVersion": "2.12"
-    },
-    {
-      "name": "some_native_plugin",
-      "rootUri": "${pluginDir.uri}",
-      "packageUri": "lib/",
-      "languageVersion": "2.12"
-    }
-  ]
-}
 ''');
     project = FlutterProject.fromDirectoryTest(fileSystem.currentDirectory);
     await injectTizenPlugins(project);
