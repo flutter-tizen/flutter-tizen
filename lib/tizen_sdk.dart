@@ -305,6 +305,10 @@ class TizenSdk {
       throwToolExit('Not supported API version: $apiVersion');
     }
 
+    if (versionToDouble(apiVersion) < 8.0 && arch == 'x64') {
+      throwToolExit('x64 is not supported with API version < 8.0.');
+    }
+
     switch (profile) {
       case 'common':
         if (versionToDouble(apiVersion) >= 8.0) {
