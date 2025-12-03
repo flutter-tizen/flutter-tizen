@@ -50,6 +50,32 @@ class TizenSdk {
       () {
         if (globals.platform.isLinux || globals.platform.isMacOS) {
           if (globals.fsUtils.homeDirPath != null) {
+            return globals.fs
+                .directory(globals.fsUtils.homeDirPath)
+                .childDirectory('.tizen-extension-platform')
+                .childDirectory('server')
+                .childDirectory('sdktools')
+                .childDirectory('data');
+          }
+        }
+        return null;
+      },
+      () {
+        if (globals.platform.isWindows) {
+          if (environment.containsKey('USERPROFILE')) {
+            return globals.fs
+                .directory(environment['SystemDrive'])
+                .childDirectory('.tizen-extension-platform')
+                .childDirectory('server')
+                .childDirectory('sdktools')
+                .childDirectory('data');
+          }
+        }
+        return null;
+      },
+      () {
+        if (globals.platform.isLinux || globals.platform.isMacOS) {
+          if (globals.fsUtils.homeDirPath != null) {
             return globals.fs.directory(globals.fsUtils.homeDirPath).childDirectory('tizen-studio');
           }
         }
