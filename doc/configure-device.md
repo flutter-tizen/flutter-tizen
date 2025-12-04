@@ -91,7 +91,7 @@ You need a Linux PC (for flashing), a Raspberry Pi 4 board, and a micro SD card 
 1. Flash the image to the SD card.
 
    ```sh
-   $ sudo ./sd_fusing.py -d <SD card device namee> -b <Boot Image> <Platform Image> -t <Target Board>
+   $ sudo ./sd_fusing.py -d <SD card device name> -b <Boot Image> <Platform Image> -t <Target Board>
    ```
    For example:
    ```sh
@@ -102,9 +102,9 @@ You need a Linux PC (for flashing), a Raspberry Pi 4 board, and a micro SD card 
 
 ### Connect
 
-1. Connect the Pi device to the same network as your host PC using an Ethernet cable.
+1. Connect the Raspberry Pi device to the same network as your host PC using an Ethernet cable.
 
-   Alternatively, you can use some extra hardware (USB/PWR splitter) to connect Pi directly to the host PC in OTG (USB slave) mode. The Tizen device will be ready to use just after plugging the USB - the next step should be skipped.
+   Alternatively, you can use some extra hardware (USB/PWR splitter) to connect Raspberry Pi directly to the host PC in OTG (USB slave) mode. The Tizen device will be ready to use just after plugging the USB - the next step should be skipped.
 
 1. Find the device IP address and connect to it. (`sdb` should be in your PATH.)
 
