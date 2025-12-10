@@ -108,6 +108,7 @@ Future<void> main(List<String> args) async {
             logger: globals.logger,
             fileSystem: globals.fs,
             platform: globals.platform,
+            git: globals.git,
           ),
         ],
         suppressAnalytics: globals.flutterUsage.suppressAnalytics,
