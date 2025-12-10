@@ -6,6 +6,16 @@ You can use VS Code's built-in debugging features to debug Flutter apps running 
 
 Note: The debugger can only **attach** to an already running app. **Launching** an app from VS Code is not currently supported.
 
+1. Create a new app project, specifying Tizen and your host platform. For example, if you are using Linux, create the app project using the `--platforms tizen,linux` option.
+
+   ```sh
+   # Create on linux
+   $ flutter-tizen create --platforms tizen,linux my_app
+
+   # Create on windows
+   $ flutter-tizen create --platforms tizen,windows my_app
+   ```
+
 1. Open your app project folder in VS Code.
 
 1. Start the app in either **debug** or **profile** mode from **command line** (press `Ctrl`+<code>`</code> to open the integrated Terminal).

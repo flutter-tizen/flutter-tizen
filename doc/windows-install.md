@@ -4,7 +4,7 @@
 
 - Operating system: Windows 10 or later (x64)
 - Tools:
-  - [Tizen Studio](install-tizen-sdk.md) (5.0 or later)
+  - [Tizen SDK](install-tizen-sdk.md) (6.0 or later)
   - [.NET SDK](https://learn.microsoft.com/en-us/dotnet/core/install/windows) (6.0 or later)
   - [Git for Windows](https://git-scm.com/download/win) 2.x (enable the **Use Git from the Windows Command Prompt** option)
 
