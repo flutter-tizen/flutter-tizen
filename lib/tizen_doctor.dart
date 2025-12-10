@@ -122,6 +122,7 @@ class TizenValidator extends DoctorValidator {
       flutterRoot: workingDirectory.path,
       frameworkRevision: revision,
       fs: _fileSystem,
+      git: globals.git,
     );
     messages.add(ValidationMessage(_userMessages.flutterRevision(
       version.frameworkRevisionShort,
