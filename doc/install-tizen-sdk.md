@@ -1,5 +1,7 @@
 # Setting up Tizen SDK
 
+> NOTE: Support for Tizen Studio has ended with version 6.1. The `VS Code Extension for Tizen` is now the recommended tool for installing the Tizen SDK. For more information, visit the [Tizen Developers](https://developer.tizen.org/development/tizen-studio/tizen-studio-deprecation-notice/) site.
+
 Download and install the latest release of Tizen SDK from the below link. It is recommended to use the `VS Code Extension for Tizen` although you can still build Flutter apps using CLI only.
 
 - [Download Tizen SDK](https://samsungtizenos.com/tools-download/)
