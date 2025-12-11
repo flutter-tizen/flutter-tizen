@@ -1,4 +1,4 @@
-# Install for Linux
+# Install for Linux (old)
 
 ## System requirements
 

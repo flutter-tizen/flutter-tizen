@@ -1,4 +1,4 @@
-# Install for Windows
+# Install for Windows (old)
 
 ## System requirements
 

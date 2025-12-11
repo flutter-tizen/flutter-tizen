@@ -1,4 +1,4 @@
-# Install for macOS
+# Install for macOS (old)
 
 ## System requirements
 
