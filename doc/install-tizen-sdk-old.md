@@ -1,4 +1,4 @@
-# Setting up Tizen SDK
+# Setting up Tizen SDK (old)
 
 Download and install the latest release of Tizen Studio from the below link. It is recommended to use the GUI installer although you can still build Flutter apps with CLI only.
 

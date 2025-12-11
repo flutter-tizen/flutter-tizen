@@ -1,4 +1,4 @@
-# Configuring Tizen devices for development
+# Configuring Tizen devices for development (old)
 
 ## TV
 
@@ -70,7 +70,7 @@ You need a Linux PC (for flashing), a Raspberry Pi 4 board, and a micro SD card 
 
    ```sh
 
-   $ wget "https://review.tizen.org/git/?p=platform/kernel/tizen-fusing-scripts.git;a=blob_plain;f=scripts/sd_fusing.py;hb=HEAD" --output-document=sd_fusing.py
+   $ wget "https://review.tizen.org/gerrit/gitweb?p=platform/kernel/tizen-fusing-scripts.git;a=blob;f=scripts/sd_fusing.py;hb=HEAD" --output-document=sd_fusing.py
    $ chmod +x sd_fusing.py
    ```
 
