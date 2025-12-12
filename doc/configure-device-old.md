@@ -1,4 +1,4 @@
-# Configuring Tizen devices for development
+# Configuring Tizen devices for development (old)
 
 ## TV
 
@@ -23,6 +23,12 @@
    1. Restart the TV. You will see **Develop Mode** enabled after the TV restarts.
 
       ![Develop mode enabled](images/tv-developer-option-5.png)
+
+1. Find the path to `sdb` and add it to your PATH. For example, if you're using Linux or macOS and Tizen Studio has been installed to the default location, run:
+
+   ```sh
+   export PATH="$HOME/tizen-studio/tools:$PATH"
+   ```
 
 1. Connect to the device using its IP address.
 

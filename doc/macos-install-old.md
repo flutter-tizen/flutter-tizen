@@ -1,4 +1,4 @@
-# Install for macOS
+# Install for macOS (old)
 
 ## System requirements
 
@@ -8,8 +8,8 @@
      sudo softwareupdate --install-rosetta --agree-to-license
      ```
 - Tools:
-  - [Tizen SDK](install-tizen-sdk.md) (6.0 or later)
-    - Tizen Emulator is not available on an Apple Silicon Mac as of Tizen Studio 6.0.
+  - [Tizen Studio](install-tizen-sdk.md) (5.0 or later)
+    - Tizen Emulator is not available on an Apple Silicon Mac as of Tizen Studio 5.0.
   - [.NET SDK](https://learn.microsoft.com/en-us/dotnet/core/install/macos) (6.0 or later)
   - `git` (either [standalone](https://git-scm.com/download/mac) or integrated with [Xcode](https://developer.apple.com/xcode))
 
