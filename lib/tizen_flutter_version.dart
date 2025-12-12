@@ -16,6 +16,7 @@ class TizenFlutterVersion implements FlutterVersion {
   }) : flutterVersion = FlutterVersion(
           fs: fs,
           flutterRoot: flutterRoot,
+          git: globals.git,
         );
   final FlutterVersion flutterVersion;
 
