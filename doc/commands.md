@@ -200,18 +200,6 @@ The following commands from the [Flutter CLI](https://flutter.dev/docs/reference
   flutter-tizen run --start-paused
   ```
 
-- ### `screenshot`
-
-  Take a screenshot from a connected device.
-
-  ```sh
-  flutter-tizen screenshot --type rasterizer --vm-service-url http://127.0.0.1:43000/Swm0bjIe0ks=/
-  ```
-
-  Both `--type` and `--vm-service-url` must be provided because the default (`device`) screenshot type is not supported by Tizen devices. The VM Service URL can be obtained from the device log output (`flutter-tizen run` or `sdb dlog ConsoleMessage`) after launching an app in either debug or profile mode.
-
-  If you're using a watch device, you can also take a screenshot by swiping the screen from left to right while pressing the Home button.
-
 - ### `symbolize`
 
   Symbolize a stack trace from a Flutter app which has been built with the `--split-debug-info` option.
@@ -242,4 +230,5 @@ The following commands from the Flutter CLI are not supported by flutter-tizen.
 - `custom-devices`
 - `downgrade`
 - `logs`
+- `screenshot`
 - `upgrade`
