@@ -1,4 +1,4 @@
-# Setting up Tizen SDK
+# Setting up VS Code Extension for Tizen
 
 > [!NOTE]
 > Support for Tizen Studio has ended with version 6.1. The `VS Code Extension for Tizen` is now the recommended tool for installing the Tizen SDK. For more information, visit the [Tizen Developers](https://developer.tizen.org/development/tizen-studio/tizen-studio-deprecation-notice/) site.
@@ -10,7 +10,7 @@ Download and install the latest release of Tizen SDK from the below link. It is 
 
 ## Install required packages
 
-After installing the VS Code Extension for Tizen, open _Tizen: Package Manager_ from the Command Palette (Ctrl + Shift + P). Install the following packages required by flutter-tizen.
+After installing the `VS Code Extension for Tizen`, open _Tizen: Package Manager_ from the Command Palette (Ctrl + Shift + P). Install the following packages required by flutter-tizen.
 
 ![Tizen Package Manager](images/advanced-package-installation.png)
 
@@ -19,8 +19,6 @@ After installing the VS Code Extension for Tizen, open _Tizen: Package Manager_ 
 To enable emulator support, install the following additional packages.
 
 - [Advanced] - [9.0 Tizen or later]
-
-Note: The packages can also be installed using the command line interface by following the instructions of `flutter-tizen doctor -v` after installing flutter-tizen.
 
 ## Set up Tizen emulators
 
@@ -52,4 +50,4 @@ You should specify the DUID of your device (including emulator) when creating a 
 
 ![Specify DUIDs](images/distributor-create.jpg)
 
-For detailed instructions, see [Samsung Developers: Creating Certificates](https://developer.samsung.com/smarttv/develop/getting-started/setting-up-sdk/creating-certificates.html).
+For detailed instructions, see [Samsung Tizen OS: Creating Certificates](https://samsungtizenos.com/docs/sdktools/?sid=rIHCiglrL104UptsbNwf).
