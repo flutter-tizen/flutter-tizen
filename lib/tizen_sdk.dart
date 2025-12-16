@@ -18,12 +18,21 @@ TizenSdk? get tizenSdk => context.get<TizenSdk>();
 
 File? get dotnetCli => globals.os.which('dotnet');
 
+/// The type of Tizen SDK installation.
+enum TizenSdkType {
+  /// VS code Tizen extension based SDK.
+  extension,
+  /// Tizen-Studio based SDK.
+  studio,
+}
+
 class TizenSdk {
   TizenSdk(
     this.directory, {
     required Logger logger,
     required Platform platform,
     required ProcessManager processManager,
+    required this.sdkType,
   })  : _logger = logger,
         _platform = platform,
         _processUtils = ProcessUtils(logger: logger, processManager: processManager);
@@ -93,11 +102,18 @@ class TizenSdk {
     for (final findTizenHomeDirFunc in findTizenHomeDirFuncs) {
       tizenHomeDir = findTizenHomeDirFunc();
       if (tizenHomeDir != null && tizenHomeDir.existsSync()) {
+        TizenSdkType sdkType;
+        if (tizenHomeDir.path.contains('.tizen-extension-platform')) {
+          sdkType = TizenSdkType.extension;
+        } else {
+          sdkType = TizenSdkType.studio;
+        }
         return TizenSdk(
           tizenHomeDir,
           logger: globals.logger,
           platform: globals.platform,
           processManager: globals.processManager,
+          sdkType: sdkType,
         );
       }
     }
@@ -105,6 +121,9 @@ class TizenSdk {
   }
 
   final Directory directory;
+
+  /// The type of Tizen SDK installation.
+  final TizenSdkType sdkType;
 
   final Logger _logger;
   final Platform _platform;

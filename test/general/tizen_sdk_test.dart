@@ -30,6 +30,7 @@ void main() {
       logger: logger,
       platform: FakePlatform(),
       processManager: processManager,
+      sdkType: TizenSdkType.studio,
     );
   });
 
@@ -281,5 +282,38 @@ CCC=ccc=ccc
     expect(properties['BBB'], equals('bbb'));
     expect(properties['CCC'], equals('ccc=ccc'));
     expect(properties['DDD'], isNull);
+  });
+
+  testWithoutContext('TizenSdk.locateSdk detects extension SDK type', () {
+    final Directory extensionSdkDir =
+        fileSystem.directory('/.tizen-extension-platform/server/sdktools/data');
+    extensionSdkDir.createSync(recursive: true);
+
+    final sdk = TizenSdk(
+      extensionSdkDir,
+      logger: logger,
+      platform: FakePlatform(),
+      processManager: processManager,
+      sdkType: TizenSdkType.extension,
+    );
+
+    expect(sdk, isNotNull);
+    expect(sdk.sdkType, equals(TizenSdkType.extension));
+  });
+
+  testWithoutContext('TizenSdk.locateSdk detects studio SDK type', () {
+    final Directory studioSdkDir = fileSystem.directory('/tizen-studio');
+    studioSdkDir.createSync(recursive: true);
+
+    final sdk = TizenSdk(
+      studioSdkDir,
+      logger: logger,
+      platform: FakePlatform(),
+      processManager: processManager,
+      sdkType: TizenSdkType.studio,
+    );
+
+    expect(sdk, isNotNull);
+    expect(sdk.sdkType, equals(TizenSdkType.studio));
   });
 }
