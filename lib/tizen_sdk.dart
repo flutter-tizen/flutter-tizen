@@ -22,6 +22,7 @@ File? get dotnetCli => globals.os.which('dotnet');
 enum TizenSdkType {
   /// VS code Tizen extension based SDK.
   extension,
+
   /// Tizen-Studio based SDK.
   studio,
 }
@@ -121,8 +122,6 @@ class TizenSdk {
   }
 
   final Directory directory;
-
-  /// The type of Tizen SDK installation.
   final TizenSdkType sdkType;
 
   final Logger _logger;
@@ -400,12 +399,20 @@ class TizenSdk {
     }
 
     if (!rootstrap.isValid) {
-      final String profileUpperCase = profile.toUpperCase().replaceAll('HEADED', 'Headed');
-      throwToolExit(
-        'The rootstrap ${rootstrap.id} could not be found.\n'
-        'To install missing package(s), run:\n'
-        '${packageManagerCli.path} install $profileUpperCase-$apiVersion-NativeAppDevelopment-CLI',
-      );
+      if (sdkType == TizenSdkType.studio) {
+        final String profileUpperCase = profile.toUpperCase().replaceAll('HEADED', 'Headed');
+        throwToolExit(
+          'The rootstrap ${rootstrap.id} could not be found.\n'
+          'To install missing package(s), run:\n'
+          '${packageManagerCli.path} install $profileUpperCase-$apiVersion-NativeAppDevelopment-CLI',
+        );
+      } else {
+        throwToolExit(
+          'The rootstrap ${rootstrap.id} could not be found.\n'
+          'To install missing package(s) :\n'
+          'Open the "Tizen: Package Manager" page in VS Code and install Tizen SDK $apiVersion version.',
+        );
+      }
     }
     _logger.printTrace('Found a rootstrap: ${rootstrap.id}');
 
