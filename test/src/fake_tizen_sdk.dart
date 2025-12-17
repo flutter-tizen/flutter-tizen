@@ -26,7 +26,7 @@ class FakeTizenSdk extends TizenSdk {
           logger: logger ?? BufferLogger.test(),
           platform: platform ?? FakePlatform(),
           processManager: processManager ?? FakeProcessManager.any(),
-          sdkType: TizenSdkType.studio,
+          sdkType: TizenSdkType.cli,
         );
 
   final FileSystem _fileSystem;

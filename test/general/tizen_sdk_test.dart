@@ -30,7 +30,7 @@ void main() {
       logger: logger,
       platform: FakePlatform(),
       processManager: processManager,
-      sdkType: TizenSdkType.studio,
+      sdkType: TizenSdkType.cli,
     );
   });
 
@@ -310,10 +310,10 @@ CCC=ccc=ccc
       logger: logger,
       platform: FakePlatform(),
       processManager: processManager,
-      sdkType: TizenSdkType.studio,
+      sdkType: TizenSdkType.cli,
     );
 
     expect(sdk, isNotNull);
-    expect(sdk.sdkType, equals(TizenSdkType.studio));
+    expect(sdk.sdkType, equals(TizenSdkType.cli));
   });
 }
