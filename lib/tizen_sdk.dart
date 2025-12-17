@@ -23,8 +23,8 @@ enum TizenSdkType {
   /// VS code Tizen extension based SDK.
   extension,
 
-  /// Tizen-Studio based SDK.
-  studio,
+  /// Tizen CLI based SDK.
+  cli,
 }
 
 class TizenSdk {
@@ -107,7 +107,7 @@ class TizenSdk {
         if (tizenHomeDir.path.contains('.tizen-extension-platform')) {
           sdkType = TizenSdkType.extension;
         } else {
-          sdkType = TizenSdkType.studio;
+          sdkType = TizenSdkType.cli;
         }
         return TizenSdk(
           tizenHomeDir,
@@ -399,7 +399,7 @@ class TizenSdk {
     }
 
     if (!rootstrap.isValid) {
-      if (sdkType == TizenSdkType.studio) {
+      if (sdkType == TizenSdkType.cli) {
         final String profileUpperCase = profile.toUpperCase().replaceAll('HEADED', 'Headed');
         throwToolExit(
           'The rootstrap ${rootstrap.id} could not be found.\n'
