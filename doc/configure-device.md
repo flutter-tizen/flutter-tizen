@@ -24,11 +24,15 @@
 
       ![Develop mode enabled](images/tv-developer-option-5.png)
 
-1. Find the path to `sdb` and add it to your PATH. For example, if you're using Linux or macOS and Tizen Studio has been installed to the default location, run:
+1. Find the path to `sdb` and add it to your PATH.
 
-   ```sh
-   export PATH="$HOME/tizen-studio/tools:$PATH"
-   ```
+   - If you have installed `Tizen Studio`, add the tools directory to your PATH. For example, if `Tizen Studio` is installed in the default location on Linux or macOS:
+
+     ```sh
+     export PATH="$HOME/tizen-studio/tools:$PATH"
+     ```
+
+   - If you have installed the `VS Code Extension for Tizen`, the PATH is automatically configured, so you do not need to set it manually.
 
 1. Connect to the device using its IP address.
 
@@ -69,9 +73,8 @@ You need a Linux PC (for flashing), a Raspberry Pi 4 board, and a micro SD card 
 1. Download a fusing script (`sd_fusing.py`).
 
    ```sh
-
-   $ wget "https://review.tizen.org/git/?p=platform/kernel/tizen-fusing-scripts.git;a=blob_plain;f=scripts/sd_fusing.py;hb=HEAD" --output-document=sd_fusing.py
-   $ chmod +x sd_fusing.py
+   $ git clone git://review.tizen.org/git/platform/kernel/tizen-fusing-scripts -b tizen
+   $ cd tizen-fusing-scripts/scripts
    ```
 
 1. Re-partition the SD card.
