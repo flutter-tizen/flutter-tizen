@@ -122,6 +122,7 @@ class _FakeTizenSdk extends TizenSdk {
           logger: BufferLogger.test(),
           platform: FakePlatform(),
           processManager: FakeProcessManager.any(),
+          sdkType: TizenSdkType.cli,
         );
 
   @override
