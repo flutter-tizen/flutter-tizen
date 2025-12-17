@@ -16,6 +16,7 @@ import 'package:flutter_tools/src/build_system/targets/common.dart';
 import 'package:flutter_tools/src/build_system/targets/icon_tree_shaker.dart';
 import 'package:flutter_tools/src/compile.dart';
 import 'package:flutter_tools/src/dart/package_map.dart';
+import 'package:flutter_tools/src/isolated/native_assets/dart_hook_result.dart';
 import 'package:package_config/src/package_config.dart';
 
 import '../tizen_build_info.dart';
@@ -156,12 +157,14 @@ abstract class TizenAssetBundle extends Target {
           .file(isolateSnapshotData)
           .copySync(outputDirectory.childFile('isolate_snapshot_data').path);
     }
+    final DartHooksResult dartHookResult = await TizenDartBuild.loadHookResult(environment);
     final Depfile assetDepfile = await copyAssets(
       environment,
       outputDirectory,
       targetPlatform: TargetPlatform.android,
       buildMode: buildMode,
       flavor: environment.defines[kFlavor],
+      dartHookResult: dartHookResult,
     );
     final depfileService = DepfileService(
       fileSystem: environment.fileSystem,

@@ -17,6 +17,7 @@ import 'package:flutter_tools/src/base/template.dart';
 import 'package:flutter_tools/src/base/terminal.dart';
 import 'package:flutter_tools/src/build_system/build_system.dart';
 import 'package:flutter_tools/src/build_system/build_targets.dart';
+import 'package:flutter_tools/src/build_system/targets/native_assets.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/commands/analyze.dart';
 import 'package:flutter_tools/src/commands/config.dart';
@@ -27,6 +28,7 @@ import 'package:flutter_tools/src/commands/generate_localizations.dart';
 import 'package:flutter_tools/src/commands/install.dart';
 import 'package:flutter_tools/src/commands/packages.dart';
 import 'package:flutter_tools/src/commands/symbolize.dart';
+import 'package:flutter_tools/src/commands/widget_preview.dart';
 import 'package:flutter_tools/src/dart/pub.dart';
 import 'package:flutter_tools/src/device.dart';
 import 'package:flutter_tools/src/doctor.dart';
@@ -40,6 +42,7 @@ import 'package:flutter_tools/src/runner/flutter_command.dart';
 import 'package:flutter_tools/src/version.dart';
 import 'package:path/path.dart';
 
+import 'build_targets/native_assets.dart';
 import 'commands/attach.dart';
 import 'commands/build.dart';
 import 'commands/clean.dart';
@@ -79,6 +82,7 @@ Future<void> main(List<String> args) async {
   final bool muteCommandLogging = (help || doctor) && !veryVerbose;
   final bool verboseHelp = help && verbose;
   final bool daemon = args.contains('daemon');
+  final bool widgetPreviews = args.contains(WidgetPreviewCommand.kWidgetPreview);
   final bool runMachine = args.contains('--machine') && args.contains('run');
 
   Cache.flutterRoot = join(rootPath, 'flutter');
@@ -105,6 +109,7 @@ Future<void> main(List<String> args) async {
             logger: globals.logger,
             fileSystem: globals.fs,
             platform: globals.platform,
+            git: globals.git,
           ),
         ],
         suppressAnalytics: globals.flutterUsage.suppressAnalytics,
@@ -195,6 +200,8 @@ Future<void> main(List<String> args) async {
             processManager: globals.processManager,
             projectFactory: globals.projectFactory,
           ),
+      DartBuild: () => const TizenDartBuild(),
+      DartBuildForNative: () => const TizenDartBuildForNative(),
       DeviceManager: () => TizenDeviceManager(),
       DoctorValidatorsProvider: () => TizenDoctorValidatorsProvider(),
       EmulatorManager: () => TizenEmulatorManager(
@@ -220,6 +227,7 @@ Future<void> main(List<String> args) async {
           verbose: verbose && !muteCommandLogging,
           prefixedErrors: prefixedErrors,
           windows: globals.platform.isWindows,
+          widgetPreviews: widgetPreviews,
         );
       },
       OperatingSystemUtils: () => TizenOperatingSystemUtils(
