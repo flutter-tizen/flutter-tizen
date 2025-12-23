@@ -43,8 +43,7 @@ class TizenKernelSnapshotProgram extends KernelSnapshot {
     final buildMode = BuildMode.fromCliName(buildModeEnvironment);
     final String targetFile =
         environment.defines[kTargetFile] ?? environment.fileSystem.path.join('lib', 'main.dart');
-    final File packagesFile =
-        environment.projectDir.childDirectory('.dart_tool').childFile('package_config.json');
+    final File packagesFile = findPackageConfigFileOrDefault(environment.projectDir);
     final String targetFileAbsolute = environment.fileSystem.file(targetFile).absolute.path;
     // everything besides 'false' is considered to be enabled.
     final trackWidgetCreation = environment.defines[kTrackWidgetCreation] != 'false';
