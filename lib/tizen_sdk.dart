@@ -135,8 +135,7 @@ class TizenSdk {
   Directory get sdkDataDirectory {
     final File sdkInfo = directory.childFile('sdk.info');
     if (!sdkInfo.existsSync()) {
-      throwToolExit(
-          'The sdk.info file could not be found. Tizen Studio is out of date or corrupted.');
+      throwToolExit('The sdk.info file could not be found. Tizen SDK is out of date or corrupted.');
     }
     final Map<String, String> info = parseIniFile(sdkInfo);
     if (info.containsKey('TIZEN_SDK_DATA_PATH')) {
@@ -146,7 +145,7 @@ class TizenSdk {
       }
     }
     throwToolExit(
-        'The SDK data directory could not be found. Tizen Studio is out of date or corrupted.');
+        'The SDK data directory could not be found. Tizen SDK is out of date or corrupted.');
   }
 
   /// The SDK version number in the "x.y[.z]" format, or null if not found.
