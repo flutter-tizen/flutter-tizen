@@ -72,13 +72,16 @@ class TizenValidator extends DoctorValidator {
         .childDirectory('arm-linux-gnueabi-gcc-$gccVersion')
         .existsSync()) {
       missingPackages.add('NativeToolchain-Gcc-$gccVersion');
-      if (_tizenSdk.sdkType == TizenSdkType.extension) {
-        messages.add(
-            ValidationMessage.error('To install missing package(s) : ${missingPackages.first}\n'
-                'Delete the Tizen home directory and reinstall the VSCode Tizen extension.\n'
-                'Note: Before proceeding, back up any important data (ex. certificate files).'));
-        return false;
-      }
+    }
+    if (!_tizenSdk.tzCli.existsSync()) {
+      missingPackages.add('NativeCLI');
+    }
+    if (missingPackages.isNotEmpty && _tizenSdk.sdkType == TizenSdkType.extension) {
+      messages.add(
+          ValidationMessage.error('To install missing package(s) : ${missingPackages.join(' ')}\n'
+              'Delete the Tizen home directory and reinstall the VSCode Tizen extension.\n'
+              'Note: Before proceeding, back up any important data (ex. certificate files).'));
+      return false;
     }
 
     if (!_tizenSdk.tizenCli.existsSync()) {
