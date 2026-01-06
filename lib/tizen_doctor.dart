@@ -68,6 +68,19 @@ class TizenValidator extends DoctorValidator {
     final missingPackages = <String>[];
     var result = true;
 
+    if (!_tizenSdk.toolsDirectory
+        .childDirectory('arm-linux-gnueabi-gcc-$gccVersion')
+        .existsSync()) {
+      missingPackages.add('NativeToolchain-Gcc-$gccVersion');
+    }
+    if (missingPackages.isNotEmpty && _tizenSdk.sdkType == TizenSdkType.extension) {
+      messages.add(
+          ValidationMessage.error('To install missing package(s) : ${missingPackages.join(' ')}\n'
+              'Delete the Tizen home directory and reinstall the VSCode Tizen extension.\n'
+              'Note: Before proceeding, back up any important data (ex. certificate files).'));
+      return false;
+    }
+
     if (!_tizenSdk.tizenCli.existsSync()) {
       missingPackages.add('NativeCLI');
     } else {
@@ -87,11 +100,6 @@ class TizenValidator extends DoctorValidator {
       }
     }
 
-    if (!_tizenSdk.toolsDirectory
-        .childDirectory('arm-linux-gnueabi-gcc-$gccVersion')
-        .existsSync()) {
-      missingPackages.add('NativeToolchain-Gcc-$gccVersion');
-    }
     if (!_tizenSdk.platformsDirectory
         .childDirectory('tizen-6.0')
         .childDirectory('iot-headed')
