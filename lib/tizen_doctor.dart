@@ -73,9 +73,6 @@ class TizenValidator extends DoctorValidator {
         .existsSync()) {
       missingPackages.add('NativeToolchain-Gcc-$gccVersion');
     }
-    if (!_tizenSdk.tzCli.existsSync()) {
-      missingPackages.add('NativeCLI');
-    }
     if (missingPackages.isNotEmpty && _tizenSdk.sdkType == TizenSdkType.extension) {
       messages.add(
           ValidationMessage.error('To install missing package(s) : ${missingPackages.join(' ')}\n'
