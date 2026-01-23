@@ -68,6 +68,19 @@ class TizenValidator extends DoctorValidator {
     final missingPackages = <String>[];
     var result = true;
 
+    if (!_tizenSdk.toolsDirectory
+        .childDirectory('arm-linux-gnueabi-gcc-$gccVersion')
+        .existsSync()) {
+      missingPackages.add('NativeToolchain-Gcc-$gccVersion');
+    }
+    if (missingPackages.isNotEmpty && _tizenSdk.sdkType == TizenSdkType.extension) {
+      messages.add(
+          ValidationMessage.error('To install missing package(s) : ${missingPackages.join(' ')}\n'
+              'Delete the Tizen home directory and reinstall the VSCode Tizen extension.\n'
+              'Note: Before proceeding, back up any important data (ex. certificate files).'));
+      return false;
+    }
+
     if (!_tizenSdk.tizenCli.existsSync()) {
       missingPackages.add('NativeCLI');
     } else {
@@ -87,11 +100,6 @@ class TizenValidator extends DoctorValidator {
       }
     }
 
-    if (!_tizenSdk.toolsDirectory
-        .childDirectory('arm-linux-gnueabi-gcc-$gccVersion')
-        .existsSync()) {
-      missingPackages.add('NativeToolchain-Gcc-$gccVersion');
-    }
     if (!_tizenSdk.platformsDirectory
         .childDirectory('tizen-6.0')
         .childDirectory('iot-headed')
@@ -101,8 +109,13 @@ class TizenValidator extends DoctorValidator {
     }
 
     if (missingPackages.isNotEmpty) {
-      messages.add(ValidationMessage.error('To install missing packages, run:\n'
-          '$packageManager install ${missingPackages.join(' ')}'));
+      if (_tizenSdk.sdkType == TizenSdkType.cli) {
+        messages.add(ValidationMessage.error('To install missing packages, run:\n'
+            '$packageManager install ${missingPackages.join(' ')}'));
+      } else {
+        messages.add(const ValidationMessage.error('To install missing package(s) :\n'
+            'Open the "Tizen: Package Manager" page in VS Code and install Tizen SDK "6.0 IOT-Headed + Mobile".'));
+      }
       result = false;
     }
     return result;
@@ -138,7 +151,7 @@ class TizenValidator extends DoctorValidator {
     if (_tizenSdk == null) {
       messages.add(const ValidationMessage.error(
         'Unable to locate Tizen SDK.\n'
-        'Install Tizen Studio from: https://developer.tizen.org/development/tizen-studio/download\n'
+        'Install VS Code Extension for Tizen from: https://samsungtizenos.com/tools-download/\n'
         'If the Tizen SDK has been installed to a custom location, set TIZEN_SDK to that location.',
       ));
       return ValidationResult(ValidationType.missing, messages);
@@ -154,7 +167,7 @@ class TizenValidator extends DoctorValidator {
     } else {
       final versionText = sdkVersion != null ? ' $sdkVersion' : '';
       messages.add(ValidationMessage(
-        'Tizen Studio$versionText at ${_tizenSdk.directory.path}',
+        'Tizen SDK$versionText at ${_tizenSdk.directory.path}',
       ));
     }
 
