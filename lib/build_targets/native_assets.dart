@@ -13,7 +13,9 @@ import 'package:flutter_tools/src/build_system/targets/native_assets.dart';
 import 'package:flutter_tools/src/convert.dart';
 import 'package:flutter_tools/src/dart/package_map.dart';
 import 'package:flutter_tools/src/isolated/native_assets/dart_hook_result.dart';
+import 'package:flutter_tools/src/isolated/native_assets/linux/native_assets.dart';
 import 'package:flutter_tools/src/isolated/native_assets/native_assets.dart';
+import 'package:flutter_tools/src/isolated/native_assets/targets.dart';
 import 'package:meta/meta.dart';
 import 'package:package_config/package_config_types.dart';
 
@@ -62,7 +64,7 @@ class TizenDartBuild extends Target {
     final buildMode = BuildMode.fromCliName(buildModeEnvironment);
     final bool includeDevDependencies = !buildMode.isRelease;
     final FlutterNativeAssetsBuildRunner buildRunner = _buildRunner ??
-        FlutterNativeAssetsBuildRunnerImpl(
+        TizenFlutterNativeAssetsBuildRunnerImpl(
           environment.packageConfigPath,
           packageConfig,
           fileSystem,
@@ -209,9 +211,35 @@ class TizenInstallCodeAssets extends Target {
   static const depFilename = 'install_code_assets.d';
 }
 
-/// Source: _getTargetPlatformFromEnvironment in `native_assets.dart`
 TargetPlatform _getTargetPlatformFromEnvironment(Environment environment, String name) {
-  // NOTE(jsuya) : According to tizen_build_info.dart, flutter-tizen builds use the android TargetPlatform for arm, arm64, and x64.
-  //So we uses TargetPlatform.tester to use LocalPlatform's C Compiler instead of AndroidNDK.
-  return TargetPlatform.tester;
+  final String? targetPlatformEnvironment = environment.defines[kTargetPlatform];
+  if (targetPlatformEnvironment == null) {
+    throw MissingDefineException(kTargetPlatform, name);
+  }
+  return getTargetPlatformForName(targetPlatformEnvironment);
+}
+
+class TizenFlutterNativeAssetsBuildRunnerImpl extends FlutterNativeAssetsBuildRunnerImpl {
+  TizenFlutterNativeAssetsBuildRunnerImpl(
+    super.packageConfigPath,
+    super.packageConfig,
+    super.fileSystem,
+    super.logger,
+    super.runPackageName,
+    super.pubspecPath, {
+    required super.includeDevDependencies,
+  });
+
+  // TODO(JSUYA): Tizen uses Android's arm and arm64 TargetPlatforms. This caused the native_asset
+  // of flutter_tools to recognize the TargetOS as Android and use the NDK CCompiler. So, I added
+  // TizenFlutterNativeAssetsBuildRunnerImpl to modify the NativeAssetBuilder to use the Linux
+  // CCompiler(Tizen embedder) even when the asset is Android.
+  @override
+  Future<void> setCCompilerConfig(CodeAssetTarget target) async {
+    if (target is AndroidAssetTarget) {
+      target.cCompilerConfigSync = await cCompilerConfigLinux();
+    } else {
+      await target.setCCompilerConfig();
+    }
+  }
 }
