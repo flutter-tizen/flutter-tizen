@@ -19,6 +19,7 @@ dependencies:
   path:
   process:
   unified_analytics:
+  vm_service:
   xml:
   yaml:
 
