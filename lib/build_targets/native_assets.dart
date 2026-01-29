@@ -237,7 +237,7 @@ class TizenFlutterNativeAssetsBuildRunnerImpl extends FlutterNativeAssetsBuildRu
   @override
   Future<void> setCCompilerConfig(CodeAssetTarget target) async {
     if (target is AndroidAssetTarget) {
-      target.cCompilerConfigSync = await cCompilerConfigLinux();
+      target.cCompilerConfigSync = await cCompilerConfigLinux(throwIfNotFound: true);
     } else {
       await target.setCCompilerConfig();
     }
