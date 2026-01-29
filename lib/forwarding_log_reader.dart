@@ -12,7 +12,9 @@ import 'package:flutter_tools/src/base/terminal.dart';
 import 'package:flutter_tools/src/device.dart';
 import 'package:flutter_tools/src/device_port_forwarder.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
+import 'package:flutter_tools/src/project.dart';
 import 'package:flutter_tools/src/vmservice.dart';
+import 'package:vm_service/vm_service.dart' as vm_service;
 
 /// Default factory that creates a real socket connection.
 Future<Socket> kSocketFactory(String host, int port) => Socket.connect(host, port);
@@ -51,6 +53,12 @@ class ForwardingLogReader extends DeviceLogReader {
   Socket? _socket;
 
   final _linesController = StreamController<String>.broadcast();
+
+  static const String _inspectorPubRootDirectoriesExtensionName =
+      'ext.flutter.inspector.addPubRootDirectories';
+
+  // For Inspector pub root registration on hot restart
+  StreamSubscription<vm_service.Event>? _isolateEventSubscription;
 
   @override
   Stream<String> get logLines => _linesController.stream;
@@ -105,7 +113,9 @@ class ForwardingLogReader extends DeviceLogReader {
           if (response.startsWith('ACCEPTED')) {
             response = response.substring(8);
           } else {
-            globals.printError('Invalid message received from the device logger: $response');
+            globals.printError(
+              'Invalid message received from the device logger: $response',
+            );
             socket?.destroy();
             socket = null;
           }
@@ -119,7 +129,9 @@ class ForwardingLogReader extends DeviceLogReader {
         }
       },
       onError: (Object error) {
-        globals.printError('An error occurred while reading from socket: $error');
+        globals.printError(
+          'An error occurred while reading from socket: $error',
+        );
         if (!completer.isCompleted) {
           socket?.destroy();
           socket = null;
@@ -161,11 +173,14 @@ class ForwardingLogReader extends DeviceLogReader {
         _socket = await _connectAndListen();
         if (_socket != null) {
           globals.printTrace(
-              'The logging service started at ${_socket!.remoteAddress.address}:${_socket!.remotePort}.');
+            'The logging service started at ${_socket!.remoteAddress.address}:${_socket!.remotePort}.',
+          );
           break;
         }
         if (attempts == 10) {
-          globals.printError('Connecting to the device logger is taking longer than expected...');
+          globals.printError(
+            'Connecting to the device logger is taking longer than expected...',
+          );
         } else if (attempts == 20) {
           globals.printError(
             'Still attempting to connect to the device logger...\n'
@@ -184,8 +199,75 @@ class ForwardingLogReader extends DeviceLogReader {
   void dispose() {
     _socket?.destroy();
     _linesController.close();
+    _isolateEventSubscription?.cancel();
   }
 
   @override
-  Future<void> provideVmService(FlutterVmService connectedVmService) async {}
+  Future<void> provideVmService(FlutterVmService connectedVmService) async {
+    // Register the correct project root directory with the Widget Inspector.
+    // This is necessary because flutter-tizen uses a generated entrypoint at
+    // tizen/flutter/generated_main.dart, which causes DevTools to incorrectly
+    // set the pub root to tizen/flutter/ instead of the actual project root.
+    // Without this fix, DevTools Inspector shows an empty widget tree.
+    await _setupInspectorPubRootRegistration(connectedVmService);
+  }
+
+  /// Sets up registration of the project root with the Inspector on initial
+  /// load and after each hot restart when the isolate re-registers extensions.
+  Future<void> _setupInspectorPubRootRegistration(
+    FlutterVmService vmService,
+  ) async {
+    // Initial registration
+    try {
+      final String? maybeIsolateId =
+          (await vmService.findExtensionIsolate(_inspectorPubRootDirectoriesExtensionName)).id;
+
+      if (maybeIsolateId case final isolateId?) {
+        await _registerProjectRoot(vmService, isolateId);
+      } else {
+        globals.printTrace('Inspector extension not found');
+      }
+    } on VmServiceDisappearedException {
+      globals.printTrace('VM Service disappeared before Inspector registration');
+      return;
+    } on Exception catch (e) {
+      globals.printTrace('Failed initial Inspector pub root registration: $e');
+    }
+
+    // Re-register after hot restart
+    _isolateEventSubscription = vmService.service.onIsolateEvent.listen((event) async {
+      if (event
+          case vm_service.Event(
+            kind: vm_service.EventKind.kServiceExtensionAdded,
+            extensionRPC: _inspectorPubRootDirectoriesExtensionName,
+            isolate: vm_service.IsolateRef(id: final isolateId?)
+          )) {
+        globals.printTrace('Inspector extension re-registered after restart: Isolate $isolateId');
+
+        await _registerProjectRoot(vmService, isolateId);
+      }
+    });
+  }
+
+  /// Registers the project root directory with the Inspector.
+  Future<void> _registerProjectRoot(
+    FlutterVmService vmService,
+    String isolateId,
+  ) async {
+    final String projectRoot = FlutterProject.current().directory.path;
+
+    globals.printTrace('Registering Inspector pub root: $projectRoot');
+
+    try {
+      await vmService.invokeFlutterExtensionRpcRaw(
+        _inspectorPubRootDirectoriesExtensionName,
+        isolateId: isolateId,
+        args: <String, Object?>{'arg0': projectRoot},
+      );
+
+      globals.printTrace('Inspector pub root registered successfully');
+    } on Exception catch (e) {
+      globals.printTrace('Failed to register Inspector pub root: $e');
+    }
+  }
 }
