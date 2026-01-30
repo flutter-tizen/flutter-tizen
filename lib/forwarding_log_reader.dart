@@ -54,7 +54,7 @@ class ForwardingLogReader extends DeviceLogReader {
 
   final _linesController = StreamController<String>.broadcast();
 
-  static const String _inspectorPubRootDirectoriesExtensionName =
+  static const _inspectorPubRootDirectoriesExtensionName =
       'ext.flutter.inspector.addPubRootDirectories';
 
   // For Inspector pub root registration on hot restart
