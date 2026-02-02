@@ -174,11 +174,10 @@ class TizenSdk {
       if (decoded is Map<String, dynamic>) {
         return decoded['version'] as String?;
       }
-      return null;
     } on FormatException catch (error) {
       globals.printError('Failed to parse ${serverInfoFile.path}:\n$error');
-      return null;
     }
+    return null;
   }
 
   File get sdb => toolsDirectory.childFile(_platform.isWindows ? 'sdb.exe' : 'sdb');
