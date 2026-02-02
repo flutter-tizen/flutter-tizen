@@ -171,6 +171,13 @@ class TizenValidator extends DoctorValidator {
       ));
     }
 
+    final Version? extensionVersion = Version.parse(_tizenSdk.extensionVersion);
+    if (extensionVersion != null) {
+      messages.add(ValidationMessage(
+        'Tizen Extension $extensionVersion at ${_tizenSdk.directory.parent.parent.parent.path}',
+      ));
+    }
+
     if (!_validatePackages(messages)) {
       return ValidationResult(ValidationType.partial, messages);
     }

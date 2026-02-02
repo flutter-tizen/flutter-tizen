@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:convert';
+
 import 'package:file/file.dart';
 import 'package:flutter_tools/src/android/android_sdk.dart';
 import 'package:flutter_tools/src/base/common.dart';
@@ -155,6 +157,27 @@ class TizenSdk {
       return null;
     }
     return parseIniFile(versionFile)['TIZEN_SDK_VERSION'];
+  }
+
+  String? get extensionVersion {
+    if (sdkType != TizenSdkType.extension) {
+      return null;
+    }
+    final File serverInfoFile = directory.parent.parent.childFile('server-info.json');
+    if (!serverInfoFile.existsSync()) {
+      return null;
+    }
+
+    try {
+      final String info = serverInfoFile.readAsStringSync();
+      final dynamic decoded = jsonDecode(info);
+      if (decoded is Map<String, dynamic>) {
+        return decoded['version'] as String?;
+      }
+    } on FormatException catch (error) {
+      globals.printError('Failed to parse ${serverInfoFile.path}:\n$error');
+    }
+    return null;
   }
 
   File get sdb => toolsDirectory.childFile(_platform.isWindows ? 'sdb.exe' : 'sdb');
