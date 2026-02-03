@@ -1,0 +1,17 @@
+# Minimize verbosity.
+have_fun: false
+code_review:
+  # For now, use the default of MEDIUM for testing. Based on desired verbosity,
+  # we can change this to LOW or HIGH in the future.
+  comment_severity_threshold: MEDIUM
+  pull_request_opened:
+    help: false
+    summary: false
+    include_drafts: false
+ignore_patterns:
+  # Avoid code reviews on rolls.
+  - DEPS
+  - "bin/**"
+  - "flutter/**"
+  - "templates/**"
+  - "doc/**"
