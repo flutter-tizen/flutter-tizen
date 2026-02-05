@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'dart:io';
-
 import 'package:flutter_tools/src/base/common.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/base/terminal.dart';
@@ -396,30 +394,21 @@ class TizenCreateCommand extends CreateCommand {
   }
 
   void _runGitClean(Directory directory) {
-    ProcessResult result = globals.processManager.runSync(
-      <String>['git', 'checkout', '--', '.'],
+    globals.git.runSync(
+      <String>['checkout', '--', '.'],
       workingDirectory: directory.path,
     );
-    if (result.exitCode != 0) {
-      throwToolExit('Failed to run git checkout: ${result.stderr}');
-    }
-    result = globals.processManager.runSync(
-      <String>['git', 'clean', '-df', '.'],
+    globals.git.runSync(
+      <String>['clean', '-df', '.'],
       workingDirectory: directory.path,
     );
-    if (result.exitCode != 0) {
-      throwToolExit('Failed to run git clean: ${result.stderr}');
-    }
   }
 
   void _runGitApply(Directory directory, File patchFile) {
-    final ProcessResult result = globals.processManager.runSync(
-      <String>['git', 'apply', '--whitespace=fix', patchFile.path],
+    globals.git.runSync(
+      <String>['apply', '--whitespace=fix', patchFile.path],
       workingDirectory: directory.path,
     );
-    if (result.exitCode != 0) {
-      throwToolExit('Failed to run git apply: ${result.stderr}');
-    }
   }
 }
 

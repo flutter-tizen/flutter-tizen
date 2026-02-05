@@ -24,10 +24,11 @@ class TizenFlutterVersion implements FlutterVersion {
   String get flutterTizenLatestRevision {
     if (_flutterTizenLatestRevision.isEmpty) {
       final Directory workingDirectory = fs.directory(flutterRoot).parent;
-      _flutterTizenLatestRevision = _runGit(
-        'git -c log.showSignature=false log -n 1 --pretty=format:%H',
-        workingDirectory.path,
-      );
+      _flutterTizenLatestRevision = globals.git
+          .logSync(<String>['-n', '1', '--pretty=format:%H'],
+              workingDirectory: workingDirectory.path)
+          .stdout
+          .trim();
     }
     return _flutterTizenLatestRevision;
   }
@@ -116,13 +117,8 @@ class TizenFlutterVersion implements FlutterVersion {
   String? get engineContentHash => flutterVersion.engineContentHash;
 }
 
-/// Source: [_runGit] in `version.dart`
-String _runGit(String command, String? workingDirectory) {
-  return globals.processUtils
-      .runSync(command.split(' '), workingDirectory: workingDirectory)
-      .stdout
-      .trim();
-}
+// NOTE: Use globals.git (Git wrapper) for running git commands to ensure
+// consistent behavior across platforms (e.g. Windows/MSYS noglob).
 
 /// Source: [_shortGitRevision] in `version.dart`
 String _shortGitRevision(String revision) {
