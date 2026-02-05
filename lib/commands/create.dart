@@ -35,7 +35,7 @@ class TizenCreateCommand extends CreateCommand {
       allowed: <String>['cpp', 'csharp'],
       help: 'The language to use for Tizen-specific code, either C++ '
           '(performant, but unsupported by TV devices) or C# (universal). '
-          'If not specfied, "cpp" is used by default if the project type is '
+          'If not specified, "cpp" is used by default if the project type is '
           '"plugin", otherwise "csharp" is used by default.',
     );
     argParser.addOption(
