@@ -148,6 +148,47 @@ ${package.devDependencies.map((String d) => '  $d: {path: $d}').join('\n')}
     writePackageGraph(graph);
   }
 
+  testUsingContext('Does not include dev_dependency Dart plugins in registrant', () async {
+    final command = _DummyFlutterCommand();
+    final CommandRunner<void> runner = createTestCommandRunner(command);
+
+    fileSystem.file('tizen/tizen-manifest.xml').createSync(recursive: true);
+
+    await validatesComputeTransitiveDependencies(<Package>[
+      (
+        name: 'my_app',
+        pluginType: PluginType.none,
+        dependencies: <String>['some_dart_plugin'],
+        devDependencies: <String>['some_dev_dart_plugin'],
+      ),
+      (
+        name: 'some_dart_plugin',
+        pluginType: PluginType.dart,
+        dependencies: <String>[],
+        devDependencies: <String>[],
+      ),
+      (
+        name: 'some_dev_dart_plugin',
+        pluginType: PluginType.dart,
+        dependencies: <String>[],
+        devDependencies: <String>[],
+      ),
+    ]);
+
+    await runner.run(<String>['dummy']);
+
+    final File generatedMain = fileSystem.file('tizen/flutter/generated_main.dart');
+    expect(generatedMain, exists);
+
+    final String contents = generatedMain.readAsStringSync();
+    expect(contents, contains("import 'package:some_dart_plugin/some_dart_plugin.dart';"));
+    expect(contents,
+        isNot(contains("import 'package:some_dev_dart_plugin/some_dev_dart_plugin.dart';")));
+  }, overrides: <Type, Generator>{
+    FileSystem: () => fileSystem,
+    ProcessManager: () => FakeProcessManager.any(),
+  }, testOn: 'posix');
+
   testUsingContext('Generates Dart plugin registrant', () async {
     final command = _DummyFlutterCommand();
     final CommandRunner<void> runner = createTestCommandRunner(command);
