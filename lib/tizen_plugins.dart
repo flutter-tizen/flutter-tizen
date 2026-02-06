@@ -307,8 +307,10 @@ Future<void> generateEntrypointWithPluginRegistrant(
   );
   final Uri mainUri = packageConfig.toPackageUri(mainFileUri) ?? mainFileUri;
   final List<String> dartEntrypoints = _findDartEntrypoints(mainFile);
-  final List<TizenPlugin> dartPlugins =
-      (await findTizenPlugins(project, dartOnly: true)).where((p) => !p.isDevDependency).toList();
+  List<TizenPlugin> dartPlugins = await findTizenPlugins(project, dartOnly: true);
+  if (FlutterCommand.current?.getBuildMode().isRelease ?? false) {
+    dartPlugins = dartPlugins.where((p) => !p.isDevDependency).toList();
+  }
 
   final context = <String, Object>{
     'mainImport': mainUri.toString(),
