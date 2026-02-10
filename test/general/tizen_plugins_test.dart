@@ -9,6 +9,7 @@ import 'package:file/memory.dart';
 import 'package:file_testing/file_testing.dart';
 import 'package:flutter_tizen/tizen_plugins.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
+import 'package:flutter_tools/src/build_info.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/project.dart';
 import 'package:flutter_tools/src/runner/flutter_command.dart';
@@ -147,6 +148,88 @@ ${package.devDependencies.map((String d) => '  $d: {path: $d}').join('\n')}
     writePubspecs(graph);
     writePackageGraph(graph);
   }
+
+  testUsingContext('Does not include dev_dependency Dart plugins in registrant (release)',
+      () async {
+    final command = _DummyFlutterCommand(buildMode: BuildMode.release);
+    final CommandRunner<void> runner = createTestCommandRunner(command);
+
+    fileSystem.file('tizen/tizen-manifest.xml').createSync(recursive: true);
+
+    await validatesComputeTransitiveDependencies(<Package>[
+      (
+        name: 'my_app',
+        pluginType: PluginType.none,
+        dependencies: <String>['some_dart_plugin'],
+        devDependencies: <String>['some_dev_dart_plugin'],
+      ),
+      (
+        name: 'some_dart_plugin',
+        pluginType: PluginType.dart,
+        dependencies: <String>[],
+        devDependencies: <String>[],
+      ),
+      (
+        name: 'some_dev_dart_plugin',
+        pluginType: PluginType.dart,
+        dependencies: <String>[],
+        devDependencies: <String>[],
+      ),
+    ]);
+
+    await runner.run(<String>['dummy']);
+
+    final File generatedMain = fileSystem.file('tizen/flutter/generated_main.dart');
+    expect(generatedMain, exists);
+
+    final String contents = generatedMain.readAsStringSync();
+    expect(contents, contains("import 'package:some_dart_plugin/some_dart_plugin.dart';"));
+    expect(contents,
+        isNot(contains("import 'package:some_dev_dart_plugin/some_dev_dart_plugin.dart';")));
+  }, overrides: <Type, Generator>{
+    FileSystem: () => fileSystem,
+    ProcessManager: () => FakeProcessManager.any(),
+  }, testOn: 'posix');
+
+  testUsingContext('Includes dev_dependency Dart plugins in registrant (debug)', () async {
+    final command = _DummyFlutterCommand();
+    final CommandRunner<void> runner = createTestCommandRunner(command);
+
+    fileSystem.file('tizen/tizen-manifest.xml').createSync(recursive: true);
+
+    await validatesComputeTransitiveDependencies(<Package>[
+      (
+        name: 'my_app',
+        pluginType: PluginType.none,
+        dependencies: <String>['some_dart_plugin'],
+        devDependencies: <String>['some_dev_dart_plugin'],
+      ),
+      (
+        name: 'some_dart_plugin',
+        pluginType: PluginType.dart,
+        dependencies: <String>[],
+        devDependencies: <String>[],
+      ),
+      (
+        name: 'some_dev_dart_plugin',
+        pluginType: PluginType.dart,
+        dependencies: <String>[],
+        devDependencies: <String>[],
+      ),
+    ]);
+
+    await runner.run(<String>['dummy']);
+
+    final File generatedMain = fileSystem.file('tizen/flutter/generated_main.dart');
+    expect(generatedMain, exists);
+
+    final String contents = generatedMain.readAsStringSync();
+    expect(contents, contains("import 'package:some_dart_plugin/some_dart_plugin.dart';"));
+    expect(contents, contains("import 'package:some_dev_dart_plugin/some_dev_dart_plugin.dart';"));
+  }, overrides: <Type, Generator>{
+    FileSystem: () => fileSystem,
+    ProcessManager: () => FakeProcessManager.any(),
+  }, testOn: 'posix');
 
   testUsingContext('Generates Dart plugin registrant', () async {
     final command = _DummyFlutterCommand();
@@ -445,15 +528,22 @@ type = staticLib
 }
 
 class _DummyFlutterCommand extends FlutterCommand with DartPluginRegistry {
-  _DummyFlutterCommand() {
+  _DummyFlutterCommand({this.buildMode = BuildMode.debug}) {
     usesTargetOption();
   }
+
+  final BuildMode buildMode;
 
   @override
   var name = 'dummy';
 
   @override
   var description = '';
+
+  @override
+  BuildMode getBuildMode() {
+    return buildMode;
+  }
 
   @override
   Future<FlutterCommandResult> runCommand() async {
