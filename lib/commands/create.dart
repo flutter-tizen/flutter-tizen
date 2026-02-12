@@ -4,6 +4,7 @@
 
 import 'package:flutter_tools/src/base/common.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
+import 'package:flutter_tools/src/base/process.dart';
 import 'package:flutter_tools/src/base/terminal.dart';
 import 'package:flutter_tools/src/base/utils.dart';
 import 'package:flutter_tools/src/cache.dart';
@@ -394,21 +395,30 @@ class TizenCreateCommand extends CreateCommand {
   }
 
   void _runGitClean(Directory directory) {
-    globals.git.runSync(
+    RunResult result = globals.git.runSync(
       <String>['checkout', '--', '.'],
       workingDirectory: directory.path,
     );
-    globals.git.runSync(
+    if (result.exitCode != 0) {
+      throwToolExit('Failed to run git checkout: ${result.stderr}');
+    }
+    result = globals.git.runSync(
       <String>['clean', '-df', '.'],
       workingDirectory: directory.path,
     );
+    if (result.exitCode != 0) {
+      throwToolExit('Failed to run git clean: ${result.stderr}');
+    }
   }
 
   void _runGitApply(Directory directory, File patchFile) {
-    globals.git.runSync(
+    final RunResult result = globals.git.runSync(
       <String>['apply', '--whitespace=fix', patchFile.path],
       workingDirectory: directory.path,
     );
+    if (result.exitCode != 0) {
+      throwToolExit('Failed to run git apply: ${result.stderr}');
+    }
   }
 }
 
