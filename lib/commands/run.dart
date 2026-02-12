@@ -21,9 +21,10 @@ class TizenRunCommand extends RunCommand with DartPluginRegistry, TizenRequiredA
   Future<List<Device>?> findAllTargetDevices({
     bool includeDevicesUnsupportedByProject = false,
   }) async {
+    final List<Device> devices = await globals.deviceManager!.getDevices();
     final tizenDeviceLogger = TizenDeviceLogger(
       logger: globals.logger,
-      deviceManager: globals.deviceManager!,
+      devices: devices,
     );
     return TargetDevices(
       deviceManager: globals.deviceManager!,
@@ -41,14 +42,14 @@ class TizenRunCommand extends RunCommand with DartPluginRegistry, TizenRequiredA
 class TizenDeviceLogger extends DelegatingLogger {
   TizenDeviceLogger({
     required Logger logger,
-    required DeviceManager deviceManager,
-  })  : _deviceManager = deviceManager,
+    required List<Device> devices,
+  })  : _devices = devices.whereType<TizenDevice>().toList(growable: false),
         super(logger);
 
-  final DeviceManager _deviceManager;
+  final List<TizenDevice> _devices;
 
   @override
-  Future<void> printStatus(
+  void printStatus(
     String message, {
     bool? emphasis,
     TerminalColor? color,
@@ -56,20 +57,21 @@ class TizenDeviceLogger extends DelegatingLogger {
     int? indent,
     int? hangingIndent,
     bool? wrap,
-  }) async {
-    for (final Device device in await _deviceManager.getDevices()) {
-      if (device is TizenDevice) {
-        if (message.contains(device.name) && message.contains('Tizen')) {
-          message = message
-              .replaceFirst('(${Category.mobile})',
-                  '(${device.deviceProfile})${device.deviceProfile == 'tv' ? '    ' : ''}')
-              .replaceFirst(
-                getNameForTargetPlatform(TargetPlatform.tester),
-                'tizen-${device.architecture}${device.architecture == 'arm64' ? '   ' : '     '}',
-              );
-        }
+  }) {
+    for (final TizenDevice device in _devices) {
+      if (message.contains(device.name) && message.contains('Tizen')) {
+        message = message
+            .replaceFirst(
+              '(${Category.mobile})',
+              '(${device.deviceProfile})${device.deviceProfile == 'tv' ? '    ' : ''}',
+            )
+            .replaceFirst(
+              getNameForTargetPlatform(TargetPlatform.tester),
+              'tizen-${device.architecture}${device.architecture == 'arm64' ? '   ' : '     '}',
+            );
       }
     }
+
     super.printStatus(
       message,
       emphasis: emphasis,
