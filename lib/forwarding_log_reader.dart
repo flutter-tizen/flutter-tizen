@@ -57,6 +57,8 @@ class ForwardingLogReader extends DeviceLogReader {
   static const _inspectorPubRootDirectoriesExtensionName =
       'ext.flutter.inspector.addPubRootDirectories';
 
+  static const _kInspectorFindIsolateTimeout = Duration(seconds: 3);
+
   // For Inspector pub root registration on hot restart
   StreamSubscription<vm_service.Event>? _isolateEventSubscription;
 
@@ -221,7 +223,7 @@ class ForwardingLogReader extends DeviceLogReader {
     try {
       final String? maybeIsolateId = (await vmService
               .findExtensionIsolate(_inspectorPubRootDirectoriesExtensionName)
-              .timeout(const Duration(seconds: 3)))
+              .timeout(_kInspectorFindIsolateTimeout))
           .id;
 
       if (maybeIsolateId case final isolateId?) {
