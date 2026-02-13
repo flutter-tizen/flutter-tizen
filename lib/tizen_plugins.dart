@@ -729,10 +729,10 @@ Future<void> _writeAppDepndencyInfo(
 
   final flutterTizen = <String, Object>{};
   final Directory workingDirectory = globals.fs.directory(Cache.flutterRoot).parent;
-  final String frameworkRevision = _runGit(
-    'git -c log.showSignature=false log -n 1 --pretty=format:%H',
-    workingDirectory.path,
-  );
+  final String frameworkRevision = globals.git
+      .logSync(<String>['-n', '1', '--pretty=format:%H'], workingDirectory: workingDirectory.path)
+      .stdout
+      .trim();
   flutterTizen['revision'] = _shortGitRevision(frameworkRevision);
 
   final engine = <String, Object>{};
@@ -752,14 +752,6 @@ Future<void> _writeAppDepndencyInfo(
   const encoder = JsonEncoder.withIndent('  ');
   final String formattedJsonString = encoder.convert(result);
   appDepsJson.writeAsStringSync(formattedJsonString);
-}
-
-/// Source: [_runGit] in `version.dart`
-String _runGit(String command, String? workingDirectory) {
-  return globals.processUtils
-      .runSync(command.split(' '), workingDirectory: workingDirectory)
-      .stdout
-      .trim();
 }
 
 /// Source: [_shortGitRevision] in `version.dart`

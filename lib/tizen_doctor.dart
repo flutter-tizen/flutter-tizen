@@ -127,10 +127,10 @@ class TizenValidator extends DoctorValidator {
     final messages = <ValidationMessage>[];
 
     final Directory workingDirectory = _fileSystem.directory(Cache.flutterRoot).parent;
-    final String revision = _runGit(
-      'git -c log.showSignature=false log -n 1 --pretty=format:%H',
-      workingDirectory.path,
-    );
+    final String revision = globals.git
+        .logSync(<String>['-n', '1', '--pretty=format:%H'], workingDirectory: workingDirectory.path)
+        .stdout
+        .trim();
     final version = FlutterVersion.fromRevision(
       flutterRoot: workingDirectory.path,
       frameworkRevision: revision,
@@ -235,13 +235,8 @@ class TizenWorkflow extends Workflow {
   bool get canListEmulators => canListDevices && _tizenSdk!.emCli.existsSync();
 }
 
-/// Source: [_runGit] in `version.dart`
-String _runGit(String command, String? workingDirectory) {
-  return globals.processUtils
-      .runSync(command.split(' '), workingDirectory: workingDirectory)
-      .stdout
-      .trim();
-}
+// NOTE: Use globals.git (Git wrapper) for running git commands to ensure
+// consistent behavior across platforms (e.g. Windows/MSYS noglob).
 
 /// See: [Cache.getVersionFor] in `cache.dart`
 String? _getVersionFor(String artifactName, Directory workingDirectory) {
