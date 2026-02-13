@@ -57,6 +57,8 @@ class ForwardingLogReader extends DeviceLogReader {
   static const _inspectorPubRootDirectoriesExtensionName =
       'ext.flutter.inspector.addPubRootDirectories';
 
+  static const _kInspectorFindIsolateTimeout = Duration(seconds: 3);
+
   // For Inspector pub root registration on hot restart
   StreamSubscription<vm_service.Event>? _isolateEventSubscription;
 
@@ -209,7 +211,7 @@ class ForwardingLogReader extends DeviceLogReader {
     // tizen/flutter/generated_main.dart, which causes DevTools to incorrectly
     // set the pub root to tizen/flutter/ instead of the actual project root.
     // Without this fix, DevTools Inspector shows an empty widget tree.
-    await _setupInspectorPubRootRegistration(connectedVmService);
+    unawaited(_setupInspectorPubRootRegistration(connectedVmService));
   }
 
   /// Sets up registration of the project root with the Inspector on initial
@@ -219,8 +221,10 @@ class ForwardingLogReader extends DeviceLogReader {
   ) async {
     // Initial registration
     try {
-      final String? maybeIsolateId =
-          (await vmService.findExtensionIsolate(_inspectorPubRootDirectoriesExtensionName)).id;
+      final String? maybeIsolateId = (await vmService
+              .findExtensionIsolate(_inspectorPubRootDirectoriesExtensionName)
+              .timeout(_kInspectorFindIsolateTimeout))
+          .id;
 
       if (maybeIsolateId case final isolateId?) {
         await _registerProjectRoot(vmService, isolateId);
