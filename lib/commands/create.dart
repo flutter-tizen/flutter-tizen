@@ -88,12 +88,20 @@ class TizenCreateCommand extends CreateCommand {
   }
 
   @override
-  void addPlatformsOptions({String? customHelp}) {
+  void addPlatformsOptions({
+    String? customHelp,
+    required Map<String, String> allowedHelp,
+  }) {
     argParser.addMultiOption(
       'platforms',
       help: customHelp,
+      aliases: <String>['platform'],
       defaultsTo: _kAvailablePlatforms,
       allowed: _kAvailablePlatforms,
+      allowedHelp: <String, String>{
+        ...allowedHelp,
+        'tizen': 'generate Tizen project files',
+      },
     );
   }
 
@@ -203,6 +211,7 @@ class TizenCreateCommand extends CreateCommand {
     bool linux = false,
     bool macos = false,
     bool windows = false,
+    bool darwin = false,
     bool implementationTests = false,
   }) {
     final Map<String, Object?> context = super.createTemplateContext(
@@ -228,6 +237,7 @@ class TizenCreateCommand extends CreateCommand {
       linux: linux,
       macos: macos,
       windows: windows,
+      darwin: darwin,
       implementationTests: implementationTests,
     );
     context['tizen'] = true;
