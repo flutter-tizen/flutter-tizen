@@ -210,7 +210,7 @@ class _FakeDeviceManager extends DeviceManager {
 }
 
 class _FakeTestWrapper implements TestWrapper {
-  var lastArgs = <String>[];
+  List<String> lastArgs = <String>[];
 
   @override
   Future<void> main(List<String> args) async {

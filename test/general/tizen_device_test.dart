@@ -365,10 +365,10 @@ class _FakeTizenManifest extends Fake implements TizenManifest {
   _FakeTizenManifest();
 
   @override
-  var packageId = 'TestPackage';
+  String packageId = 'TestPackage';
 
   @override
-  var applicationId = 'TestApplication';
+  String applicationId = 'TestApplication';
 
   @override
   String? apiVersion = '6.0';
