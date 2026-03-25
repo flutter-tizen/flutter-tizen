@@ -68,12 +68,12 @@ void main() {
 }
 
 class _FakeCache extends Fake implements Cache {
-  var artifacts = <DevelopmentArtifact>{};
+  Set<DevelopmentArtifact> artifacts = <DevelopmentArtifact>{};
   String? engineStamp;
   String? embedderStamp;
 
   @override
-  var includeAllPlatforms = false;
+  bool includeAllPlatforms = false;
 
   @override
   Set<String>? platformOverrideArtifacts = <String>{};

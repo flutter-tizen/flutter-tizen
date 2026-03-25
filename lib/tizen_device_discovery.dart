@@ -52,7 +52,10 @@ class TizenDeviceDiscovery extends PollingDeviceDiscovery {
   final _splitPattern = RegExp(r'\s{2,}|\t');
 
   @override
-  Future<List<Device>> pollingGetDevices({Duration? timeout}) async {
+  Future<List<Device>> pollingGetDevices({
+    Duration? timeout,
+    bool forWirelessDiscovery = false,
+  }) async {
     if (_tizenSdk == null || !_tizenSdk.sdb.existsSync()) {
       return <TizenDevice>[];
     }

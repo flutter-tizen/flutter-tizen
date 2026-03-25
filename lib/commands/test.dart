@@ -46,9 +46,9 @@ class TizenTestCommand extends TestCommand with TizenRequiredArtifacts {
 class TizenTestRunner implements FlutterTestRunner {
   TizenTestRunner();
 
-  final testRunner = const FlutterTestRunner();
+  final FlutterTestRunner testRunner = const FlutterTestRunner();
 
-  var isIntegrationTest = false;
+  bool isIntegrationTest = false;
 
   /// See: [generateEntrypointWithPluginRegistrant] in `tizen_plugins.dart`
   Future<List<Uri>> _generateEntrypointWrappers(List<Uri> testFiles) async {

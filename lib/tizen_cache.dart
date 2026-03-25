@@ -155,7 +155,35 @@ abstract class TizenCachedArtifacts extends EngineCachedArtifact {
     FileSystem fileSystem,
     OperatingSystemUtils operatingSystemUtils,
   ) async {
-    final downloadUrl = '$kGithubBaseUrl/$_repoName/releases/download/$shortVersion';
+    final String shortVersion7 = shortVersion;
+    try {
+      await _downloadForVersion(shortVersion7, operatingSystemUtils);
+      return;
+    } catch (e) {
+      // TODO(jsuya): Starting with the update to version 3.41.4, the release commit hash
+      //              for generating the flutter-tizen/flutter engine so file has changed
+      //              from 7 characters to 8 characters. Therefore, as a temporary, I adding
+      //              logic to re-download with 8-character hash in the event of a download
+      //              failure. This change may be modified in the future.
+      //              (https://github.com/flutter-tizen/flutter-tizen/pull/750)
+      final String? ver = version;
+      final String shortVersion8 =
+          ver != null && ver.length > 8 ? ver.substring(0, 8) : shortVersion7;
+      if (shortVersion8 == shortVersion7) {
+        rethrow;
+      }
+      _logger.printStatus(
+        'Download failed with revision $shortVersion7, retrying with $shortVersion8...',
+      );
+      await _downloadForVersion(shortVersion8, operatingSystemUtils);
+    }
+  }
+
+  Future<void> _downloadForVersion(
+    String releaseVersion,
+    OperatingSystemUtils operatingSystemUtils,
+  ) async {
+    final downloadUrl = '$kGithubBaseUrl/$_repoName/releases/download/$releaseVersion';
 
     for (final List<String> toolsDir in getBinaryDirs()) {
       final String cacheDir = toolsDir[0];

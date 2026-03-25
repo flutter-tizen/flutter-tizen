@@ -535,10 +535,10 @@ class _DummyFlutterCommand extends FlutterCommand with DartPluginRegistry {
   final BuildMode buildMode;
 
   @override
-  var name = 'dummy';
+  String name = 'dummy';
 
   @override
-  var description = '';
+  String description = '';
 
   @override
   BuildMode getBuildMode() {
