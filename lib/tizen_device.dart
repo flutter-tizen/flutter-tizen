@@ -329,9 +329,11 @@ class TizenDevice extends Device {
       return LaunchResult.failed();
     }
 
-    if (!debuggingOptions.buildInfo.isDebug && architecture == 'x64' && !globals.platform.isLinux) {
+    if (!debuggingOptions.buildInfo.isDebug &&
+        architecture == 'x64' &&
+        globals.platform.isWindows) {
       _logger.printError(
-          'x64 emulator target profile and release builds are supported only on Linux hosts.');
+          'x64 emulator target profile and release builds are not yet supported on Windows hosts.');
       return LaunchResult.failed();
     }
 
