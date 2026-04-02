@@ -6,7 +6,7 @@
 Download and install the latest release of Tizen SDK from the below link. It is recommended to use the `VS Code Extension for Tizen` although you can still build Flutter apps using CLI only.
 
 - [Download Tizen SDK](https://samsungtizenos.com/tools-download/)
-- [Tizen Docs: Installing VS Code Extension for Tizen](https://samsungtizenos.com/docs/sdktools/?sid=IxbvHeBMNspcp66uVvC)
+- [Installing VS Code Extension for Tizen](https://samsungtizenos.com/documentation/sdk-tools/dotnet/vscode/vscode-ext/Tizen/dotnet)
 
 ## Install required packages
 
@@ -36,7 +36,9 @@ To launch an emulator, select it in the list and click the _Start_ button (![sta
 
 ![Tizen Emulator Table](images/em_emulator_table.png)
 
-Note: Launching a Tizen emulator requires HW virtualization (Intel VT-x/AMD-V) support. For more information, see [Emulator Requirements](https://samsungtizenos.com/docs/sdktools/?sid=9UIFnPqra1FQFU9WnCyo#content-emulator-requirements).
+Note: Launching a Tizen emulator requires HW virtualization (Intel VT-x/AMD-V) support. For more information, see [Increasing the Application Execution Speed](https://samsungtizenos.com/documentation/sdk-tools/dotnet/vscode/vscode-ext/tools/emulator#content-increasing-the-application-execution-speed).
+
+Note: If the emulator fails to run on Ubuntu 24.04, you may need to install `libsdl1.2debian` (`sudo apt install libsdl1.2debian`).
 
 ## Create a certificate profile
 
@@ -50,4 +52,4 @@ You should specify the DUID of your device (including emulator) when creating a 
 
 ![Specify DUIDs](images/distributor-create.jpg)
 
-For detailed instructions, see [Samsung Tizen OS: Creating Certificates](https://samsungtizenos.com/docs/sdktools/?sid=rIHCiglrL104UptsbNwf).
+For detailed instructions, see [Creating Certificates](https://samsungtizenos.com/documentation/sdk-tools/dotnet/vscode/vscode-ext/tools/cert-create-profile).
