@@ -329,10 +329,8 @@ class TizenEngineArtifacts extends TizenCachedArtifacts {
       <String>['tizen-arm-release/$platform', 'tizen-arm-release_$platform.zip'],
       <String>['tizen-arm64-profile/$platform', 'tizen-arm64-profile_$platform.zip'],
       <String>['tizen-arm64-release/$platform', 'tizen-arm64-release_$platform.zip'],
-      if (platform != 'windows-x64') ...[
-        <String>['tizen-x64-profile/$platform', 'tizen-x64-profile_$platform.zip'],
-        <String>['tizen-x64-release/$platform', 'tizen-x64-release_$platform.zip'],
-      ],
+      <String>['tizen-x64-profile/$platform', 'tizen-x64-profile_$platform.zip'],
+      <String>['tizen-x64-release/$platform', 'tizen-x64-release_$platform.zip'],
     ];
   }
 }

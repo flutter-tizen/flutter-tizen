@@ -329,14 +329,6 @@ class TizenDevice extends Device {
       return LaunchResult.failed();
     }
 
-    if (!debuggingOptions.buildInfo.isDebug &&
-        architecture == 'x64' &&
-        globals.platform.isWindows) {
-      _logger.printError(
-          'x64 emulator target profile and release builds are not yet supported on Windows hosts.');
-      return LaunchResult.failed();
-    }
-
     // Build project if target application binary is not specified explicitly.
     if (!prebuiltApplication) {
       _logger.printTrace('Building TPK');
