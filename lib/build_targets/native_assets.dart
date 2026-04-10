@@ -3,6 +3,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'package:code_assets/code_assets.dart';
 import 'package:flutter_tools/src/base/common.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/build_info.dart';
@@ -12,6 +13,7 @@ import 'package:flutter_tools/src/build_system/exceptions.dart';
 import 'package:flutter_tools/src/build_system/targets/native_assets.dart';
 import 'package:flutter_tools/src/convert.dart';
 import 'package:flutter_tools/src/dart/package_map.dart';
+import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/isolated/native_assets/dart_hook_result.dart';
 import 'package:flutter_tools/src/isolated/native_assets/linux/native_assets.dart';
 import 'package:flutter_tools/src/isolated/native_assets/native_assets.dart';
@@ -230,16 +232,131 @@ class TizenFlutterNativeAssetsBuildRunnerImpl extends FlutterNativeAssetsBuildRu
     required super.includeDevDependencies,
   });
 
-  // TODO(JSUYA): Tizen uses Android's arm and arm64 TargetPlatforms. This caused the native_asset
-  // of flutter_tools to recognize the TargetOS as Android and use the NDK CCompiler. So, I added
-  // TizenFlutterNativeAssetsBuildRunnerImpl to modify the NativeAssetBuilder to use the Linux
-  // CCompiler(Tizen embedder) even when the asset is Android.
   @override
   Future<void> setCCompilerConfig(CodeAssetTarget target) async {
     if (target is AndroidAssetTarget) {
-      target.cCompilerConfigSync = await cCompilerConfigLinux(throwIfNotFound: true);
+      target.cCompilerConfigSync = await _hostCCompilerConfigLinux(
+        fileSystem: fileSystem,
+        throwIfNotFound: true,
+      );
     } else {
       await target.setCCompilerConfig();
     }
   }
+}
+
+Future<CCompilerConfig?> _hostCCompilerConfigLinux({
+  required FileSystem fileSystem,
+  required bool throwIfNotFound,
+}) async {
+  final CCompilerConfig? upstreamConfig = await cCompilerConfigLinux(
+    throwIfNotFound: false,
+  );
+  if (upstreamConfig != null) {
+    return upstreamConfig;
+  }
+
+  const clangPpBinary = 'clang++';
+  const kClangBinaryOptions = <String>['clang'];
+  const kArBinaryOptions = <String>['llvm-ar', 'ar'];
+  const kLdBinaryOptions = <String>['ld.lld', 'ld'];
+
+  final File? clangPpFile = globals.os.which(clangPpBinary);
+  if (clangPpFile == null) {
+    if (throwIfNotFound) {
+      throwToolExit(
+        'Failed to find $clangPpBinary on PATH.\n'
+        "Run 'sudo apt install clang'.",
+      );
+    }
+    return null;
+  }
+
+  final File resolvedClangPpFile = fileSystem.file(await clangPpFile.resolveSymbolicLinks());
+  final Directory clangDir = resolvedClangPpFile.parent;
+
+  Uri? findExecutable({required List<String> possibleExecutableNames, required Directory path}) {
+    final Uri? found = _findExecutableIfExists(
+      possibleExecutableNames: possibleExecutableNames,
+      path: path,
+    );
+
+    if (found == null && throwIfNotFound) {
+      final String packageSuggestion = switch (possibleExecutableNames) {
+        kClangBinaryOptions => "Run 'sudo apt install clang'.",
+        kArBinaryOptions => "Run 'sudo apt install llvm'.",
+        _ => '',
+      };
+      throwToolExit(
+        'Failed to find any of $possibleExecutableNames in $path.'
+        '${packageSuggestion.isEmpty ? '' : '\n$packageSuggestion'}',
+      );
+    }
+
+    return found;
+  }
+
+  final Uri? compiler = findExecutable(
+    path: clangDir,
+    possibleExecutableNames: kClangBinaryOptions,
+  );
+  final Uri? archiver = findExecutable(
+    path: clangDir,
+    possibleExecutableNames: kArBinaryOptions,
+  );
+
+  Uri? linker = _findExecutableIfExists(
+    possibleExecutableNames: kLdBinaryOptions,
+    path: clangDir,
+  );
+  linker ??= await _findExecutableOnPath(
+    fileSystem: fileSystem,
+    possibleExecutableNames: kLdBinaryOptions,
+  );
+
+  if (linker == null && throwIfNotFound) {
+    throwToolExit(
+      'Failed to find any of $kLdBinaryOptions in LocalDirectory: '
+      "'${clangDir.path}' or on PATH.\n"
+      "Run 'sudo apt install lld' or 'sudo apt install binutils' to install a linker.",
+    );
+  }
+
+  if (compiler == null || archiver == null || linker == null) {
+    assert(!throwIfNotFound);
+    return null;
+  }
+
+  return CCompilerConfig(
+    compiler: compiler,
+    archiver: archiver,
+    linker: linker,
+  );
+}
+
+Future<Uri?> _findExecutableOnPath({
+  required FileSystem fileSystem,
+  required List<String> possibleExecutableNames,
+}) async {
+  for (final executableName in possibleExecutableNames) {
+    final File? executable = globals.os.which(executableName);
+    if (executable == null) {
+      continue;
+    }
+
+    final File resolvedExecutable = fileSystem.file(await executable.resolveSymbolicLinks());
+    return resolvedExecutable.uri;
+  }
+  return null;
+}
+
+Uri? _findExecutableIfExists({
+  required List<String> possibleExecutableNames,
+  required Directory path,
+}) {
+  return possibleExecutableNames
+      .map((execName) => path.childFile(execName))
+      .where((file) => file.existsSync())
+      .map((file) => file.uri)
+      .firstOrNull;
 }
