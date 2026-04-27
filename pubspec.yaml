@@ -9,10 +9,14 @@ environment:
 dependencies:
   analyzer:
   archive:
+  code_assets:
+  data_assets:
   fake_async:
   flutter_tools:
     path: flutter/packages/flutter_tools
   file:
+  hooks:
+  hooks_runner:
   http:
   meta:
   package_config:
