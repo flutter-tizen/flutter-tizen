@@ -273,7 +273,6 @@ Future<void> main(List<String> args) async {
             fileSystem: globals.fs,
             logger: globals.logger,
             processManager: globals.processManager,
-            userMessages: globals.userMessages,
           ),
       TizenWorkflow: () => TizenWorkflow(
             tizenSdk: tizenSdk,

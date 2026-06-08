@@ -8,7 +8,6 @@ import 'package:flutter_tools/src/base/context.dart';
 import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/base/os.dart';
 import 'package:flutter_tools/src/base/process.dart';
-import 'package:flutter_tools/src/base/user_messages.dart';
 import 'package:flutter_tools/src/base/version.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/doctor.dart';
@@ -46,13 +45,11 @@ class TizenValidator extends DoctorValidator {
     required FileSystem fileSystem,
     required Logger logger,
     required ProcessManager processManager,
-    required UserMessages userMessages,
   })  : _tizenSdk = tizenSdk,
         _dotnetCli = dotnetCli,
         _fileSystem = fileSystem,
         _processManager = processManager,
         _processUtils = ProcessUtils(logger: logger, processManager: processManager),
-        _userMessages = userMessages,
         super('Tizen toolchain - develop for Tizen devices');
 
   final TizenSdk? _tizenSdk;
@@ -60,7 +57,6 @@ class TizenValidator extends DoctorValidator {
   final FileSystem _fileSystem;
   final ProcessManager _processManager;
   final ProcessUtils _processUtils;
-  final UserMessages _userMessages;
 
   bool _validatePackages(List<ValidationMessage> messages) {
     final String gccVersion = _tizenSdk!.defaultGccVersion;
@@ -137,11 +133,10 @@ class TizenValidator extends DoctorValidator {
       fs: _fileSystem,
       git: globals.git,
     );
-    messages.add(ValidationMessage(_userMessages.flutterRevision(
-      version.frameworkRevisionShort,
-      version.frameworkAge,
-      version.frameworkCommitDate,
-    )));
+    messages.add(ValidationMessage(
+      'Framework revision ${version.frameworkRevisionShort} '
+      '(${version.frameworkAge}), ${version.frameworkCommitDate}',
+    ));
 
     final String? engineRevision = _getVersionFor('engine', workingDirectory);
     final String? embedderRevision = _getVersionFor('embedder', workingDirectory);
