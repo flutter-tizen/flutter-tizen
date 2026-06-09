@@ -185,6 +185,12 @@ abstract class TizenCachedArtifacts extends EngineCachedArtifact {
   ) async {
     final downloadUrl = '$kGithubBaseUrl/$_repoName/releases/download/$releaseVersion';
 
+    artifactUpdater.setProgressContext(
+      artifactIndex: 1,
+      artifactTotal: 1,
+      downloadTotal: getBinaryDirs().length,
+    );
+
     for (final List<String> toolsDir in getBinaryDirs()) {
       final String cacheDir = toolsDir[0];
       final String urlPath = toolsDir[1];
