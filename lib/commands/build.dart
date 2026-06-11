@@ -23,6 +23,18 @@ class TizenBuildCommand extends BuildCommand {
     required super.osUtils,
     required Logger logger,
     required super.androidSdk,
+    required super.artifacts,
+    required super.cache,
+    required super.flutterVersion,
+    required super.config,
+    required super.platform,
+    required super.processUtils,
+    required super.processManager,
+    required super.fileSystemUtils,
+    required super.templateRenderer,
+    required super.terminal,
+    required super.plistParser,
+    required super.xcode,
     bool verboseHelp = false,
   }) : super(logger: logger, verboseHelp: verboseHelp) {
     addSubcommand(BuildTpkCommand(logger: logger, verboseHelp: verboseHelp));

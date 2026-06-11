@@ -8,7 +8,6 @@ import 'package:flutter_tizen/tizen_sdk.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/base/platform.dart';
-import 'package:flutter_tools/src/base/user_messages.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/doctor_validator.dart';
 
@@ -38,7 +37,6 @@ void main() {
       fileSystem: fileSystem,
       logger: logger,
       processManager: FakeProcessManager.any(),
-      userMessages: UserMessages(),
     );
 
     final ValidationResult result = await tizenValidator.validate();
@@ -59,7 +57,6 @@ void main() {
       fileSystem: fileSystem,
       logger: logger,
       processManager: FakeProcessManager.any(),
-      userMessages: UserMessages(),
     );
 
     final ValidationResult result = await tizenValidator.validate();
@@ -77,7 +74,6 @@ void main() {
       fileSystem: fileSystem,
       logger: logger,
       processManager: FakeProcessManager.any(),
-      userMessages: UserMessages(),
     );
 
     final ValidationResult result = await tizenValidator.validate();

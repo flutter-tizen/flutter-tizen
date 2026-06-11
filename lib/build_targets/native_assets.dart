@@ -96,7 +96,7 @@ class TizenDartBuild extends Target {
       outputDepfile.parent.createSync(recursive: true);
     }
     environment.depFileService.writeToFile(depfile, outputDepfile);
-    if (!await outputDepfile.exists()) {
+    if (!outputDepfile.existsSync()) {
       throw StateError("${outputDepfile.path} doesn't exist.");
     }
   }
@@ -166,6 +166,12 @@ class TizenInstallCodeAssets extends Target {
     // And install/copy the code assets to the right place and create a
     // native_asset.yaml that can be used by the final AOT compilation.
     final Uri nativeAssetsFileUri = environment.buildDir.childFile(nativeAssetsFilename).uri;
+
+    // Tizen builds native assets as Linux shared objects, so the install
+    // location keeps the Linux directory layout.
+    final Uri targetUri =
+        environment.outputDir.childDirectory('native_assets').uri.resolve('${OS.linux.name}/');
+
     await installCodeAssets(
       dartHookResult: dartHookResult,
       environmentDefines: environment.defines,
@@ -173,8 +179,9 @@ class TizenInstallCodeAssets extends Target {
       projectUri: projectUri,
       fileSystem: fileSystem,
       nativeAssetsFileUri: nativeAssetsFileUri,
+      targetUri: targetUri,
     );
-    assert(await fileSystem.file(nativeAssetsFileUri).exists());
+    assert(fileSystem.file(nativeAssetsFileUri).existsSync());
 
     final depfile = Depfile(
       <File>[for (final Uri file in dartHookResult.filesToBeBundled) fileSystem.file(file)],
@@ -182,7 +189,7 @@ class TizenInstallCodeAssets extends Target {
     );
     final File outputDepfile = environment.buildDir.childFile(depFilename);
     environment.depFileService.writeToFile(depfile, outputDepfile);
-    if (!await outputDepfile.exists()) {
+    if (!outputDepfile.existsSync()) {
       throwToolExit("${outputDepfile.path} doesn't exist.");
     }
   }
@@ -227,7 +234,8 @@ Future<DartHooksResult> _runTizenSpecificHooks({
   required FileSystem fileSystem,
   required BuildMode buildMode,
 }) async {
-  final Directory buildDir = fileSystem.directory(nativeAssetsBuildUri(projectUri, OS.linux.name));
+  final Directory buildDir = fileSystem
+      .directory(projectUri.resolve('${getBuildDirectory()}/native_assets/${OS.linux.name}/'));
   if (!buildDir.existsSync()) {
     buildDir.createSync(recursive: true);
   }

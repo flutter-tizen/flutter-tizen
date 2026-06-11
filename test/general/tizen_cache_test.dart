@@ -81,6 +81,7 @@ void main() {
       osUtils.chmods,
       containsAll(genSnapshots.map<List<String>>((File file) => <String>[file.path, 'a+r,a+x'])),
     );
+    expect(artifactUpdater.downloadTotal, artifacts.getBinaryDirs().length);
   });
 
   testWithoutContext('Fails if GitHub CLI is not installed', () async {
@@ -108,6 +109,7 @@ void main() {
 
 class _FakeArtifactUpdater extends Fake implements ArtifactUpdater {
   void Function(String, Uri, Directory)? onDownload;
+  int? downloadTotal;
 
   @override
   Future<void> downloadZipArchive(
@@ -116,6 +118,16 @@ class _FakeArtifactUpdater extends Fake implements ArtifactUpdater {
     Directory location,
   ) async {
     onDownload?.call(message, url, location);
+  }
+
+  @override
+  void setProgressContext({
+    required int artifactIndex,
+    required int artifactTotal,
+    required int downloadTotal,
+    int downloadIndex = 0,
+  }) {
+    this.downloadTotal = downloadTotal;
   }
 
   @override

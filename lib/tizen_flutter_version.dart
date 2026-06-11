@@ -59,6 +59,9 @@ class TizenFlutterVersion implements FlutterVersion {
   @override
   void ensureVersionFile() => flutterVersion.ensureVersionFile();
 
+  @override
+  void deleteVersionFile() => flutterVersion.deleteVersionFile();
+
   /// See: [fetchTagsAndGetVersion] in `version.dart`
   @override
   FlutterVersion fetchTagsAndGetVersion({
