@@ -145,6 +145,16 @@ class TizenDevice extends Device {
   @override
   String get name => 'Tizen $_modelId';
 
+  /// Matches the device ID of a remote device connected over TCP/IP, such as
+  /// "192.168.0.101:26101" (`sdb connect <IP>`).
+  static final RegExp _remoteDeviceId = RegExp(r'^\d{1,3}(\.\d{1,3}){3}:\d+$');
+
+  /// Source: [AndroidDevice.connectionInterface] in `android_device.dart`
+  @override
+  DeviceConnectionInterface get connectionInterface => _remoteDeviceId.hasMatch(id)
+      ? DeviceConnectionInterface.wireless
+      : DeviceConnectionInterface.attached;
+
   String get deviceProfile => getCapability('profile_name');
 
   bool get usesSecureProtocol => getCapability('secure_protocol') == 'enabled';

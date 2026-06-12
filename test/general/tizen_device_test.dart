@@ -308,6 +308,27 @@ __return_cb req_id[1] pkg_type[tpk] pkgid[TestPackage] key[end] val[ok]
     expect(await tvDevice.isSupported(), isFalse);
   });
 
+  testWithoutContext('TizenDevice.connectionInterface is wireless for remote devices', () {
+    final TizenDevice usbDevice = _createTizenDevice(
+      processManager: processManager,
+      fileSystem: fileSystem,
+    );
+    expect(usbDevice.connectionInterface, DeviceConnectionInterface.attached);
+    expect(usbDevice.isWirelesslyConnected, isFalse);
+
+    final remoteDevice = TizenDevice(
+      '192.168.0.101:26101',
+      modelId: 'TestModel',
+      logger: logger,
+      processManager: processManager,
+      tizenSdk: FakeTizenSdk(fileSystem),
+      fileSystem: fileSystem,
+    );
+    expect(remoteDevice.connectionInterface, DeviceConnectionInterface.wireless);
+    expect(remoteDevice.isWirelesslyConnected, isTrue);
+    expect(remoteDevice.displayName, equals('Tizen TestModel (wireless)'));
+  });
+
   testWithoutContext('TizenDevicePortForwarder.forwardedPorts can list forwarded ports', () {
     final forwarder = TizenDevicePortForwarder(
       device: _createTizenDevice(
