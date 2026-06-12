@@ -52,6 +52,10 @@ GOTO :EOF
 
         REM Invalidate the cache.
         IF EXIST "%cache_dir%" RMDIR /S /Q "%cache_dir%"
+
+        REM Force pub to run again because the dependencies of flutter_tools
+        REM (a path dependency of flutter-tizen) may have changed.
+        IF EXIST "%ROOT_DIR%\pubspec.lock" DEL /F /Q "%ROOT_DIR%\pubspec.lock"
       )
 
       FOR /f %%r IN ('git rev-parse HEAD') DO SET revision=%%r
@@ -100,12 +104,29 @@ GOTO :EOF
 
   :do_update_snapshot
     PUSHD "%ROOT_DIR%"
+      REM Run pub only when the dependency inputs changed. A revision change
+      REM that only touches Dart sources reuses the existing package
+      REM resolution.
+      IF NOT EXIST "%ROOT_DIR%\pubspec.lock" GOTO do_pub_upgrade
+      IF NOT EXIST "%ROOT_DIR%\.dart_tool\package_config.json" GOTO do_pub_upgrade
+      FOR /F %%i IN ('DIR /B /O:D "%ROOT_DIR%\pubspec.yaml" "%ROOT_DIR%\pubspec.lock"') DO SET pub_newer_file=%%i
+      FOR %%i IN (%ROOT_DIR%\pubspec.yaml) DO SET pub_yaml_timestamp=%%~ti
+      FOR %%i IN (%ROOT_DIR%\pubspec.lock) DO SET pub_lock_timestamp=%%~ti
+      IF "%pub_yaml_timestamp%" == "%pub_lock_timestamp%" SET pub_newer_file=""
+      IF "%pub_newer_file%" NEQ "pubspec.yaml" GOTO do_compile_snapshot
+
+    :do_pub_upgrade
       ECHO Running pub upgrade...
       CALL "%flutter_exe%" pub upgrade || (
         ECHO Error: Unable to 'pub upgrade' flutter-tizen. 1>&2
         EXIT /B 1
       )
 
+      REM Touch the pubspec.lock to ensure, even if this was a NOP, it is
+      REM newer than pubspec.yaml.
+      COPY /B /Y "%ROOT_DIR%\pubspec.lock"+,, "%ROOT_DIR%\pubspec.lock" >NUL
+
+    :do_compile_snapshot
       ECHO Compiling flutter-tizen...
       CALL "%dart_exe%" --disable-dart-dev --no-enable-mirrors ^
                         --snapshot="%snapshot_path%" ^
