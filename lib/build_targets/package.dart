@@ -218,6 +218,30 @@ class DotnetTpk extends TizenPackage {
       }
     }
 
+    if (buildMode.isRelease &&
+        (result.stdout.contains('Using default certificates') ||
+            result.stdout.contains('signed with Default Certificates'))) {
+      // In some cases where the certificate or its configuration is invalid,
+      // `tz` cannot sign a release TPK with the requested profile and silently
+      // falls back to a dummy default certificate (CN=author), yet the build
+      // still succeeds. Such a TPK is not valid for Samsung Seller Portal
+      // upload. The two markers cover both signing paths: `tz build` and the
+      // older `dotnet build` (build-task-tizen). Warn but do not abort.
+      environment.logger.printWarning(
+        'Warning: The release TPK was signed with a dummy default certificate '
+        'instead of the "$securityProfile" profile.\n'
+        'A release TPK signed with the default certificate is not valid for '
+        'Samsung Seller Portal upload.\n'
+        'This usually means the signing profile could not be applied — for '
+        'example the profile is invalid, or the certificate password is not '
+        'accessible (a locked keyring, or a headless session without an active '
+        'D-Bus/keyring session).\n'
+        'Verify the "$securityProfile" profile in Certificate Manager, make '
+        'sure the certificate password is unlocked, and rebuild before '
+        'uploading.',
+      );
+    }
+
     // Copy the TPK and tpkroot to the output directory.
     outputTpk.copySync(outputDir.childFile(tizenProject.outputTpkName).path);
     final Directory tpkrootDir = outputTpk.parent.childDirectory('tpkroot');
