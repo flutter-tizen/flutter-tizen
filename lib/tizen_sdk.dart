@@ -46,10 +46,32 @@ class TizenSdk {
     final Map<String, String> environment = globals.platform.environment;
     final File? sdb = globals.os.which('sdb');
 
+    Directory sdkToolsDataDir(Directory platformDir) =>
+        platformDir.childDirectory('server').childDirectory('sdktools').childDirectory('data');
+
     final findTizenHomeDirFuncs = <Directory? Function()>[
       () {
         if (environment.containsKey('TIZEN_SDK')) {
           return globals.fs.directory(environment['TIZEN_SDK']);
+        }
+        return null;
+      },
+      () {
+        // The Tizen extension for VS Code saves the platform installation
+        // path in the .tizen.path.config file in the user's home directory.
+        if (globals.fsUtils.homeDirPath != null) {
+          final File configFile =
+              globals.fs.directory(globals.fsUtils.homeDirPath).childFile('.tizen.path.config');
+          if (configFile.existsSync()) {
+            try {
+              final dynamic config = jsonDecode(configFile.readAsStringSync());
+              if (config is Map<String, dynamic> && config['url'] is String) {
+                return sdkToolsDataDir(globals.fs.directory(config['url'] as String));
+              }
+            } on Exception {
+              // Ignore a malformed or unreadable config file.
+            }
+          }
         }
         return null;
       },
@@ -62,12 +84,9 @@ class TizenSdk {
       () {
         if (globals.platform.isLinux || globals.platform.isMacOS) {
           if (globals.fsUtils.homeDirPath != null) {
-            return globals.fs
+            return sdkToolsDataDir(globals.fs
                 .directory(globals.fsUtils.homeDirPath)
-                .childDirectory('.tizen-extension-platform')
-                .childDirectory('server')
-                .childDirectory('sdktools')
-                .childDirectory('data');
+                .childDirectory('.tizen-extension-platform'));
           }
         }
         return null;
@@ -75,12 +94,9 @@ class TizenSdk {
       () {
         if (globals.platform.isWindows) {
           if (environment.containsKey('USERPROFILE')) {
-            return globals.fs
+            return sdkToolsDataDir(globals.fs
                 .directory(environment['SystemDrive'])
-                .childDirectory('.tizen-extension-platform')
-                .childDirectory('server')
-                .childDirectory('sdktools')
-                .childDirectory('data');
+                .childDirectory('.tizen-extension-platform'));
           }
         }
         return null;
@@ -106,7 +122,10 @@ class TizenSdk {
       tizenHomeDir = findTizenHomeDirFunc();
       if (tizenHomeDir != null && tizenHomeDir.existsSync()) {
         TizenSdkType sdkType;
-        if (tizenHomeDir.path.contains('.tizen-extension-platform')) {
+        if (tizenHomeDir.path.contains('.tizen-extension-platform') ||
+            globals.fs.path
+                .normalize(tizenHomeDir.path)
+                .endsWith(globals.fs.path.join('server', 'sdktools', 'data'))) {
           sdkType = TizenSdkType.extension;
         } else {
           sdkType = TizenSdkType.cli;
