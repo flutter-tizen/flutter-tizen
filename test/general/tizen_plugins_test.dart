@@ -467,7 +467,7 @@ internal class GeneratedPluginRegistrant
     project = FlutterProject.fromDirectoryTest(fileSystem.currentDirectory);
     await injectTizenPlugins(project);
 
-    final File appDepsJson = fileSystem.file('tizen/.app.deps.json');
+    final File appDepsJson = fileSystem.file('tizen/app.deps.json');
     expect(appDepsJson, exists);
     expect(appDepsJson.readAsStringSync(), contains('''
   "info": "This is a generated file; do not edit or check into version control.",
@@ -510,7 +510,7 @@ type = staticLib
     project = FlutterProject.fromDirectoryTest(fileSystem.currentDirectory);
     await injectTizenPlugins(project);
 
-    final File appDepsJson = fileSystem.file('tizen/.app.deps.json');
+    final File appDepsJson = fileSystem.file('tizen/app.deps.json');
     expect(appDepsJson, exists);
     expect(appDepsJson.readAsStringSync(), contains('''
   "info": "This is a generated file; do not edit or check into version control.",
