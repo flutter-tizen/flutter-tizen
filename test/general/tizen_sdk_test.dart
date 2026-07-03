@@ -56,6 +56,24 @@ void main() {
         ),
   });
 
+  testUsingContext('TizenSdk.locateSdk reads the URL from .tizen.path.config', () {
+    fileSystem.file('/home/user/.tizen.path.config')
+      ..createSync(recursive: true)
+      ..writeAsStringSync('{"url": "/custom-platform"}');
+    fileSystem.directory('/custom-platform/server/sdktools/data').createSync(recursive: true);
+
+    final TizenSdk? tizenSdk = TizenSdk.locateSdk();
+    expect(tizenSdk, isNotNull);
+    expect(tizenSdk!.directory.path, equals('/custom-platform/server/sdktools/data'));
+    expect(tizenSdk.sdkType, equals(TizenSdkType.extension));
+  }, overrides: <Type, Generator>{
+    FileSystem: () => fileSystem,
+    ProcessManager: () => FakeProcessManager.any(),
+    Platform: () => FakePlatform(
+          environment: <String, String>{'HOME': '/home/user'},
+        ),
+  });
+
   testWithoutContext('TizenSdk.sdkVersion can parse version file', () {
     expect(tizenSdk.sdkVersion, isNull);
 
