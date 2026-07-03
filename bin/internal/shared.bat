@@ -95,8 +95,8 @@ GOTO :EOF
     SET pubspec_yaml_path=%ROOT_DIR%\pubspec.yaml
     SET pubspec_lock_path=%ROOT_DIR%\pubspec.lock
     FOR /F %%i IN ('DIR /B /O:D "%pubspec_yaml_path%" "%pubspec_lock_path%"') DO SET newer_file=%%i
-    FOR %%i IN (%pubspec_yaml_path%) DO SET pubspec_yaml_timestamp=%%~ti
-    FOR %%i IN (%pubspec_lock_path%) DO SET pubspec_lock_timestamp=%%~ti
+    FOR %%i IN ("%pubspec_yaml_path%") DO SET pubspec_yaml_timestamp=%%~ti
+    FOR %%i IN ("%pubspec_lock_path%") DO SET pubspec_lock_timestamp=%%~ti
     IF "%pubspec_yaml_timestamp%" == "%pubspec_lock_timestamp%" SET newer_file=""
     IF "%newer_file%" EQU "pubspec.yaml" GOTO do_update_snapshot
   ENDLOCAL
