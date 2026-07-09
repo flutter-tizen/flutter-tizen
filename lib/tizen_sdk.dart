@@ -391,7 +391,11 @@ class TizenSdk {
     }
 
     if (versionToDouble(apiVersion) < 8.0 && arch == 'x64') {
-      throwToolExit('x64 is not supported with API version < 8.0.');
+      throwToolExit(
+        'x64 is not supported with API version < 8.0.\n'
+        'To build for x64 (e.g. an x86_64 emulator), set the api-version to '
+        '8.0 or higher in tizen/tizen-manifest.xml.',
+      );
     }
 
     switch (profile) {
