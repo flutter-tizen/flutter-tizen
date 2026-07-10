@@ -110,29 +110,6 @@ namespace Tizen.Flutter.Embedding
         public static extern void FlutterDesktopViewDestroy(
             FlutterDesktopView view);
 
-        [DllImport("flutter_tizen.so")]
-        public static extern IntPtr FlutterDesktopViewGetNativeHandle(FlutterDesktopView view);
-
-        [DllImport("flutter_tizen.so")]
-        public static extern void FlutterDesktopViewResize(FlutterDesktopView view, int width, int height);
-
-        [DllImport("flutter_tizen.so")]
-        public static extern void FlutterDesktopViewOnPointerEvent(
-            FlutterDesktopView view, FlutterDesktopPointerEventType type, double x, double y, uint timestamp,
-            int device_id);
-
-        [DllImport("flutter_tizen.so")]
-        public static extern void FlutterDesktopViewOnKeyEvent(
-            FlutterDesktopView view, string device_name, uint device_class, uint device_subclass, string key,
-            string key_string, uint modifiers, uint scan_code, uint timestamp,
-            [MarshalAs(UnmanagedType.U1)] bool is_down);
-
-        [DllImport("flutter_tizen.so")]
-        public static extern void FlutterDesktopViewSetFocus(
-            FlutterDesktopView view, [MarshalAs(UnmanagedType.U1)] bool focused);
-
-        [DllImport("flutter_tizen.so")]
-        public static extern bool FlutterDesktopViewIsFocused(FlutterDesktopView view);
         #endregion
 
         #region flutter_messenger.h
