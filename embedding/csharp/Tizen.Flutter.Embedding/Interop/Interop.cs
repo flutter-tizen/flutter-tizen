@@ -53,13 +53,6 @@ namespace Tizen.Flutter.Embedding
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct FlutterDesktopViewProperties
-        {
-            public int width;
-            public int height;
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
         public struct FlutterDesktopEngineProperties
         {
             public string assets_path;
@@ -112,10 +105,6 @@ namespace Tizen.Flutter.Embedding
         [DllImport("flutter_tizen.so")]
         public static extern FlutterDesktopView FlutterDesktopViewCreateFromNewWindow(
             ref FlutterDesktopWindowProperties window_properties, FlutterDesktopEngine engine);
-
-        [DllImport("flutter_tizen.so")]
-        public static extern FlutterDesktopView FlutterDesktopViewCreateFromElmParent(
-            ref FlutterDesktopViewProperties view_properties, FlutterDesktopEngine engine, IntPtr parent);
 
         [DllImport("flutter_tizen.so")]
         public static extern void FlutterDesktopViewDestroy(
