@@ -118,11 +118,6 @@ namespace Tizen.Flutter.Embedding
             ref FlutterDesktopViewProperties view_properties, FlutterDesktopEngine engine, IntPtr parent);
 
         [DllImport("flutter_tizen.so")]
-        public static extern FlutterDesktopView FlutterDesktopViewCreateFromImageView(
-            ref FlutterDesktopViewProperties view_properties, FlutterDesktopEngine engine, IntPtr image_view,
-            IntPtr native_image_queue, int default_window_id);
-
-        [DllImport("flutter_tizen.so")]
         public static extern void FlutterDesktopViewDestroy(
             FlutterDesktopView view);
 
