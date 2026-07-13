@@ -16,13 +16,6 @@ namespace Tizen.Flutter.Embedding
             kEGL,
         };
 
-        public enum FlutterDesktopPointerEventType
-        {
-            kPointerDown,
-            kPointerUp,
-            kPointerMove,
-        };
-
         [StructLayout(LayoutKind.Sequential)]
         public struct FlutterDesktopWindowProperties
         {
