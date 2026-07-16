@@ -93,7 +93,7 @@ Future<void> main(List<String> args) async {
   final bool verboseHelp = help && verbose;
   final bool daemon = args.contains('daemon');
   final bool widgetPreviews = args.contains(WidgetPreviewCommand.kWidgetPreview);
-  final bool runMachine = args.contains('--machine') && args.contains('run');
+  final bool runMachine = args.contains('--machine');
 
   Cache.flutterRoot = join(rootPath, 'flutter');
 
