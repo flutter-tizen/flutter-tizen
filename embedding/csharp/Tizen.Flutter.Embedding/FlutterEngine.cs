@@ -9,6 +9,25 @@ using static Tizen.Flutter.Embedding.Interop;
 namespace Tizen.Flutter.Embedding
 {
     /// <summary>
+    /// Enumeration for the thread policy of the Flutter engine's UI isolate.
+    /// </summary>
+    public enum FlutterUIThreadPolicy
+    {
+        /// <summary>
+        /// Currently runs the UI isolate on the platform thread. Equivalent to <see cref="RunOnPlatformThread"/>.
+        /// </summary>
+        Default,
+        /// <summary>
+        /// Runs the UI isolate on the platform thread.
+        /// </summary>
+        RunOnPlatformThread,
+        /// <summary>
+        /// Runs the UI isolate on a separate thread.
+        /// </summary>
+        RunOnSeparateThread,
+    }
+
+    /// <summary>
     /// The engine for Flutter execution.
     /// </summary>
     public class FlutterEngine : IPluginRegistry
@@ -18,17 +37,34 @@ namespace Tizen.Flutter.Embedding
         /// <summary>
         /// Creates a <see cref="FlutterEngine"/> with an optional entrypoint name and entrypoint arguments.
         /// </summary>
-        public FlutterEngine(string dartEntrypoint = "", List<string> dartEntrypointArgs = null)
-            : this("../res/flutter_assets", "../res/icudtl.dat", "../lib/libapp.so", dartEntrypoint, dartEntrypointArgs)
+        /// <param name="dartEntrypoint">The optional entrypoint in the Dart project. Defaults to main() if empty.</param>
+        /// <param name="dartEntrypointArgs">The optional entrypoint arguments.</param>
+        /// <param name="uiThreadPolicy">
+        /// The thread policy for running the UI isolate. Defaults to <see cref="FlutterUIThreadPolicy.Default"/>,
+        /// which merges the UI isolate onto the platform thread. If the UI isolate is blocked by a long-running
+        /// synchronous native call (e.g. via FFI), the platform thread can no longer respond to the Tizen app
+        /// framework (app control/resume requests), which may cause the app to be killed by the platform watchdog.
+        ///
+        /// <see cref="FlutterUIThreadPolicy.RunOnSeparateThread"/> is available for apps that need it, but apps
+        /// must still make sure their Dart code never blocks indefinitely, whichever policy is used. Apps that
+        /// choose this policy are responsible for any issues that result from doing so.
+        /// </param>
+        public FlutterEngine(
+            string dartEntrypoint = "", List<string> dartEntrypointArgs = null,
+            FlutterUIThreadPolicy uiThreadPolicy = FlutterUIThreadPolicy.Default)
+            : this("../res/flutter_assets", "../res/icudtl.dat", "../lib/libapp.so", dartEntrypoint,
+                  dartEntrypointArgs, uiThreadPolicy)
         {
         }
 
         /// <summary>
         /// Creates a <see cref="FlutterEngine"/> with the given arguments.
         /// </summary>
+        /// <remarks>See the other constructor for the meaning of <paramref name="uiThreadPolicy"/>.</remarks>
         public FlutterEngine(
             string assetsPath, string icuDataPath, string aotLibraryPath, string dartEntrypoint = "",
-            List<string> dartEntrypointArgs = null)
+            List<string> dartEntrypointArgs = null,
+            FlutterUIThreadPolicy uiThreadPolicy = FlutterUIThreadPolicy.Default)
         {
             dartEntrypointArgs = dartEntrypointArgs ?? new List<string>();
             _engineArguments = new FlutterEngineArguments();
@@ -46,7 +82,7 @@ namespace Tizen.Flutter.Embedding
                     entrypoint = dartEntrypoint,
                     dart_entrypoint_argc = entrypointArgs.Length,
                     dart_entrypoint_argv = entrypointArgs.Handle,
-                    ui_thread_policy = FlutterDesktopUIThreadPolicy.kDefault,
+                    ui_thread_policy = (FlutterDesktopUIThreadPolicy)uiThreadPolicy,
                 };
 
                 Engine = FlutterDesktopEngineCreate(ref engineProperties);

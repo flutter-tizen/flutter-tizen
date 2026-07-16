@@ -110,6 +110,18 @@ namespace Tizen.Flutter.Embedding
         protected FlutterRendererType RendererType { get; set; } = FlutterRendererType.EGL;
 
         /// <summary>
+        /// The thread policy for running the UI isolate. Defaults to <see cref="FlutterUIThreadPolicy.Default"/>,
+        /// which merges the UI isolate onto the platform thread. If the UI isolate is blocked by a long-running
+        /// synchronous native call (e.g. via FFI), the platform thread can no longer respond to the Tizen app
+        /// framework (app control/resume requests), which may cause the app to be killed by the platform watchdog.
+        ///
+        /// <see cref="FlutterUIThreadPolicy.RunOnSeparateThread"/> is available for apps that need it, but apps
+        /// must still make sure their Dart code never blocks indefinitely, whichever policy is used. Apps that
+        /// choose this policy are responsible for any issues that result from doing so.
+        /// </summary>
+        protected FlutterUIThreadPolicy UIThreadPolicy { get; set; } = FlutterUIThreadPolicy.Default;
+
+        /// <summary>
         /// The user-defined pixel ratio. Defaults to the device pixel ratio if the value is 0.
         /// </summary>
         protected double UserPixelRatio { get; set; } = 0.0;
@@ -142,7 +154,7 @@ namespace Tizen.Flutter.Embedding
         {
             base.OnCreate();
 
-            Engine = new FlutterEngine(DartEntrypoint);
+            Engine = new FlutterEngine(DartEntrypoint, uiThreadPolicy: UIThreadPolicy);
             if (!Engine.IsValid)
             {
                 throw new Exception("Could not create a Flutter engine.");

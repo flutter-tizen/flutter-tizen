@@ -132,6 +132,22 @@ class FlutterApp : public flutter::PluginRegistry {
   // It only works on TV.
   bool is_floating_menu_support = true;
 
+  // The thread policy for running the UI isolate.
+  //
+  // Defaults to |FlutterDesktopUIThreadPolicy::kDefault|, which merges the UI
+  // isolate onto the platform thread. If the UI isolate is blocked by a
+  // long-running synchronous native call (e.g. via FFI), the platform thread
+  // can no longer respond to the Tizen app framework (app control/resume
+  // requests), which may cause the app to be killed by the platform
+  // watchdog.
+  //
+  // |FlutterDesktopUIThreadPolicy::kRunOnSeparateThread| is available for
+  // apps that need it, but apps must still make sure their Dart code never
+  // blocks indefinitely, whichever policy is used. Apps that choose this
+  // policy are responsible for any issues that result from doing so.
+  FlutterDesktopUIThreadPolicy ui_thread_policy_ =
+      FlutterDesktopUIThreadPolicy::kDefault;
+
  private:
   // The optional entrypoint in the Dart project.
   //
