@@ -62,17 +62,8 @@ class FlutterServiceApp : public flutter::PluginRegistry {
  protected:
   // The thread policy for running the UI isolate.
   //
-  // Defaults to |FlutterDesktopUIThreadPolicy::kDefault|, which merges the UI
-  // isolate onto the platform thread. If the UI isolate is blocked by a
-  // long-running synchronous native call (e.g. via FFI), the platform thread
-  // can no longer respond to the Tizen app framework (app control/resume
-  // requests), which may cause the app to be killed by the platform
-  // watchdog.
-  //
-  // |FlutterDesktopUIThreadPolicy::kRunOnSeparateThread| is available for
-  // apps that need it, but apps must still make sure their Dart code never
-  // blocks indefinitely, whichever policy is used. Apps that choose this
-  // policy are responsible for any issues that result from doing so.
+  // Defaults to |FlutterDesktopUIThreadPolicy::kDefault|. See
+  // |FlutterEngine::Create| for the meaning of each policy.
   FlutterDesktopUIThreadPolicy ui_thread_policy_ =
       FlutterDesktopUIThreadPolicy::kDefault;
 
