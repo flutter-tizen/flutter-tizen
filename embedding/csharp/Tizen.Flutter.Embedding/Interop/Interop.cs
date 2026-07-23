@@ -194,18 +194,5 @@ namespace Tizen.Flutter.Embedding
         public static extern FlutterDesktopMessenger FlutterDesktopPluginRegistrarGetMessenger(
             FlutterDesktopPluginRegistrar registrar);
         #endregion
-
-        [DllImport("libdali2-csharp-binder.so", EntryPoint = "CSharp_Dali_Application_New__MANUAL_4")]
-        public static extern IntPtr ApplicationNewManual4(int jarg1, string jarg2, string jarg3, int jarg4);
-
-        [DllImport("libdali2-csharp-binder.so", EntryPoint = "CSharp_Dali_Application_GetWindow")]
-        public static extern IntPtr GetWindow(IntPtr jarg1);
-
-        [DllImport("libdali2-csharp-binder.so", EntryPoint = "CSharp_Dali_GetNativeWindowHandler")]
-        public static extern IntPtr GetNativeWindowHandler(IntPtr Window);
-
-        [DllImport("libdali2-csharp-binder.so", EntryPoint = "CSharp_Dali_BaseHandle_HasBody")]
-        [return: MarshalAs(UnmanagedType.U1)]
-        public static extern bool HasBody(IntPtr jarg1);
     }
 }

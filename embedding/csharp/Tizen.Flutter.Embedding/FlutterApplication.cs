@@ -164,16 +164,6 @@ namespace Tizen.Flutter.Embedding
                 throw new Exception("Vulkan renderer requires USE_FLUTTER_TIZEN_EXPERIMENTAL. Enable flutter tizen experimental using the --dart-define=USE_FLUTTER_TIZEN_EXPERIMENTAL=true.");
             }
 
-            var daliApp = ApplicationNewManual4(0, "", "", 1 /* transparent */);
-            var daliWindow = GetWindow(daliApp);
-            IntPtr wlWindow = IntPtr.Zero;
-            // FIXME(jsuya): There is an issue where window geometry settings are not applied when using precreated windows.
-            // Precreated windows are only used when the window size and position have not been set.
-            if (WindowOffsetX == 0 && WindowOffsetY == 0 && WindowWidth == 0 && WindowHeight == 0 && HasBody(daliWindow))
-            {
-                wlWindow = GetNativeWindowHandler(daliWindow);
-            }
-
             var windowProperties = new FlutterDesktopWindowProperties
             {
                 x = WindowOffsetX,
@@ -185,7 +175,7 @@ namespace Tizen.Flutter.Embedding
                 top_level = IsTopLevel,
                 renderer_type = (FlutterDesktopRendererType)RendererType,
                 user_pixel_ratio = UserPixelRatio < 0.0 ? 0.0 : UserPixelRatio,
-                window_handle = wlWindow,
+                window_handle = IntPtr.Zero,
                 pointing_device_support = IsPointingDeviceSupport,
                 floating_menu_support = IsFloatingMenuSupport,
             };
