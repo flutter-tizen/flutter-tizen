@@ -16,13 +16,6 @@ namespace Tizen.Flutter.Embedding
             kEGL,
         };
 
-        public enum FlutterDesktopPointerEventType
-        {
-            kPointerDown,
-            kPointerUp,
-            kPointerMove,
-        };
-
         [StructLayout(LayoutKind.Sequential)]
         public struct FlutterDesktopWindowProperties
         {
@@ -50,13 +43,6 @@ namespace Tizen.Flutter.Embedding
             kDefault,
             kRunOnPlatformThread,
             kRunOnSeparateThread,
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        public struct FlutterDesktopViewProperties
-        {
-            public int width;
-            public int height;
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -114,41 +100,9 @@ namespace Tizen.Flutter.Embedding
             ref FlutterDesktopWindowProperties window_properties, FlutterDesktopEngine engine);
 
         [DllImport("flutter_tizen.so")]
-        public static extern FlutterDesktopView FlutterDesktopViewCreateFromElmParent(
-            ref FlutterDesktopViewProperties view_properties, FlutterDesktopEngine engine, IntPtr parent);
-
-        [DllImport("flutter_tizen.so")]
-        public static extern FlutterDesktopView FlutterDesktopViewCreateFromImageView(
-            ref FlutterDesktopViewProperties view_properties, FlutterDesktopEngine engine, IntPtr image_view,
-            IntPtr native_image_queue, int default_window_id);
-
-        [DllImport("flutter_tizen.so")]
         public static extern void FlutterDesktopViewDestroy(
             FlutterDesktopView view);
 
-        [DllImport("flutter_tizen.so")]
-        public static extern IntPtr FlutterDesktopViewGetNativeHandle(FlutterDesktopView view);
-
-        [DllImport("flutter_tizen.so")]
-        public static extern void FlutterDesktopViewResize(FlutterDesktopView view, int width, int height);
-
-        [DllImport("flutter_tizen.so")]
-        public static extern void FlutterDesktopViewOnPointerEvent(
-            FlutterDesktopView view, FlutterDesktopPointerEventType type, double x, double y, uint timestamp,
-            int device_id);
-
-        [DllImport("flutter_tizen.so")]
-        public static extern void FlutterDesktopViewOnKeyEvent(
-            FlutterDesktopView view, string device_name, uint device_class, uint device_subclass, string key,
-            string key_string, uint modifiers, uint scan_code, uint timestamp,
-            [MarshalAs(UnmanagedType.U1)] bool is_down);
-
-        [DllImport("flutter_tizen.so")]
-        public static extern void FlutterDesktopViewSetFocus(
-            FlutterDesktopView view, [MarshalAs(UnmanagedType.U1)] bool focused);
-
-        [DllImport("flutter_tizen.so")]
-        public static extern bool FlutterDesktopViewIsFocused(FlutterDesktopView view);
         #endregion
 
         #region flutter_messenger.h
