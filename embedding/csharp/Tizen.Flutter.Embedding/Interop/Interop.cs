@@ -103,6 +103,9 @@ namespace Tizen.Flutter.Embedding
         public static extern void FlutterDesktopViewDestroy(
             FlutterDesktopView view);
 
+        [DllImport("flutter_tizen.so")]
+        public static extern IntPtr FlutterDesktopViewGetNativeHandle(FlutterDesktopView view);
+
         #endregion
 
         #region flutter_messenger.h
