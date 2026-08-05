@@ -54,6 +54,10 @@ function update_flutter() {
 
     # Invalidate the cache.
     rm -fr "$ROOT_DIR/bin/cache"
+
+    # Force pub to run again because the dependencies of flutter_tools
+    # (a path dependency of flutter-tizen) may have changed.
+    rm -f "$ROOT_DIR/pubspec.lock"
   fi
 
   if [[ "$version" != "$(git rev-parse HEAD)" ]]; then
@@ -81,11 +85,16 @@ function update_flutter_tizen() {
 
   if [[ ! -f "$SNAPSHOT_PATH" || ! -s "$stamp_path" || "$revision" != "$(cat "$stamp_path")"
         || "$ROOT_DIR/pubspec.yaml" -nt "$ROOT_DIR/pubspec.lock" ]]; then
-    echo "Running pub upgrade..."
-    (cd "$ROOT_DIR" && "$FLUTTER_EXE" pub upgrade) || {
-      >&2 echo "Error: Unable to 'pub upgrade' flutter-tizen."
-      exit 1
-    }
+    if [[ ! -f "$ROOT_DIR/pubspec.lock" || ! -f "$ROOT_DIR/.dart_tool/package_config.json"
+          || "$ROOT_DIR/pubspec.yaml" -nt "$ROOT_DIR/pubspec.lock" ]]; then
+      echo "Running pub upgrade..."
+      (cd "$ROOT_DIR" && "$FLUTTER_EXE" pub upgrade) || {
+        >&2 echo "Error: Unable to 'pub upgrade' flutter-tizen."
+        exit 1
+      }
+
+      touch "$ROOT_DIR/pubspec.lock"
+    fi
 
     echo "Compiling flutter-tizen..."
     "$DART_EXE" --disable-dart-dev --no-enable-mirrors \
