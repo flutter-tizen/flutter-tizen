@@ -110,8 +110,8 @@ GOTO :EOF
       IF NOT EXIST "%ROOT_DIR%\pubspec.lock" GOTO do_pub_upgrade
       IF NOT EXIST "%ROOT_DIR%\.dart_tool\package_config.json" GOTO do_pub_upgrade
       FOR /F %%i IN ('DIR /B /O:D "%ROOT_DIR%\pubspec.yaml" "%ROOT_DIR%\pubspec.lock"') DO SET pub_newer_file=%%i
-      FOR %%i IN (%ROOT_DIR%\pubspec.yaml) DO SET pub_yaml_timestamp=%%~ti
-      FOR %%i IN (%ROOT_DIR%\pubspec.lock) DO SET pub_lock_timestamp=%%~ti
+      FOR %%i IN ("%ROOT_DIR%\pubspec.yaml") DO SET pub_yaml_timestamp=%%~ti
+      FOR %%i IN ("%ROOT_DIR%\pubspec.lock") DO SET pub_lock_timestamp=%%~ti
       IF "%pub_yaml_timestamp%" == "%pub_lock_timestamp%" SET pub_newer_file=""
       IF "%pub_newer_file%" NEQ "pubspec.yaml" GOTO do_compile_snapshot
 
