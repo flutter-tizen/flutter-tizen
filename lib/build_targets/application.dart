@@ -190,6 +190,7 @@ class TizenAotElf extends AotElfBase {
 
   @override
   List<Source> get inputs => <Source>[
+        const Source.pattern('{FLUTTER_ROOT}/../lib/build_targets/application.dart'),
         const Source.pattern('{BUILD_DIR}/app.dill'),
         const Source.artifact(Artifact.engineDartBinary),
         const Source.artifact(Artifact.skyEnginePath),
@@ -205,6 +206,20 @@ class TizenAotElf extends AotElfBase {
   List<Target> get dependencies => const <Target>[
         TizenKernelSnapshot(),
       ];
+
+  /// gen_snapshot skips stripping for Android target platforms, expecting
+  /// the Android Gradle Plugin to strip later. Tizen has no such step, so
+  /// strip here.
+  @override
+  Future<void> build(Environment environment) async {
+    final List<String> extraGenSnapshotOptions =
+        decodeCommaSeparated(environment.defines, kExtraGenSnapshotOptions);
+    if (!extraGenSnapshotOptions.contains('--no-strip')) {
+      extraGenSnapshotOptions.add('--strip');
+      environment.defines[kExtraGenSnapshotOptions] = extraGenSnapshotOptions.join(',');
+    }
+    await super.build(environment);
+  }
 }
 
 /// Source: [DebugAndroidApplication] in `android.dart`
