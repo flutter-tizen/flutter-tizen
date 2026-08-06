@@ -205,7 +205,7 @@ The following commands from the [Flutter CLI](https://flutter.dev/docs/reference
   Symbolize a stack trace from a Flutter app which has been built with the `--split-debug-info` option.
 
   ```sh
-  flutter-tizen symbolize --debug-info app.android-arm.symbols --input stack_trace.err
+  flutter-tizen symbolize --debug-info app.tizen-arm.symbols --input stack_trace.err
   ```
 
 - ### `test`
