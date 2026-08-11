@@ -95,7 +95,7 @@ Like a typical .NET library, the plugin package can use .NET APIs and external N
 
 - **.NET Standard 2.0**: [.NET Standard 2.0](https://docs.microsoft.com/en-us/dotnet/api/?view=netstandard-2.0) is the default target framework for the plugin package. If you want to use other framework, you can change the `TargetFramework` in the `.csproj` file.
 - **Tizen .NET 4.0**: [Tizen .NET](https://github.com/Samsung/TizenFX) is a package that provides the Device APIs for Tizen. You can change the version of the package in the `.csproj` file.
-- **Embedding**: [Tizen.Flutter.Embedding](https://github.com/flutter-tizen/flutter-tizen/tree/master/embedding/csharp/Tizen.Flutter.Embedding) is a package that provides the APIs about plugin registration and communication with the flutter application. It is located in the `flutter-tizen/embedding/csharp` directory.
+- **Embedding**: [Tizen.Flutter.Embedding](https://github.com/flutter-tizen/flutter-tizen/tree/main/embedding/csharp/Tizen.Flutter.Embedding) is a package that provides the APIs about plugin registration and communication with the flutter application. It is located in the `flutter-tizen/embedding/csharp` directory.
 
 ### Channel types
 

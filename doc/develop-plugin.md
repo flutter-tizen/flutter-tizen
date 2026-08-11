@@ -11,7 +11,7 @@ Here are a few things you might consider when developing Flutter plugins for Tiz
 - C++ or C# (using platform channels)
 - Dart (using Dart FFI)
 
-Typical Flutter plugins are written in their platform native languages, such as Java on Android and C++ on Tizen. However, some Windows plugins such as [`path_provider_windows`](https://github.com/flutter/plugins/tree/main/packages/path_provider/path_provider_windows) and Tizen plugins such as [`path_provider_tizen`](https://github.com/flutter-tizen/plugins/tree/master/packages/path_provider) are written in pure Dart using [Dart FFI](https://dart.dev/guides/libraries/c-interop) without any native code.
+Typical Flutter plugins are written in their platform native languages, such as Java on Android and C++ on Tizen. However, some Windows plugins such as [`path_provider_windows`](https://github.com/flutter/plugins/tree/main/packages/path_provider/path_provider_windows) and Tizen plugins such as [`path_provider_tizen`](https://github.com/flutter-tizen/plugins/tree/main/packages/path_provider) are written in pure Dart using [Dart FFI](https://dart.dev/guides/libraries/c-interop) without any native code.
 
 This document only covers native Tizen plugins written in C++. To learn more about FFI-based plugins on other platforms, you might read [Flutter Docs: Binding to native Android code using dart:ffi](https://docs.flutter.dev/development/platform-integration/android/c-interop). If you want to learn how to write a native plugin in C#, you might read [Writing a plugin in C#](develop-plugin-csharp.md).
 
@@ -179,9 +179,9 @@ Besides the above mentioned [MethodChannel](https://api.flutter.dev/flutter/serv
 
 If any privileges are required to run your plugin code, you have to list them in the plugin's README so that app developers can properly add them to their `tizen-manifest.xml`.
 
-If one or more privileges are [privacy-related privileges](https://docs.tizen.org/application/dotnet/get-started/api-privileges), permissions must be granted by user at runtime. To request permissions at runtime, use the [Privacy Privilege Manager API](https://docs.tizen.org/application/native/guides/security/privacy-related-permissions) ([example](https://github.com/flutter-tizen/plugins/blob/master/packages/permission_handler/tizen/src/permission_manager.cc)).
+If one or more privileges are [privacy-related privileges](https://docs.tizen.org/application/dotnet/get-started/api-privileges), permissions must be granted by user at runtime. To request permissions at runtime, use the [Privacy Privilege Manager API](https://docs.tizen.org/application/native/guides/security/privacy-related-permissions) ([example](https://github.com/flutter-tizen/plugins/blob/main/packages/permission_handler/tizen/src/permission_manager.cc)).
 
-On TV devices, permissions are already granted to apps by default. Invoking permission-related APIs will result in a library loading error on TV devices. If you want to run your plugin on different types of devices using a single codebase, consider using the `TV_PROFILE` macro to separate the TV-specific code ([example](https://github.com/flutter-tizen/plugins/blob/master/packages/permission_handler/tizen/src/permission_manager.cc)).
+On TV devices, permissions are already granted to apps by default. Invoking permission-related APIs will result in a library loading error on TV devices. If you want to run your plugin on different types of devices using a single codebase, consider using the `TV_PROFILE` macro to separate the TV-specific code ([example](https://github.com/flutter-tizen/plugins/blob/main/packages/permission_handler/tizen/src/permission_manager.cc)).
 
 ## Publish the plugin
 
