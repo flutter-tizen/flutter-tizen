@@ -210,6 +210,11 @@ class TizenAotElf extends AotElfBase {
   /// gen_snapshot skips stripping for Android target platforms, expecting
   /// the Android Gradle Plugin to strip later. Tizen has no such step, so
   /// strip here.
+  ///
+  /// The debug symbols file emitted by gen_snapshot is named after the Android
+  /// platform (e.g. app.android-arm.symbols) because Tizen reuses Android's
+  /// gen_snapshot. Rename it to a Tizen-specific name to avoid confusion and
+  /// collision with Android builds sharing the same split-debug-info directory.
   @override
   Future<void> build(Environment environment) async {
     final List<String> extraGenSnapshotOptions =
@@ -219,6 +224,18 @@ class TizenAotElf extends AotElfBase {
       environment.defines[kExtraGenSnapshotOptions] = extraGenSnapshotOptions.join(',');
     }
     await super.build(environment);
+
+    final String? splitDebugInfo = environment.defines[kSplitDebugInfo];
+    if (splitDebugInfo != null && splitDebugInfo.isNotEmpty) {
+      final Directory splitDebugInfoDir = environment.fileSystem.directory(splitDebugInfo);
+      final File symbolsFile =
+          splitDebugInfoDir.childFile('app.${getNameForTargetPlatform(targetPlatform)}.symbols');
+      if (symbolsFile.existsSync()) {
+        symbolsFile.renameSync(splitDebugInfoDir
+            .childFile('app.tizen-${getArchForTargetPlatform(targetPlatform)}.symbols')
+            .path);
+      }
+    }
   }
 }
 

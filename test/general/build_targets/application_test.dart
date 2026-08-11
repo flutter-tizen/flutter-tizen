@@ -59,4 +59,31 @@ void main() {
     FileSystem: () => fileSystem,
     ProcessManager: () => processManager,
   });
+
+  testUsingContext('TizenAotElf renames app.android-arm.symbols to app.tizen-arm.symbols',
+      () async {
+    final environment = Environment.test(
+      fileSystem.currentDirectory,
+      defines: <String, String>{
+        kBuildMode: 'release',
+        kTargetPlatform: 'android-arm',
+        kSplitDebugInfo: 'debug_info',
+      },
+      fileSystem: fileSystem,
+      logger: logger,
+      artifacts: artifacts,
+      processManager: FakeProcessManager.any(),
+    );
+
+    final Directory splitDebugInfoDir = fileSystem.directory('debug_info');
+    splitDebugInfoDir.childFile('app.android-arm.symbols').createSync(recursive: true);
+
+    await TizenAotElf(TargetPlatform.android_arm, BuildMode.release).build(environment);
+
+    expect(splitDebugInfoDir.childFile('app.tizen-arm.symbols'), exists);
+    expect(splitDebugInfoDir.childFile('app.android-arm.symbols'), isNot(exists));
+  }, overrides: <Type, Generator>{
+    FileSystem: () => fileSystem,
+    ProcessManager: () => processManager,
+  });
 }
