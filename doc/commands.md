@@ -57,6 +57,9 @@ The following commands from the [Flutter CLI](https://flutter.dev/docs/reference
   # Build a TPK for a TV emulator.
   flutter-tizen build tpk --device-profile tv --debug --target-arch x86
 
+  # Build a TPK with obfuscation and debug symbols.
+  flutter-tizen build tpk --obfuscate --split-debug-info=build/symbols
+
   # Build a Flutter module for adding to an existing Tizen app.
   flutter-tizen build module --device-profile common
   ```
@@ -202,10 +205,10 @@ The following commands from the [Flutter CLI](https://flutter.dev/docs/reference
 
 - ### `symbolize`
 
-  Symbolize a stack trace from a Flutter app which has been built with the `--split-debug-info` option.
+  Symbolize a stack trace from a Flutter app built with the `--obfuscate` and `--split-debug-info` option. To do so, collect an obfuscated stack trace from a user's device using `sdb dlog`, then save it as a text file on your local machine (for example, `stack_trace.txt`).
 
   ```sh
-  flutter-tizen symbolize --debug-info app.tizen-arm.symbols --input stack_trace.err
+  flutter-tizen symbolize --debug-info build/symbols/app.tizen-arm.symbols --input stack_trace.txt
   ```
 
 - ### `test`
