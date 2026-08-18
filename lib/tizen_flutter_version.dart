@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:convert';
+
 import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/base/time.dart';
 
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/version.dart';
+import 'package:meta/meta.dart';
 
 /// An implemented [FlutterVersion] for printing Flutter-tizen version.
 class TizenFlutterVersion implements FlutterVersion {
@@ -126,4 +129,54 @@ class TizenFlutterVersion implements FlutterVersion {
 /// Source: [_shortGitRevision] in `version.dart`
 String _shortGitRevision(String revision) {
   return revision.length > 10 ? revision.substring(0, 10) : revision;
+}
+
+/// A flutter-tizen release tag: `<flutter-version>-tizen.<tool-version>`
+/// (e.g. `3.44.4-tizen.1.0.0`) or a legacy bare Flutter version (`3.44.4`).
+///
+/// Source: [GitTagVersion] in `version.dart`
+@immutable
+class TizenGitTagVersion {
+  const TizenGitTagVersion({
+    required this.tag,
+    required this.flutterVersion,
+    this.toolVersion,
+  });
+
+  /// The git tag, e.g. `3.44.4-tizen.1.0.0` or `3.44.4`.
+  final String tag;
+
+  /// The Flutter version this release pins, e.g. `3.44.4`.
+  final String flutterVersion;
+
+  /// The flutter-tizen tool version, or null for legacy bare tags.
+  final String? toolVersion;
+
+  /// Matches release tags of either scheme.
+  static final RegExp tagPattern = RegExp(r'^(\d+\.\d+\.\d+)(?:-tizen\.(\d+\.\d+\.\d+))?$');
+
+  /// Parses [tag], or returns null when it is not a release tag.
+  static TizenGitTagVersion? parse(String tag) {
+    final RegExpMatch? match = tagPattern.firstMatch(tag.trim());
+    if (match == null) {
+      return null;
+    }
+    return TizenGitTagVersion(
+      tag: tag.trim(),
+      flutterVersion: match.group(1)!,
+      toolVersion: match.group(2),
+    );
+  }
+
+  /// Parses `git tag` output, preserving order and dropping non-release tags.
+  static List<TizenGitTagVersion> parseTags(String gitTagOutput) {
+    return const LineSplitter()
+        .convert(gitTagOutput.trim())
+        .map(parse)
+        .whereType<TizenGitTagVersion>()
+        .toList();
+  }
+
+  @override
+  String toString() => tag;
 }
