@@ -123,14 +123,17 @@ class TizenUpgradeCommandRunner extends UpgradeCommandRunner {
     );
     if (!testFlow) {
       globals.persistentToolState?.setShouldRedisplayWelcomeMessage(false);
-      await TizenChannelCommand.runPostSwitchSetup(
-        repoRoot: workingDirectory!,
-        targetTag: upstream.tag,
-        cacheArtifacts: true,
-        previousFlutterVersion: pinnedFlutterVersion,
-        runLauncher: _runLauncher,
-      );
-      globals.persistentToolState?.setShouldRedisplayWelcomeMessage(true);
+      try {
+        await TizenChannelCommand.runPostSwitchSetup(
+          repoRoot: workingDirectory!,
+          targetTag: upstream.tag,
+          cacheArtifacts: true,
+          previousFlutterVersion: pinnedFlutterVersion,
+          runLauncher: _runLauncher,
+        );
+      } finally {
+        globals.persistentToolState?.setShouldRedisplayWelcomeMessage(true);
+      }
     }
     return FlutterCommandResult.success();
   }

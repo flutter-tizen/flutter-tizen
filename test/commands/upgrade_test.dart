@@ -7,6 +7,7 @@ import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/base/platform.dart';
 import 'package:flutter_tools/src/base/process.dart';
 import 'package:flutter_tools/src/git.dart';
+import 'package:flutter_tools/src/globals.dart' as globals;
 
 import '../src/common.dart';
 import '../src/context.dart';
@@ -129,6 +130,49 @@ void main() {
       <String>['precache', '--force'],
       <String>['doctor'],
     ]);
+    expect(processManager, hasNoRemainingExpectations);
+  }, overrides: <Type, Generator>{
+    // Keep the inline setup path regardless of the host OS.
+    Platform: () => FakePlatform(),
+  });
+
+  testUsingContext('restores the welcome message state when the setup fails', () async {
+    processManager.addCommands(<FakeCommand>[
+      const FakeCommand(command: <String>['git', 'fetch', '--tags', '--force']),
+      const FakeCommand(
+        command: <String>['git', 'ls-remote', '--tags', '--sort=-v:refname', 'origin'],
+        stdout: 'fff0001\trefs/tags/3.44.8-tizen.1.0.0\n'
+            'fff0002\trefs/tags/3.44.8-tizen.1.0.0^{}\n',
+      ),
+      const FakeCommand(
+        command: <String>['git', 'rev-parse', '3.44.8-tizen.1.0.0^{commit}'],
+        stdout: 'def5678',
+      ),
+      const FakeCommand(
+        command: <String>['git', 'rev-parse', '--verify', 'HEAD'],
+        stdout: 'abc1234',
+      ),
+      const FakeCommand(
+        command: <String>['git', 'describe', '--tags', '--exact-match', 'HEAD'],
+        exitCode: 128,
+      ),
+      const FakeCommand(
+        command: <String>['git', 'status', '-s', '--untracked-files=no'],
+      ),
+      const FakeCommand(
+        command: <String>['git', 'symbolic-ref', '-q', '--short', 'HEAD'],
+        stdout: 'master',
+      ),
+      const FakeCommand(
+        command: <String>['git', 'checkout', '--detach', 'def5678'],
+      ),
+    ]);
+    await expectLater(
+      createRunner(runLauncher: (List<String> args) async => 1)
+          .run(force: false, testFlow: false, verifyOnly: false),
+      throwsToolExit(),
+    );
+    expect(globals.persistentToolState?.shouldRedisplayWelcomeMessage, true);
     expect(processManager, hasNoRemainingExpectations);
   }, overrides: <Type, Generator>{
     // Keep the inline setup path regardless of the host OS.
