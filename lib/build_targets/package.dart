@@ -146,7 +146,7 @@ class DotnetTpk extends TizenPackage {
     } else {
       throwToolExit(
         'No certificate profile found. You can create one using the Certificate Manager.\n'
-        'https://github.com/flutter-tizen/flutter-tizen/blob/master/doc/install-tizen-sdk.md#create-a-tizen-certificate',
+        'https://github.com/flutter-tizen/flutter-tizen/blob/main/doc/install-tizen-sdk.md#create-a-tizen-certificate',
       );
     }
 
@@ -391,7 +391,7 @@ class NativeTpk extends TizenPackage {
     } else {
       throwToolExit(
         'No certificate profile found. You can create one using the Certificate Manager.\n'
-        'https://github.com/flutter-tizen/flutter-tizen/blob/master/doc/install-tizen-sdk.md#create-a-tizen-certificate',
+        'https://github.com/flutter-tizen/flutter-tizen/blob/main/doc/install-tizen-sdk.md#create-a-tizen-certificate',
       );
     }
 
