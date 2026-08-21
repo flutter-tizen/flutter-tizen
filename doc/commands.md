@@ -64,6 +64,20 @@ The following commands from the [Flutter CLI](https://flutter.dev/docs/reference
   flutter-tizen build module --device-profile common
   ```
 
+- ### `channel`
+
+  List or switch flutter-tizen releases. A "channel" is a [release tag](https://github.com/flutter-tizen/flutter-tizen/tags) of the flutter-tizen repository.
+
+  ```sh
+  # List the available release tags, marking the one in use.
+  flutter-tizen channel
+
+  # Switch this checkout to a release tag.
+  flutter-tizen channel 3.44.4-tizen.1.0.0
+  ```
+
+  Switching re-runs the toolchain setup. Uncommitted changes block the switch unless `--force` is passed.
+
 - ### `clean`
 
   Remove the current project's build artifacts and intermediate files.
@@ -223,15 +237,25 @@ The following commands from the [Flutter CLI](https://flutter.dev/docs/reference
   flutter-tizen test integration_test
   ```
 
+- ### `upgrade`
+
+  Upgrade the flutter-tizen toolchain to its latest release.
+
+  ```sh
+  # Upgrade to the latest release.
+  flutter-tizen upgrade
+
+  # Only check whether an upgrade is available.
+  flutter-tizen upgrade --verify-only
+  ```
+
 ## Not supported
 
 The following commands from the Flutter CLI are not supported by flutter-tizen.
 
 - `assemble`
 - `bash-completion`
-- `channel`
 - `custom-devices`
 - `downgrade`
 - `logs`
 - `screenshot`
-- `upgrade`

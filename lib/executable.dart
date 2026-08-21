@@ -45,6 +45,7 @@ import 'package:path/path.dart';
 import 'build_targets/native_assets.dart';
 import 'commands/attach.dart';
 import 'commands/build.dart';
+import 'commands/channel.dart';
 import 'commands/clean.dart';
 import 'commands/create.dart';
 import 'commands/devices.dart';
@@ -52,6 +53,7 @@ import 'commands/drive.dart';
 import 'commands/precache.dart';
 import 'commands/run.dart';
 import 'commands/test.dart';
+import 'commands/upgrade.dart';
 import 'tizen_application_package.dart';
 import 'tizen_artifacts.dart';
 import 'tizen_build_system.dart';
@@ -149,6 +151,7 @@ Future<void> main(List<String> args) async {
         processInfo: globals.processInfo,
         fileSystem: globals.fs,
       ),
+      TizenChannelCommand(verboseHelp: verboseHelp),
       TizenBuildCommand(
         fileSystem: globals.fs,
         buildSystem: globals.buildSystem,
@@ -170,6 +173,7 @@ Future<void> main(List<String> args) async {
         flutterVersion: globals.flutterVersion,
       ),
       TizenCleanCommand(verbose: verbose),
+      TizenUpgradeCommand(verboseHelp: verboseHelp),
       TizenCreateCommand(verboseHelp: verboseHelp),
       TizenDriveCommand(
         verboseHelp: verboseHelp,
