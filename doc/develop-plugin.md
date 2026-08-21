@@ -58,6 +58,18 @@ flutter:
         fileName: plugin_name_plugin.h
 ```
 
+Note: If your package is a platform implementation of an existing federated plugin (e.g. `foobar_tizen` for `foobar`), also add an `implements` entry to the `plugin` section so that pub.dev can list your package as an implementation of the plugin.
+
+```yaml
+flutter:
+  plugin:
+    implements: foobar
+    platforms:
+      tizen:
+        pluginClass: FoobarPlugin
+        fileName: foobar_plugin.h
+```
+
 The created package contains an example app in the `example/` directory. You can run it using the `flutter-tizen run` command:
 
 ```sh
