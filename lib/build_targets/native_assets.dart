@@ -15,6 +15,7 @@ import 'package:flutter_tools/src/build_system/targets/native_assets.dart';
 import 'package:flutter_tools/src/convert.dart';
 import 'package:flutter_tools/src/dart/package_map.dart';
 import 'package:flutter_tools/src/features.dart';
+import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/isolated/native_assets/dart_hook_result.dart';
 import 'package:flutter_tools/src/isolated/native_assets/native_assets.dart';
 import 'package:hooks/hooks.dart';
@@ -22,7 +23,8 @@ import 'package:hooks_runner/hooks_runner.dart' as native;
 import 'package:meta/meta.dart';
 import 'package:package_config/package_config_types.dart';
 
-/// Source: [DartBuild] in `native_assets.dart`
+/// Source: `DartBuild` (renamed to [BuildHooks] in Flutter 3.47) in
+/// `native_assets.dart`
 class TizenDartBuild extends Target {
   const TizenDartBuild({
     @visibleForTesting FlutterNativeAssetsBuildRunner? buildRunner,
@@ -141,7 +143,8 @@ class TizenDartBuild extends Target {
   static const depFilename = 'dart_build.d';
 }
 
-/// Source: [DartBuildForNative] in `native_assets.dart`
+/// Source: `DartBuildForNative` (removed in Flutter 3.47) in
+/// `native_assets.dart`
 class TizenDartBuildForNative extends TizenDartBuild {
   const TizenDartBuildForNative({@visibleForTesting super.buildRunner});
 
@@ -234,8 +237,9 @@ Future<DartHooksResult> _runTizenSpecificHooks({
   required FileSystem fileSystem,
   required BuildMode buildMode,
 }) async {
-  final Directory buildDir = fileSystem
-      .directory(projectUri.resolve('${getBuildDirectory()}/native_assets/${OS.linux.name}/'));
+  final Directory buildDir = fileSystem.directory(
+    projectUri.resolve('${getBuildDirectory()}/native_assets/${OS.linux.name}/'),
+  );
   if (!buildDir.existsSync()) {
     buildDir.createSync(recursive: true);
   }
@@ -267,15 +271,28 @@ Future<DartHooksResult> _runTizenSpecificHooks({
   final linkingEnabled = buildMode != BuildMode.debug;
   final buildStart = DateTime.now();
 
-  final native.BuildResult? buildResult =
-      await buildRunner.build(extensions: extensions, linkingEnabled: linkingEnabled);
+  final native.BuildResult? buildResult = await buildRunner.build(
+    extensions: extensions,
+    linkingEnabled: linkingEnabled,
+  );
   if (buildResult == null) {
     throwToolExit('Building native assets failed. See the logs for more details.');
   }
 
   native.LinkResult? linkResult;
   if (linkingEnabled) {
-    linkResult = await buildRunner.link(extensions: extensions, buildResult: buildResult);
+    if (featureFlags.isRecordUseEnabled) {
+      globals.printStatus(
+        'The record-use experiment is not yet supported on Tizen. '
+        'Native asset tree-shaking is disabled and all assets are bundled.',
+      );
+    }
+    linkResult = await buildRunner.link(
+      extensions: extensions,
+      buildResult: buildResult,
+      // Not yet supported on Tizen: no recorded-uses info is passed to hooks.
+      recordedUsesFile: null,
+    );
     if (linkResult == null) {
       throwToolExit('Linking native assets failed. See the logs for more details.');
     }

@@ -134,6 +134,7 @@ class _RecordingRunner implements FlutterNativeAssetsBuildRunner {
   Future<native.LinkResult?> link({
     required List<ProtocolExtension> extensions,
     required native.BuildResult buildResult,
+    required File? recordedUsesFile,
   }) async {
     throw StateError('Link hooks should not run for debug builds.');
   }
@@ -156,4 +157,7 @@ class _BuildResult implements native.BuildResult {
 
   @override
   List<Uri> get dependencies => const <Uri>[];
+
+  @override
+  Map<String, Object?> toJson() => const <String, Object?>{};
 }

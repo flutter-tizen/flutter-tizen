@@ -174,11 +174,13 @@ mixin DartPluginRegistry on FlutterCommand {
     BuildMode? forcedBuildMode,
     File? forcedTargetFile,
     bool? forcedUseLocalCanvasKit,
+    bool? forcedWebEnableHotReload,
   }) async {
     final BuildInfo buildInfo = await super.getBuildInfo(
       forcedBuildMode: forcedBuildMode,
       forcedTargetFile: forcedTargetFile,
       forcedUseLocalCanvasKit: forcedUseLocalCanvasKit,
+      forcedWebEnableHotReload: forcedWebEnableHotReload,
     );
 
     // The generated main contains the Dart plugin registrant.
