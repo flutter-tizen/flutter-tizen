@@ -13,7 +13,6 @@ import 'package:flutter_tools/src/build_system/depfile.dart';
 import 'package:flutter_tools/src/build_system/exceptions.dart';
 import 'package:flutter_tools/src/build_system/targets/native_assets.dart';
 import 'package:flutter_tools/src/convert.dart';
-import 'package:flutter_tools/src/dart/package_map.dart';
 import 'package:flutter_tools/src/features.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/isolated/native_assets/dart_hook_result.dart';
@@ -21,12 +20,13 @@ import 'package:flutter_tools/src/isolated/native_assets/native_assets.dart';
 import 'package:hooks/hooks.dart';
 import 'package:hooks_runner/hooks_runner.dart' as native;
 import 'package:meta/meta.dart';
-import 'package:package_config/package_config_types.dart';
+import 'package:package_config/package_config.dart';
 
-/// Source: `DartBuild` (renamed to [BuildHooks] in Flutter 3.47) in
-/// `native_assets.dart`
-class TizenDartBuild extends Target {
-  const TizenDartBuild({
+/// Runs the build hooks of all packages with native assets.
+///
+/// Source: [BuildHooks] in `native_assets.dart`
+class TizenBuildHooks extends Target {
+  const TizenBuildHooks({
     @visibleForTesting FlutterNativeAssetsBuildRunner? buildRunner,
     this.specifiedTargetPlatform,
   }) : _buildRunner = buildRunner;
@@ -41,66 +41,45 @@ class TizenDartBuild extends Target {
     final FileSystem fileSystem = environment.fileSystem;
     final TargetPlatform targetPlatform =
         specifiedTargetPlatform ?? _getTargetPlatformFromEnvironment(environment, name);
+    final BuildMode buildMode = _getBuildModeFromEnvironment(environment, name);
+    final FlutterNativeAssetsBuildRunner buildRunner =
+        _buildRunner ?? _createBuildRunner(environment, buildMode);
 
-    final File packageConfigFile = fileSystem.file(environment.packageConfigPath);
-    final PackageConfig packageConfig = await loadPackageConfigWithLogging(
-      packageConfigFile,
-      logger: environment.logger,
+    final File resultFile = environment.buildDir.childFile(resultFilename);
+    if (!resultFile.parent.existsSync()) {
+      resultFile.parent.createSync(recursive: true);
+    }
+
+    final List<String> packagesWithNativeAssets = await buildRunner.packagesWithNativeAssets();
+    if (packagesWithNativeAssets.isEmpty) {
+      resultFile.writeAsStringSync(json.encode(const <String, Object?>{}));
+      _writeDepfile(environment, depFilename, Depfile(const <File>[], <File>[resultFile]));
+      return;
+    }
+    _ensureNativeAssetsFeaturesEnabled(packagesWithNativeAssets);
+
+    final Directory buildDir = fileSystem.directory(environment.projectDir.uri
+        .resolve('${getBuildDirectory()}/native_assets/${OS.linux.name}/'));
+    if (!buildDir.existsSync()) {
+      buildDir.createSync(recursive: true);
+    }
+
+    final Architecture architecture = _getTizenNativeArchitecture(targetPlatform);
+    final linkingEnabled = buildMode != BuildMode.debug;
+    final native.BuildResult? buildResult = await buildRunner.build(
+      extensions: _extensionsFor(architecture),
+      linkingEnabled: linkingEnabled,
     );
-    final Uri projectUri = environment.projectDir.uri;
-    final String? runPackageName =
-        packageConfig.packages.where((Package p) => p.root == projectUri).firstOrNull?.name;
-    if (runPackageName == null) {
-      throw StateError(
-        'Could not determine run package name. '
-        'Project path "${projectUri.toFilePath()}" did not occur as package '
-        'root in package config "${environment.packageConfigPath}". '
-        'Please report a reproduction on '
-        'https://github.com/flutter/flutter/issues/169475.',
-      );
+    if (buildResult == null) {
+      throwToolExit('Building native assets failed. See the logs for more details.');
     }
-    final String pubspecPath = packageConfigFile.uri.resolve('../pubspec.yaml').toFilePath();
-    final String? buildModeEnvironment = environment.defines[kBuildMode];
-    if (buildModeEnvironment == null) {
-      throw MissingDefineException(kBuildMode, name);
-    }
-    final buildMode = BuildMode.fromCliName(buildModeEnvironment);
-    final bool includeDevDependencies = !buildMode.isRelease;
-    final FlutterNativeAssetsBuildRunner buildRunner = _buildRunner ??
-        FlutterNativeAssetsBuildRunnerImpl(
-          environment.packageConfigPath,
-          packageConfig,
-          fileSystem,
-          environment.logger,
-          runPackageName,
-          includeDevDependencies: includeDevDependencies,
-          pubspecPath,
-        );
-    final DartHooksResult result = await _runTizenSpecificHooks(
-      buildRunner: buildRunner,
-      targetPlatform: targetPlatform,
-      projectUri: projectUri,
-      fileSystem: fileSystem,
-      buildMode: buildMode,
-    );
-    final File dartHookResultJsonFile = environment.buildDir.childFile(dartHookResultFilename);
-    if (!dartHookResultJsonFile.parent.existsSync()) {
-      dartHookResultJsonFile.parent.createSync(recursive: true);
-    }
-    dartHookResultJsonFile.writeAsStringSync(json.encode(result.toJson()));
+    resultFile.writeAsStringSync(json.encode(buildResult.toJson()));
 
     final depfile = Depfile(
-      <File>[for (final Uri dependency in result.dependencies) fileSystem.file(dependency)],
-      <File>[fileSystem.file(dartHookResultJsonFile)],
+      <File>[for (final Uri dependency in buildResult.dependencies) fileSystem.file(dependency)],
+      <File>[resultFile],
     );
-    final File outputDepfile = environment.buildDir.childFile(depFilename);
-    if (!outputDepfile.parent.existsSync()) {
-      outputDepfile.parent.createSync(recursive: true);
-    }
-    environment.depFileService.writeToFile(depfile, outputDepfile);
-    if (!outputDepfile.existsSync()) {
-      throw StateError("${outputDepfile.path} doesn't exist.");
-    }
+    _writeDepfile(environment, depFilename, depfile);
   }
 
   @override
@@ -113,34 +92,139 @@ class TizenDartBuild extends Target {
         ),
         // If different packages are resolved, different native assets might need to be built.
         Source.pattern('{WORKSPACE_DIR}/.dart_tool/package_config.json'),
-        // TODO(mosuem): Should consume resources.json. https://github.com/flutter/flutter/issues/146263
       ];
 
   @override
-  String get name => 'dart_build';
+  String get name => 'build_hooks';
 
   @override
-  List<Source> get outputs => const <Source>[Source.pattern('{BUILD_DIR}/$dartHookResultFilename')];
-
-  /// Dependent build [Target]s can use this to consume the result of the
-  /// [TizenDartBuild] target.
-  static Future<DartHooksResult> loadHookResult(Environment environment) async {
-    final File dartHookResultJsonFile = environment.buildDir.childFile(
-      TizenDartBuild.dartHookResultFilename,
-    );
-    if (!dartHookResultJsonFile.existsSync()) {
-      return DartHooksResult.empty();
-    }
-    return DartHooksResult.fromJson(
-      json.decode(dartHookResultJsonFile.readAsStringSync()) as Map<String, Object?>,
-    );
-  }
+  List<Source> get outputs => const <Source>[Source.pattern('{BUILD_DIR}/$resultFilename')];
 
   @override
   List<Target> get dependencies => <Target>[];
 
-  static const dartHookResultFilename = 'dart_build_result.json';
-  static const depFilename = 'dart_build.d';
+  /// The serialized build-hook result consumed by [TizenLinkHooks].
+  static const resultFilename = 'build_hooks_result.json';
+  static const depFilename = 'build_hooks.d';
+}
+
+/// Runs the link hooks and combines the build and link results.
+///
+/// The record-use experiment is not yet supported on Tizen, so no
+/// recorded-uses information is passed to the link hooks.
+///
+/// Source: [LinkHooks] in `native_assets.dart`
+class TizenLinkHooks extends Target {
+  const TizenLinkHooks({
+    @visibleForTesting FlutterNativeAssetsBuildRunner? buildRunner,
+    this.specifiedTargetPlatform,
+  }) : _buildRunner = buildRunner;
+
+  final FlutterNativeAssetsBuildRunner? _buildRunner;
+
+  /// The target OS and architecture that we are building for.
+  final TargetPlatform? specifiedTargetPlatform;
+
+  @override
+  Future<void> build(Environment environment) async {
+    final FileSystem fileSystem = environment.fileSystem;
+    final TargetPlatform targetPlatform =
+        specifiedTargetPlatform ?? _getTargetPlatformFromEnvironment(environment, name);
+    final BuildMode buildMode = _getBuildModeFromEnvironment(environment, name);
+
+    // Read the result of [TizenBuildHooks].
+    final File buildResultFile = environment.buildDir.childFile(TizenBuildHooks.resultFilename);
+    if (!buildResultFile.existsSync()) {
+      throw StateError("${buildResultFile.path} doesn't exist.");
+    }
+    final serializedBuildResult =
+        json.decode(buildResultFile.readAsStringSync()) as Map<String, Object?>;
+
+    DartHooksResult combinedResult;
+    var linkDependencies = const <Uri>[];
+    if (serializedBuildResult.isEmpty) {
+      // No packages with native assets.
+      combinedResult = DartHooksResult.empty();
+    } else {
+      final buildStart = DateTime.now();
+      final buildResult = native.BuildResult.fromJson(serializedBuildResult);
+      final Architecture architecture = _getTizenNativeArchitecture(targetPlatform);
+      final linkingEnabled = buildMode != BuildMode.debug;
+
+      native.LinkResult? linkResult;
+      if (linkingEnabled) {
+        if (featureFlags.isRecordUseEnabled) {
+          globals.printStatus(
+            'The record-use experiment is not yet supported on Tizen. '
+            'Native asset tree-shaking is disabled and all assets are bundled.',
+          );
+        }
+        final FlutterNativeAssetsBuildRunner buildRunner =
+            _buildRunner ?? _createBuildRunner(environment, buildMode);
+        linkResult = await buildRunner.link(
+          extensions: _extensionsFor(architecture),
+          buildResult: buildResult,
+          // Not yet supported on Tizen: no recorded-uses info is passed to hooks.
+          recordedUsesFile: null,
+        );
+        if (linkResult == null) {
+          throwToolExit('Linking native assets failed. See the logs for more details.');
+        }
+        linkDependencies = linkResult.dependencies;
+      }
+      combinedResult = _combineResults(
+        architecture: architecture,
+        buildResult: buildResult,
+        linkResult: linkResult,
+        buildStart: buildStart,
+      );
+    }
+
+    final File resultFile = environment.buildDir.childFile(resultFilename);
+    if (!resultFile.parent.existsSync()) {
+      resultFile.parent.createSync(recursive: true);
+    }
+    resultFile.writeAsStringSync(json.encode(combinedResult.toJson()));
+
+    final depfile = Depfile(
+      <File>[for (final Uri dependency in linkDependencies) fileSystem.file(dependency)],
+      <File>[resultFile],
+    );
+    _writeDepfile(environment, depFilename, depfile);
+  }
+
+  @override
+  List<String> get depfiles => const <String>[depFilename];
+
+  @override
+  List<Source> get inputs => const <Source>[
+        Source.pattern('{BUILD_DIR}/${TizenBuildHooks.resultFilename}'),
+      ];
+
+  @override
+  String get name => 'link_hooks';
+
+  @override
+  List<Source> get outputs => const <Source>[Source.pattern('{BUILD_DIR}/$resultFilename')];
+
+  @override
+  List<Target> get dependencies => const <Target>[TizenBuildHooks()];
+
+  /// Dependent build [Target]s can use this to consume the result of the
+  /// [TizenLinkHooks] target.
+  static Future<DartHooksResult> loadHookResult(Environment environment) async {
+    final File resultFile = environment.buildDir.childFile(resultFilename);
+    if (!resultFile.existsSync()) {
+      return DartHooksResult.empty();
+    }
+    return DartHooksResult.fromJson(
+      json.decode(resultFile.readAsStringSync()) as Map<String, Object?>,
+    );
+  }
+
+  /// The combined [DartHooksResult] serialized.
+  static const resultFilename = 'link_hooks_result.json';
+  static const depFilename = 'link_hooks.d';
 }
 
 /// Source: [InstallCodeAssets] in `native_assets.dart`
@@ -153,8 +237,8 @@ class TizenInstallCodeAssets extends Target {
     final FileSystem fileSystem = environment.fileSystem;
     final TargetPlatform targetPlatform = _getTargetPlatformFromEnvironment(environment, name);
 
-    // We fetch the result from the [DartBuild].
-    final DartHooksResult dartHookResult = await TizenDartBuild.loadHookResult(environment);
+    // We fetch the combined result from the [TizenLinkHooks].
+    final DartHooksResult dartHookResult = await TizenLinkHooks.loadHookResult(environment);
 
     // And install/copy the code assets to the right place and create a
     // native_asset.yaml that can be used by the final AOT compilation.
@@ -191,13 +275,14 @@ class TizenInstallCodeAssets extends Target {
   List<String> get depfiles => <String>[depFilename];
 
   @override
-  List<Target> get dependencies => const <Target>[TizenDartBuild()];
+  List<Target> get dependencies => const <Target>[TizenLinkHooks()];
 
   @override
   List<Source> get inputs => const <Source>[
         Source.pattern(
           '{FLUTTER_ROOT}/packages/flutter_tools/lib/src/build_system/targets/native_assets.dart',
         ),
+        Source.pattern('{BUILD_DIR}/${TizenLinkHooks.resultFilename}'),
         // If different packages are resolved, different native assets might need to be built.
         Source.pattern('{WORKSPACE_DIR}/.dart_tool/package_config.json'),
       ];
@@ -220,24 +305,46 @@ TargetPlatform _getTargetPlatformFromEnvironment(Environment environment, String
   return getTargetPlatformForName(targetPlatformEnvironment);
 }
 
-Future<DartHooksResult> _runTizenSpecificHooks({
-  required FlutterNativeAssetsBuildRunner buildRunner,
-  required TargetPlatform targetPlatform,
-  required Uri projectUri,
-  required FileSystem fileSystem,
-  required BuildMode buildMode,
-}) async {
-  final Directory buildDir = fileSystem.directory(
-    projectUri.resolve('${getBuildDirectory()}/native_assets/${OS.linux.name}/'),
-  );
-  if (!buildDir.existsSync()) {
-    buildDir.createSync(recursive: true);
+BuildMode _getBuildModeFromEnvironment(Environment environment, String name) {
+  final String? buildModeEnvironment = environment.defines[kBuildMode];
+  if (buildModeEnvironment == null) {
+    throw MissingDefineException(kBuildMode, name);
   }
+  return BuildMode.fromCliName(buildModeEnvironment);
+}
 
-  final List<String> packagesWithNativeAssets = await buildRunner.packagesWithNativeAssets();
-  if (packagesWithNativeAssets.isEmpty) {
-    return DartHooksResult.empty();
+FlutterNativeAssetsBuildRunner _createBuildRunner(Environment environment, BuildMode buildMode) {
+  final FileSystem fileSystem = environment.fileSystem;
+  final File packageConfigFile = fileSystem.file(environment.packageConfigPath);
+  final PackageConfig packageConfig = PackageConfig.parseBytes(
+    packageConfigFile.readAsBytesSync(),
+    packageConfigFile.uri,
+  );
+  final Uri projectUri = environment.projectDir.uri;
+  final String? runPackageName =
+      packageConfig.packages.where((Package p) => p.root == projectUri).firstOrNull?.name;
+  if (runPackageName == null) {
+    throw StateError(
+      'Could not determine run package name. '
+      'Project path "${projectUri.toFilePath()}" did not occur as package '
+      'root in package config "${environment.packageConfigPath}". '
+      'Please report a reproduction on '
+      'https://github.com/flutter/flutter/issues/169475.',
+    );
   }
+  final String pubspecPath = packageConfigFile.uri.resolve('../pubspec.yaml').toFilePath();
+  return FlutterNativeAssetsBuildRunnerImpl(
+    environment.packageConfigPath,
+    packageConfig,
+    fileSystem,
+    environment.logger,
+    runPackageName,
+    includeDevDependencies: !buildMode.isRelease,
+    pubspecPath,
+  );
+}
+
+void _ensureNativeAssetsFeaturesEnabled(List<String> packagesWithNativeAssets) {
   if (!featureFlags.isNativeAssetsEnabled && !featureFlags.isDartDataAssetsEnabled) {
     throwToolExit(
       'Package(s) ${packagesWithNativeAssets.join(' ')} require the dart assets feature to be enabled.\n'
@@ -245,11 +352,12 @@ Future<DartHooksResult> _runTizenSpecificHooks({
       '  Enable data assets using `flutter-tizen config --enable-dart-data-assets`.',
     );
   }
+}
 
-  final Architecture architecture = _getTizenNativeArchitecture(targetPlatform);
+List<ProtocolExtension> _extensionsFor(Architecture architecture) {
   // Do not call setCCompilerConfig here. Flutter's Linux compiler discovery
   // would return a host compiler, not a Tizen rootstrap-aware compiler.
-  final extensions = <ProtocolExtension>[
+  return <ProtocolExtension>[
     if (featureFlags.isNativeAssetsEnabled)
       CodeAssetExtension(
         targetArchitecture: architecture,
@@ -258,36 +366,14 @@ Future<DartHooksResult> _runTizenSpecificHooks({
       ),
     if (featureFlags.isDartDataAssetsEnabled) DataAssetsExtension(),
   ];
-  final linkingEnabled = buildMode != BuildMode.debug;
-  final buildStart = DateTime.now();
+}
 
-  final native.BuildResult? buildResult = await buildRunner.build(
-    extensions: extensions,
-    linkingEnabled: linkingEnabled,
-  );
-  if (buildResult == null) {
-    throwToolExit('Building native assets failed. See the logs for more details.');
-  }
-
-  native.LinkResult? linkResult;
-  if (linkingEnabled) {
-    if (featureFlags.isRecordUseEnabled) {
-      globals.printStatus(
-        'The record-use experiment is not yet supported on Tizen. '
-        'Native asset tree-shaking is disabled and all assets are bundled.',
-      );
-    }
-    linkResult = await buildRunner.link(
-      extensions: extensions,
-      buildResult: buildResult,
-      // Not yet supported on Tizen: no recorded-uses info is passed to hooks.
-      recordedUsesFile: null,
-    );
-    if (linkResult == null) {
-      throwToolExit('Linking native assets failed. See the logs for more details.');
-    }
-  }
-
+DartHooksResult _combineResults({
+  required Architecture architecture,
+  required native.BuildResult buildResult,
+  required native.LinkResult? linkResult,
+  required DateTime buildStart,
+}) {
   final target = native.Target.fromArchitectureAndOS(architecture, OS.linux);
   final encodedAssets = <EncodedAsset>[
     ...buildResult.encodedAssets,
@@ -315,7 +401,6 @@ Future<DartHooksResult> _runTizenSpecificHooks({
       'while compiling for linux_${architecture.name}.',
     );
   }
-
   return DartHooksResult(
     buildStart: buildStart,
     buildEnd: DateTime.now(),
@@ -326,6 +411,17 @@ Future<DartHooksResult> _runTizenSpecificHooks({
       if (linkResult != null) ...linkResult.dependencies,
     }.toList(),
   );
+}
+
+void _writeDepfile(Environment environment, String filename, Depfile depfile) {
+  final File outputDepfile = environment.buildDir.childFile(filename);
+  if (!outputDepfile.parent.existsSync()) {
+    outputDepfile.parent.createSync(recursive: true);
+  }
+  environment.depFileService.writeToFile(depfile, outputDepfile);
+  if (!outputDepfile.existsSync()) {
+    throw StateError("${outputDepfile.path} doesn't exist.");
+  }
 }
 
 /// Tizen reuses Flutter's Android/tester target platforms as architecture

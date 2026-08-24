@@ -113,6 +113,7 @@ abstract class TizenAssetBundle extends Target {
   @override
   List<Source> get inputs => const <Source>[
         Source.pattern('{BUILD_DIR}/app.dill'),
+        Source.pattern('{BUILD_DIR}/${TizenLinkHooks.resultFilename}'),
         ...IconTreeShaker.inputs,
       ];
 
@@ -156,7 +157,7 @@ abstract class TizenAssetBundle extends Target {
           .file(isolateSnapshotData)
           .copySync(outputDirectory.childFile('isolate_snapshot_data').path);
     }
-    final DartHooksResult dartHookResult = await TizenDartBuild.loadHookResult(environment);
+    final DartHooksResult dartHookResult = await TizenLinkHooks.loadHookResult(environment);
     final Depfile assetDepfile = await copyAssets(
       environment,
       outputDirectory,
