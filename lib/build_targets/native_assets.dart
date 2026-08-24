@@ -143,16 +143,6 @@ class TizenDartBuild extends Target {
   static const depFilename = 'dart_build.d';
 }
 
-/// Source: `DartBuildForNative` (removed in Flutter 3.47) in
-/// `native_assets.dart`
-class TizenDartBuildForNative extends TizenDartBuild {
-  const TizenDartBuildForNative({@visibleForTesting super.buildRunner});
-
-  // TODO(dcharkes): Add `KernelSnapshot()` for AOT builds only when adding tree-shaking information. https://github.com/dart-lang/native/issues/153
-  @override
-  List<Target> get dependencies => const <Target>[];
-}
-
 /// Source: [InstallCodeAssets] in `native_assets.dart`
 class TizenInstallCodeAssets extends Target {
   const TizenInstallCodeAssets();
@@ -201,7 +191,7 @@ class TizenInstallCodeAssets extends Target {
   List<String> get depfiles => <String>[depFilename];
 
   @override
-  List<Target> get dependencies => const <Target>[TizenDartBuildForNative()];
+  List<Target> get dependencies => const <Target>[TizenDartBuild()];
 
   @override
   List<Source> get inputs => const <Source>[
