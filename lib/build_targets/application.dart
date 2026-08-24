@@ -16,6 +16,7 @@ import 'package:flutter_tools/src/build_system/targets/common.dart';
 import 'package:flutter_tools/src/build_system/targets/icon_tree_shaker.dart';
 import 'package:flutter_tools/src/compile.dart';
 import 'package:flutter_tools/src/dart/package_map.dart';
+import 'package:flutter_tools/src/devfs.dart';
 import 'package:flutter_tools/src/isolated/native_assets/dart_hook_result.dart';
 import 'package:package_config/src/package_config.dart';
 
@@ -165,6 +166,11 @@ abstract class TizenAssetBundle extends Target {
       buildMode: buildMode,
       flavor: environment.defines[kFlavor],
       dartHookResult: dartHookResult,
+      additionalContent: <String, DevFSContent>{
+        'NativeAssetsManifest.json': DevFSFileContent(
+          environment.buildDir.childFile('native_assets.json'),
+        ),
+      },
     );
     final depfileService = DepfileService(
       fileSystem: environment.fileSystem,

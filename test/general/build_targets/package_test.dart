@@ -92,7 +92,14 @@ void main() {
           .childFile('tizen_plugins/lib/libflutter_plugins.so')
           .createSync(recursive: true);
       environment.buildDir.childFile('tizen_plugins/lib/libshared.so').createSync(recursive: true);
+      environment.buildDir
+          .childFile('native_assets/linux/libnative_asset.so')
+          .createSync(recursive: true);
       projectDir.childDirectory('tizen').childFile('.app.deps.json').createSync(recursive: true);
+      environment.buildDir.childFile('flutter_assets/NativeAssetsManifest.json')
+        ..createSync(recursive: true)
+        ..writeAsStringSync('{"native-assets":{"linux_x64":{"package:a/a.dart":'
+            '["absolute","liba.so"]}}}');
 
       processManager.addCommands(<FakeCommand>[
         FakeCommand(
@@ -148,6 +155,11 @@ void main() {
       expect(aotSnapshot, exists);
       expect(pluginsLib, exists);
       expect(pluginsUserLib, exists);
+      expect(ephemeralDir.childFile('lib/libnative_asset.so'), exists);
+      expect(
+        flutterAssetsDir.childFile('NativeAssetsManifest.json').readAsStringSync(),
+        contains('/opt/usr/globalapps/package_id/lib/liba.so'),
+      );
 
       expect(processManager, hasNoRemainingExpectations);
     }, overrides: <Type, Generator>{
@@ -171,6 +183,10 @@ void main() {
       environment.buildDir.childDirectory('flutter_assets').createSync(recursive: true);
       environment.buildDir.childFile('app.so').createSync(recursive: true);
       projectDir.childDirectory('tizen').childFile('.app.deps.json').createSync(recursive: true);
+      environment.buildDir.childFile('flutter_assets/NativeAssetsManifest.json')
+        ..createSync(recursive: true)
+        ..writeAsStringSync('{"native-assets":{"linux_x64":{"package:a/a.dart":'
+            '["absolute","liba.so"]}}}');
 
       processManager.addCommands(<FakeCommand>[
         FakeCommand(
@@ -242,7 +258,14 @@ type = app
           .childFile('tizen_plugins/lib/libflutter_plugins.so')
           .createSync(recursive: true);
       environment.buildDir.childFile('tizen_plugins/lib/libshared.so').createSync(recursive: true);
+      environment.buildDir
+          .childFile('native_assets/linux/libnative_asset.so')
+          .createSync(recursive: true);
       projectDir.childDirectory('tizen').childFile('.app.deps.json').createSync(recursive: true);
+      environment.buildDir.childFile('flutter_assets/NativeAssetsManifest.json')
+        ..createSync(recursive: true)
+        ..writeAsStringSync('{"native-assets":{"linux_x64":{"package:a/a.dart":'
+            '["absolute","liba.so"]}}}');
 
       await NativeTpk(const TizenBuildInfo(
         BuildInfo.release,
@@ -289,6 +312,10 @@ type = app
       );
       environment.buildDir.childDirectory('flutter_assets').createSync(recursive: true);
       projectDir.childDirectory('tizen').childFile('.app.deps.json').createSync(recursive: true);
+      environment.buildDir.childFile('flutter_assets/NativeAssetsManifest.json')
+        ..createSync(recursive: true)
+        ..writeAsStringSync('{"native-assets":{"linux_x64":{"package:a/a.dart":'
+            '["absolute","liba.so"]}}}');
 
       await expectLater(
         () => NativeTpk(const TizenBuildInfo(
@@ -325,6 +352,10 @@ type = app
       environment.buildDir
           .childFile('tizen_plugins/lib/libflutter_plugins.so')
           .createSync(recursive: true);
+      environment.buildDir.childFile('flutter_assets/NativeAssetsManifest.json')
+        ..createSync(recursive: true)
+        ..writeAsStringSync('{"native-assets":{"linux_x64":{"package:a/a.dart":'
+            '["absolute","liba.so"]}}}');
 
       await DotnetModule(const TizenBuildInfo(
         BuildInfo.release,
@@ -348,6 +379,12 @@ type = app
       expect(aotSnapshot, exists);
       expect(generatedPluginRegistrant, exists);
       expect(pluginsLib, exists);
+      // Modules are embedded into a host app whose package ID is unknown at
+      // build time, so the manifest must not be rewritten here.
+      expect(
+        flutterAssetsDir.childFile('NativeAssetsManifest.json').readAsStringSync(),
+        isNot(contains('/opt/usr/globalapps')),
+      );
     }, overrides: <Type, Generator>{
       FileSystem: () => fileSystem,
       ProcessManager: () => processManager,

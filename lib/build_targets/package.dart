@@ -17,6 +17,7 @@ import '../tizen_sdk.dart';
 import '../tizen_tpk.dart';
 import 'application.dart';
 import 'embedding.dart';
+import 'native_assets.dart';
 import 'utils.dart';
 
 /// This target doesn't specify any input or output but the build system always
@@ -112,6 +113,10 @@ class DotnetTpk extends TizenPackage {
     icuData.copySync(resDir.childFile(icuData.basename).path);
     appDepsJson
         .copySync(resDir.childDirectory('flutter_assets').childFile(appDepsJson.basename).path);
+    rewriteNativeAssetsManifest(
+      resDir.childDirectory('flutter_assets').childFile('NativeAssetsManifest.json'),
+      tizenManifest.packageId,
+    );
 
     if (buildMode.isPrecompiled) {
       final File aotSnapshot = environment.buildDir.childFile('app.so');
@@ -126,6 +131,12 @@ class DotnetTpk extends TizenPackage {
     final Directory pluginsLibDir = pluginsDir.childDirectory('lib');
     if (pluginsLibDir.existsSync()) {
       copyDirectory(pluginsLibDir, libDir);
+    }
+
+    final Directory nativeAssetsDir =
+        environment.buildDir.childDirectory('native_assets').childDirectory('linux');
+    if (nativeAssetsDir.existsSync()) {
+      copyDirectory(nativeAssetsDir, libDir);
     }
 
     assert(tizenSdk != null);
@@ -334,6 +345,16 @@ class NativeTpk extends TizenPackage {
         },
       );
     }
+
+    final Directory nativeAssetsDir =
+        environment.buildDir.childDirectory('native_assets').childDirectory('linux');
+    if (nativeAssetsDir.existsSync()) {
+      copyDirectory(nativeAssetsDir, libDir);
+    }
+    rewriteNativeAssetsManifest(
+      resDir.childDirectory('flutter_assets').childFile('NativeAssetsManifest.json'),
+      tizenManifest.packageId,
+    );
 
     // Prepare for build.
     final Directory commonDir = getCommonArtifactsDirectory();
@@ -545,6 +566,12 @@ class DotnetModule extends TizenPackage {
     if (pluginsLibDir.existsSync()) {
       copyDirectory(pluginsLibDir, libDir);
     }
+
+    final Directory nativeAssetsDir =
+        environment.buildDir.childDirectory('native_assets').childDirectory('linux');
+    if (nativeAssetsDir.existsSync()) {
+      copyDirectory(nativeAssetsDir, libDir);
+    }
   }
 }
 
@@ -621,6 +648,12 @@ class NativeModule extends TizenPackage {
     final Directory pluginsLibDir = pluginsDir.childDirectory('lib');
     if (pluginsLibDir.existsSync()) {
       copyDirectory(pluginsLibDir, libDir);
+    }
+
+    final Directory nativeAssetsDir =
+        environment.buildDir.childDirectory('native_assets').childDirectory('linux');
+    if (nativeAssetsDir.existsSync()) {
+      copyDirectory(nativeAssetsDir, libDir);
     }
 
     final Directory commonDir = getCommonArtifactsDirectory();

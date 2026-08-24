@@ -245,9 +245,11 @@ class TizenInstallCodeAssets extends Target {
     final Uri nativeAssetsFileUri = environment.buildDir.childFile(nativeAssetsFilename).uri;
 
     // Tizen builds native assets as Linux shared objects, so the install
-    // location keeps the Linux directory layout.
+    // location keeps the Linux directory layout. Install into the build
+    // directory; the package targets copy the assets into the TPK lib
+    // directory from there.
     final Uri targetUri =
-        environment.outputDir.childDirectory('native_assets').uri.resolve('${OS.linux.name}/');
+        environment.buildDir.childDirectory('native_assets').uri.resolve('${OS.linux.name}/');
 
     await installCodeAssets(
       dartHookResult: dartHookResult,
@@ -259,6 +261,21 @@ class TizenInstallCodeAssets extends Target {
       targetUri: targetUri,
     );
     assert(fileSystem.file(nativeAssetsFileUri).existsSync());
+
+    // installCodeAssets uses the Android directory layout for the Android
+    // alias target platforms (jniLibs/lib/<abi>/...). Tizen loads native
+    // assets from the flat TPK lib directory, so flatten the installed files.
+    final Directory installDir = fileSystem.directory(targetUri);
+    for (final FileSystemEntity entity in installDir.listSync(recursive: true)) {
+      if (entity is File && entity.parent.path != installDir.path) {
+        entity.renameSync(installDir.childFile(entity.basename).path);
+      }
+    }
+    for (final FileSystemEntity entity in installDir.listSync()) {
+      if (entity is Directory) {
+        entity.deleteSync(recursive: true);
+      }
+    }
 
     final depfile = Depfile(
       <File>[for (final Uri file in dartHookResult.filesToBeBundled) fileSystem.file(file)],
@@ -411,6 +428,31 @@ DartHooksResult _combineResults({
       if (linkResult != null) ...linkResult.dependencies,
     }.toList(),
   );
+}
+
+void rewriteNativeAssetsManifest(File manifestFile, String packageId) {
+  if (!manifestFile.existsSync()) {
+    return;
+  }
+  final deviceLibDir = '/opt/usr/globalapps/$packageId/lib';
+  final manifestJson = json.decode(manifestFile.readAsStringSync()) as Map<String, Object?>;
+  final Map<String, Object?> nativeAssets =
+      manifestJson['native-assets'] as Map<String, Object?>? ?? <String, Object?>{};
+  for (final Object? assets in nativeAssets.values) {
+    if (assets is! Map<String, Object?>) {
+      continue;
+    }
+    for (final MapEntry<String, Object?> asset in assets.entries) {
+      final Object? path = asset.value;
+      if (path is List<Object?> &&
+          path.length == 2 &&
+          (path[0] == 'absolute' || path[0] == 'relative')) {
+        final String fileName = manifestFile.fileSystem.path.basename(path[1]! as String);
+        assets[asset.key] = <String>['absolute', '$deviceLibDir/$fileName'];
+      }
+    }
+  }
+  manifestFile.writeAsStringSync(json.encode(manifestJson));
 }
 
 void _writeDepfile(Environment environment, String filename, Depfile depfile) {

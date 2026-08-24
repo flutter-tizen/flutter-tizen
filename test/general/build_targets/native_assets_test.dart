@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:convert';
+
 import 'package:code_assets/code_assets.dart';
 import 'package:data_assets/data_assets.dart';
 import 'package:file/memory.dart';
+import 'package:file_testing/file_testing.dart';
 import 'package:flutter_tizen/build_targets/native_assets.dart';
 import 'package:flutter_tools/src/artifacts.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
@@ -157,6 +160,48 @@ void main() {
   }, overrides: <Type, Generator>{
     FileSystem: () => fileSystem,
     FeatureFlags: () => TestFeatureFlags(isNativeAssetsEnabled: true),
+    ProcessManager: () => processManager,
+  });
+
+  testUsingContext('Install flattens code assets out of the Android layout', () async {
+    final Directory projectDir = fileSystem.currentDirectory;
+    final File soFile = projectDir.childFile('libmy_asset.so')..writeAsStringSync('so');
+    final Environment environment = createEnvironment(projectDir, 'debug', 'android-x64');
+    final result = DartHooksResult(
+      buildStart: DateTime.now(),
+      buildEnd: DateTime.now(),
+      codeAssets: <FlutterCodeAsset>[
+        FlutterCodeAsset(
+          codeAsset: CodeAsset(
+            package: 'my_pkg',
+            name: 'my_asset.dart',
+            linkMode: DynamicLoadingBundled(),
+            file: soFile.uri,
+          ),
+          target: native.Target.fromArchitectureAndOS(Architecture.x64, OS.linux),
+        ),
+      ],
+      dataAssets: const <DataAsset>[],
+      dependencies: const <Uri>[],
+    );
+    environment.buildDir.childFile(TizenLinkHooks.resultFilename)
+      ..createSync(recursive: true)
+      ..writeAsStringSync(json.encode(result.toJson()));
+
+    await const TizenInstallCodeAssets().build(environment);
+
+    // Flattened out of the Android jniLibs directory layout.
+    expect(environment.buildDir.childFile('native_assets/linux/libmy_asset.so'), exists);
+    final manifest = json.decode(
+      environment.buildDir.childFile('native_assets.json').readAsStringSync(),
+    ) as Map<String, Object?>;
+    final assets =
+        (manifest['native-assets']! as Map<String, Object?>)['linux_x64']! as Map<String, Object?>;
+    // Path rewriting happens later during package assembly, where the final
+    // application package ID is known.
+    expect(assets['package:my_pkg/my_asset.dart'], <String>['absolute', 'libmy_asset.so']);
+  }, overrides: <Type, Generator>{
+    FileSystem: () => fileSystem,
     ProcessManager: () => processManager,
   });
 }
