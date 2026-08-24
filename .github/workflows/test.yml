@@ -20,6 +20,11 @@ jobs:
           cd flutter
           git checkout $(cat ../bin/internal/flutter.version)
       - name: Run tests
+        # The runner context is not available in job-level env.
+        env:
+          TMPDIR: ${{ runner.temp }}
+          TEMP: ${{ runner.temp }}
+          TMP: ${{ runner.temp }}
         run: flutter/bin/flutter test --coverage
       - name: Report coverage
         if: matrix.os == 'ubuntu-22.04'

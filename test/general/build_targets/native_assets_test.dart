@@ -12,6 +12,7 @@ import 'package:flutter_tizen/build_targets/native_assets.dart';
 import 'package:flutter_tools/src/artifacts.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/base/logger.dart';
+import 'package:flutter_tools/src/base/platform.dart';
 import 'package:flutter_tools/src/build_info.dart';
 import 'package:flutter_tools/src/build_system/build_system.dart';
 import 'package:flutter_tools/src/features.dart';
@@ -31,7 +32,9 @@ void main() {
   late Logger logger;
 
   setUp(() {
-    fileSystem = MemoryFileSystem.test();
+    fileSystem = MemoryFileSystem.test(
+      style: const LocalPlatform().isWindows ? FileSystemStyle.windows : FileSystemStyle.posix,
+    );
     processManager = FakeProcessManager.any();
     logger = BufferLogger.test();
   });
@@ -191,7 +194,15 @@ void main() {
     await const TizenInstallCodeAssets().build(environment);
 
     // Flattened out of the Android jniLibs directory layout.
-    expect(environment.buildDir.childFile('native_assets/linux/libmy_asset.so'), exists);
+    // Avoid multi-segment childFile: the Windows-style memory file system
+    // only splits paths on backslashes.
+    expect(
+      environment.buildDir
+          .childDirectory('native_assets')
+          .childDirectory('linux')
+          .childFile('libmy_asset.so'),
+      exists,
+    );
     final manifest = json.decode(
       environment.buildDir.childFile('native_assets.json').readAsStringSync(),
     ) as Map<String, Object?>;
