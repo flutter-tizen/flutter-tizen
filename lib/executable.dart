@@ -17,7 +17,6 @@ import 'package:flutter_tools/src/base/template.dart';
 import 'package:flutter_tools/src/base/terminal.dart';
 import 'package:flutter_tools/src/build_system/build_system.dart';
 import 'package:flutter_tools/src/build_system/build_targets.dart';
-import 'package:flutter_tools/src/build_system/targets/native_assets.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/commands/analyze.dart';
 import 'package:flutter_tools/src/commands/config.dart';
@@ -42,7 +41,6 @@ import 'package:flutter_tools/src/runner/flutter_command.dart';
 import 'package:flutter_tools/src/version.dart';
 import 'package:path/path.dart';
 
-import 'build_targets/native_assets.dart';
 import 'commands/attach.dart';
 import 'commands/build.dart';
 import 'commands/channel.dart';
@@ -124,7 +122,7 @@ Future<void> main(List<String> args) async {
             git: globals.git,
           ),
         ],
-        suppressAnalytics: globals.flutterUsage.suppressAnalytics,
+        suppressAnalytics: !globals.analytics.okToSend,
       ),
       ConfigCommand(verboseHelp: verboseHelp),
       DaemonCommand(hidden: !verboseHelp),
@@ -226,8 +224,6 @@ Future<void> main(List<String> args) async {
             processManager: globals.processManager,
             projectFactory: globals.projectFactory,
           ),
-      DartBuild: () => const TizenDartBuild(),
-      DartBuildForNative: () => const TizenDartBuildForNative(),
       DeviceManager: () => TizenDeviceManager(),
       DoctorValidatorsProvider: () => TizenDoctorValidatorsProvider(),
       EmulatorManager: () => TizenEmulatorManager(

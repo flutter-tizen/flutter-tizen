@@ -38,6 +38,9 @@ void main() {
       processManager: processManager,
     );
     environment.buildDir.childFile('app.dill').createSync(recursive: true);
+    environment.buildDir.childFile('native_assets.json')
+      ..createSync(recursive: true)
+      ..writeAsStringSync('{}');
     fileSystem
         .file(artifacts.getArtifactPath(Artifact.vmSnapshotData, mode: BuildMode.debug))
         .createSync(recursive: true);
@@ -55,6 +58,7 @@ void main() {
     expect(bundleDir.childFile('vm_snapshot_data'), exists);
     expect(bundleDir.childFile('isolate_snapshot_data'), exists);
     expect(bundleDir.childFile('kernel_blob.bin'), exists);
+    expect(bundleDir.childFile('NativeAssetsManifest.json'), exists);
   }, overrides: <Type, Generator>{
     FileSystem: () => fileSystem,
     ProcessManager: () => processManager,

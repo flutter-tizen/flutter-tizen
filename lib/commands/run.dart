@@ -19,6 +19,7 @@ class TizenRunCommand extends RunCommand with DartPluginRegistry, TizenRequiredA
 
   @override
   Future<List<Device>?> findAllTargetDevices({
+    bool? canPrompt,
     bool includeDevicesUnsupportedByProject = false,
   }) async {
     final List<Device> devices = await globals.deviceManager!.getDevices();
@@ -32,6 +33,7 @@ class TizenRunCommand extends RunCommand with DartPluginRegistry, TizenRequiredA
       deviceConnectionInterface: deviceConnectionInterface,
       platform: globals.platform,
     ).findAllTargetDevices(
+      canPrompt: canPrompt ?? !outputMachineFormat,
       deviceDiscoveryTimeout: deviceDiscoveryTimeout,
       includeDevicesUnsupportedByProject: includeDevicesUnsupportedByProject,
     );
