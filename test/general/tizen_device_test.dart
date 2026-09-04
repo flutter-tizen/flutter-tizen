@@ -98,10 +98,16 @@ void main() {
     final LaunchResult launchResult = await device.startApp(
       tpk,
       prebuiltApplication: true,
-      debuggingOptions: DebuggingOptions.enabled(BuildInfo.debug),
+      debuggingOptions: DebuggingOptions.enabled(
+        BuildInfo.debug,
+        enableImpeller: ImpellerStatus.disabled,
+      ),
       platformArgs: <String, Object>{},
     );
 
+    final List<String> engineArgs =
+        fileSystem.file('/.tmp_rand0/rand0/$appId.rpm').readAsLinesSync();
+    expect(engineArgs, contains('--enable-impeller=false'));
     expect(launchResult.started, isTrue);
     expect(launchResult.hasVmService, isTrue);
     expect(processManager, hasNoRemainingExpectations);

@@ -14,7 +14,7 @@ namespace Tizen.Flutter.Embedding
     /// </summary>
     public class FlutterEngineArguments
     {
-        private const string MetadataKeyEnableImepeller = "http://tizen.org/metadata/flutter_tizen/enable_impeller";
+        private const string MetadataKeyEnableImpeller = "http://tizen.org/metadata/flutter_tizen/enable_impeller";
         private const string MetadataKeyEnableFlutterGpu = "http://tizen.org/metadata/flutter_tizen/enable_flutter_gpu";
 
         /// <summary>
@@ -71,8 +71,8 @@ namespace Tizen.Flutter.Embedding
                 }
             }
 
-            IsImpellerEnabled = ProcessMetadataFlag(result, "--enable-impeller", MetadataKeyEnableImepeller);
-            IsFlutterGpuEnabled = ProcessMetadataFlag(result, "--enable-flutter-gpu", MetadataKeyEnableFlutterGpu);
+            IsImpellerEnabled = ProcessMetadataFlag(result, "--enable-impeller", MetadataKeyEnableImpeller, true);
+            IsFlutterGpuEnabled = ProcessMetadataFlag(result, "--enable-flutter-gpu", MetadataKeyEnableFlutterGpu, false);
             IsFlutterTizenExperimentalEnabled = result.Contains("--dart-define=USE_FLUTTER_TIZEN_EXPERIMENTAL=true");
 
             foreach (string flag in result)
@@ -85,30 +85,24 @@ namespace Tizen.Flutter.Embedding
         /// <summary>
         /// Processes a metadata flag by checking both engine arguments and application metadata.
         /// </summary>
-        private static bool ProcessMetadataFlag(List<string> result, string flag, string metadataKey)
+        private static bool ProcessMetadataFlag(List<string> result, string flag, string metadataKey, bool enabledByDefault)
         {
             var appInfo = Application.Current.ApplicationInfo;
-            bool enabled = false;
-            bool flagExists = result.Contains(flag);
-            if (flagExists)
+            if (result.Contains(flag + "=false"))
             {
-                enabled = true;
+                return false;
+            }
+            if (result.Contains(flag))
+            {
+                return true;
             }
 
-            if (appInfo.Metadata.TryGetValue(metadataKey, out string metadataValue))
+            bool enabled = appInfo.Metadata.TryGetValue(metadataKey, out string metadataValue)
+                ? metadataValue == "true"
+                : enabledByDefault;
+            if (enabled)
             {
-                bool metadataEnabled = metadataValue == "true";
-
-                if (!flagExists && metadataEnabled)
-                {
-                    enabled = true;
-                    result.Insert(0, flag);
-                }
-                else if (flagExists && !metadataEnabled)
-                {
-                    enabled = false;
-                    result.Remove(flag);
-                }
+                result.Insert(0, flag);
             }
             return enabled;
         }
