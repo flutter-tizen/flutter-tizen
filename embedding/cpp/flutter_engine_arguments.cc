@@ -11,7 +11,7 @@
 
 namespace {
 
-static constexpr const char* kMetadataKeyEnableImepeller =
+static constexpr const char* kMetadataKeyEnableImpeller =
     "http://tizen.org/metadata/flutter_tizen/enable_impeller";
 static constexpr const char* kMetadataKeyEnableFlutterGpu =
     "http://tizen.org/metadata/flutter_tizen/enable_flutter_gpu";
@@ -55,11 +55,12 @@ std::vector<std::string> FlutterEngineArguments::ParseEngineArgs() {
 
   std::map<std::string, std::string> metadata = GetMetadata(app_id);
 
-  is_impeller_enabled_ = ProcessMetadataFlag(
-      engine_args, "--enable-impeller", kMetadataKeyEnableImepeller, metadata);
+  is_impeller_enabled_ =
+      ProcessMetadataFlag(engine_args, "--enable-impeller",
+                          kMetadataKeyEnableImpeller, metadata, true);
   is_flutter_gpu_enabled_ =
       ProcessMetadataFlag(engine_args, "--enable-flutter-gpu",
-                          kMetadataKeyEnableFlutterGpu, metadata);
+                          kMetadataKeyEnableFlutterGpu, metadata, false);
 
   for (const std::string& arg : engine_args) {
     TizenLog::Info("Enabled: %s", arg.c_str());
@@ -95,27 +96,22 @@ std::map<std::string, std::string> FlutterEngineArguments::GetMetadata(
 bool FlutterEngineArguments::ProcessMetadataFlag(
     std::vector<std::string>& engine_args, const std::string& flag,
     const std::string& metadata_key,
-    const std::map<std::string, std::string>& metadata) {
-  bool enabled = false;
-  auto flag_it = std::find(engine_args.begin(), engine_args.end(), flag);
-  bool flag_exists = (flag_it != engine_args.end());
-
-  if (flag_exists) {
-    enabled = true;
+    const std::map<std::string, std::string>& metadata,
+    bool enabled_by_default) {
+  if (std::find(engine_args.begin(), engine_args.end(), flag + "=false") !=
+      engine_args.end()) {
+    return false;
+  }
+  if (std::find(engine_args.begin(), engine_args.end(), flag) !=
+      engine_args.end()) {
+    return true;
   }
 
   auto metadata_it = metadata.find(metadata_key);
-  if (metadata_it != metadata.end()) {
-    bool metadata_enabled = (metadata_it->second == "true");
-
-    if (!flag_exists && metadata_enabled) {
-      enabled = true;
-      engine_args.insert(engine_args.begin(), flag);
-    } else if (flag_exists && !metadata_enabled) {
-      enabled = false;
-      engine_args.erase(flag_it);
-    }
+  bool enabled = metadata_it == metadata.end() ? enabled_by_default
+                                               : metadata_it->second == "true";
+  if (enabled) {
+    engine_args.insert(engine_args.begin(), flag);
   }
-
   return enabled;
 }

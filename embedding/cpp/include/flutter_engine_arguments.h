@@ -45,7 +45,8 @@ class FlutterEngineArguments {
   bool ProcessMetadataFlag(std::vector<std::string>& engine_args,
                            const std::string& flag,
                            const std::string& metadata_key,
-                           const std::map<std::string, std::string>& metadata);
+                           const std::map<std::string, std::string>& metadata,
+                           bool enabled_by_default);
 
   // The list of parsed engine arguments.
   std::vector<std::string> engine_args_;

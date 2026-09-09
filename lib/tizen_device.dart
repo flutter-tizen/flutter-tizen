@@ -406,6 +406,7 @@ class TizenDevice extends Device {
       if (debuggingOptions.profileMicrotasks) '--profile-microtasks',
       if (debuggingOptions.purgePersistentCache) '--purge-persistent-cache',
       if (debuggingOptions.enableImpeller == ImpellerStatus.enabled) '--enable-impeller',
+      if (debuggingOptions.enableImpeller == ImpellerStatus.disabled) '--enable-impeller=false',
       if (debuggingOptions.enableFlutterGpu) '--enable-flutter-gpu',
       if (debuggingOptions.enableVulkanValidation) '--enable-vulkan-validation',
       if (debuggingOptions.debuggingEnabled) ...<String>[
