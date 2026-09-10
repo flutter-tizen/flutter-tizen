@@ -46,6 +46,11 @@ const kFilePath = 'filePath';
 /// Constant for 'libName' key in plugin maps.
 const kLibName = 'libName';
 
+final RegExp _identifierPattern = RegExp(
+  r'^[a-zA-Z_$][a-zA-Z0-9_$]*(\.[a-zA-Z_$][a-zA-Z0-9_$]*)*$',
+);
+final RegExp _fileNamePattern = RegExp(r'^\w[\w.-]*$');
+
 /// Contains the parameters to template a Tizen plugin.
 ///
 /// The [name] of the plugin is required. Either [dartPluginClass] or
@@ -65,28 +70,53 @@ class TizenPlugin extends PluginPlatform implements NativeOrDartPlugin {
     this.dartPluginClass,
     this.fileName,
     required this.isDevDependency,
-  }) : assert(pluginClass != null || dartPluginClass != null);
+  });
 
+  /// See: [WebPlugin.fromYaml] in `platform_plugins.dart`
   static TizenPlugin fromYaml(
     String name,
     Directory directory,
     YamlMap yaml, {
     required bool isDevDependency,
   }) {
-    assert(validate(yaml));
+    final Object? pluginClass = yaml[kPluginClass];
+    final Object? dartPluginClass = yaml[kDartPluginClass];
+    final Object? namespace = yaml[kNamespace];
+    final Object? fileName = yaml[kFileName];
+    if (pluginClass is! String &&
+        dartPluginClass is! String &&
+        yaml[kFfiPlugin] != true &&
+        yaml[kDefaultPackage] is! String) {
+      throwToolExit(
+        'The plugin `$name` is missing `pluginClass` or `dartPluginClass` '
+        'in its tizen plugin declaration.',
+      );
+    }
+    for (final MapEntry<String, Object?> entry in <String, Object?>{
+      kPluginClass: pluginClass,
+      kDartPluginClass: dartPluginClass,
+      kNamespace: namespace,
+    }.entries) {
+      final Object? value = entry.value;
+      if (value is String && !_identifierPattern.hasMatch(value)) {
+        throwToolExit(
+          'The plugin `$name` has an invalid `${entry.key}` in its tizen plugin declaration.',
+        );
+      }
+    }
+    if (fileName is String && !_fileNamePattern.hasMatch(fileName)) {
+      throwToolExit(
+          'The plugin `$name` has an invalid `fileName` in its tizen plugin declaration.');
+    }
     return TizenPlugin(
       name: name,
       directory: directory,
-      namespace: yaml[kNamespace] as String?,
-      pluginClass: yaml[kPluginClass] as String?,
-      dartPluginClass: yaml[kDartPluginClass] as String?,
-      fileName: yaml[kFileName] as String?,
+      namespace: namespace as String?,
+      pluginClass: pluginClass as String?,
+      dartPluginClass: dartPluginClass as String?,
+      fileName: fileName as String?,
       isDevDependency: isDevDependency,
     );
-  }
-
-  static bool validate(YamlMap yaml) {
-    return yaml[kPluginClass] is String || yaml[kDartPluginClass] is String;
   }
 
   static const kConfigKey = 'tizen';

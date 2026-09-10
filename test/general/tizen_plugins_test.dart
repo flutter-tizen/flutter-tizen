@@ -13,7 +13,9 @@ import 'package:flutter_tools/src/build_info.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/project.dart';
 import 'package:flutter_tools/src/runner/flutter_command.dart';
+import 'package:yaml/yaml.dart';
 
+import '../src/common.dart';
 import '../src/context.dart';
 import '../src/test_flutter_command_runner.dart';
 
@@ -525,6 +527,44 @@ type = staticLib
     FileSystem: () => fileSystem,
     ProcessManager: () => FakeProcessManager.any(),
   }, testOn: 'posix');
+
+  TizenPlugin pluginFromYaml(String yaml) => TizenPlugin.fromYaml(
+        'some_plugin',
+        fileSystem.directory('/some_plugin/tizen'),
+        loadYaml(yaml) as YamlMap,
+        isDevDependency: false,
+      );
+
+  testWithoutContext('Accepts valid plugin specifications', () {
+    expect(pluginFromYaml('pluginClass: SomePlugin\nfileName: some_plugin.h').isDotnet(), isFalse);
+    expect(
+      pluginFromYaml('namespace: Some.Plugin\npluginClass: SomePlugin\nfileName: Some.csproj')
+          .isDotnet(),
+      isTrue,
+    );
+    expect(pluginFromYaml('dartPluginClass: SomePlugin').hasDart(), isTrue);
+    expect(pluginFromYaml('ffiPlugin: true').hasMethodChannel(), isFalse);
+    expect(pluginFromYaml('default_package: some_plugin_tizen').hasDart(), isFalse);
+  });
+
+  testWithoutContext('Rejects invalid plugin specifications', () {
+    const invalid = <String, String>{
+      'fileName: some_plugin.h': 'is missing `pluginClass` or `dartPluginClass`',
+      'pluginClass: "SomePlugin(); evil(); //"': 'has an invalid `pluginClass`',
+      'dartPluginClass: "Evil(); class Evil"': 'has an invalid `dartPluginClass`',
+      'namespace: "Some; using Evil"\npluginClass: SomePlugin': 'has an invalid `namespace`',
+      'pluginClass: SomePlugin\nfileName: "some_plugin.h\\"\\n#include \\"/etc/passwd"':
+          'has an invalid `fileName`',
+      'pluginClass: SomePlugin\nfileName: ../../evil.h': 'has an invalid `fileName`',
+    };
+    for (final MapEntry<String, String> entry in invalid.entries) {
+      expect(
+        () => pluginFromYaml(entry.key),
+        throwsToolExit(message: 'The plugin `some_plugin` ${entry.value}'),
+        reason: entry.key,
+      );
+    }
+  });
 }
 
 class _DummyFlutterCommand extends FlutterCommand with DartPluginRegistry {
