@@ -62,8 +62,7 @@ class TizenBuilder {
     final Directory outputDir =
         project.directory.childDirectory('build').childDirectory('tizen').childDirectory('tpk');
     final BuildInfo buildInfo = tizenBuildInfo.buildInfo;
-    final String targetPlatform =
-        getNameForTargetPlatform(getTargetPlatformForArch(tizenBuildInfo.targetArch));
+    final String targetPlatform = getTargetPlatformForArch(tizenBuildInfo.targetArch).getName();
 
     final environment = Environment(
       projectDir: project.directory,
@@ -189,8 +188,7 @@ class TizenBuilder {
           .childDirectory('module');
     }
     final BuildInfo buildInfo = tizenBuildInfo.buildInfo;
-    final String targetPlatform =
-        getNameForTargetPlatform(getTargetPlatformForArch(tizenBuildInfo.targetArch));
+    final String targetPlatform = getTargetPlatformForArch(tizenBuildInfo.targetArch).getName();
 
     final environment = Environment(
       projectDir: project.directory,
