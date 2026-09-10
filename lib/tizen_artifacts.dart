@@ -38,7 +38,7 @@ class TizenArtifacts extends CachedArtifacts {
   }) {
     if (artifact == Artifact.genSnapshot &&
         platform != null &&
-        getNameForTargetPlatform(platform).startsWith('android')) {
+        platform.getName().startsWith('android')) {
       assert(mode != null, 'Need to specify a build mode.');
       assert(mode != BuildMode.debug, 'Artifact $artifact only available in non-debug mode.');
       final String arch = getArchForTargetPlatform(platform);
@@ -46,7 +46,7 @@ class TizenArtifacts extends CachedArtifacts {
       assert(hostPlatform != HostPlatform.linux_arm64,
           'Artifact $artifact not available on Linux arm64.');
       return _getEngineArtifactsDirectory(arch, mode!)
-          .childDirectory(getNameForHostPlatform(hostPlatform))
+          .childDirectory(hostPlatform.cliName)
           .childFile('gen_snapshot')
           .path;
     }

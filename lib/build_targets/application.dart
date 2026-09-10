@@ -236,7 +236,7 @@ class TizenAotElf extends AotElfBase {
     if (splitDebugInfo != null && splitDebugInfo.isNotEmpty) {
       final Directory splitDebugInfoDir = environment.fileSystem.directory(splitDebugInfo);
       final File symbolsFile =
-          splitDebugInfoDir.childFile('app.${getNameForTargetPlatform(targetPlatform)}.symbols');
+          splitDebugInfoDir.childFile('app.${targetPlatform.getName()}.symbols');
       if (symbolsFile.existsSync()) {
         symbolsFile.renameSync(splitDebugInfoDir
             .childFile('app.tizen-${getArchForTargetPlatform(targetPlatform)}.symbols')
