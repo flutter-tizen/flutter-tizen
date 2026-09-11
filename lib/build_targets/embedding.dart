@@ -28,6 +28,7 @@ class NativeEmbedding extends Target {
   @override
   List<Source> get inputs => const <Source>[
         Source.pattern('{FLUTTER_ROOT}/../lib/build_targets/embedding.dart'),
+        Source.pattern('{FLUTTER_ROOT}/../lib/build_targets/utils.dart'),
         Source.pattern('{FLUTTER_ROOT}/../lib/tizen_sdk.dart'),
       ];
 
@@ -109,6 +110,7 @@ class NativeEmbedding extends Target {
       arch: getTizenCliArch(buildInfo.targetArch),
       predefines: <String>[
         '${buildInfo.deviceProfile.toUpperCase()}_PROFILE',
+        if (usesTizenCoreEmbedder(apiVersion)) 'TIZEN_CORE',
       ],
       extraOptions: <String>['-fPIC'],
       rootstrap: rootstrap.id,
