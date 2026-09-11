@@ -130,7 +130,19 @@ namespace Tizen.Flutter.Embedding
                 TizenLog.Error($"Unhandled exception: {exception}");
             };
 
+#if TIZEN_CORE
+            tizen_core_init();
+            try
+            {
+                base.Run(args);
+            }
+            finally
+            {
+                tizen_core_shutdown();
+            }
+#else
             base.Run(args);
+#endif
         }
 
         /// <InheritDoc/>

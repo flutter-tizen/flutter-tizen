@@ -38,13 +38,22 @@ Directory getEngineArtifactsDirectory(String arch, BuildMode mode) {
       : globals.cache.getArtifactDirectory('engine').childDirectory('tizen-$arch-${mode.name}');
 }
 
+final Version kTizenCoreApiVersion = Version(11, 0, 0);
+
+bool usesTizenCoreEmbedder(String? apiVersion) {
+  final Version version = Version.parse(apiVersion) ?? Version(6, 0, 0);
+  return version >= kTizenCoreApiVersion;
+}
+
 Directory getEmbedderArtifactsDirectory(String? apiVersion, String arch) {
   final Version version = Version.parse(apiVersion) ?? Version(6, 0, 0);
   if (arch == 'x86_64') {
     arch = 'x64';
   }
 
-  if (arch == 'x64' && version >= Version(8, 0, 0)) {
+  if (version >= kTizenCoreApiVersion) {
+    apiVersion = '11.0';
+  } else if (arch == 'x64' && version >= Version(8, 0, 0)) {
     apiVersion = '8.0';
   } else if (version >= Version(6, 5, 0)) {
     apiVersion = '6.5';
