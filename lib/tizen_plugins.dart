@@ -611,19 +611,12 @@ Future<void> _writeTizenPluginRegistrant(
   }
 }
 
-// Reserved for future use.
-const _intermediateDotnetPropsTemplate = '''
-<?xml version="1.0" encoding="utf-8" standalone="no"?>
-<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-</Project>
-''';
-
-const _intermediateDotnetTargetsTemplate = '''
+const _intermediateDotnetTargetsTemplate = r'''
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
   {{#dotnetPlugins}}
-    <ProjectReference Include="{{filePath}}" />
+    <ProjectReference Include="{{filePath}}" AdditionalProperties="TizenCoreEnabled=$(TizenCoreEnabled)" />
   {{/dotnetPlugins}}
   </ItemGroup>
 </Project>
@@ -640,11 +633,6 @@ Future<void> _writeIntermediateDotnetFiles(
   final String projectFileName = project.projectFile!.basename;
   final Directory intermediateDirectory = project.hostAppRoot.childDirectory('obj');
   await renderTemplateToFile(
-    _intermediateDotnetPropsTemplate,
-    context,
-    intermediateDirectory.childFile('$projectFileName.flutter.props'),
-  );
-  await renderTemplateToFile(
     _intermediateDotnetTargetsTemplate,
     context,
     intermediateDirectory.childFile('$projectFileName.flutter.targets'),
@@ -654,11 +642,6 @@ Future<void> _writeIntermediateDotnetFiles(
     final File? serviceProjectFile = findDotnetProjectFile(project.serviceAppDirectory);
     final String projectFileName = serviceProjectFile!.basename;
     final Directory intermediateDirectory = project.serviceAppDirectory.childDirectory('obj');
-    await renderTemplateToFile(
-      _intermediateDotnetPropsTemplate,
-      context,
-      intermediateDirectory.childFile('$projectFileName.flutter.props'),
-    );
     await renderTemplateToFile(
       _intermediateDotnetTargetsTemplate,
       context,

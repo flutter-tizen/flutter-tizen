@@ -1,12 +1,5 @@
-﻿<Project Sdk="Tizen.NET.Sdk/1.1.7">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>tizen80</TargetFramework>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="$(FlutterEmbeddingPath)" />
-  </ItemGroup>
+  <Import Project="obj/Flutter.props" />
 
 </Project>

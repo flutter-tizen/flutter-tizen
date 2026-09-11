@@ -401,7 +401,7 @@ internal class GeneratedPluginRegistrant
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ProjectReference Include="${pluginDir.path}/tizen/SomeDotnetPlugin.csproj" />
+    <ProjectReference Include="${pluginDir.path}/tizen/SomeDotnetPlugin.csproj" AdditionalProperties="TizenCoreEnabled=\$(TizenCoreEnabled)" />
   </ItemGroup>
 </Project>
 '''));

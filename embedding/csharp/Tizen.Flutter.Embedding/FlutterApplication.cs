@@ -7,6 +7,10 @@ using System.Diagnostics;
 using Tizen.Applications;
 using static Tizen.Flutter.Embedding.Interop;
 
+#if TIZEN_CORE
+using Tizen.Core;
+#endif
+
 namespace Tizen.Flutter.Embedding
 {
     /// <summary>
@@ -130,7 +134,19 @@ namespace Tizen.Flutter.Embedding
                 TizenLog.Error($"Unhandled exception: {exception}");
             };
 
+#if TIZEN_CORE
+            TizenCore.Initialize();
+            try
+            {
+                base.Run(args);
+            }
+            finally
+            {
+                TizenCore.Shutdown();
+            }
+#else
             base.Run(args);
+#endif
         }
 
         /// <InheritDoc/>
