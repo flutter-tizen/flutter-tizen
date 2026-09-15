@@ -279,7 +279,10 @@ class TizenInstallCodeAssets extends Target {
 
     final depfile = Depfile(
       <File>[for (final Uri file in dartHookResult.filesToBeBundled) fileSystem.file(file)],
-      <File>[fileSystem.file(nativeAssetsFileUri)],
+      <File>[
+        fileSystem.file(nativeAssetsFileUri),
+        ...installDir.listSync().whereType<File>(),
+      ],
     );
     final File outputDepfile = environment.buildDir.childFile(depFilename);
     environment.depFileService.writeToFile(depfile, outputDepfile);
