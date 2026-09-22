@@ -322,7 +322,7 @@ TargetPlatform _getTargetPlatformFromEnvironment(Environment environment, String
   if (targetPlatformEnvironment == null) {
     throw MissingDefineException(kTargetPlatform, name);
   }
-  return getTargetPlatformForName(targetPlatformEnvironment);
+  return TargetPlatform.fromName(targetPlatformEnvironment);
 }
 
 BuildMode _getBuildModeFromEnvironment(Environment environment, String name) {

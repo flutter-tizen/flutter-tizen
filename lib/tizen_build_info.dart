@@ -21,7 +21,7 @@ class TizenBuildInfo {
   final String? securityProfile;
 }
 
-/// See: [getNameForTargetPlatform] in `build_info.dart`
+/// See: [TargetPlatform.getName] in `build_info.dart`
 String getArchForTargetPlatform(TargetPlatform platform) {
   return switch (platform) {
     TargetPlatform.android_arm => 'arm',
@@ -34,7 +34,7 @@ String getArchForTargetPlatform(TargetPlatform platform) {
   };
 }
 
-/// See: [getTargetPlatformForName] in `build_info.dart`
+/// See: [TargetPlatform.fromName] in `build_info.dart`
 TargetPlatform getTargetPlatformForArch(String arch) {
   return switch (arch) {
     'arm' => TargetPlatform.android_arm,

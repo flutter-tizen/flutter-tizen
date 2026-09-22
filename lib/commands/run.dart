@@ -68,7 +68,7 @@ class TizenDeviceLogger extends DelegatingLogger {
               '(${device.deviceProfile})${device.deviceProfile == 'tv' ? '    ' : ''}',
             )
             .replaceFirst(
-              getNameForTargetPlatform(TargetPlatform.tester),
+              TargetPlatform.tester.getName(),
               'tizen-${device.architecture}${device.architecture == 'arm64' ? '   ' : '     '}',
             );
       }
