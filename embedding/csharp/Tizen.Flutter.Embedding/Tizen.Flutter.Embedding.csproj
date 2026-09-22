@@ -2,7 +2,8 @@
 
   <PropertyGroup>
     <OutputType>library</OutputType>
-    <TargetFrameworks>netstandard2.0;tizen40;tizen80;tizen90</TargetFrameworks>
+    <TargetFrameworks Condition="'$(TizenCoreEnabled)' != 'true'">netstandard2.0;tizen40;tizen80;tizen90</TargetFrameworks>
+    <TargetFrameworks Condition="'$(TizenCoreEnabled)' == 'true'">net8.0-tizen10.0</TargetFrameworks>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <AnalysisLevel>latest</AnalysisLevel>
   </PropertyGroup>
@@ -20,12 +21,16 @@
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(TizenCoreEnabled)' == 'true'">
+    <DefineConstants>$(DefineConstants);TIZEN_CORE</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
     <Content Include="Tizen.Flutter.Embedding.targets" PackagePath="build" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Tizen.NET" Version="9.0.0.16760" />
+    <PackageReference Include="Tizen.NET" Version="9.0.0.16760" Condition="'$(TizenCoreEnabled)' != 'true'" />
   </ItemGroup>
 
 </Project>

@@ -372,12 +372,13 @@ class NativeTpk extends TizenPackage {
 
     final Directory embeddingDir = environment.buildDir.childDirectory('tizen_embedding');
     final File embeddingLib = embeddingDir.childFile('libembedding_cpp.a');
-    const embeddingDependencies = <String>[
+    final embeddingDependencies = <String>[
       'appcore-agent',
       'capi-appfw-app-common',
       'capi-appfw-application',
       'capi-appfw-app-manager',
       'dlog',
+      if (usesTizenCoreEmbedder(apiVersion)) 'tizen-core',
     ];
 
     final Directory buildDir = tizenProject.hostAppRoot.childDirectory(buildConfig);

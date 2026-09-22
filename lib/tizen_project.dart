@@ -15,6 +15,7 @@ import 'package:meta/meta.dart';
 import 'package:xml/xml.dart';
 import 'package:yaml/yaml.dart';
 
+import 'build_targets/utils.dart';
 import 'tizen_plugins.dart';
 import 'tizen_tpk.dart';
 
@@ -228,24 +229,76 @@ void updateDotnetUserProjectFile(File projectFile) {
       .childDirectory('csharp')
       .childDirectory('Tizen.Flutter.Embedding')
       .childFile('Tizen.Flutter.Embedding.csproj');
-  final Iterable<XmlElement> elements = document.findAllElements('FlutterEmbeddingPath');
-  if (elements.isEmpty) {
-    // Create an element if not exists.
-    final builder = XmlBuilder();
-    builder.element('PropertyGroup', nest: () {
-      builder.element(
-        'FlutterEmbeddingPath',
-        nest: embeddingProjectFile.absolute.path,
-      );
-    });
-    document.rootElement.children.add(builder.buildFragment());
-  } else {
-    // Update existing element(s).
-    for (final element in elements) {
-      element.innerText = embeddingProjectFile.absolute.path;
+
+  void setProperty(String name, String value, {String? condition}) {
+    final Iterable<XmlElement> elements = document.findAllElements(name);
+    if (elements.isEmpty) {
+      final builder = XmlBuilder();
+      builder.element('PropertyGroup', nest: () {
+        builder.element(name,
+            attributes: <String, String>{if (condition != null) 'Condition': condition},
+            nest: value);
+      });
+      document.rootElement.children.add(builder.buildFragment());
+    } else {
+      for (final element in elements) {
+        element.innerText = value;
+        if (condition != null) {
+          element.setAttribute('Condition', condition);
+        }
+      }
     }
   }
+
+  final bool tizenCoreEnabled = _readsTizenCoreManifest(projectFile);
+  final propsBuilder = XmlBuilder();
+  propsBuilder.element('Project', nest: () {
+    propsBuilder.element('PropertyGroup', nest: () {
+      propsBuilder.element('TizenCoreEnabled', nest: tizenCoreEnabled.toString());
+    });
+    propsBuilder.element('Import', attributes: <String, String>{
+      'Project':
+          embeddingProjectFile.parent.parent.childFile('FlutterApplication.props').absolute.path,
+    });
+  });
+  final File propsFile = projectFile.parent.childDirectory('obj').childFile('Flutter.props');
+  propsFile
+    ..createSync(recursive: true)
+    ..writeAsStringSync(propsBuilder.buildDocument().toXmlString(pretty: true, indent: '  '));
+
+  setProperty('FlutterEmbeddingPath', embeddingProjectFile.absolute.path);
+  setProperty('TizenCoreEnabled', tizenCoreEnabled.toString());
+  setProperty('RestoreUseStaticGraphEvaluation', 'true',
+      condition: r"'$(TizenCoreEnabled)' == 'true'");
+  setProperty('ImportProjectExtensionTargets', 'true');
+
+  if (!document.findAllElements('ProjectReference').any(
+        (XmlElement element) => element.getAttribute('Update') == r'@(ProjectReference)',
+      )) {
+    final builder = XmlBuilder();
+    builder.element('ItemGroup', nest: () {
+      builder.element('ProjectReference', attributes: <String, String>{
+        'Update': r'@(ProjectReference)',
+        'AdditionalProperties':
+            r'%(ProjectReference.AdditionalProperties);TizenCoreEnabled=$(TizenCoreEnabled)',
+      });
+    });
+    document.rootElement.children.add(builder.buildFragment());
+  }
+
   userFile.writeAsStringSync(
     document.toXmlString(pretty: true, indent: '  '),
   );
+}
+
+bool _readsTizenCoreManifest(File projectFile) {
+  final File manifestFile = projectFile.parent.childFile('tizen-manifest.xml');
+  if (!manifestFile.existsSync()) {
+    return false;
+  }
+  try {
+    return usesTizenCoreEmbedder(TizenManifest.parseFromXml(manifestFile).apiVersion);
+  } on Exception {
+    return false;
+  }
 }

@@ -137,6 +137,7 @@ class NativePlugins extends Target {
             '-l${getLibNameForFileName(embedder.basename)}',
             '-L${embedderDir.path.toPosixPath()}',
             embeddingLib.path.toPosixPath(),
+            if (usesTizenCoreEmbedder(apiVersion)) '-ltizen-core',
           ],
         ],
         rootstrap: rootstrap.id,

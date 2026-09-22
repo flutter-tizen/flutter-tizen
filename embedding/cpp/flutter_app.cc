@@ -6,6 +6,10 @@
 
 #include <cassert>
 
+#ifdef TIZEN_CORE
+#include <tizen_core.h>
+#endif
+
 #include "tizen_log.h"
 
 bool FlutterApp::OnCreate() {
@@ -89,6 +93,10 @@ void FlutterApp::OnRegionFormatChanged(app_event_info_h event_info) {
 }
 
 int FlutterApp::Run(int argc, char **argv) {
+#ifdef TIZEN_CORE
+  tizen_core_init();
+#endif
+
   ui_app_lifecycle_callback_s lifecycle_cb = {};
   lifecycle_cb.create = [](void *data) -> bool {
     auto *app = reinterpret_cast<FlutterApp *>(data);
@@ -152,6 +160,10 @@ int FlutterApp::Run(int argc, char **argv) {
   if (ret != APP_ERROR_NONE) {
     TizenLog::Error("Could not launch an application. (%d)", ret);
   }
+
+#ifdef TIZEN_CORE
+  tizen_core_shutdown();
+#endif
   return ret;
 }
 

@@ -1,0 +1,18 @@
+<Project>
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>tizen80</TargetFramework>
+    <TargetFramework Condition="'$(TizenCoreEnabled)' == 'true'">net8.0-tizen10.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(TizenCoreEnabled)' != 'true'">
+    <PackageReference Include="Tizen.NET.Sdk" Version="1.1.7" PrivateAssets="All" />
+    <PackageReference Include="Tizen.NET" Version="9.0.0.16760" PrivateAssets="All" ExcludeAssets="Runtime" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(FlutterEmbeddingPath)" />
+  </ItemGroup>
+
+</Project>
