@@ -114,7 +114,7 @@ class TizenDevice extends Device {
   @override
   Future<TargetPlatform> get targetPlatform async {
     // Use tester as a platform identifer for Tizen.
-    // There's currently no other choice because getNameForTargetPlatform()
+    // There's currently no other choice because TargetPlatform.getName()
     // throws an error for unknown platform types.
     return TargetPlatform.tester;
   }
