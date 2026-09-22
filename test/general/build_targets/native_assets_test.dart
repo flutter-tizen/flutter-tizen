@@ -196,12 +196,17 @@ void main() {
     // Flattened out of the Android jniLibs directory layout.
     // Avoid multi-segment childFile: the Windows-style memory file system
     // only splits paths on backslashes.
+    final File installedFile = environment.buildDir
+        .childDirectory('native_assets')
+        .childDirectory('linux')
+        .childFile('libmy_asset.so');
+    expect(installedFile, exists);
     expect(
-      environment.buildDir
-          .childDirectory('native_assets')
-          .childDirectory('linux')
-          .childFile('libmy_asset.so'),
-      exists,
+      const TizenInstallCodeAssets()
+          .resolveOutputs(environment)
+          .sources
+          .map((File file) => file.path),
+      contains(installedFile.path),
     );
     final manifest = json.decode(
       environment.buildDir.childFile('native_assets.json').readAsStringSync(),
