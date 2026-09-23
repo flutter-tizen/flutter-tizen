@@ -166,8 +166,20 @@ class TizenManifest {
   /// The unique ID used for launching and terminating the application.
   String get applicationId => _applications.first.getAttribute('appid')!;
 
-  /// The application type (either "capp" or "dotnet").
+  /// The application type (either "capp", "dotnet", or "flutter").
   String? get applicationType => _applications.first.getAttribute('type');
+
+  set applicationType(String? type) {
+    for (final XmlElement application in _applications) {
+      application.setAttribute('type', type);
+    }
+  }
+
+  /// The executable file names of all applications in the package.
+  Iterable<String> get executables =>
+      _applications.map((XmlElement app) => app.getAttribute('exec')).whereType<String>();
+
+  String toXmlString() => _document.toXmlString();
 
   @override
   String toString() => _document.toXmlString(pretty: true);

@@ -31,9 +31,14 @@ class TizenCreateCommand extends CreateCommand {
   TizenCreateCommand({super.verboseHelp}) {
     argParser.addOption(
       'tizen-language',
-      allowed: <String>['cpp', 'csharp'],
-      help: 'The language to use for Tizen-specific code, either C++ '
-          '(performant, but unsupported by TV devices) or C# (universal). '
+      allowed: <String>['cpp', 'csharp', 'native'],
+      allowedHelp: <String, String>{
+        'cpp': 'C++ (performant, but unsupported by TV devices).',
+        'csharp': 'C# (universal).',
+        'native': 'No Tizen-specific code. The app runs on a prebuilt C++ runner '
+            'provided by flutter-tizen. Only for apps.',
+      },
+      help: 'The language to use for Tizen-specific code. '
           'If not specified, "cpp" is used by default if the project type is '
           '"plugin", otherwise "csharp" is used by default.',
     );
@@ -69,7 +74,7 @@ class TizenCreateCommand extends CreateCommand {
       .childDirectory('templates');
 
   /// See: [CreateCommand._getProjectType] in `create.dart`
-  bool get _shouldGeneratePlugin {
+  FlutterTemplateType? get _projectType {
     FlutterTemplateType? template;
     final String? templateArgument = stringArg('template');
     if (templateArgument != null) {
@@ -84,8 +89,10 @@ class TizenCreateCommand extends CreateCommand {
     if (projectDir.existsSync() && projectDir.listSync().isNotEmpty) {
       template = determineTemplateType();
     }
-    return template == FlutterTemplateType.plugin;
+    return template;
   }
+
+  bool get _shouldGeneratePlugin => _projectType == FlutterTemplateType.plugin;
 
   @override
   void addPlatformsOptions({
@@ -262,6 +269,11 @@ class TizenCreateCommand extends CreateCommand {
       throwToolExit('Creating an FFI plugin or package is not yet supported.');
     }
 
+    if (tizenLanguage == 'native' &&
+        (_projectType ?? FlutterTemplateType.app) != FlutterTemplateType.app) {
+      throwToolExit('--tizen-language=native is only supported for apps.');
+    }
+
     final templateName = template == 'app' ? '$appType-app' : template;
     if (!_tizenTemplates.childDirectory(templateName).childDirectory(tizenLanguage).existsSync()) {
       throwToolExit('Could not locate a template: $templateName/$tizenLanguage');
@@ -367,6 +379,10 @@ class TizenCreateCommand extends CreateCommand {
     _copyDirectoryIfExists(
       appTemplate.childDirectory('csharp'),
       _flutterTemplates.childDirectory('app').childDirectory('tizen-csharp.tmpl'),
+    );
+    _copyDirectoryIfExists(
+      appTemplate.childDirectory('native'),
+      _flutterTemplates.childDirectory('app').childDirectory('tizen-native.tmpl'),
     );
     _copyDirectoryIfExists(
       appTemplate.childDirectory('lib'),

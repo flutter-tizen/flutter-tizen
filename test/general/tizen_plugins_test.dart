@@ -352,6 +352,55 @@ void RegisterPlugins(flutter::PluginRegistry *registry) {
     ProcessManager: () => FakeProcessManager.any(),
   }, testOn: 'posix');
 
+  testUsingContext('Keeps generated files out of the tizen directory for native apps', () async {
+    final command = _DummyFlutterCommand();
+    final CommandRunner<void> runner = createTestCommandRunner(command);
+
+    fileSystem.file('tizen/tizen-manifest.xml')
+      ..createSync(recursive: true)
+      ..writeAsStringSync('''
+<manifest package="package_id" version="1.0.0" api-version="6.0">
+    <ui-application appid="app_id" exec="runner" type="flutter"/>
+</manifest>
+''');
+
+    await validatesComputeTransitiveDependencies(<Package>[
+      (
+        name: 'my_app',
+        pluginType: PluginType.none,
+        dependencies: <String>['some_dart_plugin', 'some_native_plugin'],
+        devDependencies: <String>[],
+      ),
+      (
+        name: 'some_dart_plugin',
+        pluginType: PluginType.dart,
+        dependencies: <String>[],
+        devDependencies: <String>[],
+      ),
+      (
+        name: 'some_native_plugin',
+        pluginType: PluginType.native,
+        dependencies: <String>[],
+        devDependencies: <String>[],
+      ),
+    ]);
+    await runner.run(<String>['dummy']);
+    project = FlutterProject.fromDirectoryTest(fileSystem.currentDirectory);
+    await injectTizenPlugins(project);
+
+    expect(
+      fileSystem.directory('tizen').listSync(recursive: true).map((FileSystemEntity e) => e.path),
+      equals(<String>['tizen/tizen-manifest.xml']),
+    );
+    expect(fileSystem.file('.dart_tool/tizen/generated_main.dart'), exists);
+    expect(fileSystem.file('.dart_tool/tizen/.app.deps.json'), exists);
+    // The C++ plugin registrant is generated only when building plugins.
+    expect(fileSystem.file('.dart_tool/tizen/generated_plugin_registrant.h'), isNot(exists));
+  }, overrides: <Type, Generator>{
+    FileSystem: () => fileSystem,
+    ProcessManager: () => FakeProcessManager.any(),
+  }, testOn: 'posix');
+
   testUsingContext('Generates native plugin registrant for C#', () async {
     fileSystem.file('tizen/Runner.csproj').createSync(recursive: true);
     fileSystem.file('tizen/tizen-manifest.xml').createSync(recursive: true);

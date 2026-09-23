@@ -81,14 +81,25 @@ jobs:
           export PATH=`pwd`/flutter-tizen/bin:$PATH
           echo $PATH >> $GITHUB_PATH
           flutter-tizen doctor -v
+      - name: Build C++ TPK
+        run: |
+          flutter-tizen create --tizen-language cpp cpp_app
+          cd cpp_app
+          dbus-run-session -- bash -c "
+          echo tizen | gnome-keyring-daemon --unlock &&
+          flutter-tizen build tpk -pcommon --debug
+          "
       - name: Build native TPK
         run: |
-          flutter-tizen create --tizen-language cpp native_app
+          flutter-tizen create --tizen-language native --app-type multi native_app
           cd native_app
           dbus-run-session -- bash -c "
           echo tizen | gnome-keyring-daemon --unlock &&
           flutter-tizen build tpk -pcommon --debug
           "
+          unzip -l build/tizen/tpk/*.tpk | grep -E 'bin/runner$'
+          unzip -l build/tizen/tpk/*.tpk | grep -E 'bin/runner_service$'
+          unzip -l build/tizen/tpk/*.tpk | grep -E 'lib/libflutter_plugins.so$'
       - name: Build .NET TPK
         run: |
           flutter-tizen create --tizen-language csharp dotnet_app

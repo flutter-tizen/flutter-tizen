@@ -20,6 +20,7 @@ import zipfile
 from contextlib import closing
 from pathlib import Path
 from traceback import format_exc
+from xml.etree import ElementTree
 
 
 class TizenDevice:
@@ -142,9 +143,13 @@ def find_project():
   if not (current_dir / 'pubspec.yaml').is_file():
     sys.exit('No pubspec.yaml file found.')
   tizen_dir = current_dir / 'tizen'
-  if not (tizen_dir / 'tizen-manifest.xml').is_file():
+  manifest = tizen_dir / 'tizen-manifest.xml'
+  if not manifest.is_file():
     sys.exit('This project is not configured for Tizen.')
-  if not (tizen_dir / 'project_def.prop').is_file():
+  # Native apps (type="flutter") run on the prebuilt runner and have no
+  # project_def.prop.
+  if not (tizen_dir / 'project_def.prop').is_file() and not any(
+      app.get('type') == 'flutter' for app in ElementTree.parse(manifest).getroot()):
     sys.exit('Not supported app language.')
   return current_dir
 

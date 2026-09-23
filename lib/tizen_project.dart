@@ -4,6 +4,7 @@
 // found in the LICENSE file.
 
 import 'package:file/file.dart';
+import 'package:flutter_tools/src/base/common.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/cache.dart';
@@ -42,7 +43,12 @@ class TizenProject extends FlutterProjectPlatform {
   /// The directory in the project that is managed by Flutter. As much as
   /// possible, files that are edited by Flutter tooling after initial project
   /// creation should live here.
-  Directory get managedDirectory => hostAppRoot.childDirectory('flutter');
+  ///
+  /// Apps on the prebuilt runner keep it out of the `tizen` directory, which
+  /// then contains only files owned by the user.
+  Directory get managedDirectory => usesPrebuiltRunner
+      ? parent.dartTool.childDirectory('tizen')
+      : hostAppRoot.childDirectory('flutter');
 
   Directory get serviceManagedDirectory => serviceAppDirectory.childDirectory('flutter');
 
@@ -80,6 +86,24 @@ class TizenProject extends FlutterProjectPlatform {
   }
 
   bool get isDotnet => projectFile?.basename.endsWith('.csproj') ?? false;
+
+  /// Whether the app runs on the prebuilt runner (created with
+  /// `--tizen-language=native`), which is marked by `type="flutter"` in
+  /// [manifestFile].
+  bool get usesPrebuiltRunner {
+    if (!manifestFile.existsSync()) {
+      return false;
+    }
+    try {
+      return TizenManifest.parseFromXml(manifestFile).applicationType == 'flutter';
+    } on ToolExit {
+      return false;
+    }
+  }
+
+  /// The dependency information file which is packaged with the app.
+  File get appDepsFile =>
+      (usesPrebuiltRunner ? managedDirectory : hostAppRoot).childFile('.app.deps.json');
 
   /// Returns "tizenLanguage" string declared in [parent]'s pubspec.
   ///

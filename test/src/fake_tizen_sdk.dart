@@ -80,14 +80,12 @@ class FakeTizenSdk extends TizenSdk {
     expect(libName, isNotNull);
     expect(libType, isNotNull);
 
-    var outPath = '$configuration/lib$libName';
-    if (libType == 'staticLib') {
-      outPath += '.a';
-    } else if (libType == 'sharedLib') {
-      outPath += '.so';
-    } else {
-      throw Exception('The project type $libType is not supported.');
-    }
+    final String outPath = switch (libType) {
+      'staticLib' => '$configuration/lib$libName.a',
+      'sharedLib' => '$configuration/lib$libName.so',
+      'app' => '$configuration/$libName',
+      _ => throw Exception('The project type $libType is not supported.'),
+    };
     projectDir.childFile(outPath).createSync(recursive: true);
 
     return RunResult(ProcessResult(0, 0, '', ''), <String>['build-native']);

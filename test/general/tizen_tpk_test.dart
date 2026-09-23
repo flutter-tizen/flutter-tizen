@@ -53,13 +53,14 @@ void main() {
 <manifest package="package_id" version="9.9.9" api-version="4.0">
     <profile name="common"/>
     <ui-application appid="app_id_1" exec="runner" type="capp"/>
-    <service-application appid="app_id_2" exec="runner" type="capp"/>
-    <service-application appid="app_id_3" exec="runner" type="capp"/>
+    <service-application appid="app_id_2" exec="runner_2" type="capp"/>
+    <service-application appid="app_id_3" exec="runner_3" type="capp"/>
 </manifest>
 ''');
 
     final TizenManifest manifest = TizenManifest.parseFromXml(xmlFile);
     expect(manifest.applicationId, equals('app_id_1'));
+    expect(manifest.executables, equals(<String>['runner', 'runner_2', 'runner_3']));
     expect(logger.traceText, contains('tizen-manifest.xml: Found 3 application declarations.'));
   }, overrides: <Type, Generator>{
     Logger: () => logger,

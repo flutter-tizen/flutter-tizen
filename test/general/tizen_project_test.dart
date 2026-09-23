@@ -105,4 +105,25 @@ void main() {
     expect(serviceDebugDir, isNot(exists));
     expect(serviceReleaseDir, isNot(exists));
   });
+
+  testWithoutContext('Detects apps running on the prebuilt runner', () {
+    expect(project.usesPrebuiltRunner, isFalse);
+
+    project.manifestFile
+      ..createSync(recursive: true)
+      ..writeAsStringSync('''
+<manifest package="package_id" version="1.0.0">
+    <ui-application appid="app_id" exec="runner" type="capp"/>
+</manifest>
+''');
+    expect(project.usesPrebuiltRunner, isFalse);
+    expect(project.managedDirectory.path, endsWith('tizen/flutter'));
+
+    project.manifestFile.writeAsStringSync(
+      project.manifestFile.readAsStringSync().replaceFirst('"capp"', '"flutter"'),
+    );
+    expect(project.usesPrebuiltRunner, isTrue);
+    expect(project.managedDirectory.path, endsWith('.dart_tool/tizen'));
+    expect(project.appDepsFile.path, endsWith('.dart_tool/tizen/.app.deps.json'));
+  });
 }
