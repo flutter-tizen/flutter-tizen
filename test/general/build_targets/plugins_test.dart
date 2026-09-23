@@ -182,6 +182,40 @@ dependencies:
     TizenSdk: () => FakeTizenSdk(fileSystem),
   });
 
+  testUsingContext('Tracks plugin declarations of Dart-only dependencies', () async {
+    final File pubspec = pluginDir.childFile('pubspec.yaml');
+    pubspec.writeAsStringSync(pubspec.readAsStringSync().replaceFirst(
+          '        pluginClass: SomeNativePlugin\n        fileName: some_native_plugin.h\n',
+          '        dartPluginClass: SomeDartPlugin\n',
+        ));
+    final environment = Environment.test(
+      projectDir,
+      fileSystem: fileSystem,
+      logger: logger,
+      artifacts: artifacts,
+      processManager: processManager,
+    );
+    environment.buildDir.createSync(recursive: true);
+
+    await NativePlugins(const TizenBuildInfo(
+      BuildInfo.debug,
+      targetArch: 'x86',
+      deviceProfile: 'common',
+    )).build(environment);
+
+    expect(environment.buildDir.childDirectory('tizen_plugins'), isNot(exists));
+    // Adding a native declaration later must invalidate this build.
+    expect(
+      environment.buildDir.childFile('tizen_plugins.d').readAsStringSync(),
+      contains(pubspec.path),
+    );
+  }, overrides: <Type, Generator>{
+    FileSystem: () => fileSystem,
+    ProcessManager: () => processManager,
+    Cache: () => cache,
+    TizenSdk: () => FakeTizenSdk(fileSystem),
+  });
+
   testUsingContext('Copies resource files recursively', () async {
     final environment = Environment.test(
       projectDir,

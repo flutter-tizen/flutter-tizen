@@ -30,6 +30,7 @@ class NativePlugins extends Target {
   @override
   List<Source> get inputs => const <Source>[
         Source.pattern('{FLUTTER_ROOT}/../lib/build_targets/plugins.dart'),
+        Source.pattern('{FLUTTER_ROOT}/../lib/tizen_plugins.dart'),
         Source.pattern('{FLUTTER_ROOT}/../lib/tizen_sdk.dart'),
         Source.pattern('{WORKSPACE_DIR}/.dart_tool/package_config.json'),
         Source.pattern('{WORKSPACE_DIR}/.dart_tool/package_graph.json'),
@@ -59,6 +60,10 @@ class NativePlugins extends Target {
 
     final FlutterProject project = FlutterProject.fromDirectory(environment.projectDir);
     final tizenProject = TizenProject.fromFlutter(project);
+
+    // Any dependency may become or stop being a native plugin, or change its
+    // plugin class, without changing the package config.
+    inputs.addAll(await findDependencyPubspecs(project));
 
     // Check if there's anything to build.
     List<TizenPlugin> nativePlugins = await findTizenPlugins(project, cppOnly: true);
