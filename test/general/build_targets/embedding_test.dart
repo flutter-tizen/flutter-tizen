@@ -65,6 +65,8 @@ type = staticLib
     final Directory outputDir = environment.buildDir.childDirectory('tizen_embedding');
     expect(outputDir.childFile('include/flutter.h'), exists);
     expect(outputDir.childFile('libembedding_cpp.a'), exists);
+    // The shared source directory is not used as a build directory.
+    expect(fileSystem.directory('embedding/cpp/Release'), isNot(exists));
   }, overrides: <Type, Generator>{
     FileSystem: () => fileSystem,
     ProcessManager: () => processManager,

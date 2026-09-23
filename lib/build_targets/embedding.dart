@@ -100,12 +100,36 @@ class NativeEmbedding extends Target {
       arch: buildInfo.targetArch,
     );
 
-    final Directory buildDir = embeddingDir.childDirectory(buildConfig);
-    if (buildDir.existsSync()) {
-      buildDir.deleteSync(recursive: true);
+    // Build in a copy laid out like this repository, which project_def.prop
+    // refers to, so that concurrent builds never share the build directory
+    // or the objects of ../../flutter/**/*.cc.
+    final Directory workDir = environment.buildDir.childDirectory('tizen_embedding_build');
+    if (workDir.existsSync()) {
+      workDir.deleteSync(recursive: true);
     }
+    final Directory sourceDir = workDir.childDirectory('embedding').childDirectory('cpp');
+    copyDirectory(
+      embeddingDir,
+      sourceDir,
+      shouldCopyDirectory: (Directory dir) =>
+          !<String>{'Debug', 'Release', 'runner'}.contains(dir.basename),
+    );
+    final Directory cacheDir =
+        workDir.childDirectory('flutter').childDirectory('bin').childDirectory('cache');
+    final Directory workCommonDir = cacheDir
+        .childDirectory('artifacts')
+        .childDirectory('engine')
+        .childDirectory('tizen-common');
+    copyDirectory(clientWrapperDir, workCommonDir.childDirectory('cpp_client_wrapper'));
+    copyDirectory(publicDir, workCommonDir.childDirectory('public'));
+    copyDirectory(
+      getDartSdkDirectory().childDirectory('include'),
+      cacheDir.childDirectory('dart-sdk').childDirectory('include'),
+    );
+
+    final Directory buildDir = sourceDir.childDirectory(buildConfig);
     final RunResult result = await tizenSdk!.buildNative(
-      embeddingDir.path,
+      sourceDir.path,
       configuration: buildConfig,
       arch: getTizenCliArch(buildInfo.targetArch),
       predefines: <String>[
@@ -127,6 +151,7 @@ class NativeEmbedding extends Target {
       );
     }
     outputs.add(outputLib.copySync(outputDir.childFile(outputLib.basename).path));
+    workDir.deleteSync(recursive: true);
 
     depfileService.writeToFile(
       Depfile(inputs, outputs),
