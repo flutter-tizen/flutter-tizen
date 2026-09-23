@@ -18,6 +18,7 @@ import 'package:flutter_tools/src/build_info.dart';
 import 'package:flutter_tools/src/build_system/build_system.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:test/fake.dart';
+import 'package:xml/xml.dart';
 
 import '../../src/common.dart';
 import '../../src/context.dart';
@@ -631,6 +632,48 @@ type = app
         cachedRunner().writeAsStringSync('cached');
       }
       expect(utf8.decode((await buildTpk())['bin/runner']!), equals('cached'));
+    }, overrides: <Type, Generator>{
+      FileSystem: () => fileSystem,
+      ProcessManager: () => processManager,
+      Cache: () => cache,
+      TizenSdk: () => FakeTizenSdk(fileSystem, securityProfile: 'test_profile'),
+    });
+
+    testUsingContext('Window configuration updates without rebuilding the cached runner', () async {
+      final File configFile = projectDir.childFile('tizen/flutter-tizen.yaml');
+      final File sourceManifest = projectDir.childFile('tizen/tizen-manifest.xml');
+      final String original = sourceManifest.readAsStringSync();
+      configFile.writeAsStringSync('''
+configuration:
+  window_width: 800
+  transparent: true
+''');
+      Map<String, List<int>> files = await buildTpk();
+      expect(utf8.decode(files['tizen-manifest.xml']!), contains('value="800"'));
+      expect(utf8.decode(files['tizen-manifest.xml']!), contains('value="true"'));
+      expect(files.keys, isNot(contains('flutter-tizen.yaml')));
+      cachedRunner().writeAsStringSync('cached');
+
+      configFile.writeAsStringSync('''
+configuration:
+  window_width: 0
+  transparent: false
+''');
+      files = await buildTpk();
+      final XmlElement manifest =
+          XmlDocument.parse(utf8.decode(files['tizen-manifest.xml']!)).rootElement;
+      final List<XmlElement> metadata =
+          manifest.findElements('ui-application').single.findElements('metadata').toList();
+      expect(metadata, hasLength(2));
+      expect(metadata.map((XmlElement node) => node.getAttribute('value')), <String>['0', 'false']);
+      expect(manifest.findElements('service-application').single.findElements('metadata'), isEmpty);
+      expect(utf8.decode(files['bin/runner']!), 'cached');
+      expect(sourceManifest.readAsStringSync(), original);
+
+      configFile.deleteSync();
+      files = await buildTpk();
+      expect(utf8.decode(files['tizen-manifest.xml']!), isNot(contains('<metadata')));
+      expect(utf8.decode(files['bin/runner']!), 'cached');
     }, overrides: <Type, Generator>{
       FileSystem: () => fileSystem,
       ProcessManager: () => processManager,

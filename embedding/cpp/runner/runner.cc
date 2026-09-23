@@ -5,15 +5,20 @@
 // The prebuilt runner of apps created with --tizen-language=native.
 //
 // A single binary serves every application in the package: the app type
-// (UI or service) and the Dart entrypoint are read from tizen-manifest.xml at
-// runtime, and native plugins are loaded from libflutter_plugins.so.
+// (UI or service), Dart entrypoint, and optional window configuration are read
+// from tizen-manifest.xml at runtime, and native plugins are loaded from
+// libflutter_plugins.so.
 
 #include <app_common.h>
 #include <app_manager.h>
 #include <dlfcn.h>
 #include <unistd.h>
 
+#include <cerrno>
+#include <cmath>
 #include <cstdlib>
+#include <limits>
+#include <map>
 #include <string>
 
 #include "../include/flutter.h"
@@ -23,6 +28,7 @@ namespace {
 
 constexpr char kMetadataKeyDartEntrypoint[] =
     "http://tizen.org/metadata/flutter_tizen/dart_entrypoint";
+constexpr char kMetadataPrefix[] = "http://tizen.org/metadata/flutter_tizen/";
 
 // Exported by libflutter_plugins.so. See NativePlugins in plugins.dart.
 constexpr char kRegisterPluginsSymbol[] = "FlutterRegisterPlugins";
@@ -69,6 +75,73 @@ class App : public T {
 struct AppConfig {
   bool is_service = false;
   std::string dart_entrypoint;
+  std::map<std::string, std::string> configuration;
+};
+
+bool ParseConfigurationValue(const std::string &value, int32_t *result) {
+  char *end = nullptr;
+  errno = 0;
+  const long long parsed = strtoll(value.c_str(), &end, 10);
+  if (value.empty() || *end != '\0' || errno == ERANGE ||
+      parsed < std::numeric_limits<int32_t>::min() ||
+      parsed > std::numeric_limits<int32_t>::max()) {
+    return false;
+  }
+  *result = static_cast<int32_t>(parsed);
+  return true;
+}
+
+bool ParseConfigurationValue(const std::string &value, double *result) {
+  char *end = nullptr;
+  const double parsed = strtod(value.c_str(), &end);
+  if (value.empty() || *end != '\0' || !std::isfinite(parsed)) {
+    return false;
+  }
+  *result = parsed;
+  return true;
+}
+
+bool ParseConfigurationValue(const std::string &value, bool *result) {
+  if (value != "true" && value != "false") {
+    return false;
+  }
+  *result = value == "true";
+  return true;
+}
+
+template <typename T>
+void ApplyConfiguration(const AppConfig &config, const char *key, T *target,
+                        T minimum = std::numeric_limits<T>::lowest()) {
+  const auto entry = config.configuration.find(key);
+  if (entry == config.configuration.end()) {
+    return;
+  }
+  T value;
+  if (!ParseConfigurationValue(entry->second, &value) || value < minimum) {
+    TizenLog::Error("Ignoring invalid window configuration: %s=%s", key,
+                    entry->second.c_str());
+    return;
+  }
+  *target = value;
+}
+
+class UiApp : public App<FlutterApp> {
+ public:
+  explicit UiApp(const AppConfig &config) {
+    // Apply only explicit overrides before FlutterApp::OnCreate creates a view.
+    ApplyConfiguration(config, "window_offset_x", &window_offset_x_);
+    ApplyConfiguration(config, "window_offset_y", &window_offset_y_);
+    ApplyConfiguration(config, "window_width", &window_width_, int32_t{0});
+    ApplyConfiguration(config, "window_height", &window_height_, int32_t{0});
+    ApplyConfiguration(config, "transparent", &is_window_transparent_);
+    ApplyConfiguration(config, "focusable", &is_window_focusable_);
+    ApplyConfiguration(config, "top_level", &is_top_level_);
+    ApplyConfiguration(config, "user_pixel_ratio", &user_pixel_ratio_, 0.0);
+    ApplyConfiguration(config, "pointing_device_support",
+                       &is_pointing_device_support);
+    ApplyConfiguration(config, "floating_menu_support",
+                       &is_floating_menu_support);
+  }
 };
 
 AppConfig GetAppConfig() {
@@ -95,9 +168,17 @@ AppConfig GetAppConfig() {
   app_info_foreach_metadata(
       app_info,
       [](const char *key, const char *value, void *user_data) -> bool {
-        if (std::string(key) == kMetadataKeyDartEntrypoint) {
-          static_cast<AppConfig *>(user_data)->dart_entrypoint = value;
-          return false;
+        if (!key || !value) {
+          return true;
+        }
+        auto *config = static_cast<AppConfig *>(user_data);
+        const std::string metadata_key(key);
+        if (metadata_key == kMetadataKeyDartEntrypoint) {
+          config->dart_entrypoint = value;
+        } else if (metadata_key.compare(0, sizeof(kMetadataPrefix) - 1,
+                                        kMetadataPrefix) == 0) {
+          config->configuration[metadata_key.substr(sizeof(kMetadataPrefix) -
+                                                    1)] = value;
         }
         return true;
       },
@@ -115,7 +196,7 @@ int main(int argc, char *argv[]) {
     app.SetDartEntrypoint(config.dart_entrypoint);
     return app.Run(argc, argv);
   }
-  App<FlutterApp> app;
+  UiApp app(config);
   app.SetDartEntrypoint(config.dart_entrypoint);
   return app.Run(argc, argv);
 }

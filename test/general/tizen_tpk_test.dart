@@ -7,6 +7,7 @@ import 'package:flutter_tizen/tizen_tpk.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/project.dart';
+import 'package:xml/xml.dart';
 
 import '../src/common.dart';
 import '../src/context.dart';
@@ -82,5 +83,95 @@ CCCC
     final Signature? signature = Signature.parseFromXml(xmlFile);
     expect(signature, isNotNull);
     expect(signature!.signatureValue, equals('AAAABBBBCCCC'));
+  });
+
+  group('Native window configuration', () {
+    late File manifestFile;
+    late File configFile;
+    const source = '''
+<manifest package="package_id" version="1.0.0">
+  <ui-application appid="ui" exec="runner" type="flutter"/>
+  <service-application appid="service" exec="runner_service" type="flutter"/>
+</manifest>
+''';
+
+    setUp(() {
+      manifestFile = fileSystem.file('tizen-manifest.xml')..writeAsStringSync(source);
+      configFile = fileSystem.file('flutter-tizen.yaml');
+    });
+
+    testWithoutContext('Absent or empty configuration preserves defaults', () {
+      final TizenManifest manifest = TizenManifest.parseFromXml(manifestFile);
+      final String original = manifest.toXmlString();
+      manifest.applyWindowConfiguration(configFile);
+      expect(manifest.toXmlString(), original);
+      for (final yaml in <String>['', '{}', 'configuration: {}']) {
+        configFile.writeAsStringSync(yaml);
+        manifest.applyWindowConfiguration(configFile);
+        expect(manifest.toXmlString(), original);
+      }
+    });
+
+    testWithoutContext('Injects only configured UI properties and preserves the source', () {
+      configFile.writeAsStringSync('''
+configuration:
+  window_offset_x: -20
+  window_offset_y: 30
+  window_width: 800
+  window_height: 600
+  transparent: true
+  focusable: false
+  top_level: true
+  user_pixel_ratio: 1.25
+  pointing_device_support: false
+  floating_menu_support: false
+''');
+      final TizenManifest manifest = TizenManifest.parseFromXml(manifestFile);
+      manifest.applyWindowConfiguration(configFile);
+      final XmlElement root = XmlDocument.parse(manifest.toXmlString()).rootElement;
+      final values = <String, String?>{
+        for (final XmlElement metadata
+            in root.findElements('ui-application').single.findElements('metadata'))
+          metadata.getAttribute('key')!.split('/').last: metadata.getAttribute('value'),
+      };
+      expect(values, <String, String>{
+        'window_offset_x': '-20',
+        'window_offset_y': '30',
+        'window_width': '800',
+        'window_height': '600',
+        'transparent': 'true',
+        'focusable': 'false',
+        'top_level': 'true',
+        'user_pixel_ratio': '1.25',
+        'pointing_device_support': 'false',
+        'floating_menu_support': 'false',
+      });
+      expect(root.findElements('service-application').single.findElements('metadata'), isEmpty);
+      expect(manifestFile.readAsStringSync(), source);
+    });
+
+    testWithoutContext('Rejects malformed configuration and invalid property values', () {
+      for (final yaml in <String>[
+        '[]',
+        'configuration: [',
+        'configuration: []',
+        'configuration: {window_width: -1}',
+        'configuration: {window_height: 1.5}',
+        'configuration: {window_offset_x: 2147483648}',
+        'configuration: {window_offset_y: -2147483649}',
+        'configuration: {transparent: "false"}',
+        'configuration: {focusable: 0}',
+        'configuration: {user_pixel_ratio: -1}',
+        'configuration: {user_pixel_ratio: .nan}',
+        'configuration: {user_pixel_ratio: .inf}',
+        'configuration: {unknown: true}',
+      ]) {
+        configFile.writeAsStringSync(yaml);
+        final TizenManifest manifest = TizenManifest.parseFromXml(manifestFile);
+        expect(() => manifest.applyWindowConfiguration(configFile),
+            throwsToolExit(message: 'flutter-tizen.yaml'),
+            reason: yaml);
+      }
+    });
   });
 }

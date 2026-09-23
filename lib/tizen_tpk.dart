@@ -11,6 +11,7 @@ import 'package:flutter_tools/src/base/common.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/project.dart';
 import 'package:xml/xml.dart';
+import 'package:yaml/yaml.dart';
 
 import 'tizen_project.dart';
 
@@ -178,6 +179,75 @@ class TizenManifest {
   /// The executable file names of all applications in the package.
   Iterable<String> get executables =>
       _applications.map((XmlElement app) => app.getAttribute('exec')).whereType<String>();
+
+  /// Adds optional native runner window settings to the packaged UI applications.
+  /// The source manifest and the defaults of omitted settings are left intact.
+  void applyWindowConfiguration(File configFile) {
+    if (!configFile.existsSync()) {
+      return;
+    }
+    Never invalid(String message) => throwToolExit('${configFile.path}: $message');
+
+    Object? yaml;
+    try {
+      yaml = loadYaml(configFile.readAsStringSync());
+    } on YamlException catch (error) {
+      invalid('Invalid YAML: $error');
+    }
+    if (yaml == null) {
+      return;
+    }
+    if (yaml is! YamlMap) {
+      invalid('Expected a mapping with an optional configuration section.');
+    }
+    if (!yaml.containsKey('configuration')) {
+      return;
+    }
+    final Object? configuration = yaml['configuration'];
+    if (configuration is! YamlMap) {
+      invalid('configuration must be a mapping.');
+    }
+
+    final values = <String, String>{};
+    for (final MapEntry<Object?, Object?> entry in configuration.entries) {
+      final Object? key = entry.key;
+      final Object? value = entry.value;
+      final bool valid = switch (key) {
+        'window_offset_x' ||
+        'window_offset_y' =>
+          value is int && value >= -2147483648 && value <= 2147483647,
+        'window_width' || 'window_height' => value is int && value >= 0 && value <= 2147483647,
+        'user_pixel_ratio' => value is num && value.isFinite && value >= 0,
+        'transparent' ||
+        'focusable' ||
+        'top_level' ||
+        'pointing_device_support' ||
+        'floating_menu_support' =>
+          value is bool,
+        _ => invalid('Unknown configuration key: $key.'),
+      };
+      if (!valid) {
+        invalid('Invalid value for configuration.$key: $value. '
+            'Use booleans for flags, signed 32-bit integers for offsets, '
+            'non-negative 32-bit integers for dimensions, and a finite '
+            'non-negative number for user_pixel_ratio.');
+      }
+      values['http://tizen.org/metadata/flutter_tizen/$key'] = value.toString();
+    }
+
+    for (final XmlElement application in _manifest.findElements('ui-application')) {
+      for (final MapEntry<String, String> entry in values.entries) {
+        application.children.removeWhere((XmlNode node) =>
+            node is XmlElement &&
+            node.name.local == 'metadata' &&
+            node.getAttribute('key') == entry.key);
+        application.children.add(XmlElement(XmlName('metadata'), <XmlAttribute>[
+          XmlAttribute(XmlName('key'), entry.key),
+          XmlAttribute(XmlName('value'), entry.value),
+        ]));
+      }
+    }
+  }
 
   String toXmlString() => _document.toXmlString();
 
