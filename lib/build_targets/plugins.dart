@@ -159,10 +159,12 @@ class NativePlugins extends Target {
           '${result.stdout}',
         );
       }
-      libFile.copySync(libDir.childFile(libFile.basename).path);
+      final File copiedLib = libFile.copySync(libDir.childFile(libFile.basename).path);
       userLibs.add(plugin.libName!);
 
-      if (!plugin.isSharedLib) {
+      if (plugin.isSharedLib) {
+        outputs.add(copiedLib);
+      } else {
         pluginClasses.add(plugin.pluginClass!);
       }
 
