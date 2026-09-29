@@ -96,13 +96,13 @@ class DotnetTpk extends TizenPackage {
     final String buildConfig = getBuildConfig(buildMode);
 
     final Directory engineDir = getEngineArtifactsDirectory(buildInfo.targetArch, buildMode);
-    final Directory embedderDir = getEmbedderArtifactsDirectory(apiVersion, buildInfo.targetArch);
     final File engineBinary = engineDir.childFile('libflutter_engine.so');
-    final bool isTizenExperimentalEnabled =
-        getIsTizenExperimentalEnabled(buildInfo.buildInfo.dartDefines);
-    final File embedder = embedderDir.childFile(isTizenExperimentalEnabled
-        ? 'libflutter_tizen_${profile}_experimental.so'
-        : 'libflutter_tizen_$profile.so');
+    final File embedder = getEmbedderLibrary(
+      apiVersion,
+      buildInfo.targetArch,
+      profile,
+      experimental: getIsTizenExperimentalEnabled(buildInfo.buildInfo.dartDefines),
+    );
     final File icuData = engineDir.childFile('icudtl.dat');
     final File appDepsJson = tizenProject.hostAppRoot.childFile('.app.deps.json');
 
@@ -307,19 +307,20 @@ class NativeTpk extends TizenPackage {
     final String buildConfig = getBuildConfig(buildMode);
 
     final Directory engineDir = getEngineArtifactsDirectory(buildInfo.targetArch, buildMode);
-    final Directory embedderDir = getEmbedderArtifactsDirectory(apiVersion, buildInfo.targetArch);
 
     final File engineBinary = engineDir.childFile('libflutter_engine.so');
-    final bool isTizenExperimentalEnabled =
-        getIsTizenExperimentalEnabled(buildInfo.buildInfo.dartDefines);
-    final File embedder = embedderDir.childFile(isTizenExperimentalEnabled
-        ? 'libflutter_tizen_${profile}_experimental.so'
-        : 'libflutter_tizen_$profile.so');
+    final File embedder = getEmbedderLibrary(
+      apiVersion,
+      buildInfo.targetArch,
+      profile,
+      experimental: getIsTizenExperimentalEnabled(buildInfo.buildInfo.dartDefines),
+    );
+    final String embedderSoname = getEmbedderSoname(embedder);
     final File icuData = engineDir.childFile('icudtl.dat');
     final File appDepsJson = tizenProject.hostAppRoot.childFile('.app.deps.json');
 
     engineBinary.copySync(libDir.childFile(engineBinary.basename).path);
-    embedder.copySync(libDir.childFile(embedder.basename).path);
+    embedder.copySync(libDir.childFile(embedderSoname).path);
     icuData.copySync(resDir.childFile(icuData.basename).path);
     appDepsJson
         .copySync(resDir.childDirectory('flutter_assets').childFile(appDepsJson.basename).path);
@@ -427,10 +428,7 @@ class NativeTpk extends TizenPackage {
       '-I${embeddingDir.childDirectory('include').path.toPosixPath()}',
       embeddingLib.path.toPosixPath(),
       '-L${libDir.path.toPosixPath()}',
-      if (isTizenExperimentalEnabled)
-        '-lflutter_tizen_${profile}_experimental'
-      else
-        '-lflutter_tizen_$profile',
+      '-l${getLibNameForFileName(embedderSoname)}',
       for (final String lib in embeddingDependencies) '-l$lib',
       '-I${tizenProject.managedDirectory.path.toPosixPath()}',
       '-I${pluginsDir.childDirectory('include').path.toPosixPath()}',
@@ -536,10 +534,9 @@ class DotnetModule extends TizenPackage {
 
     final BuildMode buildMode = buildInfo.buildInfo.mode;
     final Directory engineDir = getEngineArtifactsDirectory(buildInfo.targetArch, buildMode);
-    final Directory embedderDir = getEmbedderArtifactsDirectory(apiVersion, buildInfo.targetArch);
 
     final File engineBinary = engineDir.childFile('libflutter_engine.so');
-    final File embedder = embedderDir.childFile('libflutter_tizen_$profile.so');
+    final File embedder = getEmbedderLibrary(apiVersion, buildInfo.targetArch, profile);
     final File icuData = engineDir.childFile('icudtl.dat');
 
     engineBinary.copySync(libDir.childFile(engineBinary.basename).path);
@@ -617,14 +614,13 @@ class NativeModule extends TizenPackage {
     final String? apiVersion = tizenManifest.apiVersion;
 
     final Directory engineDir = getEngineArtifactsDirectory(buildInfo.targetArch, buildMode);
-    final Directory embedderDir = getEmbedderArtifactsDirectory(apiVersion, buildInfo.targetArch);
 
     final File engineBinary = engineDir.childFile('libflutter_engine.so');
-    final File embedder = embedderDir.childFile('libflutter_tizen_$profile.so');
+    final File embedder = getEmbedderLibrary(apiVersion, buildInfo.targetArch, profile);
     final File icuData = engineDir.childFile('icudtl.dat');
 
     engineBinary.copySync(libDir.childFile(engineBinary.basename).path);
-    embedder.copySync(libDir.childFile(embedder.basename).path);
+    embedder.copySync(libDir.childFile(getEmbedderSoname(embedder)).path);
     icuData.copySync(resDir.childFile(icuData.basename).path);
 
     if (buildMode.isPrecompiled) {
