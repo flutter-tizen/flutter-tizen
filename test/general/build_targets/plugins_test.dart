@@ -172,6 +172,9 @@ dependencies:
     expect(outputDir.childFile('lib/libflutter_plugins.so'), isNot(exists));
     expect(outputDir.childFile('lib/libsome_native_plugin.so'), exists);
     expect(outputDir.childFile('lib/libshared.so'), exists);
+
+    final String depfile = environment.buildDir.childFile('tizen_plugins.d').readAsStringSync();
+    expect(depfile, contains(outputDir.childFile('lib/libsome_native_plugin.so').path));
   }, overrides: <Type, Generator>{
     FileSystem: () => fileSystem,
     ProcessManager: () => processManager,
