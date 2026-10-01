@@ -11,9 +11,13 @@ import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/build_info.dart';
 import 'package:flutter_tools/src/build_system/build_system.dart';
+import 'package:flutter_tools/src/compile.dart';
+import 'package:flutter_tools/src/features.dart';
 
 import '../../src/common.dart';
 import '../../src/context.dart';
+import '../../src/fake_process_manager.dart';
+import '../../src/fakes.dart';
 
 void main() {
   late FileSystem fileSystem;
@@ -62,6 +66,80 @@ void main() {
   }, overrides: <Type, Generator>{
     FileSystem: () => fileSystem,
     ProcessManager: () => processManager,
+  });
+
+  testUsingContext('TizenKernelSnapshotProgram passes --recorded-uses on release builds', () async {
+    final environment = Environment.test(
+      fileSystem.currentDirectory,
+      defines: <String, String>{kBuildMode: 'release'},
+      fileSystem: fileSystem,
+      logger: logger,
+      artifacts: artifacts,
+      processManager: processManager,
+    );
+    fileSystem.file('.dart_tool/package_config.json')
+      ..createSync(recursive: true)
+      ..writeAsStringSync('{"configVersion": 2, "packages":[]}');
+    final String build = environment.buildDir.path;
+    processManager.addCommand(FakeCommand(
+      command: <String>[
+        artifacts.getArtifactPath(Artifact.engineDartAotRuntime),
+        artifacts.getArtifactPath(Artifact.frontendServerSnapshotForEngineDartSdk),
+        '--sdk-root',
+        '${artifacts.getArtifactPath(Artifact.flutterPatchedSdkPath, mode: BuildMode.release)}/',
+        '--target=flutter',
+        '--no-print-incremental-dependencies',
+        ...buildModeOptions(BuildMode.release, <String>[]),
+        '--aot',
+        '--tfa',
+        '--target-os',
+        'linux',
+        '--packages',
+        '/.dart_tool/package_config.json',
+        '--output-dill',
+        '$build/app.dill',
+        '--depfile',
+        '$build/kernel_snapshot_program.d',
+        '--verbosity=error',
+        '--recorded-uses=$build/recorded_uses.json',
+        'file:///lib/main.dart',
+      ],
+      stdout: 'result abc\nabc\nabc $build/app.dill 0\n',
+    ));
+
+    await const TizenKernelSnapshotProgram().build(environment);
+
+    expect(processManager, hasNoRemainingExpectations);
+  }, overrides: <Type, Generator>{
+    FileSystem: () => fileSystem,
+    ProcessManager: () => processManager,
+    FeatureFlags: () => TestFeatureFlags(isRecordUseEnabled: true),
+  });
+
+  testUsingContext('TizenKernelSnapshotProgram writes empty recorded uses on debug builds',
+      () async {
+    final environment = Environment.test(
+      fileSystem.currentDirectory,
+      defines: <String, String>{kBuildMode: 'debug'},
+      fileSystem: fileSystem,
+      logger: logger,
+      artifacts: artifacts,
+      processManager: processManager,
+    );
+    environment.buildDir.createSync(recursive: true);
+    fileSystem.file('.dart_tool/package_config.json')
+      ..createSync(recursive: true)
+      ..writeAsStringSync('{"configVersion": 2, "packages":[]}');
+
+    // No compiler command is expected, so the build throws after the recorded
+    // uses file has been written.
+    await expectLater(const TizenKernelSnapshotProgram().build(environment), throwsException);
+
+    expect(environment.buildDir.childFile('recorded_uses.json').readAsStringSync(), '{}');
+  }, overrides: <Type, Generator>{
+    FileSystem: () => fileSystem,
+    ProcessManager: () => processManager,
+    FeatureFlags: () => TestFeatureFlags(isRecordUseEnabled: true),
   });
 
   testUsingContext('TizenAotElf renames app.android-arm.symbols to app.tizen-arm.symbols',
