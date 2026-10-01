@@ -532,6 +532,8 @@ type = app
         .childFile('rootstrap/flutter_tizen_common/Release/runner');
 
     testUsingContext('Packages the runner for every application', () async {
+      projectDir.childFile('tizen/res/user.txt').createSync(recursive: true);
+      projectDir.childFile('tizen/res/icudtl.dat').writeAsStringSync('user');
       final Map<String, List<int>> files = await buildTpk();
 
       expect(
@@ -545,6 +547,7 @@ type = app
           'lib/libflutter_tizen_common.so',
           'res/flutter_assets/.app.deps.json',
           'res/icudtl.dat',
+          'res/user.txt',
           'shared/res/ic_launcher.png',
           'tizen-manifest.xml',
         ]),
@@ -553,11 +556,35 @@ type = app
       expect(manifest, isNot(contains('type="flutter"')));
       expect('type="capp"'.allMatches(manifest), hasLength(2));
       expect(cachedRunner(), exists);
+      // The generated file is not overwritten.
+      expect(files['res/icudtl.dat'], isEmpty);
       // Nothing is generated in the tizen directory.
       expect(
         projectDir.childDirectory('tizen').listSync(recursive: true).whereType<File>(),
-        hasLength(2),
+        hasLength(4),
       );
+    }, overrides: <Type, Generator>{
+      FileSystem: () => fileSystem,
+      ProcessManager: () => processManager,
+      Cache: () => cache,
+      TizenSdk: () => FakeTizenSdk(fileSystem, securityProfile: 'test_profile'),
+    });
+
+    testUsingContext('Packages libraries in tizen/lib for the target arch', () async {
+      projectDir.childFile('tizen/lib/libcommon.so').createSync(recursive: true);
+      projectDir.childFile('tizen/lib/arm/libarm.so').createSync(recursive: true);
+      projectDir.childFile('tizen/lib/aarch64/libarm64.so').createSync(recursive: true);
+      projectDir.childFile('tizen/lib/libstatic.a').createSync(recursive: true);
+      projectDir.childFile('tizen/lib/libflutter_plugins.so').writeAsStringSync('user');
+
+      final Map<String, List<int>> files = await buildTpk();
+
+      expect(files.keys, containsAll(<String>['lib/libcommon.so', 'lib/libarm.so']));
+      expect(files.keys, isNot(contains('lib/libarm64.so')));
+      expect(files.keys, isNot(contains('lib/libstatic.a')));
+      expect(files.keys.where((String name) => name.startsWith('lib/arm/')), isEmpty);
+      // The generated library is not overwritten.
+      expect(files['lib/libflutter_plugins.so'], isEmpty);
     }, overrides: <Type, Generator>{
       FileSystem: () => fileSystem,
       ProcessManager: () => processManager,

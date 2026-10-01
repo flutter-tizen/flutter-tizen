@@ -198,15 +198,11 @@ class NativePlugins extends Target {
 
       // Copy user libraries.
       // TODO(swift-kim): Remove user libs support for staticLib projects.
-      final Directory pluginLibDir = plugin.directory.childDirectory('lib');
-      final String buildArch = getTizenBuildArch(buildInfo.targetArch);
-      final pluginLibDirs = <Directory>[
-        pluginLibDir,
-        pluginLibDir.childDirectory(buildInfo.targetArch),
-        pluginLibDir.childDirectory(buildArch),
-        if (apiVersion != null) pluginLibDir.childDirectory(buildArch).childDirectory(apiVersion),
-      ];
-      for (final Directory directory in pluginLibDirs.where((Directory dir) => dir.existsSync())) {
+      for (final Directory directory in getLibDirectories(
+        plugin.directory.childDirectory('lib'),
+        buildInfo.targetArch,
+        apiVersion,
+      )) {
         for (final File lib in directory.listSync().whereType<File>()) {
           // Symbolic links are not supported because they are not portable.
           // Issue: https://github.com/flutter-tizen/flutter-tizen/pull/322

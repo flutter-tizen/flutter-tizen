@@ -23,7 +23,7 @@ Commit or back up your project before migrating.
    rm -rf inc src project_def.prop .exportMap .gitignore flutter .app.deps.json Debug Release .cproject .sign crash-info
    ```
 
-   Only `tizen-manifest.xml` and the `shared` directory remain.
+   Only `tizen-manifest.xml` and the `shared`, `res`, and `lib` directories (if any) remain. They are still packaged with the app (see [Project structure](native-app.md#project-structure)).
 
 1. In `tizen-manifest.xml`, change `type="capp"` to `type="flutter"` on the application element. This marks the app as a native app.
 
@@ -42,7 +42,7 @@ Commit or back up your project before migrating.
    rm -rf App.cs *.csproj *.csproj.user bin obj tizen_dotnet_project.yaml .gitignore flutter .app.deps.json
    ```
 
-   Only `tizen-manifest.xml` and the `shared` directory remain.
+   Only `tizen-manifest.xml` and the `shared`, `res`, and `lib` directories (if any) remain. They are still packaged with the app (see [Project structure](native-app.md#project-structure)).
 
 1. Update the application element in `tizen-manifest.xml`:
 
@@ -76,6 +76,8 @@ C++ and C# multi apps have separate `tizen/ui` and `tizen/service` projects. A n
    mv ui/tizen-manifest.xml ui/shared .
    ```
 
+   Also move `ui/res` and `ui/lib` if they exist, and merge the files of `service/res` and `service/lib` into them.
+
 1. Copy the `service-application` element from `service/tizen-manifest.xml` into `tizen/tizen-manifest.xml`, after the `ui-application` element. Also copy any privileges and features that only the service app declared.
 
 1. Update both application elements as described in [Migrate a C++ app](#migrate-a-c-app) or [Migrate a C# app](#migrate-a-c-app-1). Give each application its own executable name, for example `exec="runner"` and `exec="runner_service"`.
@@ -101,7 +103,7 @@ flutter-tizen build tpk
 unzip -l build/tizen/tpk/*.tpk | grep bin/
 ```
 
-The TPK contains the runner under the name of each `exec` attribute (for example `bin/runner` and `bin/runner_service`). Run the app with `flutter-tizen run` and check that it behaves as before. After building, the `tizen` directory still contains only `tizen-manifest.xml` and `shared`.
+The TPK contains the runner under the name of each `exec` attribute (for example `bin/runner` and `bin/runner_service`). Run the app with `flutter-tizen run` and check that it behaves as before. After building, no files are generated in the `tizen` directory.
 
 ## Reverting to a C++ app
 
@@ -163,3 +165,5 @@ The C++ runner doesn't read the `dart_entrypoint` metadata, and a C++ multi app 
    cp -r shared/. ui/shared/
    rm -rf shared tizen-manifest.xml
    ```
+
+   If you have `res` or `lib` directories, move them to `ui` as well.

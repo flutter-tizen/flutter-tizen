@@ -8,6 +8,8 @@ import 'package:flutter_tools/src/base/version.dart';
 import 'package:flutter_tools/src/build_info.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 
+import '../tizen_sdk.dart';
+
 extension PathUtils on String {
   /// On non-Windows, encloses the string with [encloseWith].
   ///
@@ -99,6 +101,18 @@ Directory getCommonArtifactsDirectory() {
 
 Directory getDartSdkDirectory() {
   return globals.cache.getCacheDir('dart-sdk');
+}
+
+/// The directories under [libDir] that contain libraries for [arch] and
+/// [apiVersion], in the order of precedence.
+List<Directory> getLibDirectories(Directory libDir, String arch, String? apiVersion) {
+  final String buildArch = getTizenBuildArch(arch);
+  return <Directory>[
+    libDir,
+    libDir.childDirectory(arch),
+    libDir.childDirectory(buildArch),
+    if (apiVersion != null) libDir.childDirectory(buildArch).childDirectory(apiVersion),
+  ].where((Directory dir) => dir.existsSync()).toList();
 }
 
 /// Removes the "lib" prefix and file extension from [name] and returns.

@@ -413,9 +413,29 @@ class NativeTpk extends TizenPackage {
       // loader, the same as C++ apps.
       tizenManifest.applicationType = 'capp';
       ephemeralDir.childFile('tizen-manifest.xml').writeAsStringSync(tizenManifest.toXmlString());
-      final Directory sharedDir = tizenProject.hostAppRoot.childDirectory('shared');
-      if (sharedDir.existsSync()) {
-        copyDirectory(sharedDir, ephemeralDir.childDirectory('shared'));
+      // The libraries in tizen/lib are packaged as is, as the Tizen CLI does
+      // for C++ apps. The ones prepared above take precedence.
+      for (final Directory directory in getLibDirectories(
+        tizenProject.hostAppRoot.childDirectory('lib'),
+        buildInfo.targetArch,
+        apiVersion,
+      )) {
+        for (final File lib in directory.listSync().whereType<File>()) {
+          final File destFile = libDir.childFile(lib.basename);
+          if (lib.basename.endsWith('.so') && !destFile.existsSync()) {
+            lib.copySync(destFile.path);
+          }
+        }
+      }
+      for (final name in <String>['res', 'shared']) {
+        final Directory userDir = tizenProject.hostAppRoot.childDirectory(name);
+        if (userDir.existsSync()) {
+          copyDirectory(
+            userDir,
+            ephemeralDir.childDirectory(name),
+            shouldCopyFile: (File srcFile, File destFile) => !destFile.existsSync(),
+          );
+        }
       }
 
       final File outputTpk = outputDir.childFile(tizenProject.outputTpkName);
