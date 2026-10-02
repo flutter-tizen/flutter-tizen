@@ -648,12 +648,12 @@ const _intermediateDotnetPropsTemplate = '''
 </Project>
 ''';
 
-const _intermediateDotnetTargetsTemplate = '''
+const _intermediateDotnetTargetsTemplate = r'''
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
   {{#dotnetPlugins}}
-    <ProjectReference Include="{{filePath}}" />
+    <ProjectReference Include="{{filePath}}" AdditionalProperties="TizenCoreEnabled=$(TizenCoreEnabled)" />
   {{/dotnetPlugins}}
   </ItemGroup>
 </Project>

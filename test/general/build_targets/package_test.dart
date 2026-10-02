@@ -301,6 +301,39 @@ type = app
       TizenSdk: () => FakeTizenSdk(fileSystem, securityProfile: 'test_profile'),
     });
 
+    testUsingContext('Packages the Tizen Core embedder under its SONAME', () async {
+      final File manifestFile = projectDir.childFile('tizen/tizen-manifest.xml');
+      manifestFile.writeAsStringSync(
+        manifestFile.readAsStringSync().replaceFirst('api-version="4.0"', 'api-version="11.0"'),
+      );
+      final environment = Environment.test(
+        projectDir,
+        outputDir: projectDir.childDirectory('out'),
+        fileSystem: fileSystem,
+        logger: logger,
+        artifacts: artifacts,
+        processManager: processManager,
+      );
+      environment.buildDir.childDirectory('flutter_assets').createSync(recursive: true);
+      environment.buildDir.childFile('app.so').createSync(recursive: true);
+      projectDir.childDirectory('tizen').childFile('.app.deps.json').createSync(recursive: true);
+
+      await NativeTpk(const TizenBuildInfo(
+        BuildInfo.release,
+        targetArch: 'arm',
+        deviceProfile: 'common',
+      )).build(environment);
+
+      final Directory libDir = projectDir.childDirectory('tizen/flutter/ephemeral/lib');
+      expect(libDir.childFile('libflutter_tizen_common.so'), exists);
+      expect(libDir.childFile('libflutter_tizen_common_tcore.so'), isNot(exists));
+    }, overrides: <Type, Generator>{
+      FileSystem: () => fileSystem,
+      ProcessManager: () => processManager,
+      Cache: () => cache,
+      TizenSdk: () => FakeTizenSdk(fileSystem, securityProfile: 'test_profile'),
+    });
+
     testUsingContext('Build fails if no security profile is found', () async {
       final environment = Environment.test(
         projectDir,
@@ -463,6 +496,7 @@ void _installFakeEngineArtifacts(Directory engineArtifactDir) {
   }
   for (final file in <String>[
     'tizen-arm/6.0/libflutter_tizen_common.so',
+    'tizen-arm/11.0/libflutter_tizen_common_tcore.so',
     'tizen-arm-debug/icudtl.dat',
     'tizen-arm-debug/libflutter_engine.so',
     'tizen-arm-release/icudtl.dat',
