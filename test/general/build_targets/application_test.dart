@@ -131,10 +131,36 @@ void main() {
       ..createSync(recursive: true)
       ..writeAsStringSync('{"configVersion": 2, "packages":[]}');
 
-    // No compiler command is expected, so the build throws after the recorded
-    // uses file has been written.
-    await expectLater(const TizenKernelSnapshotProgram().build(environment), throwsException);
+    final String build = environment.buildDir.path;
+    processManager.addCommand(FakeCommand(
+      command: <String>[
+        artifacts.getArtifactPath(Artifact.engineDartAotRuntime),
+        artifacts.getArtifactPath(Artifact.frontendServerSnapshotForEngineDartSdk),
+        '--sdk-root',
+        '${artifacts.getArtifactPath(Artifact.flutterPatchedSdkPath, mode: BuildMode.debug)}/',
+        '--target=flutter',
+        '--no-print-incremental-dependencies',
+        ...buildModeOptions(BuildMode.debug, <String>[]),
+        '--track-widget-creation',
+        '--no-link-platform',
+        '--packages',
+        '/.dart_tool/package_config.json',
+        '--output-dill',
+        '$build/app.dill',
+        '--depfile',
+        '$build/kernel_snapshot_program.d',
+        '--incremental',
+        '--initialize-from-dill',
+        '$build/app.dill',
+        '--verbosity=error',
+        'file:///lib/main.dart',
+      ],
+      stdout: 'result abc\nabc\nabc $build/app.dill 0\n',
+    ));
 
+    await const TizenKernelSnapshotProgram().build(environment);
+
+    expect(processManager, hasNoRemainingExpectations);
     expect(environment.buildDir.childFile('recorded_uses.json').readAsStringSync(), '{}');
   }, overrides: <Type, Generator>{
     FileSystem: () => fileSystem,
