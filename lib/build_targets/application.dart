@@ -17,6 +17,7 @@ import 'package:flutter_tools/src/build_system/targets/icon_tree_shaker.dart';
 import 'package:flutter_tools/src/compile.dart';
 import 'package:flutter_tools/src/dart/package_map.dart';
 import 'package:flutter_tools/src/devfs.dart';
+import 'package:flutter_tools/src/features.dart';
 import 'package:flutter_tools/src/isolated/native_assets/dart_hook_result.dart';
 import 'package:package_config/src/package_config.dart';
 
@@ -53,6 +54,17 @@ class TizenKernelSnapshotProgram extends KernelSnapshot {
     final String? frontendServerStarterPath = environment.defines[kFrontendServerStarterPath];
     final List<String> extraFrontEndOptions =
         decodeCommaSeparated(environment.defines, kExtraFrontEndOptions);
+    final File recordedUsesFile =
+        environment.buildDir.childFile(KernelSnapshot.recordedUsesFileName);
+    if (featureFlags.isRecordUseEnabled) {
+      if (buildMode.isPrecompiled) {
+        extraFrontEndOptions.add('--recorded-uses=${recordedUsesFile.path}');
+      } else {
+        // Produce an empty file to satisfy the build system in JIT mode.
+        // Always overwrite to avoid stale data.
+        recordedUsesFile.writeAsStringSync(KernelSnapshot.recordedUsesEmptyContent);
+      }
+    }
     final List<String>? fileSystemRoots = environment.defines[kFileSystemRoots]?.split(',');
     final String? fileSystemScheme = environment.defines[kFileSystemScheme];
 
