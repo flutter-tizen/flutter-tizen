@@ -85,21 +85,53 @@ class TizenProject extends FlutterProjectPlatform {
     return projectDef.existsSync() ? projectDef : null;
   }
 
-  bool get isDotnet => projectFile?.basename.endsWith('.csproj') ?? false;
+  /// The application type declared in [manifestFile], if any.
+  String? get _applicationType {
+    if (!manifestFile.existsSync()) {
+      return null;
+    }
+    final Set<String?> types;
+    try {
+      types = TizenManifest.parseFromXml(manifestFile).applicationTypes;
+    } on ToolExit {
+      return null;
+    }
+    if (types.length > 1 && types.contains('flutter')) {
+      throwToolExit(
+        '${manifestFile.path} mixes type="flutter" with other application types. '
+        'Every application of a native app must declare type="flutter".',
+      );
+    }
+    return types.first;
+  }
+
+  /// Whether the app is built as a .NET app.
+  ///
+  /// The application type in [manifestFile] takes precedence, so that a .NET
+  /// project can be built on the prebuilt runner by changing only the type.
+  /// The project file decides only if the manifest declares neither type.
+  bool get isDotnet {
+    final hasDotnetProject = findDotnetProjectFile(hostAppRoot) != null;
+    switch (_applicationType) {
+      case 'flutter':
+        return false;
+      case 'dotnet':
+        if (!hasDotnetProject) {
+          throwToolExit(
+            '${manifestFile.path} declares type="dotnet" '
+            'but no .csproj file was found in ${hostAppRoot.path}.',
+          );
+        }
+        return true;
+      default:
+        return hasDotnetProject;
+    }
+  }
 
   /// Whether the app runs on the prebuilt runner (created with
   /// `--tizen-language=native`), which is marked by `type="flutter"` in
   /// [manifestFile].
-  bool get usesPrebuiltRunner {
-    if (!manifestFile.existsSync()) {
-      return false;
-    }
-    try {
-      return TizenManifest.parseFromXml(manifestFile).applicationType == 'flutter';
-    } on ToolExit {
-      return false;
-    }
-  }
+  bool get usesPrebuiltRunner => _applicationType == 'flutter';
 
   /// The dependency information file which is packaged with the app.
   File get appDepsFile =>
@@ -180,19 +212,11 @@ class TizenProject extends FlutterProjectPlatform {
       _deleteFile(serviceManagedDirectory);
     }
 
-    if (isDotnet) {
-      _deleteFile(hostAppRoot.childDirectory('bin'));
-      _deleteFile(hostAppRoot.childDirectory('obj'));
-      if (isMultiApp) {
-        _deleteFile(serviceAppDirectory.childDirectory('bin'));
-        _deleteFile(serviceAppDirectory.childDirectory('obj'));
-      }
-    } else {
-      _deleteFile(hostAppRoot.childDirectory('Debug'));
-      _deleteFile(hostAppRoot.childDirectory('Release'));
-      if (isMultiApp) {
-        _deleteFile(serviceAppDirectory.childDirectory('Debug'));
-        _deleteFile(serviceAppDirectory.childDirectory('Release'));
+    // A .NET project can also be built on the prebuilt runner, so the outputs
+    // are deleted regardless of the current application type.
+    for (final appDir in <Directory>[hostAppRoot, if (isMultiApp) serviceAppDirectory]) {
+      for (final name in <String>['bin', 'obj', 'Debug', 'Release']) {
+        _deleteFile(appDir.childDirectory(name));
       }
     }
   }

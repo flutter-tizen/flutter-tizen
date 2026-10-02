@@ -170,6 +170,10 @@ class TizenManifest {
   /// The application type (either "capp", "dotnet", or "flutter").
   String? get applicationType => _applications.first.getAttribute('type');
 
+  /// The types of all applications in the package.
+  Set<String?> get applicationTypes =>
+      _applications.map((XmlElement app) => app.getAttribute('type')).toSet();
+
   set applicationType(String? type) {
     for (final XmlElement application in _applications) {
       application.setAttribute('type', type);

@@ -451,6 +451,41 @@ internal class GeneratedPluginRegistrant
     ProcessManager: () => FakeProcessManager.any(),
   }, testOn: 'posix');
 
+  testUsingContext('Fails if a native app depends on a C# plugin', () async {
+    fileSystem.file('tizen/Runner.csproj').createSync(recursive: true);
+    fileSystem.file('tizen/tizen-manifest.xml')
+      ..createSync(recursive: true)
+      ..writeAsStringSync('''
+<manifest package="package_id" version="1.0.0" api-version="6.0">
+    <ui-application appid="app_id" exec="Runner.dll" type="flutter"/>
+</manifest>
+''');
+
+    await validatesComputeTransitiveDependencies(<Package>[
+      (
+        name: 'my_app',
+        pluginType: PluginType.none,
+        dependencies: <String>['some_dotnet_plugin'],
+        devDependencies: <String>[],
+      ),
+      (
+        name: 'some_dotnet_plugin',
+        pluginType: PluginType.dotnet,
+        dependencies: <String>[],
+        devDependencies: <String>[],
+      ),
+    ]);
+    project = FlutterProject.fromDirectoryTest(fileSystem.currentDirectory);
+
+    await expectLater(
+      () => injectTizenPlugins(project),
+      throwsToolExit(message: 'cannot use C# plugins: some_dotnet_plugin'),
+    );
+  }, overrides: <Type, Generator>{
+    FileSystem: () => fileSystem,
+    ProcessManager: () => FakeProcessManager.any(),
+  }, testOn: 'posix');
+
   testUsingContext('Generates .NET plugin registrant for C#', () async {
     fileSystem.file('tizen/Runner.csproj').createSync(recursive: true);
     fileSystem.file('tizen/tizen-manifest.xml').createSync(recursive: true);

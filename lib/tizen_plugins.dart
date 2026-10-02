@@ -437,6 +437,12 @@ Future<void> injectTizenPlugins(FlutterProject project) async {
       cppPlugins = cppPlugins.where((TizenPlugin p) => !p.isDevDependency).toList();
       dotnetPlugins = dotnetPlugins.where((TizenPlugin p) => !p.isDevDependency).toList();
     }
+    if (tizenProject.usesPrebuiltRunner && dotnetPlugins.isNotEmpty) {
+      throwToolExit(
+        'Native apps (type="flutter") cannot use C# plugins: '
+        '${dotnetPlugins.map((TizenPlugin plugin) => plugin.name).join(', ')}',
+      );
+    }
     await _writeAppDepndencyInfo(project);
     await _writeTizenPluginRegistrant(tizenProject, cppPlugins, dotnetPlugins);
     if (tizenProject.isDotnet) {

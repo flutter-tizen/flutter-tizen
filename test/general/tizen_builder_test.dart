@@ -26,7 +26,7 @@ import '../src/test_build_system.dart';
 const _kTizenManifestContents = '''
 <manifest package="package_id" version="1.0.0" api-version="4.0">
     <profile name="common"/>
-    <ui-application appid="app_id" exec="Runner.dll" type="dotnet"/>
+    <ui-application appid="app_id" exec="runner" type="capp"/>
 </manifest>
 ''';
 

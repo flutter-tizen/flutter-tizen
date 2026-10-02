@@ -66,6 +66,14 @@ Commit or back up your project before migrating.
 
 1. If `App.cs` set `DartEntrypoint`, add the `dart_entrypoint` metadata as described in [Migrate a C++ app](#migrate-a-c-app).
 
+### Keeping the C# project
+
+flutter-tizen chooses how to build the app by the `type` attribute, not by the files in the `tizen` directory. If you want to be able to build the app as a C# app again, skip the first step and keep the C# files. The app is built as a native app while `type` is `flutter`, and as a C# app again when you change it back to `dotnet`.
+
+In this case, `exec` and the .NET-specific metadata can be left as they are, and the runner is installed under the name of `exec` (`bin/Runner.dll`). Still add `hw-acceleration="on"`, which C# apps accept as well.
+
+This is only possible for UI apps and service apps. A C# multi app has a manifest for each of its projects, while a native multi app declares both applications in a single manifest.
+
 ## Migrate a multi app
 
 C++ and C# multi apps have separate `tizen/ui` and `tizen/service` projects. A native multi app declares both applications in a single `tizen/tizen-manifest.xml` instead.
