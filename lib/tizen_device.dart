@@ -413,6 +413,7 @@ class TizenDevice extends Device {
         '--enable-checked-mode',
         if (debuggingOptions.startPaused) '--start-paused',
         if (debuggingOptions.disableServiceAuthCodes) '--disable-service-auth-codes',
+        if (debuggingOptions.disableServiceOriginCheck) '--disable-service-origin-check',
         if (debuggingOptions.dartFlags.isNotEmpty) ...<String>[
           '--dart-flags',
           debuggingOptions.dartFlags,
