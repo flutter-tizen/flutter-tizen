@@ -86,12 +86,12 @@ class NativePlugins extends Target {
     final BuildMode buildMode = buildInfo.buildInfo.mode;
     final String buildConfig = getBuildConfig(buildMode);
 
-    final Directory embedderDir = getEmbedderArtifactsDirectory(apiVersion, buildInfo.targetArch);
-    final bool isTizenExperimentalEnabled =
-        getIsTizenExperimentalEnabled(buildInfo.buildInfo.dartDefines);
-    final File embedder = embedderDir.childFile(isTizenExperimentalEnabled
-        ? 'libflutter_tizen_${profile}_experimental.so'
-        : 'libflutter_tizen_$profile.so');
+    final File embedder = getEmbedderLibrary(
+      apiVersion,
+      buildInfo.targetArch,
+      profile,
+      experimental: getIsTizenExperimentalEnabled(buildInfo.buildInfo.dartDefines),
+    );
     inputs.add(embedder);
 
     final Directory commonDir = getCommonArtifactsDirectory();
@@ -135,8 +135,9 @@ class NativePlugins extends Target {
           '-I${dartSdkDir.childDirectory('include').path.toPosixPath()}',
           if (plugin.isSharedLib) ...<String>[
             '-l${getLibNameForFileName(embedder.basename)}',
-            '-L${embedderDir.path.toPosixPath()}',
+            '-L${embedder.parent.path.toPosixPath()}',
             embeddingLib.path.toPosixPath(),
+            if (usesTizenCoreEmbedder(apiVersion)) '-ltizen-core',
           ],
         ],
         rootstrap: rootstrap.id,
@@ -254,7 +255,7 @@ USER_LIBS = stdc++ pthread ${userLibs.join(' ')}
           '-I${clientWrapperDir.childDirectory('include').path.toPosixPath()}',
           '-I${publicDir.path.toPosixPath()}',
           embeddingLib.path.toPosixPath(),
-          '-L${embedderDir.path.toPosixPath()}',
+          '-L${embedder.parent.path.toPosixPath()}',
           '-l${getLibNameForFileName(embedder.basename)}',
           '-L${libDir.path.toPosixPath()}',
           // Forces plugin entrypoints to be exported, because unreferenced

@@ -38,13 +38,22 @@ Directory getEngineArtifactsDirectory(String arch, BuildMode mode) {
       : globals.cache.getArtifactDirectory('engine').childDirectory('tizen-$arch-${mode.name}');
 }
 
+final Version kTizenCoreApiVersion = Version(11, 0, 0);
+
+bool usesTizenCoreEmbedder(String? apiVersion) {
+  final Version version = Version.parse(apiVersion) ?? Version(6, 0, 0);
+  return version >= kTizenCoreApiVersion;
+}
+
 Directory getEmbedderArtifactsDirectory(String? apiVersion, String arch) {
   final Version version = Version.parse(apiVersion) ?? Version(6, 0, 0);
   if (arch == 'x86_64') {
     arch = 'x64';
   }
 
-  if (arch == 'x64' && version >= Version(8, 0, 0)) {
+  if (version >= kTizenCoreApiVersion) {
+    apiVersion = '11.0';
+  } else if (arch == 'x64' && version >= Version(8, 0, 0)) {
     apiVersion = '8.0';
   } else if (version >= Version(6, 5, 0)) {
     apiVersion = '6.5';
@@ -56,6 +65,23 @@ Directory getEmbedderArtifactsDirectory(String? apiVersion, String arch) {
       .childDirectory('tizen-$arch')
       .childDirectory(apiVersion);
 }
+
+/// The Tizen Core variant of the embedder has a `_tcore` suffix in its file
+/// name but keeps the SONAME of the Ecore variant, so it must be packaged
+/// under the name returned by [getEmbedderSoname].
+File getEmbedderLibrary(
+  String? apiVersion,
+  String arch,
+  String profile, {
+  bool experimental = false,
+}) {
+  final experimentalSuffix = experimental ? '_experimental' : '';
+  final tcoreSuffix = usesTizenCoreEmbedder(apiVersion) ? '_tcore' : '';
+  return getEmbedderArtifactsDirectory(apiVersion, arch)
+      .childFile('libflutter_tizen_$profile$experimentalSuffix$tcoreSuffix.so');
+}
+
+String getEmbedderSoname(File embedder) => embedder.basename.replaceFirst('_tcore.so', '.so');
 
 Directory getCommonArtifactsDirectory() {
   return globals.cache.getArtifactDirectory('engine').childDirectory('tizen-common');

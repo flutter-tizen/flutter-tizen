@@ -151,5 +151,15 @@ namespace Tizen.Flutter.Embedding
         public static extern FlutterDesktopMessenger FlutterDesktopPluginRegistrarGetMessenger(
             FlutterDesktopPluginRegistrar registrar);
         #endregion
+
+#if TIZEN_CORE
+        #region tizen_core.h
+        [DllImport("libtizen-core.so.0")]
+        public static extern void tizen_core_init();
+
+        [DllImport("libtizen-core.so.0")]
+        public static extern void tizen_core_shutdown();
+        #endregion
+#endif
     }
 }

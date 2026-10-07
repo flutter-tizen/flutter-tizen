@@ -15,6 +15,7 @@ import 'package:meta/meta.dart';
 import 'package:xml/xml.dart';
 import 'package:yaml/yaml.dart';
 
+import 'build_targets/utils.dart';
 import 'tizen_plugins.dart';
 import 'tizen_tpk.dart';
 
@@ -114,11 +115,13 @@ class TizenProject extends FlutterProjectPlatform {
       );
     }
     if (existsSync() && isDotnet) {
-      updateDotnetUserProjectFile(projectFile!);
+      final bool tizenCoreEnabled = manifestFile.existsSync() &&
+          usesTizenCoreEmbedder(TizenManifest.parseFromXml(manifestFile).apiVersion);
+      updateDotnetUserProjectFile(projectFile!, tizenCoreEnabled: tizenCoreEnabled);
       if (isMultiApp) {
         final File? serviceProjectFile = findDotnetProjectFile(serviceAppDirectory);
         if (serviceProjectFile != null) {
-          updateDotnetUserProjectFile(serviceProjectFile);
+          updateDotnetUserProjectFile(serviceProjectFile, tizenCoreEnabled: tizenCoreEnabled);
         }
       }
     }
@@ -202,7 +205,7 @@ File? findDotnetProjectFile(Directory directory) {
   return null;
 }
 
-void updateDotnetUserProjectFile(File projectFile) {
+void updateDotnetUserProjectFile(File projectFile, {bool? tizenCoreEnabled}) {
   final File userFile = projectFile.parent.childFile('${projectFile.basename}.user');
   const initialXmlContent = '''
 <?xml version="1.0" encoding="utf-8"?>
@@ -228,23 +231,42 @@ void updateDotnetUserProjectFile(File projectFile) {
       .childDirectory('csharp')
       .childDirectory('Tizen.Flutter.Embedding')
       .childFile('Tizen.Flutter.Embedding.csproj');
-  final Iterable<XmlElement> elements = document.findAllElements('FlutterEmbeddingPath');
-  if (elements.isEmpty) {
-    // Create an element if not exists.
-    final builder = XmlBuilder();
-    builder.element('PropertyGroup', nest: () {
-      builder.element(
-        'FlutterEmbeddingPath',
-        nest: embeddingProjectFile.absolute.path,
-      );
-    });
-    document.rootElement.children.add(builder.buildFragment());
-  } else {
-    // Update existing element(s).
-    for (final element in elements) {
-      element.innerText = embeddingProjectFile.absolute.path;
+
+  void setProperty(String name, String value) {
+    final Iterable<XmlElement> elements = document.findAllElements(name);
+    if (elements.isEmpty) {
+      final builder = XmlBuilder();
+      builder.element('PropertyGroup', nest: () {
+        builder.element(name, nest: value);
+      });
+      document.rootElement.children.add(builder.buildFragment());
+    } else {
+      for (final element in elements) {
+        element.innerText = value;
+      }
     }
   }
+
+  setProperty('FlutterEmbeddingPath', embeddingProjectFile.absolute.path);
+  setProperty('ImportProjectExtensionTargets', 'true');
+  if (tizenCoreEnabled != null) {
+    setProperty('TizenCoreEnabled', tizenCoreEnabled.toString());
+  }
+
+  if (!document.findAllElements('ProjectReference').any(
+        (XmlElement element) => element.getAttribute('Update') == r'@(ProjectReference)',
+      )) {
+    final builder = XmlBuilder();
+    builder.element('ItemGroup', nest: () {
+      builder.element('ProjectReference', attributes: <String, String>{
+        'Update': r'@(ProjectReference)',
+        'AdditionalProperties':
+            r'%(ProjectReference.AdditionalProperties);TizenCoreEnabled=$(TizenCoreEnabled)',
+      });
+    });
+    document.rootElement.children.add(builder.buildFragment());
+  }
+
   userFile.writeAsStringSync(
     document.toXmlString(pretty: true, indent: '  '),
   );
