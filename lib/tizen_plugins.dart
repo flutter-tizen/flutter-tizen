@@ -521,6 +521,8 @@ Future<TizenPlugin?> _pluginFromPackage(
     pubspec = loadYaml(await pubspecFile.readAsString());
   } on YamlException catch (err) {
     globals.printTrace('Failed to parse plugin manifest for $name: $err');
+  } on FileSystemException catch (err) {
+    globals.printTrace('Failed to read plugin manifest for $name: $err');
   }
   if (pubspec == null || pubspec is! YamlMap) {
     return null;
