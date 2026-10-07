@@ -104,6 +104,7 @@ void main() {
       debuggingOptions: DebuggingOptions.enabled(
         BuildInfo.debug,
         enableImpeller: ImpellerStatus.disabled,
+        disableServiceOriginCheck: true,
       ),
       platformArgs: <String, Object>{},
     );
@@ -111,6 +112,7 @@ void main() {
     final List<String> engineArgs =
         fileSystem.file('/.tmp_rand0/rand0/$appId.rpm').readAsLinesSync();
     expect(engineArgs, contains('--enable-impeller=false'));
+    expect(engineArgs, contains('--disable-service-origin-check'));
     expect(launchResult.started, isTrue);
     expect(launchResult.hasVmService, isTrue);
     expect(processManager, hasNoRemainingExpectations);
