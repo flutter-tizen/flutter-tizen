@@ -68,6 +68,7 @@ class TizenPlugin extends PluginPlatform implements NativeOrDartPlugin {
     this.namespace,
     this.pluginClass,
     this.dartPluginClass,
+    this.dartFileName,
     this.fileName,
     required this.isDevDependency,
   });
@@ -81,6 +82,7 @@ class TizenPlugin extends PluginPlatform implements NativeOrDartPlugin {
   }) {
     final Object? pluginClass = yaml[kPluginClass];
     final Object? dartPluginClass = yaml[kDartPluginClass];
+    final Object? dartFileName = yaml[kDartFileName];
     final Object? namespace = yaml[kNamespace];
     final Object? fileName = yaml[kFileName];
     if (pluginClass is! String &&
@@ -108,12 +110,21 @@ class TizenPlugin extends PluginPlatform implements NativeOrDartPlugin {
       throwToolExit(
           'The plugin `$name` has an invalid `fileName` in its tizen plugin declaration.');
     }
+    if (dartFileName != null && dartPluginClass is! String) {
+      throwToolExit('The plugin `$name` specifies `dartFileName` without `dartPluginClass` '
+          'in its tizen plugin declaration.');
+    }
+    if (dartFileName is String && !isValidPluginDartFileName(dartFileName)) {
+      throwToolExit(
+          'The plugin `$name` has an invalid `dartFileName` in its tizen plugin declaration.');
+    }
     return TizenPlugin(
       name: name,
       directory: directory,
       namespace: namespace as String?,
       pluginClass: pluginClass as String?,
       dartPluginClass: dartPluginClass as String?,
+      dartFileName: dartFileName as String?,
       fileName: fileName as String?,
       isDevDependency: isDevDependency,
     );
@@ -126,6 +137,7 @@ class TizenPlugin extends PluginPlatform implements NativeOrDartPlugin {
   final String? namespace;
   final String? pluginClass;
   final String? dartPluginClass;
+  final String? dartFileName;
   final String? fileName;
   final bool isDevDependency;
 
@@ -148,6 +160,7 @@ class TizenPlugin extends PluginPlatform implements NativeOrDartPlugin {
       if (namespace != null) kNamespace: namespace,
       if (pluginClass != null) kPluginClass: pluginClass,
       if (dartPluginClass != null) kDartPluginClass: dartPluginClass,
+      if (dartPluginClass != null) kDartFileName: dartFileName ?? '$name.dart',
       if (fileName != null) kFileName: fileName,
       if (fileName != null) kFilePath: directory.childFile(fileName!).path,
       if (libName != null) kLibName: isSharedLib ? libName : 'flutter_plugins',
@@ -283,7 +296,7 @@ const _generatedMainTemplate = '''
 
 import '{{mainImport}}' as entrypoint;
 {{#plugins}}
-import 'package:{{name}}/{{name}}.dart';
+import 'package:{{name}}/{{dartFileName}}';
 {{/plugins}}
 import 'package:flutter/src/dart_plugin_registrant.dart';
 

@@ -128,7 +128,7 @@ flutter:
     platforms:
       tizen:
         dartPluginClass: SomeDartPlugin
-        fileName: some_dart_plugin.dart
+        dartFileName: src/some_dart_plugin_tizen.dart
 dependencies:
   some_dart_plugin:
     path: ${pluginDir.path}
@@ -178,7 +178,7 @@ dev_dependencies:
 // @dart = 2.12
 
 import 'file:///integration_test/some_integration_test.dart' as entrypoint;
-import 'package:some_dart_plugin/some_dart_plugin.dart';
+import 'package:some_dart_plugin/src/some_dart_plugin_tizen.dart';
 
 void main() {
   SomeDartPlugin.register();
