@@ -79,8 +79,9 @@ class TizenDevice extends Device {
   Future<RunResult> runSdbAsync(
     List<String> params, {
     bool checked = true,
+    Duration? timeout,
   }) async {
-    return _processUtils.run(_sdbCommand(params), throwOnError: checked);
+    return _processUtils.run(_sdbCommand(params), throwOnError: checked, timeout: timeout);
   }
 
   String getCapability(String name) {
@@ -301,7 +302,17 @@ class TizenDevice extends Device {
     covariant TizenTpk app, {
     String? userIdentifier,
   }) async {
-    final RunResult result = await runSdbAsync(<String>['uninstall', app.id], checked: false);
+    final RunResult result;
+    try {
+      result = await runSdbAsync(
+        <String>['uninstall', app.id],
+        checked: false,
+        timeout: const Duration(seconds: 30),
+      );
+    } on Exception catch (error) {
+      _logger.printError('sdb uninstall failed: $error');
+      return false;
+    }
     if (result.exitCode != 0) {
       _logger.printError('sdb uninstall failed:\n$result');
       return false;
@@ -490,7 +501,8 @@ class TizenDevice extends Device {
       final command = usesSecureProtocol
           ? <String>['shell', '0', 'kill', app.id]
           : <String>['shell', 'app_launcher', '-k', app.applicationId];
-      final String stdout = (await runSdbAsync(command)).stdout;
+      final String stdout =
+          (await runSdbAsync(command, timeout: const Duration(seconds: 30))).stdout;
       return stdout.contains('Kill appId') ||
           stdout.contains('Terminate appId') ||
           stdout.contains('is Terminated') ||

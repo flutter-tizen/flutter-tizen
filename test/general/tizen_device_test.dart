@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:async';
+
+import 'package:fake_async/fake_async.dart';
 import 'package:file/memory.dart';
 import 'package:flutter_tizen/tizen_device.dart';
 import 'package:flutter_tizen/tizen_tpk.dart';
@@ -244,6 +247,78 @@ __return_cb req_id[1] pkg_type[tpk] pkgid[TestPackage] key[end] val[ok]
 
     expect(await device.installApp(tpk), isTrue);
     expect(processManager, hasNoRemainingExpectations);
+  });
+
+  testWithoutContext('TizenDevice.uninstallApp times out and does not hang forever', () {
+    fakeAsync((FakeAsync async) {
+      final TizenDevice device = _createTizenDevice(
+        processManager: processManager,
+        fileSystem: fileSystem,
+        logger: logger,
+      );
+      final tpk = TizenTpk(
+        applicationPackage: fileSystem.file('app.tpk')..createSync(),
+        manifest: _FakeTizenManifest(),
+      );
+
+      processManager.addCommand(
+        FakeCommand(
+          command: _sdbCommand(<String>['uninstall', 'TestPackage']),
+          completer: Completer<void>(),
+        ),
+      );
+
+      bool? result;
+      device.uninstallApp(tpk).then((bool value) => result = value);
+
+      async.flushMicrotasks();
+      expect(result, isNull);
+
+      async.elapse(const Duration(seconds: 40));
+      expect(result, isFalse);
+      expect(logger.errorText, contains('sdb uninstall failed'));
+      expect(processManager, hasNoRemainingExpectations);
+    });
+  });
+
+  testWithoutContext('TizenDevice.stopApp times out and does not hang forever', () {
+    fakeAsync((FakeAsync async) {
+      final TizenDevice device = _createTizenDevice(
+        processManager: processManager,
+        fileSystem: fileSystem,
+        logger: logger,
+      );
+      final tpk = TizenTpk(
+        applicationPackage: fileSystem.file('app.tpk')..createSync(),
+        manifest: _FakeTizenManifest(),
+      );
+
+      processManager.addCommands(<FakeCommand>[
+        FakeCommand(
+          command: _sdbCommand(<String>['capability']),
+          stdout: <String>[
+            'cpu_arch:armv7',
+            'secure_protocol:disabled',
+            'platform_version:6.0',
+          ].join('\n'),
+        ),
+        FakeCommand(
+          command: _sdbCommand(<String>['shell', 'app_launcher', '-k', 'TestApplication']),
+          completer: Completer<void>(),
+        ),
+      ]);
+
+      bool? result;
+      device.stopApp(tpk).then((bool value) => result = value);
+
+      async.flushMicrotasks();
+      expect(result, isNull);
+
+      async.elapse(const Duration(seconds: 40));
+      expect(result, isFalse);
+      expect(logger.errorText, contains('timed out'));
+      expect(processManager, hasNoRemainingExpectations);
+    });
   });
 
   testWithoutContext('TizenDevice.isSupported returns true for supported devices', () async {
