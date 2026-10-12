@@ -528,6 +528,37 @@ type = staticLib
     ProcessManager: () => FakeProcessManager.any(),
   }, testOn: 'posix');
 
+  testUsingContext('Skips plugins whose pubspec.yaml is not valid UTF-8', () async {
+    await validatesComputeTransitiveDependencies(<Package>[
+      (
+        name: 'my_app',
+        pluginType: PluginType.none,
+        dependencies: <String>['good_plugin', 'bad_plugin'],
+        devDependencies: <String>[],
+      ),
+      (
+        name: 'good_plugin',
+        pluginType: PluginType.native,
+        dependencies: <String>[],
+        devDependencies: <String>[],
+      ),
+      (
+        name: 'bad_plugin',
+        pluginType: PluginType.native,
+        dependencies: <String>[],
+        devDependencies: <String>[],
+      ),
+    ]);
+    fileSystem.file('/bad_plugin/pubspec.yaml').writeAsBytesSync(<int>[0xff, 0xfe, 0xfd]);
+    project = FlutterProject.fromDirectoryTest(fileSystem.currentDirectory);
+
+    final List<TizenPlugin> plugins = await findTizenPlugins(project);
+    expect(plugins.map((TizenPlugin p) => p.name), <String>['good_plugin']);
+  }, overrides: <Type, Generator>{
+    FileSystem: () => fileSystem,
+    ProcessManager: () => FakeProcessManager.any(),
+  }, testOn: 'posix');
+
   TizenPlugin pluginFromYaml(String yaml) => TizenPlugin.fromYaml(
         'some_plugin',
         fileSystem.directory('/some_plugin/tizen'),
