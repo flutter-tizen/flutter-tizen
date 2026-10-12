@@ -16,6 +16,7 @@ import 'package:flutter_tools/src/base/terminal.dart';
 import 'package:flutter_tools/src/base/utils.dart';
 import 'package:flutter_tools/src/build_info.dart';
 import 'package:flutter_tools/src/build_system/build_system.dart';
+import 'package:flutter_tools/src/bundle_builder.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/commands/assemble.dart';
 import 'package:flutter_tools/src/commands/build_ios_framework.dart';
@@ -38,6 +39,7 @@ TizenBuilder? get tizenBuilder => context.get<TizenBuilder>();
 /// - [AndroidGradleBuilder.buildApk] in `gradle.dart`
 /// - [BuildIOSFrameworkCommand._produceAppFramework] in `build_ios_framework.dart` (build target)
 /// - [AssembleCommand.runCommand] in `assemble.dart` (performance measurement)
+/// - [BundleBuilder.build] in `bundle_builder.dart` (error reporting)
 /// - [buildLinux] in `build_linux.dart` (code size)
 class TizenBuilder {
   TizenBuilder();
@@ -99,7 +101,12 @@ class TizenBuilder {
       final BuildResult result = await globals.buildSystem.build(target, environment);
       if (!result.success) {
         for (final ExceptionMeasurement measurement in result.exceptions.values) {
-          globals.printError(measurement.toString());
+          globals.printError(
+            'Target ${measurement.target} failed: ${measurement.exception}',
+            stackTrace: (measurement.fatal && measurement.exception is! ToolExit)
+                ? measurement.stackTrace
+                : null,
+          );
         }
         throwToolExit('The build failed.');
       }
