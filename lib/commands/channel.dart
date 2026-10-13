@@ -95,13 +95,13 @@ class TizenChannelCommand extends ChannelCommand {
     try {
       // --force so a tag re-pointed upstream does not silently stay stale.
       await _gitWrapper.run(
-        <String>['fetch', '--tags', '--force'],
+        <String>['fetch', 'origin', '--tags', '--force'],
         throwOnError: true,
         workingDirectory: repoRoot,
       );
     } on ProcessException catch (e) {
       globals.printWarning(
-        '"git fetch --tags" failed in $repoRoot; showing the releases '
+        '"git fetch origin --tags" failed in $repoRoot; showing the releases '
         'already known locally.\n${e.message}',
       );
     }
@@ -191,7 +191,7 @@ class TizenChannelCommand extends ChannelCommand {
     if (shown.isEmpty) {
       globals.printStatus(
         'No flutter-tizen releases are known. If this checkout was cloned '
-        'without tags, run "git fetch --tags".',
+        'without tags, run "git fetch origin --tags".',
       );
       return;
     }
