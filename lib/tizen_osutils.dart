@@ -22,9 +22,11 @@ class TizenOperatingSystemUtils implements OperatingSystemUtils {
           platform: platform,
           processManager: processManager,
         ),
+        _fileSystem = fileSystem,
         _platform = platform;
 
   final OperatingSystemUtils _osUtils;
+  final FileSystem _fileSystem;
   final Platform _platform;
 
   @override
@@ -67,12 +69,35 @@ class TizenOperatingSystemUtils implements OperatingSystemUtils {
       return _osUtils.unzip(file, targetDirectory);
     }
     final Archive archive = ZipDecoder().decodeBytes(file.readAsBytesSync());
+    final String targetDirectoryCanonicalPath = _fileSystem.path.canonicalize(targetDirectory.path);
     for (final ArchiveFile archiveFile in archive.files) {
       // The archive package doesn't correctly set isFile.
       if (archiveFile.name.endsWith('/')) {
         continue;
       }
-      final File destFile = targetDirectory.childFile(archiveFile.name);
+      final File destFile = _fileSystem.file(
+        _fileSystem.path.canonicalize(
+          _fileSystem.path.join(targetDirectory.path, archiveFile.name),
+        ),
+      );
+
+      // Validate that the destFile is within the targetDirectory we want to
+      // extract to.
+      //
+      // See https://snyk.io/research/zip-slip-vulnerability for more context.
+      final String destinationFileCanonicalPath = _fileSystem.path.canonicalize(destFile.path);
+      final bool isAtRoot = _fileSystem.path.equals(
+        targetDirectoryCanonicalPath,
+        destinationFileCanonicalPath,
+      );
+      if (!isAtRoot &&
+          !_fileSystem.path.isWithin(targetDirectoryCanonicalPath, destinationFileCanonicalPath)) {
+        throw StateError(
+          'Tried to extract the file $destinationFileCanonicalPath outside of the '
+          'target directory $targetDirectoryCanonicalPath',
+        );
+      }
+
       if (!destFile.parent.existsSync()) {
         destFile.parent.createSync(recursive: true);
       }
