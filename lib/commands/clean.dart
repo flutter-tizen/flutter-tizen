@@ -13,8 +13,11 @@ class TizenCleanCommand extends CleanCommand {
 
   @override
   Future<FlutterCommandResult> runCommand() async {
-    final tizenProject = TizenProject.fromFlutter(FlutterProject.current());
-    tizenProject.clean();
+    final FlutterProject flutterProject = FlutterProject.current();
+    TizenProject.fromFlutter(flutterProject).clean();
+    if (boolArg('include-example') && flutterProject.hasExampleApp) {
+      TizenProject.fromFlutter(flutterProject.example).clean();
+    }
     return super.runCommand();
   }
 }
