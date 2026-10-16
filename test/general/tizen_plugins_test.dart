@@ -274,6 +274,48 @@ class _PluginRegistrant {
     ProcessManager: () => FakeProcessManager.any(),
   }, testOn: 'posix');
 
+  testUsingContext('Generates Dart plugin registrant with dartFileName', () async {
+    final command = _DummyFlutterCommand();
+    final CommandRunner<void> runner = createTestCommandRunner(command);
+
+    fileSystem.file('tizen/tizen-manifest.xml').createSync(recursive: true);
+
+    await validatesComputeTransitiveDependencies(<Package>[
+      (
+        name: 'my_app',
+        pluginType: PluginType.none,
+        dependencies: <String>['some_dart_plugin'],
+        devDependencies: <String>[],
+      ),
+      (
+        name: 'some_dart_plugin',
+        pluginType: PluginType.dart,
+        dependencies: <String>[],
+        devDependencies: <String>[],
+      ),
+    ]);
+    fileSystem.file('some_dart_plugin/pubspec.yaml').writeAsStringSync('''
+name: some_dart_plugin
+flutter:
+  plugin:
+    platforms:
+      tizen:
+        dartPluginClass: SomeDartPlugin
+        dartFileName: src/some_dart_plugin_tizen.dart
+''');
+    await runner.run(<String>['dummy']);
+
+    final File generatedMain = fileSystem.file('tizen/flutter/generated_main.dart');
+    expect(generatedMain, exists);
+    expect(
+      generatedMain.readAsStringSync(),
+      contains("import 'package:some_dart_plugin/src/some_dart_plugin_tizen.dart';"),
+    );
+  }, overrides: <Type, Generator>{
+    FileSystem: () => fileSystem,
+    ProcessManager: () => FakeProcessManager.any(),
+  }, testOn: 'posix');
+
   testUsingContext('Generates native plugin registrant for C++', () async {
     fileSystem.file('tizen/tizen-manifest.xml').createSync(recursive: true);
 
@@ -574,6 +616,11 @@ type = staticLib
       isTrue,
     );
     expect(pluginFromYaml('dartPluginClass: SomePlugin').hasDart(), isTrue);
+    expect(
+      pluginFromYaml('dartPluginClass: SomePlugin\ndartFileName: src/some_plugin.dart')
+          .dartFileName,
+      'src/some_plugin.dart',
+    );
     expect(pluginFromYaml('ffiPlugin: true').hasMethodChannel(), isFalse);
     expect(pluginFromYaml('default_package: some_plugin_tizen').hasDart(), isFalse);
   });
@@ -587,6 +634,13 @@ type = staticLib
       'pluginClass: SomePlugin\nfileName: "some_plugin.h\\"\\n#include \\"/etc/passwd"':
           'has an invalid `fileName`',
       'pluginClass: SomePlugin\nfileName: ../../evil.h': 'has an invalid `fileName`',
+      'dartFileName: src/some_plugin.dart\nffiPlugin: true':
+          'specifies `dartFileName` without `dartPluginClass`',
+      'dartPluginClass: SomePlugin\ndartFileName: "a.dart\';import \'evil.dart"':
+          'has an invalid `dartFileName`',
+      'dartPluginClass: SomePlugin\ndartFileName: src/../../evil.dart':
+          'has an invalid `dartFileName`',
+      'dartPluginClass: SomePlugin\ndartFileName: 123': 'has an invalid `dartFileName`',
     };
     for (final MapEntry<String, String> entry in invalid.entries) {
       expect(

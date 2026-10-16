@@ -83,7 +83,7 @@ class TizenTestRunner implements FlutterTestRunner {
 
 import '{{mainImport}}' as entrypoint;
 {{#plugins}}
-import 'package:{{name}}/{{name}}.dart';
+import 'package:{{name}}/{{dartFileName}}';
 {{/plugins}}
 
 void main() {
