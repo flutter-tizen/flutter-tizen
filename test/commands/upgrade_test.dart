@@ -41,7 +41,7 @@ void main() {
 
   testUsingContext('already up to date short-circuits', () async {
     processManager.addCommands(<FakeCommand>[
-      const FakeCommand(command: <String>['git', 'fetch', '--tags', '--force']),
+      const FakeCommand(command: <String>['git', 'fetch', 'origin', '--tags', '--force']),
       const FakeCommand(
         command: <String>['git', 'ls-remote', '--tags', '--sort=-v:refname', 'origin'],
         stdout: 'fff0001\trefs/tags/3.44.8-tizen.1.0.0\n'
@@ -63,7 +63,7 @@ void main() {
 
   testUsingContext('--verify-only reports and changes nothing', () async {
     processManager.addCommands(<FakeCommand>[
-      const FakeCommand(command: <String>['git', 'fetch', '--tags', '--force']),
+      const FakeCommand(command: <String>['git', 'fetch', 'origin', '--tags', '--force']),
       const FakeCommand(
         command: <String>['git', 'ls-remote', '--tags', '--sort=-v:refname', 'origin'],
         stdout: 'fff0001\trefs/tags/3.44.8-tizen.1.0.0\n'
@@ -92,7 +92,7 @@ void main() {
   testUsingContext('moves the checkout, prints recovery, and finishes with precache and doctor',
       () async {
     processManager.addCommands(<FakeCommand>[
-      const FakeCommand(command: <String>['git', 'fetch', '--tags', '--force']),
+      const FakeCommand(command: <String>['git', 'fetch', 'origin', '--tags', '--force']),
       const FakeCommand(
         command: <String>['git', 'ls-remote', '--tags', '--sort=-v:refname', 'origin'],
         stdout: 'fff0001\trefs/tags/3.44.8-tizen.1.0.0\n'
@@ -141,7 +141,7 @@ void main() {
   testUsingContext('--force discards uncommitted changes in the vendored Flutter SDK', () async {
     globals.fs.directory('/repo/flutter/.git').createSync(recursive: true);
     processManager.addCommands(<FakeCommand>[
-      const FakeCommand(command: <String>['git', 'fetch', '--tags', '--force']),
+      const FakeCommand(command: <String>['git', 'fetch', 'origin', '--tags', '--force']),
       const FakeCommand(
         command: <String>['git', 'ls-remote', '--tags', '--sort=-v:refname', 'origin'],
         stdout: 'fff0001\trefs/tags/3.44.8-tizen.1.0.0\n'
@@ -195,7 +195,7 @@ void main() {
 
   testUsingContext('restores the welcome message state when the setup fails', () async {
     processManager.addCommands(<FakeCommand>[
-      const FakeCommand(command: <String>['git', 'fetch', '--tags', '--force']),
+      const FakeCommand(command: <String>['git', 'fetch', 'origin', '--tags', '--force']),
       const FakeCommand(
         command: <String>['git', 'ls-remote', '--tags', '--sort=-v:refname', 'origin'],
         stdout: 'fff0001\trefs/tags/3.44.8-tizen.1.0.0\n'

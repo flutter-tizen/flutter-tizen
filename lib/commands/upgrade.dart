@@ -139,13 +139,13 @@ class TizenUpgradeCommandRunner extends UpgradeCommandRunner {
   Future<TizenGitTagVersion> _fetchLatestReleaseVersion() async {
     try {
       await _gitWrapper.run(
-        <String>['fetch', '--tags', '--force'],
+        <String>['fetch', 'origin', '--tags', '--force'],
         throwOnError: true,
         workingDirectory: workingDirectory,
       );
     } on ProcessException catch (e) {
       throwToolExit(
-        '"git fetch --tags" failed in $workingDirectory, so the latest '
+        '"git fetch origin --tags" failed in $workingDirectory, so the latest '
         'release cannot be determined.\n${e.message}',
       );
     }

@@ -66,7 +66,7 @@ void main() {
 
   testUsingContext('lists release tags by tagged commit time, marking the current one', () async {
     processManager.addCommands(<FakeCommand>[
-      const FakeCommand(command: <String>['git', 'fetch', '--tags', '--force']),
+      const FakeCommand(command: <String>['git', 'fetch', 'origin', '--tags', '--force']),
       const FakeCommand(command: _kTagCommand, stdout: _kTags),
       const FakeCommand(
         command: <String>['git', 'describe', '--tags', '--exact-match', 'HEAD'],
@@ -94,7 +94,7 @@ void main() {
   group('switch', () {
     void addSwitchCommands({required String tag, required String peeled}) {
       processManager.addCommands(<FakeCommand>[
-        const FakeCommand(command: <String>['git', 'fetch', '--tags', '--force']),
+        const FakeCommand(command: <String>['git', 'fetch', 'origin', '--tags', '--force']),
         const FakeCommand(command: _kTagCommand, stdout: _kTags),
         FakeCommand(
           command: <String>['git', 'rev-parse', '$tag^{commit}'],
@@ -163,7 +163,7 @@ void main() {
 
     testUsingContext('unknown target exits listing available tags', () async {
       processManager.addCommands(<FakeCommand>[
-        const FakeCommand(command: <String>['git', 'fetch', '--tags', '--force']),
+        const FakeCommand(command: <String>['git', 'fetch', 'origin', '--tags', '--force']),
         const FakeCommand(command: _kTagCommand, stdout: _kTags),
       ]);
       await expectToolExitLater(
@@ -174,7 +174,7 @@ void main() {
 
     testUsingContext('--force skips the guards and passes --force to checkout', () async {
       processManager.addCommands(<FakeCommand>[
-        const FakeCommand(command: <String>['git', 'fetch', '--tags', '--force']),
+        const FakeCommand(command: <String>['git', 'fetch', 'origin', '--tags', '--force']),
         const FakeCommand(command: _kTagCommand, stdout: _kTags),
         const FakeCommand(
           command: <String>['git', 'rev-parse', '3.44.4-tizen.1.0.0^{commit}'],
@@ -203,7 +203,7 @@ void main() {
     testUsingContext('--force discards uncommitted changes in the vendored Flutter SDK', () async {
       globals.fs.directory('/repo/flutter/.git').createSync(recursive: true);
       processManager.addCommands(<FakeCommand>[
-        const FakeCommand(command: <String>['git', 'fetch', '--tags', '--force']),
+        const FakeCommand(command: <String>['git', 'fetch', 'origin', '--tags', '--force']),
         const FakeCommand(command: _kTagCommand, stdout: _kTags),
         const FakeCommand(
           command: <String>['git', 'rev-parse', '3.44.4-tizen.1.0.0^{commit}'],
@@ -252,7 +252,7 @@ void main() {
     testUsingContext('uncommitted changes in the vendored Flutter SDK block the switch', () async {
       globals.fs.directory('/repo/flutter/.git').createSync(recursive: true);
       processManager.addCommands(<FakeCommand>[
-        const FakeCommand(command: <String>['git', 'fetch', '--tags', '--force']),
+        const FakeCommand(command: <String>['git', 'fetch', 'origin', '--tags', '--force']),
         const FakeCommand(command: _kTagCommand, stdout: _kTags),
         const FakeCommand(
           command: <String>['git', 'rev-parse', '3.44.4-tizen.1.0.0^{commit}'],
@@ -299,7 +299,7 @@ void main() {
 
     testUsingContext('dirty tree blocks the switch', () async {
       processManager.addCommands(<FakeCommand>[
-        const FakeCommand(command: <String>['git', 'fetch', '--tags', '--force']),
+        const FakeCommand(command: <String>['git', 'fetch', 'origin', '--tags', '--force']),
         const FakeCommand(command: _kTagCommand, stdout: _kTags),
         const FakeCommand(
           command: <String>['git', 'rev-parse', '3.44.4-tizen.1.0.0^{commit}'],
