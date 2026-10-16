@@ -347,6 +347,7 @@ class TizenSdk {
     String workingDirectory, {
     String? buildType,
     String? signingProfile,
+    Map<String, String>? environment,
   }) async {
     final RunResult result = await _processUtils.run(
       <String>[
@@ -368,6 +369,7 @@ class TizenSdk {
         'build',
       ],
       workingDirectory: workingDirectory,
+      environment: environment,
     );
   }
 
