@@ -8,6 +8,7 @@ import 'package:flutter_tizen/tizen_build_info.dart';
 import 'package:flutter_tizen/tizen_builder.dart';
 import 'package:flutter_tizen/tizen_sdk.dart';
 import 'package:flutter_tools/src/base/analyze_size.dart';
+import 'package:flutter_tools/src/base/common.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/base/platform.dart';
@@ -178,6 +179,57 @@ void main() {
           ),
       FileSystemUtils: () => FileSystemUtils(fileSystem: fileSystem, platform: platform),
     });
+
+    testUsingContext('Prints stack traces only for fatal non-ToolExit errors', () async {
+      fileSystem.file('tizen/tizen-manifest.xml')
+        ..createSync(recursive: true)
+        ..writeAsStringSync(_kTizenManifestContents);
+
+      await expectLater(
+        () => TizenBuilder().buildTpk(
+          project: project,
+          tizenBuildInfo: tizenBuildInfo,
+          targetFile: 'main.dart',
+        ),
+        throwsToolExit(message: 'The build failed.'),
+      );
+
+      expect(logger.errorText, contains('Target a failed: Error: tool exit'));
+      expect(logger.errorText, isNot(contains('tool_exit_stack')));
+      expect(logger.errorText, contains('Target b failed: Bad state: fatal'));
+      expect(logger.errorText, contains('fatal_stack'));
+      expect(logger.errorText, contains('Target c failed: Bad state: non-fatal'));
+      expect(logger.errorText, isNot(contains('warning_stack')));
+    }, overrides: <Type, Generator>{
+      FileSystem: () => fileSystem,
+      ProcessManager: () => FakeProcessManager.any(),
+      Logger: () => logger,
+      TizenSdk: () => FakeTizenSdk(fileSystem),
+      BuildSystem: () => TestBuildSystem.all(
+            BuildResult(
+              success: false,
+              exceptions: <String, ExceptionMeasurement>{
+                'a': ExceptionMeasurement(
+                  'a',
+                  _toolExit('tool exit'),
+                  StackTrace.fromString('tool_exit_stack'),
+                  fatal: true,
+                ),
+                'b': ExceptionMeasurement(
+                  'b',
+                  StateError('fatal'),
+                  StackTrace.fromString('fatal_stack'),
+                  fatal: true,
+                ),
+                'c': ExceptionMeasurement(
+                  'c',
+                  StateError('non-fatal'),
+                  StackTrace.fromString('warning_stack'),
+                ),
+              },
+            ),
+          ),
+    });
   });
 
   group('TizenBuilder.buildModule', () {
@@ -218,5 +270,14 @@ class _FakeSizeAnalyzer extends SizeAnalyzer {
     String? excludePath,
   }) async {
     return <String, Object>{};
+  }
+}
+
+// ToolExit has no public constructor.
+ToolExit _toolExit(String message) {
+  try {
+    throwToolExit(message);
+  } on ToolExit catch (error) {
+    return error;
   }
 }
