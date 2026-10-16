@@ -119,6 +119,9 @@ void main() {
             'build',
           ],
           workingDirectory: '${projectDir.path}/tizen',
+          environment: const <String, String>{
+            'TizenCoreEnabled': 'false',
+          },
           onRun: (_) {
             projectDir
                 .childFile('tizen/bin/Release/tizen80/package_id-1.0.0.tpk')
@@ -161,6 +164,103 @@ void main() {
         contains('/opt/usr/globalapps/package_id/lib/liba.so'),
       );
 
+      expect(processManager, hasNoRemainingExpectations);
+    }, overrides: <Type, Generator>{
+      FileSystem: () => fileSystem,
+      ProcessManager: () => processManager,
+      Cache: () => cache,
+      OperatingSystemUtils: () => osUtils,
+      TizenSdk: () =>
+          FakeTizenSdk(fileSystem, securityProfile: 'test_profile', processManager: processManager),
+    });
+
+    testUsingContext('Build enables Tizen Core for API 11.0 UI and service apps', () async {
+      final String manifestXml =
+          projectDir.childFile('tizen/tizen-manifest.xml').readAsStringSync();
+      final Directory uiDir = projectDir.childDirectory('tizen/ui');
+      uiDir.childFile('tizen-manifest.xml')
+        ..createSync(recursive: true)
+        ..writeAsStringSync(manifestXml.replaceFirst('api-version="4.0"', 'api-version="11.0"'));
+      projectDir.childFile('tizen/service/tizen-manifest.xml')
+        ..createSync(recursive: true)
+        ..writeAsStringSync(manifestXml);
+      uiDir.childFile('.app.deps.json').createSync();
+
+      final Directory outputDir = projectDir.childDirectory('out');
+      final environment = Environment.test(
+        projectDir,
+        outputDir: outputDir,
+        fileSystem: fileSystem,
+        logger: logger,
+        artifacts: artifacts,
+        processManager: processManager,
+      );
+      environment.buildDir.childDirectory('flutter_assets').createSync(recursive: true);
+      environment.buildDir.childFile('app.so').createSync(recursive: true);
+
+      const dotnetEnvironment = <String, String>{
+        'TizenCoreEnabled': 'true',
+      };
+      processManager.addCommands(<FakeCommand>[
+        FakeCommand(
+          command: const <String>[
+            '/tizen-studio/tools/tizen-core/tz',
+            'set',
+            '-b',
+            'Release',
+            '-s',
+            'test_profile',
+          ],
+          workingDirectory: uiDir.path,
+        ),
+        FakeCommand(
+          command: const <String>[
+            '/tizen-studio/tools/tizen-core/tz',
+            'build',
+          ],
+          workingDirectory: uiDir.path,
+          environment: dotnetEnvironment,
+          onRun: (_) {
+            uiDir.childFile('bin/Release/tizen80/package_id-1.0.0.tpk').createSync(recursive: true);
+          },
+          stdout: kMsbuildOutput.replaceAll('/flutter_project/tizen', uiDir.path),
+        ),
+        FakeCommand(
+          command: <String>[
+            'dotnet',
+            'build',
+            '-c',
+            'Release',
+            '/p:DefineConstants=COMMON_PROFILE',
+            '${projectDir.path}/tizen/service',
+          ],
+          environment: dotnetEnvironment,
+          onRun: (_) {
+            projectDir.childFile('tizen/service/service.tpk').createSync(recursive: true);
+          },
+          stdout: 'RunnerService -> ${projectDir.path}/tizen/service/service.tpk',
+        ),
+        FakeCommand(command: <String>[
+          '/tizen-studio/tools/ide/bin/tizen',
+          'package',
+          '-t',
+          'tpk',
+          '-s',
+          'test_profile',
+          '-r',
+          '${projectDir.path}/tizen/service/service.tpk',
+          '--',
+          '${uiDir.path}/bin/Release/tizen80/package_id-1.0.0.tpk',
+        ]),
+      ]);
+
+      await DotnetTpk(const TizenBuildInfo(
+        BuildInfo.release,
+        targetArch: 'arm',
+        deviceProfile: 'common',
+      )).build(environment);
+
+      expect(outputDir.childFile('package_id-1.0.0.tpk'), exists);
       expect(processManager, hasNoRemainingExpectations);
     }, overrides: <Type, Generator>{
       FileSystem: () => fileSystem,
@@ -294,6 +394,39 @@ type = app
       expect(aotSnapshot, exists);
       expect(pluginsLib, exists);
       expect(pluginsUserLib, exists);
+    }, overrides: <Type, Generator>{
+      FileSystem: () => fileSystem,
+      ProcessManager: () => processManager,
+      Cache: () => cache,
+      TizenSdk: () => FakeTizenSdk(fileSystem, securityProfile: 'test_profile'),
+    });
+
+    testUsingContext('Packages the Tizen Core embedder under its SONAME', () async {
+      final File manifestFile = projectDir.childFile('tizen/tizen-manifest.xml');
+      manifestFile.writeAsStringSync(
+        manifestFile.readAsStringSync().replaceFirst('api-version="4.0"', 'api-version="11.0"'),
+      );
+      final environment = Environment.test(
+        projectDir,
+        outputDir: projectDir.childDirectory('out'),
+        fileSystem: fileSystem,
+        logger: logger,
+        artifacts: artifacts,
+        processManager: processManager,
+      );
+      environment.buildDir.childDirectory('flutter_assets').createSync(recursive: true);
+      environment.buildDir.childFile('app.so').createSync(recursive: true);
+      projectDir.childDirectory('tizen').childFile('.app.deps.json').createSync(recursive: true);
+
+      await NativeTpk(const TizenBuildInfo(
+        BuildInfo.release,
+        targetArch: 'arm',
+        deviceProfile: 'common',
+      )).build(environment);
+
+      final Directory libDir = projectDir.childDirectory('tizen/flutter/ephemeral/lib');
+      expect(libDir.childFile('libflutter_tizen_common.so'), exists);
+      expect(libDir.childFile('libflutter_tizen_common_tcore.so'), isNot(exists));
     }, overrides: <Type, Generator>{
       FileSystem: () => fileSystem,
       ProcessManager: () => processManager,
@@ -463,6 +596,7 @@ void _installFakeEngineArtifacts(Directory engineArtifactDir) {
   }
   for (final file in <String>[
     'tizen-arm/6.0/libflutter_tizen_common.so',
+    'tizen-arm/11.0/libflutter_tizen_common_tcore.so',
     'tizen-arm-debug/icudtl.dat',
     'tizen-arm-debug/libflutter_engine.so',
     'tizen-arm-release/icudtl.dat',
