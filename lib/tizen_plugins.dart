@@ -114,7 +114,8 @@ class TizenPlugin extends PluginPlatform implements NativeOrDartPlugin {
       throwToolExit('The plugin `$name` specifies `dartFileName` without `dartPluginClass` '
           'in its tizen plugin declaration.');
     }
-    if (dartFileName is String && !isValidPluginDartFileName(dartFileName)) {
+    if (dartFileName != null &&
+        (dartFileName is! String || !isValidPluginDartFileName(dartFileName))) {
       throwToolExit(
           'The plugin `$name` has an invalid `dartFileName` in its tizen plugin declaration.');
     }
