@@ -10,7 +10,7 @@ jobs:
   dart:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v7
       - name: Fetch Flutter SDK
         run: |
           git clone https://github.com/flutter/flutter.git
@@ -26,8 +26,8 @@ jobs:
   csharp:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-dotnet@v2
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
         with:
           dotnet-version: "6.0.x"
       - name: Verify formatting
