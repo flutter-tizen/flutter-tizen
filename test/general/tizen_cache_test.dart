@@ -11,7 +11,7 @@ import 'package:flutter_tools/src/cache.dart';
 import 'package:test/fake.dart';
 
 import '../src/common.dart';
-import '../src/context.dart';
+import '../src/fake_process_manager.dart';
 import '../src/fakes.dart';
 
 void main() {
@@ -105,6 +105,58 @@ void main() {
       contains('GitHub CLI not found.'),
     );
   });
+  testWithoutContext('Clears each cache directory only once per GitHub run', () async {
+    final osUtils = _FakeOperatingSystemUtilsWithGh(fileSystem);
+    final processManager = FakeProcessManager.empty();
+    final artifacts = TizenEmbedderArtifacts(
+      cache: cache,
+      logger: BufferLogger.test(),
+      fileSystem: fileSystem,
+      platform: FakePlatform(
+        environment: <String, String>{'GITHUB_EMBEDDER_RUN_ID': '1234'},
+      ),
+      osUtils: osUtils,
+      processManager: processManager,
+    );
+    for (final List<String> toolsDir in artifacts.getBinaryDirs()) {
+      final String artifactName = toolsDir[1].replaceAll('.zip', '');
+      processManager.addCommand(FakeCommand(
+        command: <String>[
+          'gh',
+          'run',
+          'download',
+          '-R',
+          'flutter-tizen/embedder',
+          '-n',
+          artifactName,
+          '-D',
+          artifacts.location.childDirectory(toolsDir[0]).path,
+          '1234',
+        ],
+        onRun: (List<String> command) {
+          fileSystem.directory(command[8]).childFile('$artifactName.so').createSync();
+        },
+      ));
+    }
+    final Directory armDir = artifacts.location.childDirectory('tizen-arm/6.0');
+    armDir.childFile('stale.so').createSync(recursive: true);
+
+    await artifacts.updateInner(_FakeArtifactUpdater(), fileSystem, osUtils);
+
+    expect(armDir.childFile('tizen-6.0-arm.so').existsSync(), isTrue);
+    expect(armDir.childFile('tizen-6.0-arm_experimental.so').existsSync(), isTrue);
+    expect(armDir.childFile('stale.so').existsSync(), isFalse);
+    expect(processManager, hasNoRemainingExpectations);
+  });
+}
+
+class _FakeOperatingSystemUtilsWithGh extends FakeOperatingSystemUtils {
+  _FakeOperatingSystemUtilsWithGh(this._fileSystem);
+
+  final FileSystem _fileSystem;
+
+  @override
+  File? which(String execName) => _fileSystem.file(execName);
 }
 
 class _FakeArtifactUpdater extends Fake implements ArtifactUpdater {
