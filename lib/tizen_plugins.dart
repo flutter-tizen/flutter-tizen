@@ -237,7 +237,7 @@ mixin DartPluginRegistry on FlutterCommand {
     if (dartPluginRegistrant.existsSync()) {
       final Uri dartPluginRegistrantFileUri = dartPluginRegistrant.uri;
       dartPluginRegistrantUri =
-          packageConfig.toPackageUri(dartPluginRegistrantFileUri)?.toString() ??
+          packageConfig.toPackageUriForWorkspace(dartPluginRegistrantFileUri)?.toString() ??
               dartPluginRegistrantFileUri.toString();
     }
     // See the engine's FindAndInvokeDartPluginRegistrant().
@@ -351,7 +351,7 @@ Future<void> generateEntrypointWithPluginRegistrant(
     packageConfig.packageOf(mainFileUri),
     Cache.flutterRoot!,
   );
-  final Uri mainUri = packageConfig.toPackageUri(mainFileUri) ?? mainFileUri;
+  final Uri mainUri = packageConfig.toPackageUriForWorkspace(mainFileUri) ?? mainFileUri;
   final List<String> dartEntrypoints = _findDartEntrypoints(mainFile);
   List<TizenPlugin> dartPlugins = await findTizenPlugins(project, dartOnly: true);
   if (FlutterCommand.current?.getBuildMode().isRelease ?? false) {
