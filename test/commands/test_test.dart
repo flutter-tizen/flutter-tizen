@@ -180,9 +180,9 @@ dev_dependencies:
 import 'file:///integration_test/some_integration_test.dart' as entrypoint;
 import 'package:some_dart_plugin/src/some_dart_plugin_tizen.dart';
 
-void main() {
+Future<void> main() {
   SomeDartPlugin.register();
-  entrypoint.main();
+  return Future<void>.sync(entrypoint.main);
 }
 '''));
   }, overrides: <Type, Generator>{

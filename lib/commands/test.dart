@@ -86,11 +86,11 @@ import '{{mainImport}}' as entrypoint;
 import 'package:{{name}}/{{dartFileName}}';
 {{/plugins}}
 
-void main() {
+Future<void> main() {
 {{#plugins}}
   {{dartPluginClass}}.register();
 {{/plugins}}
-  entrypoint.main();
+  return Future<void>.sync(entrypoint.main);
 }
 ''',
         context,
