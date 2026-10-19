@@ -86,8 +86,6 @@ import '{{mainImport}}' as entrypoint;
 import 'package:{{name}}/{{name}}.dart';
 {{/plugins}}
 
-// Return the future so that tests declared after an await in an async main
-// are still collected by the test runner.
 Future<void> main() {
 {{#plugins}}
   {{dartPluginClass}}.register();

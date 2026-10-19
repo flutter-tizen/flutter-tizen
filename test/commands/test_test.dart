@@ -180,8 +180,6 @@ dev_dependencies:
 import 'file:///integration_test/some_integration_test.dart' as entrypoint;
 import 'package:some_dart_plugin/some_dart_plugin.dart';
 
-// Return the future so that tests declared after an await in an async main
-// are still collected by the test runner.
 Future<void> main() {
   SomeDartPlugin.register();
   return Future<void>.sync(entrypoint.main);
