@@ -215,14 +215,17 @@ abstract class TizenCachedArtifacts extends EngineCachedArtifact {
       throwToolExit('GitHub CLI not found. Please install it first: https://cli.github.com');
     }
     for (final List<String> toolsDir in getBinaryDirs()) {
+      final Directory artifactDir = location.childDirectory(toolsDir[0]);
+      if (artifactDir.existsSync()) {
+        artifactDir.deleteSync(recursive: true);
+      }
+    }
+    for (final List<String> toolsDir in getBinaryDirs()) {
       final String cacheDir = toolsDir[0];
       final String urlPath = toolsDir[1];
       final Directory artifactDir = location.childDirectory(cacheDir);
       final Status status = _logger.startProgress('Downloading $cacheDir tools...');
       try {
-        if (artifactDir.existsSync()) {
-          artifactDir.deleteSync(recursive: true);
-        }
         artifactDir.createSync(recursive: true);
         final RunResult result = await _processUtils.run(<String>[
           'gh',
