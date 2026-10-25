@@ -178,10 +178,10 @@ dev_dependencies:
 // @dart = 2.12
 
 import 'file:///integration_test/some_integration_test.dart' as entrypoint;
-import 'package:some_dart_plugin/src/some_dart_plugin_tizen.dart';
+import 'package:some_dart_plugin/src/some_dart_plugin_tizen.dart' as _some_dart_plugin;
 
 Future<void> main() {
-  SomeDartPlugin.register();
+  _some_dart_plugin.SomeDartPlugin.register();
   return Future<void>.sync(entrypoint.main);
 }
 '''));

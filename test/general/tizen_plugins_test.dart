@@ -185,9 +185,10 @@ ${package.devDependencies.map((String d) => '  $d: {path: $d}').join('\n')}
     expect(generatedMain, exists);
 
     final String contents = generatedMain.readAsStringSync();
-    expect(contents, contains("import 'package:some_dart_plugin/some_dart_plugin.dart';"));
     expect(contents,
-        isNot(contains("import 'package:some_dev_dart_plugin/some_dev_dart_plugin.dart';")));
+        contains("import 'package:some_dart_plugin/some_dart_plugin.dart' as _some_dart_plugin;"));
+    expect(contents,
+        isNot(contains("import 'package:some_dev_dart_plugin/some_dev_dart_plugin.dart'")));
   }, overrides: <Type, Generator>{
     FileSystem: () => fileSystem,
     ProcessManager: () => FakeProcessManager.any(),
@@ -226,8 +227,12 @@ ${package.devDependencies.map((String d) => '  $d: {path: $d}').join('\n')}
     expect(generatedMain, exists);
 
     final String contents = generatedMain.readAsStringSync();
-    expect(contents, contains("import 'package:some_dart_plugin/some_dart_plugin.dart';"));
-    expect(contents, contains("import 'package:some_dev_dart_plugin/some_dev_dart_plugin.dart';"));
+    expect(contents,
+        contains("import 'package:some_dart_plugin/some_dart_plugin.dart' as _some_dart_plugin;"));
+    expect(
+        contents,
+        contains(
+            "import 'package:some_dev_dart_plugin/some_dev_dart_plugin.dart' as _some_dev_dart_plugin;"));
   }, overrides: <Type, Generator>{
     FileSystem: () => fileSystem,
     ProcessManager: () => FakeProcessManager.any(),
@@ -258,14 +263,14 @@ ${package.devDependencies.map((String d) => '  $d: {path: $d}').join('\n')}
     final File generatedMain = fileSystem.file('tizen/flutter/generated_main.dart');
     expect(generatedMain, exists);
     expect(generatedMain.readAsStringSync(), contains('''
-import 'package:some_dart_plugin/some_dart_plugin.dart';
+import 'package:some_dart_plugin/some_dart_plugin.dart' as _some_dart_plugin;
 import 'package:flutter/src/dart_plugin_registrant.dart';
 
 @pragma('vm:entry-point')
 class _PluginRegistrant {
   @pragma('vm:entry-point')
   static void register() {
-    SomeDartPlugin.register();
+    _some_dart_plugin.SomeDartPlugin.register();
   }
 }
 '''));
@@ -309,7 +314,8 @@ flutter:
     expect(generatedMain, exists);
     expect(
       generatedMain.readAsStringSync(),
-      contains("import 'package:some_dart_plugin/src/some_dart_plugin_tizen.dart';"),
+      contains(
+          "import 'package:some_dart_plugin/src/some_dart_plugin_tizen.dart' as _some_dart_plugin;"),
     );
   }, overrides: <Type, Generator>{
     FileSystem: () => fileSystem,
