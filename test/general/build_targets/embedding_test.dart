@@ -5,6 +5,7 @@
 import 'package:file/memory.dart';
 import 'package:file_testing/file_testing.dart';
 import 'package:flutter_tizen/build_targets/embedding.dart';
+import 'package:flutter_tizen/build_targets/utils.dart';
 import 'package:flutter_tizen/tizen_build_info.dart';
 import 'package:flutter_tizen/tizen_sdk.dart';
 import 'package:flutter_tools/src/artifacts.dart';
@@ -45,6 +46,13 @@ type = staticLib
     embeddingDir.childFile('include/flutter.h').createSync(recursive: true);
 
     _createFakeIncludeDirs(cache);
+  });
+
+  testUsingContext('x64 apps are built against API version 8.0 or higher', () {
+    expect(getBuildApiVersion('6.0', 'x64'), '8.0');
+    expect(getBuildApiVersion(null, 'x64'), '8.0');
+    expect(getBuildApiVersion('9.0', 'x64'), '9.0');
+    expect(getBuildApiVersion('6.0', 'arm'), '6.0');
   });
 
   testUsingContext('Build succeeds', () async {

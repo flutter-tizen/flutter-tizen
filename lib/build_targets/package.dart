@@ -90,7 +90,7 @@ class DotnetTpk extends TizenPackage {
 
     final TizenManifest tizenManifest = TizenManifest.parseFromXml(tizenProject.manifestFile);
     final String profile = buildInfo.deviceProfile;
-    final String? apiVersion = tizenManifest.apiVersion;
+    final String? apiVersion = getBuildApiVersion(tizenManifest.apiVersion, buildInfo.targetArch);
 
     final BuildMode buildMode = buildInfo.buildInfo.mode;
     final String buildConfig = getBuildConfig(buildMode);
@@ -305,7 +305,7 @@ class NativeTpk extends TizenPackage {
 
     final TizenManifest tizenManifest = TizenManifest.parseFromXml(tizenProject.manifestFile);
     final String profile = buildInfo.deviceProfile;
-    final String? apiVersion = tizenManifest.apiVersion;
+    final String? apiVersion = getBuildApiVersion(tizenManifest.apiVersion, buildInfo.targetArch);
 
     final BuildMode buildMode = buildInfo.buildInfo.mode;
     final String buildConfig = getBuildConfig(buildMode);
@@ -371,7 +371,7 @@ class NativeTpk extends TizenPackage {
     assert(tizenSdk != null);
     final Rootstrap rootstrap = tizenSdk!.getRootstrap(
       profile: profile,
-      apiVersion: tizenManifest.apiVersion,
+      apiVersion: apiVersion,
       arch: buildInfo.targetArch,
     );
 
@@ -534,7 +534,7 @@ class DotnetModule extends TizenPackage {
 
     final TizenManifest tizenManifest = TizenManifest.parseFromXml(tizenProject.manifestFile);
     final String profile = buildInfo.deviceProfile;
-    final String? apiVersion = tizenManifest.apiVersion;
+    final String? apiVersion = getBuildApiVersion(tizenManifest.apiVersion, buildInfo.targetArch);
 
     final BuildMode buildMode = buildInfo.buildInfo.mode;
     final Directory engineDir = getEngineArtifactsDirectory(buildInfo.targetArch, buildMode);
@@ -615,7 +615,7 @@ class NativeModule extends TizenPackage {
 
     final TizenManifest tizenManifest = TizenManifest.parseFromXml(tizenProject.manifestFile);
     final String profile = buildInfo.deviceProfile;
-    final String? apiVersion = tizenManifest.apiVersion;
+    final String? apiVersion = getBuildApiVersion(tizenManifest.apiVersion, buildInfo.targetArch);
 
     final Directory engineDir = getEngineArtifactsDirectory(buildInfo.targetArch, buildMode);
 

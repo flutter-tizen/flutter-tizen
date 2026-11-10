@@ -45,6 +45,19 @@ bool usesTizenCoreEmbedder(String? apiVersion) {
   return version >= kTizenCoreApiVersion;
 }
 
+/// Returns the API version to build against for the app declaring [apiVersion].
+///
+/// x64 is supported from 8.0, so an app declaring a lower version is built
+/// against 8.0 when targeting x64. Its manifest is packaged as is.
+String? getBuildApiVersion(String? apiVersion, String arch) {
+  final Version version = Version.parse(apiVersion) ?? Version(6, 0, 0);
+  if ((arch == 'x64' || arch == 'x86_64') && version < Version(8, 0, 0)) {
+    globals.printTrace('Building against API version 8.0, the lowest that supports x64.');
+    return '8.0';
+  }
+  return apiVersion;
+}
+
 Directory getEmbedderArtifactsDirectory(String? apiVersion, String arch) {
   final Version version = Version.parse(apiVersion) ?? Version(6, 0, 0);
   if (arch == 'x86_64') {

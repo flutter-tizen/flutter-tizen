@@ -90,8 +90,10 @@ class NativeEmbedding extends Target {
     assert(tizenSdk != null);
     String? apiVersion;
     if (tizenProject.manifestFile.existsSync()) {
-      final TizenManifest tizenManifest = TizenManifest.parseFromXml(tizenProject.manifestFile);
-      apiVersion = tizenManifest.apiVersion;
+      apiVersion = getBuildApiVersion(
+        TizenManifest.parseFromXml(tizenProject.manifestFile).apiVersion,
+        buildInfo.targetArch,
+      );
       inputs.add(tizenProject.manifestFile);
     }
     final Rootstrap rootstrap = tizenSdk!.getRootstrap(
