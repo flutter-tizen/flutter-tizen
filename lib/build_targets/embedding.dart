@@ -207,15 +207,25 @@ class NativeEmbedding extends Target {
 /// The runner has no app-specific code, so it is built from
 /// `embedding/cpp/runner` only once per configuration and cached in the Flutter
 /// cache. App builds only copy it into the package.
+///
+/// An app with C++ sources in `tizen/src` gets a runner of its own, built with
+/// those sources in place of `runner.cc` and cached in the project.
 Future<File> ensurePrebuiltRunner(
   TizenBuildInfo buildInfo, {
+  required TizenProject project,
   required Rootstrap rootstrap,
   required File embedder,
   required String? apiVersion,
 }) async {
   final String buildConfig = getBuildConfig(buildInfo.buildInfo.mode);
-  final Directory cacheDir = globals.cache
-      .getArtifactDirectory('tizen-runner')
+  final Directory userSourceDir = project.runnerSourceDirectory;
+  final Directory userIncludeDir = project.runnerIncludeDirectory;
+  final bool isCustom = userSourceDir.existsSync() &&
+      userSourceDir.listSync().any((FileSystemEntity e) =>
+          e is File && <String>['.cc', '.cpp', '.c'].contains(globals.fs.path.extension(e.path)));
+  final Directory cacheDir = (isCustom
+          ? project.managedDirectory.childDirectory('runner')
+          : globals.cache.getArtifactDirectory('tizen-runner'))
       .childDirectory(rootstrap.id)
       .childDirectory(getLibNameForFileName(embedder.basename))
       .childDirectory(buildConfig);
@@ -233,6 +243,19 @@ Future<File> ensurePrebuiltRunner(
     for (final String name in <String>['include', 'runner'])
       ...embeddingDir.childDirectory(name).listSync(recursive: true).whereType<File>(),
   ];
+  // Copied into the runner project, next to the sources they replace. The
+  // headers go next to the project as tizen/inc is next to tizen/src, so that
+  // the debug information maps to the original files.
+  final userSources = <File, String>{
+    if (isCustom)
+      for (final (Directory dir, String target) in <(Directory, String)>[
+        (userSourceDir, 'runner'),
+        (userIncludeDir, 'inc'),
+      ])
+        if (dir.existsSync())
+          for (final File file in dir.listSync(recursive: true).whereType<File>())
+            file: globals.fs.path.join(target, globals.fs.path.relative(file.path, from: dir.path)),
+  };
   assert(tizenSdk != null);
   // The Tizen CLI configures the build with the rootstrap and toolchain
   // definitions of the SDK, so the runner is rebuilt when they change. The
@@ -259,6 +282,7 @@ Future<File> ensurePrebuiltRunner(
       libDir.childFile('tizen_sdk.dart').path,
       embedder.path,
       for (final File file in sources) file.path,
+      for (final File file in userSources.keys) file.path,
       for (final Directory dir in <Directory>[clientWrapperIncludeDir, publicDir])
         for (final File file in dir.listSync(recursive: true).whereType<File>()) file.path,
       for (final File file in sdkInputs) file.path,
@@ -280,6 +304,14 @@ Future<File> ensurePrebuiltRunner(
       copy.parent.createSync(recursive: true);
       source.copySync(copy.path);
     }
+    if (isCustom) {
+      workDir.childDirectory('runner').childFile('runner.cc').deleteSync();
+    }
+    for (final MapEntry<File, String> entry in userSources.entries) {
+      final File copy = workDir.childFile(entry.value);
+      copy.parent.createSync(recursive: true);
+      entry.key.copySync(copy.path);
+    }
     final Directory projectDir = workDir.childDirectory('runner');
 
     final RunResult result = await tizenSdk!.buildNative(
@@ -291,6 +323,9 @@ Future<File> ensurePrebuiltRunner(
         if (usesTizenCoreEmbedder(apiVersion)) 'TIZEN_CORE',
       ],
       extraOptions: <String>[
+        // The copy is deleted after the build, so the debug information refers
+        // to the app sources instead.
+        if (isCustom) '"-fdebug-compilation-dir=${userSourceDir.absolute.path.toPosixPath()}"',
         '-Wl,--unresolved-symbols=ignore-in-shared-libs',
         '-I${clientWrapperIncludeDir.path.toPosixPath()}',
         '-I${publicDir.path.toPosixPath()}',

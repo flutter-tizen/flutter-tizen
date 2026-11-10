@@ -639,6 +639,36 @@ type = app
       TizenSdk: () => FakeTizenSdk(fileSystem, securityProfile: 'test_profile'),
     });
 
+    testUsingContext('Builds a runner of its own for an app with runner sources', () async {
+      final File source = projectDir.childFile('tizen/src/app.cpp')..createSync(recursive: true);
+      projectDir.childFile('tizen/inc/app.h').createSync(recursive: true);
+      final File projectRunner = projectDir
+          .childFile('.dart_tool/tizen/runner/rootstrap/flutter_tizen_common/Release/runner');
+
+      await buildTpk();
+      expect(projectRunner, exists);
+      expect(cachedRunner(), isNot(exists));
+      // Nothing is generated in the tizen directory.
+      expect(
+        projectDir.childDirectory('tizen').listSync(recursive: true).whereType<File>(),
+        hasLength(4),
+      );
+
+      projectRunner.writeAsStringSync('cached');
+      Map<String, List<int>> files = await buildTpk();
+      expect(utf8.decode(files['bin/runner']!), equals('cached'));
+      expect(utf8.decode(files['bin/runner_service']!), equals('cached'));
+
+      source.writeAsStringSync('modified');
+      files = await buildTpk();
+      expect(files['bin/runner'], isEmpty);
+    }, overrides: <Type, Generator>{
+      FileSystem: () => fileSystem,
+      ProcessManager: () => processManager,
+      Cache: () => cache,
+      TizenSdk: () => FakeTizenSdk(fileSystem, securityProfile: 'test_profile'),
+    });
+
     testUsingContext('Window configuration updates without rebuilding the cached runner', () async {
       final File configFile = projectDir.childFile('tizen/flutter-tizen.yaml');
       final File sourceManifest = projectDir.childFile('tizen/tizen-manifest.xml');

@@ -403,6 +403,7 @@ class NativeTpk extends TizenPackage {
       );
       final File runner = await ensurePrebuiltRunner(
         buildInfo,
+        project: tizenProject,
         rootstrap: rootstrap,
         embedder: embedder,
         apiVersion: apiVersion,

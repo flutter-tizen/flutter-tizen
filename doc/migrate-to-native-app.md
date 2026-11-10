@@ -9,7 +9,8 @@ The prebuilt runner does exactly what the default `runner.cc` and `App.cs` templ
 - If `tizen/src/runner.cc` or `tizen/App.cs` is unchanged from the template, you can migrate.
 - If you only changed the Dart entrypoint (`SetDartEntrypoint` or `DartEntrypoint`), you can migrate. Use the `dart_entrypoint` metadata instead (see below).
 - If you only changed static window properties, copy their values into the optional `configuration` section of `tizen/flutter-tizen.yaml`. See [Window configuration](native-app.md#window-configuration).
-- If you added other native code (for example, you changed the renderer type, the UI thread policy, computed window settings at runtime, or overrode lifecycle callbacks), keep using the C++ or C# app model.
+- If you added other native code to `runner.cc` (for example, you changed the renderer type, the UI thread policy, computed window settings at runtime, or overrode lifecycle callbacks), you can migrate and keep that code. See [Keeping native code](#keeping-native-code).
+- If you added other code to `App.cs`, keep using the C# app model, or rewrite the code in C++.
 - The native model doesn't support C# plugins. If your app depends on a plugin whose `pubspec.yaml` declares `fileName: *.csproj`, keep using the C# app model.
 - Like C++ apps, native apps aren't supported on TV devices.
 
@@ -33,6 +34,16 @@ Commit or back up your project before migrating.
    ```xml
    <metadata key="http://tizen.org/metadata/flutter_tizen/dart_entrypoint" value="myEntrypoint"/>
    ```
+
+### Keeping native code
+
+To keep the code of your `App` class, don't delete `src` and `inc` in the first step, and change `tizen/src/runner.cc` as follows:
+
+- Include `flutter_runner.h` instead of `runner.h` and `generated_plugin_registrant.h`, and delete `tizen/inc/runner.h`.
+- Remove the `RegisterPlugins(this)` call. Plugins are registered for you.
+- Replace the body of `main` with `return RunFlutterApp<App>(argc, argv);` (`RunFlutterApp<FlutterApp, App>` for a service app).
+
+See [Add native code](native-app.md#add-native-code) for a complete example.
 
 ## Migrate a C# app
 
@@ -117,6 +128,8 @@ The TPK contains the runner under the name of each `exec` attribute (for example
 ## Reverting to a C++ app
 
 The C++ runner doesn't read the `dart_entrypoint` metadata, and a C++ multi app has separate `ui` and `service` projects. Follow the steps for your app type. `flutter-tizen create` only adds missing files and never overwrites your manifest.
+
+If the app has sources in `tizen/src`, move them away before running `flutter-tizen create`, which doesn't overwrite an existing `tizen/src/runner.cc`, and move your code into the generated runner afterwards.
 
 C++ runners also do not read `flutter-tizen.yaml`. If you used window configuration,
 restore those values in the corresponding UI runner's `FlutterApp` protected fields

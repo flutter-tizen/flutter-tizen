@@ -133,6 +133,11 @@ class TizenProject extends FlutterProjectPlatform {
   /// [manifestFile].
   bool get usesPrebuiltRunner => _applicationType == 'flutter';
 
+  /// The optional C++ sources of the app that replace `runner.cc` of the
+  /// prebuilt runner, and the headers they include.
+  Directory get runnerSourceDirectory => editableDirectory.childDirectory('src');
+  Directory get runnerIncludeDirectory => editableDirectory.childDirectory('inc');
+
   /// The dependency information file which is packaged with the app.
   File get appDepsFile =>
       (usesPrebuiltRunner ? managedDirectory : hostAppRoot).childFile('.app.deps.json');
