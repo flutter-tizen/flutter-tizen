@@ -353,7 +353,7 @@ class _BuildResult implements native.BuildResult {
           for (final EncodedAsset asset in encodedAssets) asset.toJson(),
         ],
         'encodedAssetsForLinking': const <String, Object?>{},
-        'dependencies': <String>[for (final Uri uri in dependencies) uri.toFilePath()],
+        'dependencies': <String>[for (final Uri uri in dependencies) uri.toString()],
       };
 }
 

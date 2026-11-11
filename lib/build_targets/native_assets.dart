@@ -78,8 +78,6 @@ class TizenBuildHooks extends Target {
       resultFile.writeAsStringSync(encodedResult);
     }
 
-    // List the hook-generated files as outputs so that deleting or modifying
-    // them reruns the hooks.
     final Set<Uri> buildDependencies = buildResult.dependencies.toSet();
     final depfile = Depfile(
       <File>[for (final Uri dependency in buildResult.dependencies) fileSystem.file(dependency)],
