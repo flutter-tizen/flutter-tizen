@@ -146,6 +146,64 @@ void main() {
     ProcessManager: () => processManager,
   });
 
+  testUsingContext('Hook-generated files are listed as outputs', () async {
+    final Directory projectDir = fileSystem.currentDirectory;
+    writePackageConfigFiles(directory: projectDir, mainLibName: 'my_app');
+    final File sourceFile = projectDir.childFile('source.txt')..writeAsStringSync('source');
+    final File generatedFile = projectDir.childFile('generated.txt')..writeAsStringSync('data');
+    final File linkedFile = projectDir.childFile('linked.txt')..writeAsStringSync('linked');
+    final File soFile = projectDir.childFile('libbundled.so')..writeAsStringSync('so');
+    final Environment environment = createEnvironment(projectDir, 'release', 'android-arm64');
+    final runner = _RecordingRunner(
+      buildResult: _BuildResult(
+        <EncodedAsset>[
+          DataAsset(package: 'native_package', name: 'source.txt', file: sourceFile.uri).encode(),
+          DataAsset(package: 'native_package', name: 'generated.txt', file: generatedFile.uri)
+              .encode(),
+          CodeAsset(
+            package: 'native_package',
+            name: 'bundled.dart',
+            linkMode: DynamicLoadingBundled(),
+            file: soFile.uri,
+          ).encode(),
+          CodeAsset(
+            package: 'native_package',
+            name: 'system.dart',
+            linkMode: DynamicLoadingSystem(Uri.file('libsystem.so')),
+          ).encode(),
+        ],
+        <Uri>[sourceFile.uri],
+      ),
+      linkResult: _LinkResult(<EncodedAsset>[
+        DataAsset(package: 'native_package', name: 'linked.txt', file: linkedFile.uri).encode(),
+      ]),
+    );
+
+    await TizenBuildHooks(buildRunner: runner).build(environment);
+    await TizenLinkHooks(buildRunner: runner).build(environment);
+
+    List<String> outputsOf(String depFilename) => environment.depFileService
+        .parse(environment.buildDir.childFile(depFilename))
+        .outputs
+        .map((File file) => file.path)
+        .toList();
+    final List<String> buildOutputs = outputsOf(TizenBuildHooks.depFilename);
+    expect(buildOutputs, containsAll(<String>[generatedFile.path, soFile.path]));
+    expect(buildOutputs.where((String path) => path.endsWith('libsystem.so')), isEmpty);
+    // Dependencies of the hook must not be listed as outputs.
+    expect(buildOutputs, isNot(contains(sourceFile.path)));
+    final List<String> linkOutputs = outputsOf(TizenLinkHooks.depFilename);
+    expect(linkOutputs, contains(linkedFile.path));
+    expect(linkOutputs, isNot(contains(generatedFile.path)));
+  }, overrides: <Type, Generator>{
+    FileSystem: () => fileSystem,
+    FeatureFlags: () => TestFeatureFlags(
+          isNativeAssetsEnabled: true,
+          isDartDataAssetsEnabled: true,
+        ),
+    ProcessManager: () => processManager,
+  });
+
   testUsingContext('Link hooks emit an empty result without native asset packages', () async {
     final Directory projectDir = fileSystem.currentDirectory;
     writePackageConfigFiles(directory: projectDir, mainLibName: 'my_app');
@@ -274,7 +332,10 @@ class _RecordingRunner implements FlutterNativeAssetsBuildRunner {
 }
 
 class _BuildResult implements native.BuildResult {
-  const _BuildResult([this.encodedAssets = const <EncodedAsset>[]]);
+  const _BuildResult([
+    this.encodedAssets = const <EncodedAsset>[],
+    this.dependencies = const <Uri>[],
+  ]);
 
   @override
   final List<EncodedAsset> encodedAssets;
@@ -284,7 +345,7 @@ class _BuildResult implements native.BuildResult {
       const <String, List<EncodedAsset>>{};
 
   @override
-  List<Uri> get dependencies => const <Uri>[];
+  final List<Uri> dependencies;
 
   @override
   Map<String, Object?> toJson() => <String, Object?>{
@@ -292,7 +353,7 @@ class _BuildResult implements native.BuildResult {
           for (final EncodedAsset asset in encodedAssets) asset.toJson(),
         ],
         'encodedAssetsForLinking': const <String, Object?>{},
-        'dependencies': const <String>[],
+        'dependencies': <String>[for (final Uri uri in dependencies) uri.toString()],
       };
 }
 

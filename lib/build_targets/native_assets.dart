@@ -73,11 +73,19 @@ class TizenBuildHooks extends Target {
     if (buildResult == null) {
       throwToolExit('Building native assets failed. See the logs for more details.');
     }
-    resultFile.writeAsStringSync(json.encode(buildResult.toJson()));
+    final String encodedResult = json.encode(buildResult.toJson());
+    if (!resultFile.existsSync() || resultFile.readAsStringSync() != encodedResult) {
+      resultFile.writeAsStringSync(encodedResult);
+    }
 
+    final Set<Uri> buildDependencies = buildResult.dependencies.toSet();
     final depfile = Depfile(
       <File>[for (final Uri dependency in buildResult.dependencies) fileSystem.file(dependency)],
-      <File>[resultFile],
+      <File>[
+        resultFile,
+        for (final Uri uri in _filesToBeBundled(buildResult.encodedAssets))
+          if (!buildDependencies.contains(uri)) fileSystem.file(uri),
+      ],
     );
     _writeDepfile(environment, depFilename, depfile);
   }
@@ -142,6 +150,7 @@ class TizenLinkHooks extends Target {
 
     DartHooksResult combinedResult;
     var linkDependencies = const <Uri>[];
+    var linkOutputs = const <Uri>[];
     if (serializedBuildResult.isEmpty) {
       // No packages with native assets.
       combinedResult = DartHooksResult.empty();
@@ -171,6 +180,7 @@ class TizenLinkHooks extends Target {
           throwToolExit('Linking native assets failed. See the logs for more details.');
         }
         linkDependencies = linkResult.dependencies;
+        linkOutputs = _filesToBeBundled(linkResult.encodedAssets);
       }
       combinedResult = _combineResults(
         architecture: architecture,
@@ -186,9 +196,14 @@ class TizenLinkHooks extends Target {
     }
     resultFile.writeAsStringSync(json.encode(combinedResult.toJson()));
 
+    final Set<Uri> linkDependencySet = linkDependencies.toSet();
     final depfile = Depfile(
       <File>[for (final Uri dependency in linkDependencies) fileSystem.file(dependency)],
-      <File>[resultFile],
+      <File>[
+        resultFile,
+        for (final Uri uri in linkOutputs)
+          if (!linkDependencySet.contains(uri)) fileSystem.file(uri),
+      ],
     );
     _writeDepfile(environment, depFilename, depfile);
   }
@@ -431,6 +446,17 @@ DartHooksResult _combineResults({
       if (linkResult != null) ...linkResult.dependencies,
     }.toList(),
   );
+}
+
+/// Source: [DartHooksResult.filesToBeBundled]
+List<Uri> _filesToBeBundled(List<EncodedAsset> encodedAssets) {
+  return <Uri>[
+    for (final EncodedAsset asset in encodedAssets)
+      if (asset.isCodeAsset && asset.asCodeAsset.linkMode is DynamicLoadingBundled)
+        asset.asCodeAsset.file!
+      else if (asset.isDataAsset)
+        DataAsset.fromEncoded(asset).file,
+  ];
 }
 
 void rewriteNativeAssetsManifest(File manifestFile, String packageId) {
