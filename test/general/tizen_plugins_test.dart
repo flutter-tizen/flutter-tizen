@@ -339,13 +339,16 @@ flutter:
     await runner.run(<String>['dummy']);
 
     // Isolate.spawnUri(Platform.script, args, message) delivers `message` only
-    // to an entrypoint that declares a second parameter.
+    // to an entrypoint that declares a second parameter. A normal launch passes
+    // `args` alone, so the app's own default for the second parameter applies.
     final File generatedMain = fileSystem.file('tizen/flutter/generated_main.dart');
     expect(generatedMain, exists);
     expect(generatedMain.readAsStringSync(), contains('''
+const Object _noMessage = Object();
+
 @pragma('vm:entry-point')
-void main(List<String> args, [Object? message]) {
-  if (entrypoint.main is _BinaryFunction) {
+void main(List<String> args, [Object? message = _noMessage]) {
+  if (!identical(message, _noMessage) && entrypoint.main is _BinaryFunction) {
     (entrypoint.main as dynamic)(args, message);
   } else if (entrypoint.main is _UnaryFunction) {
     (entrypoint.main as _UnaryFunction)(args);

@@ -316,10 +316,12 @@ typedef _BinaryFunction = dynamic Function(List<String> args, Never message);
 typedef _UnaryFunction = dynamic Function(List<String> args);
 typedef _NullaryFunction = dynamic Function();
 
+const Object _noMessage = Object();
+
 {{#dartEntrypoints}}
 @pragma('vm:entry-point')
-void {{name}}(List<String> args, [Object? message]) {
-  if (entrypoint.{{name}} is _BinaryFunction) {
+void {{name}}(List<String> args, [Object? message = _noMessage]) {
+  if (!identical(message, _noMessage) && entrypoint.{{name}} is _BinaryFunction) {
     (entrypoint.{{name}} as dynamic)(args, message);
   } else if (entrypoint.{{name}} is _UnaryFunction) {
     (entrypoint.{{name}} as _UnaryFunction)(args);
