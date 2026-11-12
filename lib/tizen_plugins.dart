@@ -288,6 +288,7 @@ const _generatedMainTemplate = '''
 // @dart = {{dartLanguageVersion}}
 
 // ignore_for_file: avoid_classes_with_only_static_members
+// ignore_for_file: avoid_dynamic_calls
 // ignore_for_file: avoid_private_typedef_functions
 // ignore_for_file: depend_on_referenced_packages
 // ignore_for_file: directives_ordering
@@ -311,13 +312,16 @@ class _PluginRegistrant {
   }
 }
 
+typedef _BinaryFunction = dynamic Function(List<String> args, Never message);
 typedef _UnaryFunction = dynamic Function(List<String> args);
 typedef _NullaryFunction = dynamic Function();
 
 {{#dartEntrypoints}}
 @pragma('vm:entry-point')
-void {{name}}(List<String> args) {
-  if (entrypoint.{{name}} is _UnaryFunction) {
+void {{name}}(List<String> args, [Object? message]) {
+  if (entrypoint.{{name}} is _BinaryFunction) {
+    (entrypoint.{{name}} as dynamic)(args, message);
+  } else if (entrypoint.{{name}} is _UnaryFunction) {
     (entrypoint.{{name}} as _UnaryFunction)(args);
   } else {
     (entrypoint.{{name}} as _NullaryFunction)();
