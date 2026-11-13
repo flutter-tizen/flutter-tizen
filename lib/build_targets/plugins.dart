@@ -30,6 +30,7 @@ class NativePlugins extends Target {
   @override
   List<Source> get inputs => const <Source>[
         Source.pattern('{FLUTTER_ROOT}/../lib/build_targets/plugins.dart'),
+        Source.pattern('{FLUTTER_ROOT}/../lib/tizen_plugins.dart'),
         Source.pattern('{FLUTTER_ROOT}/../lib/tizen_sdk.dart'),
         Source.pattern('{WORKSPACE_DIR}/.dart_tool/package_config.json'),
         Source.pattern('{WORKSPACE_DIR}/.dart_tool/package_graph.json'),
@@ -60,6 +61,10 @@ class NativePlugins extends Target {
     final FlutterProject project = FlutterProject.fromDirectory(environment.projectDir);
     final tizenProject = TizenProject.fromFlutter(project);
 
+    // Any dependency may become or stop being a native plugin, or change its
+    // plugin class, without changing the package config.
+    inputs.addAll(await findDependencyPubspecs(project));
+
     // Check if there's anything to build.
     List<TizenPlugin> nativePlugins = await findTizenPlugins(project, cppOnly: true);
     if (buildInfo.buildInfo.mode.isRelease) {
@@ -81,7 +86,7 @@ class NativePlugins extends Target {
 
     final TizenManifest tizenManifest = TizenManifest.parseFromXml(tizenProject.manifestFile);
     final String profile = buildInfo.deviceProfile;
-    final String? apiVersion = tizenManifest.apiVersion;
+    final String? apiVersion = getBuildApiVersion(tizenManifest.apiVersion, buildInfo.targetArch);
 
     final BuildMode buildMode = buildInfo.buildInfo.mode;
     final String buildConfig = getBuildConfig(buildMode);
@@ -193,15 +198,11 @@ class NativePlugins extends Target {
 
       // Copy user libraries.
       // TODO(swift-kim): Remove user libs support for staticLib projects.
-      final Directory pluginLibDir = plugin.directory.childDirectory('lib');
-      final String buildArch = getTizenBuildArch(buildInfo.targetArch);
-      final pluginLibDirs = <Directory>[
-        pluginLibDir,
-        pluginLibDir.childDirectory(buildInfo.targetArch),
-        pluginLibDir.childDirectory(buildArch),
-        if (apiVersion != null) pluginLibDir.childDirectory(buildArch).childDirectory(apiVersion),
-      ];
-      for (final Directory directory in pluginLibDirs.where((Directory dir) => dir.existsSync())) {
+      for (final Directory directory in getLibDirectories(
+        plugin.directory.childDirectory('lib'),
+        buildInfo.targetArch,
+        apiVersion,
+      )) {
         for (final File lib in directory.listSync().whereType<File>()) {
           // Symbolic links are not supported because they are not portable.
           // Issue: https://github.com/flutter-tizen/flutter-tizen/pull/322
@@ -231,14 +232,33 @@ class NativePlugins extends Target {
       outputs.add(includeDir.childFile(header.basename));
     }
 
+    // The prebuilt runner has no generated plugin registrant compiled in, so
+    // it calls the registrant through libflutter_plugins.so instead.
+    final bool exportRegistrant = tizenProject.usesPrebuiltRunner;
+    if (exportRegistrant) {
+      await writeCppPluginRegistrant(
+        nativePlugins,
+        outputDir.childFile('generated_plugin_registrant.h'),
+      );
+      outputDir.childFile('plugin_registrant.cc').writeAsStringSync('''
+#include "generated_plugin_registrant.h"
+
+extern "C" __attribute__((visibility("default"))) void FlutterRegisterPlugins(
+    flutter::PluginRegistry *registry) {
+  RegisterPlugins(registry);
+}
+''');
+    }
+
     // Create a dummy project and build libflutter_plugins.so if necessary.
-    if (pluginClasses.isNotEmpty) {
+    if (pluginClasses.isNotEmpty || exportRegistrant) {
       final File projectDef = outputDir.childFile('project_def.prop');
       projectDef.writeAsStringSync('''
 APPNAME = flutter_plugins
 type = sharedLib
 profile = $profile-$apiVersion
 
+${exportRegistrant ? 'USER_SRCS = plugin_registrant.cc' : ''}
 USER_LFLAGS = -Wl,-rpath='\$\$ORIGIN'
 USER_LIBS = stdc++ pthread ${userLibs.join(' ')}
 ''');
@@ -254,6 +274,7 @@ USER_LIBS = stdc++ pthread ${userLibs.join(' ')}
         extraOptions: <String>[
           '-I${clientWrapperDir.childDirectory('include').path.toPosixPath()}',
           '-I${publicDir.path.toPosixPath()}',
+          if (exportRegistrant) '-I${includeDir.path.toPosixPath()}',
           embeddingLib.path.toPosixPath(),
           '-L${embedder.parent.path.toPosixPath()}',
           '-l${getLibNameForFileName(embedder.basename)}',

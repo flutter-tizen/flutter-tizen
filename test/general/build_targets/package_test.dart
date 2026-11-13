@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:convert';
+
+import 'package:archive/archive.dart';
 import 'package:file/memory.dart';
 import 'package:file_testing/file_testing.dart';
 import 'package:flutter_tizen/build_targets/package.dart';
@@ -15,6 +18,7 @@ import 'package:flutter_tools/src/build_info.dart';
 import 'package:flutter_tools/src/build_system/build_system.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:test/fake.dart';
+import 'package:xml/xml.dart';
 
 import '../../src/common.dart';
 import '../../src/context.dart';
@@ -463,6 +467,248 @@ type = app
       ProcessManager: () => processManager,
       Cache: () => cache,
       TizenSdk: () => FakeTizenSdk(fileSystem),
+    });
+  });
+
+  group('NativeTpk (prebuilt runner)', () {
+    late Environment environment;
+    late Directory outputDir;
+
+    setUp(() {
+      projectDir.childFile('tizen/tizen-manifest.xml').writeAsStringSync('''
+<manifest package="package_id" version="1.0.0" api-version="6.0">
+    <profile name="common"/>
+    <ui-application appid="app_id" exec="runner" type="flutter"/>
+    <service-application appid="app_id_service" exec="runner_service" type="flutter"/>
+</manifest>
+''');
+      projectDir.childFile('tizen/shared/res/ic_launcher.png').createSync(recursive: true);
+      projectDir.childFile('.dart_tool/tizen/.app.deps.json').createSync(recursive: true);
+
+      final Directory embeddingDir = fileSystem.directory('embedding/cpp');
+      embeddingDir.childFile('flutter_app.cc').createSync(recursive: true);
+      embeddingDir.childFile('include/flutter.h').createSync(recursive: true);
+      embeddingDir.childFile('runner/runner.cc').createSync(recursive: true);
+      embeddingDir.childFile('runner/project_def.prop').writeAsStringSync('''
+APPNAME = runner
+type = app
+''');
+      fileSystem.file('lib/build_targets/embedding.dart').createSync(recursive: true);
+      fileSystem.file('lib/build_targets/utils.dart').createSync(recursive: true);
+      fileSystem.file('lib/tizen_sdk.dart').createSync(recursive: true);
+
+      outputDir = projectDir.childDirectory('out');
+      environment = Environment.test(
+        projectDir,
+        outputDir: outputDir,
+        fileSystem: fileSystem,
+        logger: logger,
+        artifacts: artifacts,
+        processManager: processManager,
+      );
+      environment.buildDir.childDirectory('flutter_assets').createSync(recursive: true);
+      environment.buildDir.childFile('app.so').createSync(recursive: true);
+      environment.buildDir
+          .childFile('tizen_plugins/lib/libflutter_plugins.so')
+          .createSync(recursive: true);
+    });
+
+    Future<Map<String, List<int>>> buildTpk() async {
+      await NativeTpk(const TizenBuildInfo(
+        BuildInfo.release,
+        targetArch: 'arm',
+        deviceProfile: 'common',
+      )).build(environment);
+
+      final File outputTpk = outputDir.childFile('package_id-1.0.0.tpk');
+      expect(outputTpk, exists);
+      final Archive archive = ZipDecoder().decodeBytes(outputTpk.readAsBytesSync());
+      return <String, List<int>>{
+        for (final ArchiveFile file in archive.files) file.name: file.content as List<int>,
+      };
+    }
+
+    File cachedRunner() => cache
+        .getArtifactDirectory('tizen-runner')
+        .childFile('rootstrap/flutter_tizen_common/Release/runner');
+
+    testUsingContext('Packages the runner for every application', () async {
+      projectDir.childFile('tizen/res/user.txt').createSync(recursive: true);
+      projectDir.childFile('tizen/res/icudtl.dat').writeAsStringSync('user');
+      final Map<String, List<int>> files = await buildTpk();
+
+      expect(
+        files.keys,
+        containsAll(<String>[
+          'bin/runner',
+          'bin/runner_service',
+          'lib/libapp.so',
+          'lib/libflutter_engine.so',
+          'lib/libflutter_plugins.so',
+          'lib/libflutter_tizen_common.so',
+          'res/flutter_assets/.app.deps.json',
+          'res/icudtl.dat',
+          'res/user.txt',
+          'shared/res/ic_launcher.png',
+          'tizen-manifest.xml',
+        ]),
+      );
+      final String manifest = utf8.decode(files['tizen-manifest.xml']!);
+      expect(manifest, isNot(contains('type="flutter"')));
+      expect('type="capp"'.allMatches(manifest), hasLength(2));
+      expect(cachedRunner(), exists);
+      // The generated file is not overwritten.
+      expect(files['res/icudtl.dat'], isEmpty);
+      // Nothing is generated in the tizen directory.
+      expect(
+        projectDir.childDirectory('tizen').listSync(recursive: true).whereType<File>(),
+        hasLength(4),
+      );
+    }, overrides: <Type, Generator>{
+      FileSystem: () => fileSystem,
+      ProcessManager: () => processManager,
+      Cache: () => cache,
+      TizenSdk: () => FakeTizenSdk(fileSystem, securityProfile: 'test_profile'),
+    });
+
+    testUsingContext('Packages libraries in tizen/lib for the target arch', () async {
+      projectDir.childFile('tizen/lib/libcommon.so').createSync(recursive: true);
+      projectDir.childFile('tizen/lib/arm/libarm.so').createSync(recursive: true);
+      projectDir.childFile('tizen/lib/aarch64/libarm64.so').createSync(recursive: true);
+      projectDir.childFile('tizen/lib/libstatic.a').createSync(recursive: true);
+      projectDir.childFile('tizen/lib/libflutter_plugins.so').writeAsStringSync('user');
+
+      final Map<String, List<int>> files = await buildTpk();
+
+      expect(files.keys, containsAll(<String>['lib/libcommon.so', 'lib/libarm.so']));
+      expect(files.keys, isNot(contains('lib/libarm64.so')));
+      expect(files.keys, isNot(contains('lib/libstatic.a')));
+      expect(files.keys.where((String name) => name.startsWith('lib/arm/')), isEmpty);
+      // The generated library is not overwritten.
+      expect(files['lib/libflutter_plugins.so'], isEmpty);
+    }, overrides: <Type, Generator>{
+      FileSystem: () => fileSystem,
+      ProcessManager: () => processManager,
+      Cache: () => cache,
+      TizenSdk: () => FakeTizenSdk(fileSystem, securityProfile: 'test_profile'),
+    });
+
+    testUsingContext('Builds the runner only if the cache is outdated', () async {
+      await buildTpk();
+      cachedRunner().writeAsStringSync('cached');
+
+      Map<String, List<int>> files = await buildTpk();
+      expect(utf8.decode(files['bin/runner']!), equals('cached'));
+
+      fileSystem.file('embedding/cpp/runner/runner.cc').writeAsStringSync('modified');
+      files = await buildTpk();
+      expect(files['bin/runner'], isEmpty);
+    }, overrides: <Type, Generator>{
+      FileSystem: () => fileSystem,
+      ProcessManager: () => processManager,
+      Cache: () => cache,
+      TizenSdk: () => FakeTizenSdk(fileSystem, securityProfile: 'test_profile'),
+    });
+
+    testUsingContext('Rebuilds the runner when the Tizen SDK or the build tool changes', () async {
+      final sdkInputs = <File>[
+        fileSystem.file('/tizen-studio/sdk.version'),
+        fileSystem.file('/tizen-studio/info/rootstrap.dev.xml'),
+        fileSystem.file('/tizen-studio/tools/smart-build-interface/plugins/rootstrap.xml'),
+        fileSystem
+            .file('/tizen-studio/tools/smart-build-interface/plugins/llvm10.armel.core.app.xml'),
+        fileSystem.file('lib/tizen_sdk.dart'),
+      ];
+      for (final file in sdkInputs) {
+        file.createSync(recursive: true);
+      }
+      await buildTpk();
+      cachedRunner().writeAsStringSync('cached');
+      expect(utf8.decode((await buildTpk())['bin/runner']!), equals('cached'));
+
+      for (final file in sdkInputs) {
+        file.writeAsStringSync('modified');
+        expect((await buildTpk())['bin/runner'], isEmpty, reason: file.path);
+        cachedRunner().writeAsStringSync('cached');
+      }
+      expect(utf8.decode((await buildTpk())['bin/runner']!), equals('cached'));
+    }, overrides: <Type, Generator>{
+      FileSystem: () => fileSystem,
+      ProcessManager: () => processManager,
+      Cache: () => cache,
+      TizenSdk: () => FakeTizenSdk(fileSystem, securityProfile: 'test_profile'),
+    });
+
+    testUsingContext('Builds a runner of its own for an app with runner sources', () async {
+      final File source = projectDir.childFile('tizen/src/app.cpp')..createSync(recursive: true);
+      projectDir.childFile('tizen/inc/app.h').createSync(recursive: true);
+      final File projectRunner = projectDir
+          .childFile('.dart_tool/tizen/runner/rootstrap/flutter_tizen_common/Release/runner');
+
+      await buildTpk();
+      expect(projectRunner, exists);
+      expect(cachedRunner(), isNot(exists));
+      // Nothing is generated in the tizen directory.
+      expect(
+        projectDir.childDirectory('tizen').listSync(recursive: true).whereType<File>(),
+        hasLength(4),
+      );
+
+      projectRunner.writeAsStringSync('cached');
+      Map<String, List<int>> files = await buildTpk();
+      expect(utf8.decode(files['bin/runner']!), equals('cached'));
+      expect(utf8.decode(files['bin/runner_service']!), equals('cached'));
+
+      source.writeAsStringSync('modified');
+      files = await buildTpk();
+      expect(files['bin/runner'], isEmpty);
+    }, overrides: <Type, Generator>{
+      FileSystem: () => fileSystem,
+      ProcessManager: () => processManager,
+      Cache: () => cache,
+      TizenSdk: () => FakeTizenSdk(fileSystem, securityProfile: 'test_profile'),
+    });
+
+    testUsingContext('Window configuration updates without rebuilding the cached runner', () async {
+      final File configFile = projectDir.childFile('tizen/flutter-tizen.yaml');
+      final File sourceManifest = projectDir.childFile('tizen/tizen-manifest.xml');
+      final String original = sourceManifest.readAsStringSync();
+      configFile.writeAsStringSync('''
+configuration:
+  window_width: 800
+  transparent: true
+''');
+      Map<String, List<int>> files = await buildTpk();
+      expect(utf8.decode(files['tizen-manifest.xml']!), contains('value="800"'));
+      expect(utf8.decode(files['tizen-manifest.xml']!), contains('value="true"'));
+      expect(files.keys, isNot(contains('flutter-tizen.yaml')));
+      cachedRunner().writeAsStringSync('cached');
+
+      configFile.writeAsStringSync('''
+configuration:
+  window_width: 0
+  transparent: false
+''');
+      files = await buildTpk();
+      final XmlElement manifest =
+          XmlDocument.parse(utf8.decode(files['tizen-manifest.xml']!)).rootElement;
+      final List<XmlElement> metadata =
+          manifest.findElements('ui-application').single.findElements('metadata').toList();
+      expect(metadata, hasLength(2));
+      expect(metadata.map((XmlElement node) => node.getAttribute('value')), <String>['0', 'false']);
+      expect(manifest.findElements('service-application').single.findElements('metadata'), isEmpty);
+      expect(utf8.decode(files['bin/runner']!), 'cached');
+      expect(sourceManifest.readAsStringSync(), original);
+
+      configFile.deleteSync();
+      files = await buildTpk();
+      expect(utf8.decode(files['tizen-manifest.xml']!), isNot(contains('<metadata')));
+      expect(utf8.decode(files['bin/runner']!), 'cached');
+    }, overrides: <Type, Generator>{
+      FileSystem: () => fileSystem,
+      ProcessManager: () => processManager,
+      Cache: () => cache,
+      TizenSdk: () => FakeTizenSdk(fileSystem, securityProfile: 'test_profile'),
     });
   });
 

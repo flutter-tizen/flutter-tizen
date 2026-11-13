@@ -130,6 +130,117 @@ void main() {
     expect(projectDir.childDirectory('tizen/service').listSync(), isNotEmpty);
   }, overrides: <Type, Generator>{});
 
+  testUsingContext('Can create a native app project', () async {
+    final command = TizenCreateCommand();
+    final CommandRunner<void> runner = createTestCommandRunner(command);
+    await runner.run(<String>[
+      'create',
+      '--no-pub',
+      '--platforms=tizen',
+      '--tizen-language=native',
+      projectDir.path,
+    ]);
+
+    expect(projectDir.childFile('lib/main.dart'), exists);
+    final Directory tizenDir = projectDir.childDirectory('tizen');
+    expect(
+      tizenDir
+          .listSync(recursive: true)
+          .whereType<File>()
+          .map((File file) => globals.fs.path.relative(file.path, from: tizenDir.path)),
+      unorderedEquals(<String>[
+        globals.fs.path.join('shared', 'res', 'ic_launcher.png'),
+        'tizen-manifest.xml',
+      ]),
+    );
+    expect(
+      tizenDir.childFile('tizen-manifest.xml').readAsStringSync(),
+      contains('<ui-application appid="com.example.flutter_project" exec="runner" type="flutter"'),
+    );
+  }, overrides: <Type, Generator>{});
+
+  testUsingContext('Can create a native service app project', () async {
+    final command = TizenCreateCommand();
+    final CommandRunner<void> runner = createTestCommandRunner(command);
+    await runner.run(<String>[
+      'create',
+      '--no-pub',
+      '--platforms=tizen',
+      '--app-type=service',
+      '--tizen-language=native',
+      projectDir.path,
+    ]);
+
+    final File manifest = projectDir.childFile('tizen/tizen-manifest.xml');
+    expect(manifest.readAsStringSync(), contains('<service-application'));
+    expect(projectDir.childFile('tizen/project_def.prop'), isNot(exists));
+    expect(projectDir.childDirectory('tizen/src'), isNot(exists));
+  }, overrides: <Type, Generator>{});
+
+  testUsingContext('Can create a native multi app project', () async {
+    final command = TizenCreateCommand();
+    final CommandRunner<void> runner = createTestCommandRunner(command);
+    await runner.run(<String>[
+      'create',
+      '--no-pub',
+      '--platforms=tizen',
+      '--app-type=multi',
+      '--tizen-language=native',
+      projectDir.path,
+    ]);
+
+    // Both applications are declared in a single manifest.
+    final String manifest = projectDir.childFile('tizen/tizen-manifest.xml').readAsStringSync();
+    expect(manifest, contains('<ui-application appid="com.example.flutter_project"'));
+    expect(manifest, contains('<service-application appid="com.example.flutter_project_service"'));
+    expect(manifest, contains('value="serviceMain"'));
+    expect(projectDir.childDirectory('tizen/ui'), isNot(exists));
+    expect(projectDir.childDirectory('tizen/service'), isNot(exists));
+  }, overrides: <Type, Generator>{});
+
+  testUsingContext('Cannot create a native plugin or module project', () async {
+    final command = TizenCreateCommand();
+    final CommandRunner<void> runner = createTestCommandRunner(command);
+    for (final template in <String>['plugin', 'module']) {
+      await expectLater(
+        () => runner.run(<String>[
+          'create',
+          '--no-pub',
+          '--platforms=tizen',
+          '--template=$template',
+          '--tizen-language=native',
+          projectDir.path,
+        ]),
+        throwsToolExit(message: '--tizen-language=native is only supported for apps.'),
+      );
+    }
+  }, overrides: <Type, Generator>{});
+
+  testUsingContext('Cannot add native Tizen files to an existing plugin project', () async {
+    final command = TizenCreateCommand();
+    final CommandRunner<void> runner = createTestCommandRunner(command);
+    await runner.run(<String>[
+      'create',
+      '--no-pub',
+      '--template=plugin',
+      projectDir.path,
+    ]);
+
+    await expectLater(
+      () => runner.run(<String>[
+        'create',
+        '--no-pub',
+        '--platforms=tizen',
+        '--tizen-language=native',
+        projectDir.path,
+      ]),
+      throwsToolExit(message: '--tizen-language=native is only supported for apps.'),
+    );
+    expect(projectDir.childDirectory('tizen'), isNot(exists));
+  }, overrides: <Type, Generator>{
+    Logger: () => logger,
+  });
+
   testUsingContext('Can create a C++ plugin project', () async {
     final command = TizenCreateCommand();
     final CommandRunner<void> runner = createTestCommandRunner(command);

@@ -443,6 +443,12 @@ Future<void> injectTizenPlugins(FlutterProject project) async {
       cppPlugins = cppPlugins.where((TizenPlugin p) => !p.isDevDependency).toList();
       dotnetPlugins = dotnetPlugins.where((TizenPlugin p) => !p.isDevDependency).toList();
     }
+    if (tizenProject.usesPrebuiltRunner && dotnetPlugins.isNotEmpty) {
+      throwToolExit(
+        'Native apps (type="flutter") cannot use C# plugins: '
+        '${dotnetPlugins.map((TizenPlugin plugin) => plugin.name).join(', ')}',
+      );
+    }
     await _writeAppDepndencyInfo(project);
     await _writeTizenPluginRegistrant(tizenProject, cppPlugins, dotnetPlugins);
     if (tizenProject.isDotnet) {
@@ -469,6 +475,19 @@ Future<void> _informAvailableTizenPlugins(FlutterProject project) async {
       }
     }
   }
+}
+
+/// Returns the `pubspec.yaml` files of all packages that [project] depends on,
+/// which declare whether the packages are Tizen plugins.
+Future<List<File>> findDependencyPubspecs(FlutterProject project) async {
+  final PackageConfig packageConfig = await loadPackageConfigWithLogging(
+    findPackageConfigFileOrDefault(project.directory),
+    logger: globals.logger,
+  );
+  return <File>[
+    for (final Dependency dependency in computeTransitiveDependencies(project, packageConfig))
+      project.directory.fileSystem.file(dependency.rootUri.resolve('pubspec.yaml')),
+  ];
 }
 
 /// Source: [findPlugins] in `flutter_plugins.dart`
@@ -654,13 +673,20 @@ Future<void> _writeTizenPluginRegistrant(
         project.serviceManagedDirectory.childFile('GeneratedPluginRegistrant.cs'),
       );
     }
-  } else {
-    await renderTemplateToFile(
-      _cppPluginRegistryTemplate,
-      context,
+  } else if (!project.usesPrebuiltRunner) {
+    await writeCppPluginRegistrant(
+      cppPlugins,
       project.managedDirectory.childFile('generated_plugin_registrant.h'),
     );
   }
+}
+
+Future<void> writeCppPluginRegistrant(List<TizenPlugin> cppPlugins, File file) {
+  return renderTemplateToFile(
+    _cppPluginRegistryTemplate,
+    <String, Object>{'cppPlugins': cppPlugins.map((TizenPlugin plugin) => plugin.toMap())},
+    file,
+  );
 }
 
 // Reserved for future use.
@@ -753,7 +779,7 @@ Future<void> _writeAppDepndencyInfo(
   }
 
   final tizenProject = TizenProject.fromFlutter(project);
-  final File appDepsJson = tizenProject.hostAppRoot.childFile('.app.deps.json');
+  final File appDepsJson = tizenProject.appDepsFile;
   final List<TizenPlugin> plugins = await findTizenPlugins(project);
   final pluginInfo = <Map<String, Object>>[];
   final YamlMap? packages = packagesFromPubspecLock();
@@ -805,7 +831,9 @@ Future<void> _writeAppDepndencyInfo(
 
   const encoder = JsonEncoder.withIndent('  ');
   final String formattedJsonString = encoder.convert(result);
-  appDepsJson.writeAsStringSync(formattedJsonString);
+  appDepsJson
+    ..createSync(recursive: true)
+    ..writeAsStringSync(formattedJsonString);
 }
 
 /// Source: [_shortGitRevision] in `version.dart`

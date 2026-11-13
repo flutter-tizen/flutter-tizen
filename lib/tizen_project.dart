@@ -4,6 +4,7 @@
 // found in the LICENSE file.
 
 import 'package:file/file.dart';
+import 'package:flutter_tools/src/base/common.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/cache.dart';
@@ -42,7 +43,12 @@ class TizenProject extends FlutterProjectPlatform {
   /// The directory in the project that is managed by Flutter. As much as
   /// possible, files that are edited by Flutter tooling after initial project
   /// creation should live here.
-  Directory get managedDirectory => hostAppRoot.childDirectory('flutter');
+  ///
+  /// Apps on the prebuilt runner keep it out of the `tizen` directory, which
+  /// then contains only files owned by the user.
+  Directory get managedDirectory => usesPrebuiltRunner
+      ? parent.dartTool.childDirectory('tizen')
+      : hostAppRoot.childDirectory('flutter');
 
   Directory get serviceManagedDirectory => serviceAppDirectory.childDirectory('flutter');
 
@@ -79,7 +85,62 @@ class TizenProject extends FlutterProjectPlatform {
     return projectDef.existsSync() ? projectDef : null;
   }
 
-  bool get isDotnet => projectFile?.basename.endsWith('.csproj') ?? false;
+  /// The application type declared in [manifestFile], if any.
+  String? get _applicationType {
+    if (!manifestFile.existsSync()) {
+      return null;
+    }
+    final Set<String?> types;
+    try {
+      types = TizenManifest.parseFromXml(manifestFile).applicationTypes;
+    } on ToolExit {
+      return null;
+    }
+    if (types.length > 1 && types.contains('flutter')) {
+      throwToolExit(
+        '${manifestFile.path} mixes type="flutter" with other application types. '
+        'Every application of a native app must declare type="flutter".',
+      );
+    }
+    return types.first;
+  }
+
+  /// Whether the app is built as a .NET app.
+  ///
+  /// The application type in [manifestFile] takes precedence, so that a .NET
+  /// project can be built on the prebuilt runner by changing only the type.
+  /// The project file decides only if the manifest declares neither type.
+  bool get isDotnet {
+    final hasDotnetProject = findDotnetProjectFile(hostAppRoot) != null;
+    switch (_applicationType) {
+      case 'flutter':
+        return false;
+      case 'dotnet':
+        if (!hasDotnetProject) {
+          throwToolExit(
+            '${manifestFile.path} declares type="dotnet" '
+            'but no .csproj file was found in ${hostAppRoot.path}.',
+          );
+        }
+        return true;
+      default:
+        return hasDotnetProject;
+    }
+  }
+
+  /// Whether the app runs on the prebuilt runner (created with
+  /// `--tizen-language=native`), which is marked by `type="flutter"` in
+  /// [manifestFile].
+  bool get usesPrebuiltRunner => _applicationType == 'flutter';
+
+  /// The optional C++ sources of the app that replace `runner.cc` of the
+  /// prebuilt runner, and the headers they include.
+  Directory get runnerSourceDirectory => editableDirectory.childDirectory('src');
+  Directory get runnerIncludeDirectory => editableDirectory.childDirectory('inc');
+
+  /// The dependency information file which is packaged with the app.
+  File get appDepsFile =>
+      (usesPrebuiltRunner ? managedDirectory : hostAppRoot).childFile('.app.deps.json');
 
   /// Returns "tizenLanguage" string declared in [parent]'s pubspec.
   ///
@@ -156,19 +217,11 @@ class TizenProject extends FlutterProjectPlatform {
       _deleteFile(serviceManagedDirectory);
     }
 
-    if (isDotnet) {
-      _deleteFile(hostAppRoot.childDirectory('bin'));
-      _deleteFile(hostAppRoot.childDirectory('obj'));
-      if (isMultiApp) {
-        _deleteFile(serviceAppDirectory.childDirectory('bin'));
-        _deleteFile(serviceAppDirectory.childDirectory('obj'));
-      }
-    } else {
-      _deleteFile(hostAppRoot.childDirectory('Debug'));
-      _deleteFile(hostAppRoot.childDirectory('Release'));
-      if (isMultiApp) {
-        _deleteFile(serviceAppDirectory.childDirectory('Debug'));
-        _deleteFile(serviceAppDirectory.childDirectory('Release'));
+    // A .NET project can also be built on the prebuilt runner, so the outputs
+    // are deleted regardless of the current application type.
+    for (final appDir in <Directory>[hostAppRoot, if (isMultiApp) serviceAppDirectory]) {
+      for (final name in <String>['bin', 'obj', 'Debug', 'Release']) {
+        _deleteFile(appDir.childDirectory(name));
       }
     }
   }

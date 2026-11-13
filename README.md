@@ -53,6 +53,7 @@ flutter-tizen run --release
 
 - [Getting started](doc/get-started.md)
 - [Debugging apps](doc/debug-app.md)
+- [Native app model](doc/native-app.md) ([migration guide](doc/migrate-to-native-app.md))
 - [Flutter Docs](https://docs.flutter.dev)
 
 #### Platform integration

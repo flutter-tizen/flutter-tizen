@@ -8,6 +8,8 @@ import 'package:flutter_tools/src/base/version.dart';
 import 'package:flutter_tools/src/build_info.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 
+import '../tizen_sdk.dart';
+
 extension PathUtils on String {
   /// On non-Windows, encloses the string with [encloseWith].
   ///
@@ -43,6 +45,19 @@ final Version kTizenCoreApiVersion = Version(11, 0, 0);
 bool usesTizenCoreEmbedder(String? apiVersion) {
   final Version version = Version.parse(apiVersion) ?? Version(6, 0, 0);
   return version >= kTizenCoreApiVersion;
+}
+
+/// Returns the API version to build against for the app declaring [apiVersion].
+///
+/// x64 is supported from 8.0, so an app declaring a lower version is built
+/// against 8.0 when targeting x64. Its manifest is packaged as is.
+String? getBuildApiVersion(String? apiVersion, String arch) {
+  final Version version = Version.parse(apiVersion) ?? Version(6, 0, 0);
+  if ((arch == 'x64' || arch == 'x86_64') && version < Version(8, 0, 0)) {
+    globals.printTrace('Building against API version 8.0, the lowest that supports x64.');
+    return '8.0';
+  }
+  return apiVersion;
 }
 
 Directory getEmbedderArtifactsDirectory(String? apiVersion, String arch) {
@@ -86,6 +101,18 @@ Directory getCommonArtifactsDirectory() {
 
 Directory getDartSdkDirectory() {
   return globals.cache.getCacheDir('dart-sdk');
+}
+
+/// The directories under [libDir] that contain libraries for [arch] and
+/// [apiVersion], in the order of precedence.
+List<Directory> getLibDirectories(Directory libDir, String arch, String? apiVersion) {
+  final String buildArch = getTizenBuildArch(arch);
+  return <Directory>[
+    libDir,
+    libDir.childDirectory(arch),
+    libDir.childDirectory(buildArch),
+    if (apiVersion != null) libDir.childDirectory(buildArch).childDirectory(apiVersion),
+  ].where((Directory dir) => dir.existsSync()).toList();
 }
 
 /// Removes the "lib" prefix and file extension from [name] and returns.

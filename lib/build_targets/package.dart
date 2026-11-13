@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'package:archive/archive.dart';
 import 'package:flutter_tools/src/base/common.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/base/process.dart';
@@ -90,7 +91,7 @@ class DotnetTpk extends TizenPackage {
 
     final TizenManifest tizenManifest = TizenManifest.parseFromXml(tizenProject.manifestFile);
     final String profile = buildInfo.deviceProfile;
-    final String? apiVersion = tizenManifest.apiVersion;
+    final String? apiVersion = getBuildApiVersion(tizenManifest.apiVersion, buildInfo.targetArch);
 
     final BuildMode buildMode = buildInfo.buildInfo.mode;
     final String buildConfig = getBuildConfig(buildMode);
@@ -104,7 +105,7 @@ class DotnetTpk extends TizenPackage {
       experimental: getIsTizenExperimentalEnabled(buildInfo.buildInfo.dartDefines),
     );
     final File icuData = engineDir.childFile('icudtl.dat');
-    final File appDepsJson = tizenProject.hostAppRoot.childFile('.app.deps.json');
+    final File appDepsJson = tizenProject.appDepsFile;
 
     engineBinary.copySync(libDir.childFile(engineBinary.basename).path);
     // The embedder so name is statically defined in C# code and cannot be
@@ -305,7 +306,7 @@ class NativeTpk extends TizenPackage {
 
     final TizenManifest tizenManifest = TizenManifest.parseFromXml(tizenProject.manifestFile);
     final String profile = buildInfo.deviceProfile;
-    final String? apiVersion = tizenManifest.apiVersion;
+    final String? apiVersion = getBuildApiVersion(tizenManifest.apiVersion, buildInfo.targetArch);
 
     final BuildMode buildMode = buildInfo.buildInfo.mode;
     final String buildConfig = getBuildConfig(buildMode);
@@ -321,7 +322,7 @@ class NativeTpk extends TizenPackage {
     );
     final String embedderSoname = getEmbedderSoname(embedder);
     final File icuData = engineDir.childFile('icudtl.dat');
-    final File appDepsJson = tizenProject.hostAppRoot.childFile('.app.deps.json');
+    final File appDepsJson = tizenProject.appDepsFile;
 
     engineBinary.copySync(libDir.childFile(engineBinary.basename).path);
     embedder.copySync(libDir.childFile(embedderSoname).path);
@@ -371,35 +372,9 @@ class NativeTpk extends TizenPackage {
     assert(tizenSdk != null);
     final Rootstrap rootstrap = tizenSdk!.getRootstrap(
       profile: profile,
-      apiVersion: tizenManifest.apiVersion,
+      apiVersion: apiVersion,
       arch: buildInfo.targetArch,
     );
-
-    final Directory embeddingDir = environment.buildDir.childDirectory('tizen_embedding');
-    final File embeddingLib = embeddingDir.childFile('libembedding_cpp.a');
-    final embeddingDependencies = <String>[
-      'appcore-agent',
-      'capi-appfw-app-common',
-      'capi-appfw-application',
-      'capi-appfw-app-manager',
-      'dlog',
-      if (usesTizenCoreEmbedder(apiVersion)) 'tizen-core',
-    ];
-
-    final Directory buildDir = tizenProject.hostAppRoot.childDirectory(buildConfig);
-    if (buildDir.existsSync()) {
-      buildDir.deleteSync(recursive: true);
-    }
-    buildDir.createSync(recursive: true);
-
-    if (tizenProject.isMultiApp) {
-      final Directory serviceBuildDir =
-          tizenProject.serviceAppDirectory.childDirectory(buildConfig);
-      if (serviceBuildDir.existsSync()) {
-        serviceBuildDir.deleteSync(recursive: true);
-      }
-      serviceBuildDir.createSync(recursive: true);
-    }
 
     // The output TPK is signed with an active profile unless otherwise
     // specified.
@@ -422,6 +397,79 @@ class NativeTpk extends TizenPackage {
       );
     }
 
+    if (tizenProject.usesPrebuiltRunner) {
+      tizenManifest.applyWindowConfiguration(
+        tizenProject.editableDirectory.childFile('flutter-tizen.yaml'),
+      );
+      final File runner = await ensurePrebuiltRunner(
+        buildInfo,
+        project: tizenProject,
+        rootstrap: rootstrap,
+        embedder: embedder,
+        apiVersion: apiVersion,
+      );
+      // Every application in the package runs on the same runner.
+      final Directory binDir = ephemeralDir.childDirectory('bin')..createSync();
+      for (final String exec in tizenManifest.executables) {
+        runner.copySync(binDir.childFile(exec).path);
+      }
+      // The platform launches and debugs only "capp" apps with the native app
+      // loader, the same as C++ apps.
+      tizenManifest.applicationType = 'capp';
+      ephemeralDir.childFile('tizen-manifest.xml').writeAsStringSync(tizenManifest.toXmlString());
+      // The libraries in tizen/lib are packaged as is, as the Tizen CLI does
+      // for C++ apps. The ones prepared above take precedence.
+      for (final Directory directory in getLibDirectories(
+        tizenProject.hostAppRoot.childDirectory('lib'),
+        buildInfo.targetArch,
+        apiVersion,
+      )) {
+        for (final File lib in directory.listSync().whereType<File>()) {
+          final File destFile = libDir.childFile(lib.basename);
+          if (lib.basename.endsWith('.so') && !destFile.existsSync()) {
+            lib.copySync(destFile.path);
+          }
+        }
+      }
+      for (final name in <String>['res', 'shared']) {
+        final Directory userDir = tizenProject.hostAppRoot.childDirectory(name);
+        if (userDir.existsSync()) {
+          copyDirectory(
+            userDir,
+            ephemeralDir.childDirectory(name),
+            shouldCopyFile: (File srcFile, File destFile) => !destFile.existsSync(),
+          );
+        }
+      }
+
+      final File outputTpk = outputDir.childFile(tizenProject.outputTpkName);
+      outputTpk.writeAsBytesSync(_zipDirectory(ephemeralDir));
+      final RunResult result = await tizenSdk!.package(outputTpk.path, sign: securityProfile);
+      if (result.exitCode != 0) {
+        throwToolExit('Failed to sign the TPK:\n$result');
+      }
+      globals.os.unzip(outputTpk, outputDir.childDirectory('tpkroot'));
+      return;
+    }
+
+    final Directory embeddingDir = environment.buildDir.childDirectory('tizen_embedding');
+    final File embeddingLib = embeddingDir.childFile('libembedding_cpp.a');
+
+    final Directory buildDir = tizenProject.hostAppRoot.childDirectory(buildConfig);
+    if (buildDir.existsSync()) {
+      buildDir.deleteSync(recursive: true);
+    }
+    buildDir.createSync(recursive: true);
+
+    if (tizenProject.isMultiApp) {
+      final Directory serviceBuildDir =
+          tizenProject.serviceAppDirectory.childDirectory(buildConfig);
+      if (serviceBuildDir.existsSync()) {
+        serviceBuildDir.deleteSync(recursive: true);
+      }
+      serviceBuildDir.createSync(recursive: true);
+    }
+
     final extraOptions = <String>[
       // The extra quotation marks ("") for linker flags are required due to
       // https://github.com/flutter-tizen/flutter-tizen/issues/218.
@@ -433,7 +481,7 @@ class NativeTpk extends TizenPackage {
       embeddingLib.path.toPosixPath(),
       '-L${libDir.path.toPosixPath()}',
       '-l${getLibNameForFileName(embedderSoname)}',
-      for (final String lib in embeddingDependencies) '-l$lib',
+      for (final String lib in getEmbeddingDependencies(apiVersion)) '-l$lib',
       '-I${tizenProject.managedDirectory.path.toPosixPath()}',
       '-I${pluginsDir.childDirectory('include').path.toPosixPath()}',
       for (final String lib in pluginLibs) '-l$lib',
@@ -506,6 +554,20 @@ class NativeTpk extends TizenPackage {
   }
 }
 
+/// Creates an unsigned TPK from the contents of [directory].
+List<int> _zipDirectory(Directory directory) {
+  final archive = Archive();
+  for (final File file in directory.listSync(recursive: true).whereType<File>()) {
+    final String name = globals.fs.path
+        .relative(file.path, from: directory.path)
+        .replaceAll(globals.fs.path.separator, '/');
+    final List<int> bytes = file.readAsBytesSync();
+    archive.addFile(ArchiveFile(name, bytes.length, bytes)
+      ..mode = name.startsWith('bin/') ? 493 /* 0755 */ : 420 /* 0644 */);
+  }
+  return ZipEncoder().encode(archive)!;
+}
+
 class DotnetModule extends TizenPackage {
   DotnetModule(super.tizenBuildInfo);
 
@@ -534,7 +596,7 @@ class DotnetModule extends TizenPackage {
 
     final TizenManifest tizenManifest = TizenManifest.parseFromXml(tizenProject.manifestFile);
     final String profile = buildInfo.deviceProfile;
-    final String? apiVersion = tizenManifest.apiVersion;
+    final String? apiVersion = getBuildApiVersion(tizenManifest.apiVersion, buildInfo.targetArch);
 
     final BuildMode buildMode = buildInfo.buildInfo.mode;
     final Directory engineDir = getEngineArtifactsDirectory(buildInfo.targetArch, buildMode);
@@ -615,7 +677,7 @@ class NativeModule extends TizenPackage {
 
     final TizenManifest tizenManifest = TizenManifest.parseFromXml(tizenProject.manifestFile);
     final String profile = buildInfo.deviceProfile;
-    final String? apiVersion = tizenManifest.apiVersion;
+    final String? apiVersion = getBuildApiVersion(tizenManifest.apiVersion, buildInfo.targetArch);
 
     final Directory engineDir = getEngineArtifactsDirectory(buildInfo.targetArch, buildMode);
 

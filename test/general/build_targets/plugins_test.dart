@@ -182,6 +182,93 @@ dependencies:
     TizenSdk: () => FakeTizenSdk(fileSystem),
   });
 
+  testUsingContext('Exports plugin registrant for apps on the prebuilt runner', () async {
+    projectDir.childFile('tizen/tizen-manifest.xml').writeAsStringSync('''
+<manifest package="package_id" version="1.0.0" api-version="4.0">
+    <ui-application appid="app_id" exec="runner" type="flutter"/>
+</manifest>
+''');
+    final File projectDef = pluginDir.childFile('tizen/project_def.prop');
+    projectDef
+        .writeAsStringSync(projectDef.readAsStringSync().replaceFirst('staticLib', 'sharedLib'));
+
+    final environment = Environment.test(
+      projectDir,
+      fileSystem: fileSystem,
+      logger: logger,
+      artifacts: artifacts,
+      processManager: processManager,
+    );
+
+    await NativePlugins(const TizenBuildInfo(
+      BuildInfo.debug,
+      targetArch: 'x86',
+      deviceProfile: 'common',
+    )).build(environment);
+
+    // libflutter_plugins.so is built even if there are no staticLib plugins.
+    final Directory outputDir = environment.buildDir.childDirectory('tizen_plugins');
+    expect(outputDir.childFile('lib/libflutter_plugins.so'), exists);
+    expect(outputDir.childFile('lib/libsome_native_plugin.so'), exists);
+    expect(
+      outputDir.childFile('plugin_registrant.cc').readAsStringSync(),
+      contains('void FlutterRegisterPlugins('),
+    );
+    expect(
+      outputDir.childFile('generated_plugin_registrant.h').readAsStringSync(),
+      contains('SomeNativePluginRegisterWithRegistrar('),
+    );
+    expect(projectDir.childDirectory('tizen/flutter'), isNot(exists));
+    final Map<String, String> pluginsProjectDef =
+        parseIniFile(outputDir.childFile('project_def.prop'));
+    expect(pluginsProjectDef['USER_SRCS'], equals('plugin_registrant.cc'));
+    expect(pluginsProjectDef['USER_LIBS'], contains('some_native_plugin'));
+    // The registrant must be regenerated when the plugin declaration changes.
+    expect(
+      environment.buildDir.childFile('tizen_plugins.d').readAsStringSync(),
+      contains(pluginDir.childFile('pubspec.yaml').path),
+    );
+  }, overrides: <Type, Generator>{
+    FileSystem: () => fileSystem,
+    ProcessManager: () => processManager,
+    Cache: () => cache,
+    TizenSdk: () => FakeTizenSdk(fileSystem),
+  });
+
+  testUsingContext('Tracks plugin declarations of Dart-only dependencies', () async {
+    final File pubspec = pluginDir.childFile('pubspec.yaml');
+    pubspec.writeAsStringSync(pubspec.readAsStringSync().replaceFirst(
+          '        pluginClass: SomeNativePlugin\n        fileName: some_native_plugin.h\n',
+          '        dartPluginClass: SomeDartPlugin\n',
+        ));
+    final environment = Environment.test(
+      projectDir,
+      fileSystem: fileSystem,
+      logger: logger,
+      artifacts: artifacts,
+      processManager: processManager,
+    );
+    environment.buildDir.createSync(recursive: true);
+
+    await NativePlugins(const TizenBuildInfo(
+      BuildInfo.debug,
+      targetArch: 'x86',
+      deviceProfile: 'common',
+    )).build(environment);
+
+    expect(environment.buildDir.childDirectory('tizen_plugins'), isNot(exists));
+    // Adding a native declaration later must invalidate this build.
+    expect(
+      environment.buildDir.childFile('tizen_plugins.d').readAsStringSync(),
+      contains(pubspec.path),
+    );
+  }, overrides: <Type, Generator>{
+    FileSystem: () => fileSystem,
+    ProcessManager: () => processManager,
+    Cache: () => cache,
+    TizenSdk: () => FakeTizenSdk(fileSystem),
+  });
+
   testUsingContext('Copies resource files recursively', () async {
     final environment = Environment.test(
       projectDir,

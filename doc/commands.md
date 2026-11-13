@@ -108,6 +108,10 @@ The following commands from the [Flutter CLI](https://flutter.dev/docs/reference
   # Typically C++ apps consume less memory than C# (default) apps, but are not compatible with TV devices.
   flutter-tizen create --tizen-language cpp app_name
 
+  # Create a new app project without any Tizen-specific source code in "app_name" directory.
+  # The app runs on a prebuilt C++ runner. See doc/native-app.md for details.
+  flutter-tizen create --tizen-language native app_name
+
   # Create a new plugin project in "plugin_name" directory.
   flutter-tizen create --platforms tizen --template plugin plugin_name
 
