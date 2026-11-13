@@ -316,6 +316,52 @@ flutter:
     ProcessManager: () => FakeProcessManager.any(),
   }, testOn: 'posix');
 
+  testUsingContext('Forwards the isolate spawn message to the entrypoint', () async {
+    final command = _DummyFlutterCommand();
+    final CommandRunner<void> runner = createTestCommandRunner(command);
+
+    fileSystem.file('tizen/tizen-manifest.xml').createSync(recursive: true);
+
+    await validatesComputeTransitiveDependencies(<Package>[
+      (
+        name: 'my_app',
+        pluginType: PluginType.none,
+        dependencies: <String>['some_dart_plugin'],
+        devDependencies: <String>[],
+      ),
+      (
+        name: 'some_dart_plugin',
+        pluginType: PluginType.dart,
+        dependencies: <String>[],
+        devDependencies: <String>[],
+      ),
+    ]);
+    await runner.run(<String>['dummy']);
+
+    // Isolate.spawnUri(Platform.script, args, message) delivers `message` only
+    // to an entrypoint that declares a second parameter. A normal launch passes
+    // `args` alone, so the app's own default for the second parameter applies.
+    final File generatedMain = fileSystem.file('tizen/flutter/generated_main.dart');
+    expect(generatedMain, exists);
+    expect(generatedMain.readAsStringSync(), contains('''
+const Object _noMessage = Object();
+
+@pragma('vm:entry-point')
+void main(List<String> args, [Object? message = _noMessage]) {
+  if (!identical(message, _noMessage) && entrypoint.main is _BinaryFunction) {
+    (entrypoint.main as dynamic)(args, message);
+  } else if (entrypoint.main is _UnaryFunction) {
+    (entrypoint.main as _UnaryFunction)(args);
+  } else {
+    (entrypoint.main as _NullaryFunction)();
+  }
+}
+'''));
+  }, overrides: <Type, Generator>{
+    FileSystem: () => fileSystem,
+    ProcessManager: () => FakeProcessManager.any(),
+  }, testOn: 'posix');
+
   testUsingContext('Generates native plugin registrant for C++', () async {
     fileSystem.file('tizen/tizen-manifest.xml').createSync(recursive: true);
 
