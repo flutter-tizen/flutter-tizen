@@ -293,12 +293,13 @@ const _generatedMainTemplate = '''
 // ignore_for_file: depend_on_referenced_packages
 // ignore_for_file: directives_ordering
 // ignore_for_file: lines_longer_than_80_chars
+// ignore_for_file: no_leading_underscores_for_library_prefixes
 // ignore_for_file: unnecessary_cast
 // ignore_for_file: unused_import
 
 import '{{mainImport}}' as entrypoint;
 {{#plugins}}
-import 'package:{{name}}/{{dartFileName}}';
+import 'package:{{name}}/{{dartFileName}}' as _{{name}};
 {{/plugins}}
 import 'package:flutter/src/dart_plugin_registrant.dart';
 
@@ -307,7 +308,7 @@ class _PluginRegistrant {
   @pragma('vm:entry-point')
   static void register() {
 {{#plugins}}
-    {{dartPluginClass}}.register();
+    _{{name}}.{{dartPluginClass}}.register();
 {{/plugins}}
   }
 }
