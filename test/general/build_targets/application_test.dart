@@ -12,12 +12,10 @@ import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/build_info.dart';
 import 'package:flutter_tools/src/build_system/build_system.dart';
 import 'package:flutter_tools/src/compile.dart';
-import 'package:flutter_tools/src/features.dart';
 
 import '../../src/common.dart';
 import '../../src/context.dart';
 import '../../src/fake_process_manager.dart';
-import '../../src/fakes.dart';
 
 void main() {
   late FileSystem fileSystem;
@@ -113,7 +111,6 @@ void main() {
   }, overrides: <Type, Generator>{
     FileSystem: () => fileSystem,
     ProcessManager: () => processManager,
-    FeatureFlags: () => TestFeatureFlags(isRecordUseEnabled: true),
   });
 
   testUsingContext('TizenKernelSnapshotProgram writes empty recorded uses on debug builds',
@@ -165,7 +162,6 @@ void main() {
   }, overrides: <Type, Generator>{
     FileSystem: () => fileSystem,
     ProcessManager: () => processManager,
-    FeatureFlags: () => TestFeatureFlags(isRecordUseEnabled: true),
   });
 
   testUsingContext('TizenAotElf renames app.android-arm.symbols to app.tizen-arm.symbols',
