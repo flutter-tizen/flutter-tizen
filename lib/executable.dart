@@ -29,6 +29,7 @@ import 'package:flutter_tools/src/commands/install.dart';
 import 'package:flutter_tools/src/commands/packages.dart';
 import 'package:flutter_tools/src/commands/symbolize.dart';
 import 'package:flutter_tools/src/commands/widget_preview.dart';
+import 'package:flutter_tools/src/context/tool_dependencies.dart';
 import 'package:flutter_tools/src/dart/pub.dart';
 import 'package:flutter_tools/src/device.dart';
 import 'package:flutter_tools/src/doctor.dart';
@@ -105,7 +106,7 @@ Future<void> main(List<String> args) async {
       '--no-version-check',
       ...args,
     ],
-    () => <FlutterCommand>[
+    (ToolDependencies toolDependencies) => <FlutterCommand>[
       // Commands directly from flutter_tools.
       AnalyzeCommand(
         verboseHelp: verboseHelp,
