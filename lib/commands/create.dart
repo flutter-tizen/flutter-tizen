@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'package:args/args.dart';
 import 'package:flutter_tools/src/base/common.dart';
 import 'package:flutter_tools/src/base/context.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
@@ -80,29 +81,20 @@ class TizenCreateCommand extends CreateCommand {
 
   /// See: [CreateCommand._getProjectType] in `create.dart`
   bool get _shouldGeneratePlugin {
-    FlutterTemplateType? template;
-    final String? templateArgument = stringArg('template');
-    if (templateArgument != null) {
-      final ParsedFlutterTemplateType? templateType = ParsedFlutterTemplateType.fromCliName(
-        templateArgument,
-      );
-      template = switch (templateType) {
-        RemovedFlutterTemplateType() || null => null,
-        FlutterTemplateType() => templateType,
-      };
-    }
     if (projectDir.existsSync() && projectDir.listSync().isNotEmpty) {
-      template = determineTemplateType();
+      return determineTemplateType(extensionTemplateManager: extensionTemplateManager) ==
+          FlutterTemplateType.plugin;
     }
-    return template == FlutterTemplateType.plugin;
+    return stringArg('template') == FlutterTemplateType.plugin.cliName;
   }
 
   @override
   void addPlatformsOptions({
+    ArgParser? parser,
     String? customHelp,
     required Map<String, String> allowedHelp,
   }) {
-    argParser.addMultiOption(
+    (parser ?? argParser).addMultiOption(
       'platforms',
       help: customHelp,
       aliases: <String>['platform'],
