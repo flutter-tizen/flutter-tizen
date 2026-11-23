@@ -3,12 +3,14 @@
 // found in the LICENSE file.
 
 import 'package:flutter_tools/src/base/common.dart';
+import 'package:flutter_tools/src/base/context.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/base/process.dart';
 import 'package:flutter_tools/src/base/terminal.dart';
 import 'package:flutter_tools/src/base/utils.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/commands/create.dart';
+import 'package:flutter_tools/src/dart/pub.dart';
 import 'package:flutter_tools/src/flutter_project_metadata.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/project.dart';
@@ -28,7 +30,15 @@ const _kAvailablePlatforms = <String>[
 ];
 
 class TizenCreateCommand extends CreateCommand {
-  TizenCreateCommand({super.verboseHelp}) {
+  TizenCreateCommand({
+    required super.androidContext,
+    required super.appleContext,
+    required super.templateRenderer,
+    required super.toolContext,
+    super.net,
+    Pub? pub,
+    super.verboseHelp,
+  }) : super(pub: pub ?? context.get<Pub>()) {
     argParser.addOption(
       'tizen-language',
       allowed: <String>['cpp', 'csharp'],

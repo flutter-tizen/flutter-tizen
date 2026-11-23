@@ -183,7 +183,13 @@ Future<void> main(List<String> args) async {
         xcodeProjectInterpreter: toolDependencies.appleContext.xcodeProjectInterpreter,
       ),
       TizenUpgradeCommand(verboseHelp: verboseHelp),
-      TizenCreateCommand(verboseHelp: verboseHelp),
+      TizenCreateCommand(
+        androidContext: toolDependencies.androidContext,
+        appleContext: toolDependencies.appleContext,
+        templateRenderer: const MustacheTemplateRenderer(),
+        toolContext: toolDependencies.toolContext,
+        verboseHelp: verboseHelp,
+      ),
       TizenDriveCommand(
         verboseHelp: verboseHelp,
         fileSystem: globals.fs,
