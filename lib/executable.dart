@@ -145,7 +145,7 @@ Future<void> main(List<String> args) async {
       ),
       InstallCommand(verboseHelp: verboseHelp),
       PackagesCommand(),
-      SymbolizeCommand(stdio: globals.stdio, fileSystem: globals.fs),
+      SymbolizeCommand(toolContext: toolDependencies.toolContext),
       // Commands extended for Tizen.
       TizenAttachCommand(
         verboseHelp: verboseHelp,
