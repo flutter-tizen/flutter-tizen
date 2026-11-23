@@ -272,6 +272,7 @@ class TizenCreateCommand extends CreateCommand {
 
   /// See: [CreateCommand.runCommand] in `create.dart`
   Future<FlutterCommandResult> _runCommand() async {
+    final bool hadTizen = projectDir.childDirectory('tizen').existsSync();
     final FlutterCommandResult result = await super.runCommand();
     if (result != FlutterCommandResult.success()) {
       return result;
@@ -283,6 +284,15 @@ class TizenCreateCommand extends CreateCommand {
       final tizenProject = TizenProject.fromFlutter(project);
       if (tizenProject.existsSync() && tizenProject.isDotnet) {
         updateDotnetUserProjectFile(tizenProject.projectFile!);
+      }
+
+      if (!hadTizen &&
+          projectDir.childFile('lib/${projectName}_method_channel.dart').existsSync()) {
+        globals.printStatus(
+          'If your Dart plugin uses MethodChannel, adapt the generated Tizen handler to its '
+          'channel name and methods before running the example. The new Tizen template uses Pigeon.',
+          color: TerminalColor.yellow,
+        );
       }
 
       final String relativePluginPath =

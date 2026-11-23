@@ -81,18 +81,17 @@ $ flutter-tizen run
 
 ### 1. Define the package API (`.dart`)
 
-The API of the plugin package is defined in Dart code. Open the `lib/plugin_name.dart` file in VS Code, and then you will see the `getPlatformVersion` method defined in the plugin's main class. Invoking this method will eventually invoke the method channel method `getPlatformVersion` defined in the `plugin_name_method_channel.dart` file. You have to replace this template code with the actual implementation for your plugin.
-
-Note: You don't need these Dart files if you're extending an existing plugin for Tizen, so you can safely remove them.
+The public API is in `lib/plugin_name.dart`. In a new plugin, `lib/plugin_name_pigeon.dart` calls the host API declared in `pigeon/messages.dart`. If you change the API, regenerate the Dart bindings in `lib/src/messages.g.dart` and update the Tizen handler to match the generated channel names and reply formats.
 
 ### 2. Add Tizen platform code (`.cc`)
 
 Note: Before getting started, you may apply [recommended settings for plugin developers](https://github.com/flutter-tizen/flutter-tizen/wiki/Recommended-settings-for-VS-Code#plugin-developer) in VS Code.
 
-The implementation of the plugin can be found in the `tizen/src/plugin_name_plugin.cc` file. In this file, you will see:
+In `tizen/src/plugin_name_plugin.cc`, `PluginNamePluginRegisterWithRegistrar` registers a `BasicMessageChannel` for `dev.flutter.pigeon.plugin_name.PluginNamePluginApi.getPlatformVersion`. The handler replies with a one-element list containing the platform version on success or `[code, message, details]` on error.
 
-- `PluginNamePluginRegisterWithRegistrar()`: This function is called by an app that depends on this plugin on startup to set up the `plugin_name` channel.
-- `HandleMethodCall()`: This method handles the `getPlatformVersion` method (or whatever methods you defined in Dart code) and returns the result to the caller.
+#### Adding Tizen to an existing MethodChannel plugin
+
+If the existing Dart implementation uses a `MethodChannel`, replace the generated Pigeon handler with a `flutter::MethodChannel<flutter::EncodableValue>` that uses the same channel name and codec as Dart. For the default `StandardMethodCodec`, use `flutter::StandardMethodCodec::GetInstance()`. Register the callback with `SetMethodCallHandler` and handle the method names used by Dart.
 
 The result of the method call can be either:
 
@@ -171,7 +170,7 @@ The standard platform channels use a standard message codec that supports effici
 
 ### Available APIs
 
-Types such as `flutter::MethodCall` and `flutter::EncodableValue` in the template code are defined in [cpp_client_wrapper](https://github.com/flutter-tizen/engine/tree/HEAD/shell/platform/common/client_wrapper/include/flutter) headers. APIs that you can use in your plugin code include:
+Channel types such as `flutter::MethodCall` and `flutter::EncodableValue` are defined in [cpp_client_wrapper](https://github.com/flutter-tizen/engine/tree/HEAD/shell/platform/common/client_wrapper/include/flutter) headers. APIs that you can use in your plugin code include:
 
 - C++17 standards
 - [cpp_client_wrapper](https://github.com/flutter-tizen/engine/tree/HEAD/shell/platform/common/client_wrapper/include/flutter)

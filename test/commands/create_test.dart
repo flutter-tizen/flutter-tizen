@@ -173,6 +173,7 @@ void main() {
     expect(projectDir.childDirectory('tizen/src').listSync(), isNotEmpty);
     expect(projectDir.childFile('tizen/.gitignore'), exists);
     expect(projectDir.childFile('tizen/project_def.prop'), exists);
+    expect(logger.statusText, isNot(contains('adapt the generated Tizen handler')));
     expect(logger.errorText, contains(_kNoPlatformsMessage));
   }, overrides: <Type, Generator>{
     Logger: () => logger,
@@ -223,7 +224,7 @@ void main() {
     );
   }, overrides: <Type, Generator>{});
 
-  testUsingContext('Can add Tizen platform to existing plugin project', () async {
+  testUsingContext('Adding Tizen to a MethodChannel plugin prints migration guidance', () async {
     final TizenCreateCommand command = createCommand();
     final CommandRunner<void> runner = createTestCommandRunner(command);
     await runner.run(<String>[
@@ -235,6 +236,7 @@ void main() {
     expect(projectDir.childDirectory('example/tizen'), isNot(exists));
     expect(projectDir.childDirectory('tizen'), isNot(exists));
     expect(logger.errorText, contains(_kNoPlatformsMessage));
+    projectDir.childFile('lib/flutter_project_method_channel.dart').createSync();
 
     await runner.run(<String>[
       'create',
@@ -245,6 +247,7 @@ void main() {
     expect(projectDir.childDirectory('example/tizen').listSync(), isNotEmpty);
     expect(projectDir.childDirectory('tizen').listSync(), isNotEmpty);
     expect(logger.statusText, isNot(contains(_kNoPlatformsMessage)));
+    expect(logger.statusText, contains('adapt the generated Tizen handler'));
   }, overrides: <Type, Generator>{
     Logger: () => logger,
   });

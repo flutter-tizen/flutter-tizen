@@ -39,13 +39,17 @@ flutter-tizen run
 
 ### 1. Define the package API (`.dart`)
 
-The API of the plugin package is defined in Dart code. Open the `lib/plugin_name.dart` file, and then you will see the `getPlatformVersion` method defined in the plugin's main class. Invoking this method will eventually invoke the method channel method `getPlatformVersion` defined in the `plugin_name_method_channel.dart` file. You have to replace this template code with the actual implementation for your plugin.
-
-Note: You don't need these Dart files if you're extending an existing plugin for Tizen, so you can safely remove them.
+The public API is in `lib/plugin_name.dart`. In a new plugin, `lib/plugin_name_pigeon.dart` calls the host API declared in `pigeon/messages.dart`. If you change the API, regenerate the Dart bindings in `lib/src/messages.g.dart` and update the Tizen handler to match the generated channel names and reply formats.
 
 ### 2. Add Tizen platform code (`.cs`)
 
 The implementation of the plugin can be found in the `tizen/PluginNamePlugin.cs` file. This file has a `public` class named `PluginNamePlugin` that implements the `IFlutterPlugin` interface. The `IFlutterPlugin` interface is used to handle the lifecycle of the plugin.
+
+The generated `OnAttachedToEngine` registers a `BasicMessageChannel<object>` for `dev.flutter.pigeon.plugin_name.PluginNamePluginApi.getPlatformVersion`. Its handler returns a one-element list containing the platform version. `OnDetachedFromEngine` unregisters the handler.
+
+#### Adding Tizen to an existing MethodChannel plugin
+
+If the existing Dart implementation uses a `MethodChannel`, replace the generated Pigeon handler with a `MethodChannel` that uses the same channel name, codec and method names as Dart. For example, declare `private MethodChannel _channel;` and register it as follows.
 
 - `OnAttachedToEngine(IFlutterPluginBinding binding)`: This method is called when the plugin is registered to the `DotnetPluginRegistry` by the flutter application. In this method, you can create and initialize the platform channel.
 
