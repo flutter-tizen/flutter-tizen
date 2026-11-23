@@ -9,7 +9,12 @@ import 'package:flutter_tools/src/runner/flutter_command.dart';
 import '../tizen_project.dart';
 
 class TizenCleanCommand extends CleanCommand {
-  TizenCleanCommand({super.verbose});
+  TizenCleanCommand({
+    required super.toolContext,
+    required super.xcode,
+    required super.xcodeProjectInterpreter,
+    super.verbose,
+  });
 
   @override
   Future<FlutterCommandResult> runCommand() async {

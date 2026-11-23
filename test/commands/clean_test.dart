@@ -9,8 +9,10 @@ import 'package:flutter_tizen/commands/clean.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/macos/xcode.dart';
+import 'package:test/fake.dart';
 
 import '../src/context.dart';
+import '../src/fakes.dart';
 import '../src/test_flutter_command_runner.dart';
 
 void main() {
@@ -31,7 +33,13 @@ void main() {
   });
 
   testUsingContext('Cleans the example Tizen project with --include-example', () async {
-    final CommandRunner<void> runner = createTestCommandRunner(TizenCleanCommand());
+    final CommandRunner<void> runner = createTestCommandRunner(
+      TizenCleanCommand(
+        toolContext: const DelegatingToolContext(),
+        xcode: _FakeXcode(),
+        xcodeProjectInterpreter: FakeXcodeProjectInterpreter(),
+      ),
+    );
     await runner.run(<String>['clean', '--include-example']);
 
     expect(fileSystem.directory('example/tizen/flutter'), isNot(exists));
@@ -41,11 +49,16 @@ void main() {
   }, overrides: <Type, Generator>{
     FileSystem: () => fileSystem,
     ProcessManager: () => FakeProcessManager.any(),
-    Xcode: () => null,
   });
 
   testUsingContext('Does not clean the example Tizen project by default', () async {
-    final CommandRunner<void> runner = createTestCommandRunner(TizenCleanCommand());
+    final CommandRunner<void> runner = createTestCommandRunner(
+      TizenCleanCommand(
+        toolContext: const DelegatingToolContext(),
+        xcode: _FakeXcode(),
+        xcodeProjectInterpreter: FakeXcodeProjectInterpreter(),
+      ),
+    );
     await runner.run(<String>['clean']);
 
     expect(fileSystem.directory('example/tizen/flutter'), exists);
@@ -53,19 +66,28 @@ void main() {
   }, overrides: <Type, Generator>{
     FileSystem: () => fileSystem,
     ProcessManager: () => FakeProcessManager.any(),
-    Xcode: () => null,
   });
 
   testUsingContext('Does not fail with --include-example if there is no example', () async {
     fileSystem.directory('example').deleteSync(recursive: true);
 
-    final CommandRunner<void> runner = createTestCommandRunner(TizenCleanCommand());
+    final CommandRunner<void> runner = createTestCommandRunner(
+      TizenCleanCommand(
+        toolContext: const DelegatingToolContext(),
+        xcode: _FakeXcode(),
+        xcodeProjectInterpreter: FakeXcodeProjectInterpreter(),
+      ),
+    );
     await runner.run(<String>['clean', '--include-example']);
 
     expect(testLogger.statusText, contains('No example app found'));
   }, overrides: <Type, Generator>{
     FileSystem: () => fileSystem,
     ProcessManager: () => FakeProcessManager.any(),
-    Xcode: () => null,
   });
+}
+
+class _FakeXcode extends Fake implements Xcode {
+  @override
+  bool get isInstalledAndMeetsVersionCheck => false;
 }

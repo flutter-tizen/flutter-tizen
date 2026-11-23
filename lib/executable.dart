@@ -173,7 +173,12 @@ Future<void> main(List<String> args) async {
         cache: globals.cache,
         flutterVersion: globals.flutterVersion,
       ),
-      TizenCleanCommand(verbose: verbose),
+      TizenCleanCommand(
+        verbose: verbose,
+        toolContext: toolDependencies.toolContext,
+        xcode: toolDependencies.appleContext.xcode,
+        xcodeProjectInterpreter: toolDependencies.appleContext.xcodeProjectInterpreter,
+      ),
       TizenUpgradeCommand(verboseHelp: verboseHelp),
       TizenCreateCommand(verboseHelp: verboseHelp),
       TizenDriveCommand(
