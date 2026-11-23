@@ -109,13 +109,6 @@ Future<void> main(List<String> args) async {
     (ToolDependencies toolDependencies) => <FlutterCommand>[
       // Commands directly from flutter_tools.
       AnalyzeCommand(
-        verboseHelp: verboseHelp,
-        fileSystem: globals.fs,
-        platform: globals.platform,
-        terminal: globals.terminal,
-        logger: globals.logger,
-        processManager: globals.processManager,
-        artifacts: globals.artifacts!,
         allProjectValidators: <ProjectValidator>[
           GeneralInfoProjectValidator(),
           VariableDumpMachineProjectValidator(
@@ -126,6 +119,8 @@ Future<void> main(List<String> args) async {
           ),
         ],
         suppressAnalytics: !globals.analytics.okToSend,
+        toolContext: toolDependencies.toolContext,
+        verboseHelp: verboseHelp,
       ),
       ConfigCommand(
         verboseHelp: verboseHelp,
