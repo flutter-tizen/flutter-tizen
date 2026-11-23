@@ -6,6 +6,7 @@ import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/base/terminal.dart';
 import 'package:flutter_tools/src/build_info.dart';
 import 'package:flutter_tools/src/commands/run.dart';
+import 'package:flutter_tools/src/context/tool_context.dart';
 import 'package:flutter_tools/src/device.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/runner/target_devices.dart';
@@ -15,7 +16,7 @@ import '../tizen_device.dart';
 import '../tizen_plugins.dart';
 
 class TizenRunCommand extends RunCommand with DartPluginRegistry, TizenRequiredArtifacts {
-  TizenRunCommand({super.verboseHelp});
+  TizenRunCommand({super.toolContext, super.verboseHelp});
 
   @override
   Future<List<Device>?> findAllTargetDevices({
@@ -23,21 +24,52 @@ class TizenRunCommand extends RunCommand with DartPluginRegistry, TizenRequiredA
     bool includeDevicesUnsupportedByProject = false,
   }) async {
     final List<Device> devices = await globals.deviceManager!.getDevices();
-    final tizenDeviceLogger = TizenDeviceLogger(
-      logger: globals.logger,
-      devices: devices,
-    );
+    final ToolContext toolContext = this.toolContext!;
     return TargetDevices(
       deviceManager: globals.deviceManager!,
-      logger: tizenDeviceLogger,
+      doctor: globals.doctor!,
+      toolContext: _withLogger(
+        toolContext,
+        TizenDeviceLogger(logger: toolContext.logger, devices: devices),
+      ),
       deviceConnectionInterface: deviceConnectionInterface,
-      platform: globals.platform,
     ).findAllTargetDevices(
       canPrompt: canPrompt ?? !outputMachineFormat,
       deviceDiscoveryTimeout: deviceDiscoveryTimeout,
       includeDevicesUnsupportedByProject: includeDevicesUnsupportedByProject,
     );
   }
+}
+
+ToolContext _withLogger(ToolContext context, Logger logger) {
+  return ToolContext(
+    artifacts: context.artifacts,
+    botDetector: context.botDetector,
+    cache: context.cache,
+    config: context.config,
+    customDevicesConfig: context.customDevicesConfig,
+    flutterVersion: context.flutterVersion,
+    fs: context.fs,
+    git: context.git,
+    localEngineLocator: context.localEngineLocator,
+    logger: logger,
+    nativeAssetsBuilder: context.nativeAssetsBuilder,
+    os: context.os,
+    outputPreferences: context.outputPreferences,
+    persistentToolState: context.persistentToolState,
+    platform: context.platform,
+    preRunValidator: context.preRunValidator,
+    processInfo: context.processInfo,
+    processManager: context.processManager,
+    processUtils: context.processUtils,
+    projectFactory: context.projectFactory,
+    shutdownHooks: context.shutdownHooks,
+    signals: context.signals,
+    stdio: context.stdio,
+    systemClock: context.systemClock,
+    terminal: context.terminal,
+    userMessages: context.userMessages,
+  );
 }
 
 /// A [Logger] that fixes the device information for Tizen devices.

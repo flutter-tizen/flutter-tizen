@@ -209,7 +209,7 @@ Future<void> main(List<String> args) async {
         platform: globals.platform,
         featureFlags: featureFlags,
       ),
-      TizenRunCommand(verboseHelp: verboseHelp),
+      TizenRunCommand(toolContext: toolDependencies.toolContext, verboseHelp: verboseHelp),
       TizenTestCommand(
         toolContext: toolDependencies.toolContext,
         verboseHelp: verboseHelp,
