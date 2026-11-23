@@ -22,6 +22,7 @@ import '../tizen_flutter_version.dart';
 /// Source: [ChannelCommand] in `channel.dart`
 class TizenChannelCommand extends ChannelCommand {
   TizenChannelCommand({
+    required super.toolContext,
     super.verboseHelp,
     Git? git,
     String? repoRoot,

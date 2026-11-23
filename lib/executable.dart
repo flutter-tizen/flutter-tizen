@@ -157,7 +157,7 @@ Future<void> main(List<String> args) async {
         processInfo: globals.processInfo,
         fileSystem: globals.fs,
       ),
-      TizenChannelCommand(verboseHelp: verboseHelp),
+      TizenChannelCommand(verboseHelp: verboseHelp, toolContext: toolDependencies.toolContext),
       TizenBuildCommand(
         fileSystem: globals.fs,
         buildSystem: globals.buildSystem,
