@@ -14,6 +14,7 @@ import 'package:flutter_tools/src/globals.dart' as globals;
 import '../src/common.dart';
 import '../src/context.dart';
 import '../src/fake_process_manager.dart';
+import '../src/fakes.dart';
 
 void main() {
   late FakeProcessManager processManager;
@@ -26,6 +27,7 @@ void main() {
     Future<int> Function(List<String> args)? runLauncher,
   }) {
     final runner = TizenUpgradeCommandRunner(
+      toolContext: const DelegatingToolContext(),
       git: Git(
         currentPlatform: FakePlatform(),
         runProcessWith: ProcessUtils(

@@ -153,7 +153,11 @@ Future<void> main(List<String> args) async {
       ),
       GenerateLocalizationsCommand(toolContext: toolDependencies.toolContext),
       InstallCommand(toolContext: toolDependencies.toolContext, verboseHelp: verboseHelp),
-      PackagesCommand(),
+      PackagesCommand(
+        buildSystem: toolDependencies.buildSystem,
+        toolContext: toolDependencies.toolContext,
+        verboseHelp: verboseHelp,
+      ),
       SymbolizeCommand(toolContext: toolDependencies.toolContext),
       // Commands extended for Tizen.
       TizenAttachCommand(
@@ -182,7 +186,7 @@ Future<void> main(List<String> args) async {
         xcode: toolDependencies.appleContext.xcode,
         xcodeProjectInterpreter: toolDependencies.appleContext.xcodeProjectInterpreter,
       ),
-      TizenUpgradeCommand(verboseHelp: verboseHelp),
+      TizenUpgradeCommand(toolContext: toolDependencies.toolContext, verboseHelp: verboseHelp),
       TizenCreateCommand(
         androidContext: toolDependencies.androidContext,
         appleContext: toolDependencies.appleContext,

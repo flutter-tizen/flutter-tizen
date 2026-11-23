@@ -132,6 +132,7 @@ class TizenValidator extends DoctorValidator {
       frameworkRevision: revision,
       fs: _fileSystem,
       git: globals.git,
+      platform: globals.platform,
     );
     messages.add(ValidationMessage(
       'Framework revision ${version.frameworkRevisionShort} '
