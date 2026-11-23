@@ -42,7 +42,16 @@ class TizenOperatingSystemUtils implements OperatingSystemUtils {
   Stream<List<int>> gzipLevel1Stream(Stream<List<int>> stream) => _osUtils.gzipLevel1Stream(stream);
 
   @override
+  HostPlatform get defaultHostPlatform => _osUtils.defaultHostPlatform;
+
+  @override
   HostPlatform get hostPlatform => _osUtils.hostPlatform;
+
+  @override
+  HostPlatform? get hostPlatformOverride => _osUtils.hostPlatformOverride;
+
+  @override
+  set hostPlatformOverride(HostPlatform? value) => _osUtils.hostPlatformOverride = value;
 
   @override
   void makeExecutable(File file) => _osUtils.makeExecutable(file);
