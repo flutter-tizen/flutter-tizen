@@ -197,13 +197,10 @@ Future<void> main(List<String> args) async {
         verboseHelp: verboseHelp,
       ),
       TizenDriveCommand(
+        buildSystem: toolDependencies.buildSystem,
+        buildTargets: const BuildTargetsImpl(),
+        toolContext: toolDependencies.toolContext,
         verboseHelp: verboseHelp,
-        fileSystem: globals.fs,
-        logger: globals.logger,
-        platform: globals.platform,
-        signals: globals.signals,
-        terminal: globals.terminal,
-        outputPreferences: globals.outputPreferences,
       ),
       TizenPrecacheCommand(
         verboseHelp: verboseHelp,

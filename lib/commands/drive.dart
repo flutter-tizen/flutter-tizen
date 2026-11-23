@@ -9,12 +9,9 @@ import '../tizen_plugins.dart';
 
 class TizenDriveCommand extends DriveCommand with DartPluginRegistry, TizenRequiredArtifacts {
   TizenDriveCommand({
+    required super.buildSystem,
+    required super.buildTargets,
+    required super.toolContext,
     super.verboseHelp,
-    required super.fileSystem,
-    required super.logger,
-    required super.platform,
-    required super.signals,
-    required super.terminal,
-    required super.outputPreferences,
   });
 }
