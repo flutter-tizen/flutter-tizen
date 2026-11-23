@@ -206,7 +206,11 @@ Future<void> main(List<String> args) async {
         featureFlags: featureFlags,
       ),
       TizenRunCommand(verboseHelp: verboseHelp),
-      TizenTestCommand(verboseHelp: verboseHelp, verbose: verbose),
+      TizenTestCommand(
+        toolContext: toolDependencies.toolContext,
+        verboseHelp: verboseHelp,
+        verbose: verbose,
+      ),
     ],
     verbose: verbose,
     verboseHelp: verboseHelp,
