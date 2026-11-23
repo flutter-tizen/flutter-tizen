@@ -135,7 +135,11 @@ Future<void> main(List<String> args) async {
       ),
       DaemonCommand(hidden: !verboseHelp),
       TizenDevicesCommand(verboseHelp: verboseHelp),
-      DoctorCommand(verbose: verbose),
+      DoctorCommand(
+        doctor: toolDependencies.doctor,
+        toolContext: toolDependencies.toolContext,
+        verbose: verbose,
+      ),
       EmulatorsCommand(),
       GenerateLocalizationsCommand(
         fileSystem: globals.fs,
