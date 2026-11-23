@@ -120,6 +120,17 @@ namespace Tizen.Flutter.Embedding
             public IntPtr message;
             public uint message_size;
             public IntPtr response_handle;
+
+            public byte[] GetMessageBytes()
+            {
+                if (message == IntPtr.Zero && message_size == 0)
+                {
+                    return null;
+                }
+                var bytes = new byte[message_size];
+                Marshal.Copy(message, bytes, 0, (int)message_size);
+                return bytes;
+            }
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
