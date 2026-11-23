@@ -141,7 +141,7 @@ void main() {
         '--target=flutter',
         '--no-print-incremental-dependencies',
         ...buildModeOptions(BuildMode.debug, <String>[]),
-        '--track-widget-creation',
+        '--track-creation-locations',
         '--no-link-platform',
         '--packages',
         '/.dart_tool/package_config.json',
