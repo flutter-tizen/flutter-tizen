@@ -373,6 +373,7 @@ FlutterNativeAssetsBuildRunner _createBuildRunner(Environment environment, Build
     packageConfig,
     fileSystem,
     environment.logger,
+    environment.platform,
     runPackageName,
     includeDevDependencies: !buildMode.isRelease,
     pubspecPath,
