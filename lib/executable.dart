@@ -8,6 +8,7 @@ import 'dart:io';
 import 'package:flutter_tools/executable.dart' as flutter show main;
 import 'package:flutter_tools/executable.dart';
 import 'package:flutter_tools/runner.dart' as runner;
+import 'package:flutter_tools/src/android/android_workflow.dart' as android_workflow;
 import 'package:flutter_tools/src/application_package.dart';
 import 'package:flutter_tools/src/artifacts.dart';
 import 'package:flutter_tools/src/base/context.dart';
@@ -128,7 +129,16 @@ Future<void> main(List<String> args) async {
         toolContext: toolDependencies.toolContext,
         featureFlags: featureFlags,
       ),
-      DaemonCommand(hidden: !verboseHelp),
+      DaemonCommand(
+        androidContext: toolDependencies.androidContext,
+        androidWorkflow: android_workflow.androidWorkflow,
+        buildSystem: toolDependencies.buildSystem,
+        buildTargets: const BuildTargetsImpl(),
+        deviceManager: toolDependencies.deviceManager,
+        hidden: !verboseHelp,
+        toolContext: toolDependencies.toolContext,
+        xcode: toolDependencies.appleContext.xcode,
+      ),
       TizenDevicesCommand(
         deviceManager: toolDependencies.deviceManager,
         doctor: globals.doctor!,
