@@ -26,7 +26,6 @@ import 'package:flutter_tools/src/commands/doctor.dart';
 import 'package:flutter_tools/src/commands/emulators.dart';
 import 'package:flutter_tools/src/commands/generate_localizations.dart';
 import 'package:flutter_tools/src/commands/install.dart';
-import 'package:flutter_tools/src/commands/packages.dart';
 import 'package:flutter_tools/src/commands/symbolize.dart';
 import 'package:flutter_tools/src/commands/widget_preview.dart';
 import 'package:flutter_tools/src/context/tool_dependencies.dart';
@@ -51,6 +50,7 @@ import 'commands/clean.dart';
 import 'commands/create.dart';
 import 'commands/devices.dart';
 import 'commands/drive.dart';
+import 'commands/packages.dart';
 import 'commands/precache.dart';
 import 'commands/run.dart';
 import 'commands/test.dart';
@@ -153,7 +153,7 @@ Future<void> main(List<String> args) async {
       ),
       GenerateLocalizationsCommand(toolContext: toolDependencies.toolContext),
       InstallCommand(toolContext: toolDependencies.toolContext, verboseHelp: verboseHelp),
-      PackagesCommand(
+      TizenPackagesCommand(
         buildSystem: toolDependencies.buildSystem,
         toolContext: toolDependencies.toolContext,
         verboseHelp: verboseHelp,

@@ -9,6 +9,7 @@ environment:
 dependencies:
   analyzer:
   archive:
+  args:
   code_assets:
   data_assets:
   fake_async:
@@ -28,7 +29,6 @@ dependencies:
   yaml:
 
 dev_dependencies:
-  args:
   file_testing:
   flutter_test:
     sdk: flutter
