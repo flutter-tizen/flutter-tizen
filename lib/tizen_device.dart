@@ -121,6 +121,15 @@ class TizenDevice extends Device {
   }
 
   @override
+  Future<CpuArch> get cpuArch async => switch (architecture) {
+        'arm' => CpuArch.armv7,
+        'arm64' => CpuArch.arm64,
+        'x86' => CpuArch.x86,
+        'x64' => CpuArch.x64,
+        _ => CpuArch.unknown,
+      };
+
+  @override
   Future<bool> supportsRuntimeMode(BuildMode buildMode) async {
     if (getCapability('cpu_arch') == 'x86') {
       return buildMode == BuildMode.debug;
