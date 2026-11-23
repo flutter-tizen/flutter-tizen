@@ -127,7 +127,12 @@ Future<void> main(List<String> args) async {
         ],
         suppressAnalytics: !globals.analytics.okToSend,
       ),
-      ConfigCommand(verboseHelp: verboseHelp),
+      ConfigCommand(
+        verboseHelp: verboseHelp,
+        androidContext: toolDependencies.androidContext,
+        toolContext: toolDependencies.toolContext,
+        featureFlags: featureFlags,
+      ),
       DaemonCommand(hidden: !verboseHelp),
       TizenDevicesCommand(verboseHelp: verboseHelp),
       DoctorCommand(verbose: verbose),
