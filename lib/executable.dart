@@ -166,14 +166,11 @@ Future<void> main(List<String> args) async {
       SymbolizeCommand(toolContext: toolDependencies.toolContext),
       // Commands extended for Tizen.
       TizenAttachCommand(
+        buildSystem: toolDependencies.buildSystem,
+        buildTargets: const BuildTargetsImpl(),
+        toolContext: toolDependencies.toolContext,
+        xcode: toolDependencies.appleContext.xcode,
         verboseHelp: verboseHelp,
-        stdio: globals.stdio,
-        logger: globals.logger,
-        terminal: globals.terminal,
-        signals: globals.signals,
-        platform: globals.platform,
-        processInfo: globals.processInfo,
-        fileSystem: globals.fs,
       ),
       TizenChannelCommand(verboseHelp: verboseHelp, toolContext: toolDependencies.toolContext),
       TizenBuildCommand(
