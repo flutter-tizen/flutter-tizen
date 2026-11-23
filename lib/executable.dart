@@ -151,12 +151,7 @@ Future<void> main(List<String> args) async {
         toolContext: toolDependencies.toolContext,
         verboseHelp: verboseHelp,
       ),
-      GenerateLocalizationsCommand(
-        fileSystem: globals.fs,
-        logger: globals.logger,
-        artifacts: globals.artifacts!,
-        processManager: globals.processManager,
-      ),
+      GenerateLocalizationsCommand(toolContext: toolDependencies.toolContext),
       InstallCommand(toolContext: toolDependencies.toolContext, verboseHelp: verboseHelp),
       PackagesCommand(),
       SymbolizeCommand(toolContext: toolDependencies.toolContext),
