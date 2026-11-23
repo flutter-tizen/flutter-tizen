@@ -157,7 +157,7 @@ Future<void> main(List<String> args) async {
         artifacts: globals.artifacts!,
         processManager: globals.processManager,
       ),
-      InstallCommand(verboseHelp: verboseHelp),
+      InstallCommand(toolContext: toolDependencies.toolContext, verboseHelp: verboseHelp),
       PackagesCommand(),
       SymbolizeCommand(toolContext: toolDependencies.toolContext),
       // Commands extended for Tizen.
