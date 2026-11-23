@@ -145,7 +145,12 @@ Future<void> main(List<String> args) async {
         toolContext: toolDependencies.toolContext,
         verbose: verbose,
       ),
-      EmulatorsCommand(),
+      EmulatorsCommand(
+        doctor: toolDependencies.doctor,
+        emulatorManager: toolDependencies.emulatorManager,
+        toolContext: toolDependencies.toolContext,
+        verboseHelp: verboseHelp,
+      ),
       GenerateLocalizationsCommand(
         fileSystem: globals.fs,
         logger: globals.logger,
