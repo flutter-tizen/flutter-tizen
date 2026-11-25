@@ -2,13 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'package:args/args.dart';
 import 'package:flutter_tools/src/base/common.dart';
+import 'package:flutter_tools/src/base/context.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/base/process.dart';
 import 'package:flutter_tools/src/base/terminal.dart';
 import 'package:flutter_tools/src/base/utils.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/commands/create.dart';
+import 'package:flutter_tools/src/dart/pub.dart';
 import 'package:flutter_tools/src/flutter_project_metadata.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/project.dart';
@@ -28,7 +31,15 @@ const _kAvailablePlatforms = <String>[
 ];
 
 class TizenCreateCommand extends CreateCommand {
-  TizenCreateCommand({super.verboseHelp}) {
+  TizenCreateCommand({
+    required super.androidContext,
+    required super.appleContext,
+    required super.templateRenderer,
+    required super.toolContext,
+    super.net,
+    Pub? pub,
+    super.verboseHelp,
+  }) : super(pub: pub ?? context.get<Pub>()) {
     argParser.addOption(
       'tizen-language',
       allowed: <String>['cpp', 'csharp'],
@@ -70,29 +81,20 @@ class TizenCreateCommand extends CreateCommand {
 
   /// See: [CreateCommand._getProjectType] in `create.dart`
   bool get _shouldGeneratePlugin {
-    FlutterTemplateType? template;
-    final String? templateArgument = stringArg('template');
-    if (templateArgument != null) {
-      final ParsedFlutterTemplateType? templateType = ParsedFlutterTemplateType.fromCliName(
-        templateArgument,
-      );
-      template = switch (templateType) {
-        RemovedFlutterTemplateType() || null => null,
-        FlutterTemplateType() => templateType,
-      };
-    }
     if (projectDir.existsSync() && projectDir.listSync().isNotEmpty) {
-      template = determineTemplateType();
+      return determineTemplateType(extensionTemplateManager: extensionTemplateManager) ==
+          FlutterTemplateType.plugin;
     }
-    return template == FlutterTemplateType.plugin;
+    return stringArg('template') == FlutterTemplateType.plugin.cliName;
   }
 
   @override
   void addPlatformsOptions({
+    ArgParser? parser,
     String? customHelp,
     required Map<String, String> allowedHelp,
   }) {
-    argParser.addMultiOption(
+    (parser ?? argParser).addMultiOption(
       'platforms',
       help: customHelp,
       aliases: <String>['platform'],
@@ -270,6 +272,7 @@ class TizenCreateCommand extends CreateCommand {
 
   /// See: [CreateCommand.runCommand] in `create.dart`
   Future<FlutterCommandResult> _runCommand() async {
+    final bool hadTizen = projectDir.childDirectory('tizen').existsSync();
     final FlutterCommandResult result = await super.runCommand();
     if (result != FlutterCommandResult.success()) {
       return result;
@@ -281,6 +284,15 @@ class TizenCreateCommand extends CreateCommand {
       final tizenProject = TizenProject.fromFlutter(project);
       if (tizenProject.existsSync() && tizenProject.isDotnet) {
         updateDotnetUserProjectFile(tizenProject.projectFile!);
+      }
+
+      if (!hadTizen &&
+          projectDir.childFile('lib/${projectName}_method_channel.dart').existsSync()) {
+        globals.printStatus(
+          'If your Dart plugin uses MethodChannel, adapt the generated Tizen handler to its '
+          'channel name and methods before running the example. The new Tizen template uses Pigeon.',
+          color: TerminalColor.yellow,
+        );
       }
 
       final String relativePluginPath =

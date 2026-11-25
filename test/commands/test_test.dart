@@ -16,6 +16,7 @@ import 'package:flutter_tools/src/test/test_wrapper.dart';
 
 import '../src/context.dart';
 import '../src/fake_devices.dart';
+import '../src/fakes.dart';
 import '../src/package_config.dart';
 import '../src/test_flutter_command_runner.dart';
 
@@ -46,7 +47,10 @@ void main() {
 
   testUsingContext('Integration test requires Tizen artifacts', () async {
     final testWrapper = _FakeTestWrapper();
-    final command = TizenTestCommand(testWrapper: testWrapper);
+    final command = TizenTestCommand(
+      toolContext: const DelegatingToolContext(),
+      testWrapper: testWrapper,
+    );
     final CommandRunner<void> runner = createTestCommandRunner(command);
 
     pubspecFile.writeAsStringSync('''
@@ -114,7 +118,10 @@ dependencies:
 
   testUsingContext('Can generate entrypoint wrapper for integration test', () async {
     final testWrapper = _FakeTestWrapper();
-    final command = TizenTestCommand(testWrapper: testWrapper);
+    final command = TizenTestCommand(
+      toolContext: const DelegatingToolContext(),
+      testWrapper: testWrapper,
+    );
     final CommandRunner<void> runner = createTestCommandRunner(command);
     final Directory pluginDir = fileSystem.currentDirectory;
 

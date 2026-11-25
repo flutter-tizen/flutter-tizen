@@ -8,6 +8,7 @@ import 'dart:io';
 import 'package:flutter_tools/executable.dart' as flutter show main;
 import 'package:flutter_tools/executable.dart';
 import 'package:flutter_tools/runner.dart' as runner;
+import 'package:flutter_tools/src/android/android_workflow.dart' as android_workflow;
 import 'package:flutter_tools/src/application_package.dart';
 import 'package:flutter_tools/src/artifacts.dart';
 import 'package:flutter_tools/src/base/context.dart';
@@ -26,9 +27,9 @@ import 'package:flutter_tools/src/commands/doctor.dart';
 import 'package:flutter_tools/src/commands/emulators.dart';
 import 'package:flutter_tools/src/commands/generate_localizations.dart';
 import 'package:flutter_tools/src/commands/install.dart';
-import 'package:flutter_tools/src/commands/packages.dart';
 import 'package:flutter_tools/src/commands/symbolize.dart';
 import 'package:flutter_tools/src/commands/widget_preview.dart';
+import 'package:flutter_tools/src/context/tool_dependencies.dart';
 import 'package:flutter_tools/src/dart/pub.dart';
 import 'package:flutter_tools/src/device.dart';
 import 'package:flutter_tools/src/doctor.dart';
@@ -50,6 +51,7 @@ import 'commands/clean.dart';
 import 'commands/create.dart';
 import 'commands/devices.dart';
 import 'commands/drive.dart';
+import 'commands/packages.dart';
 import 'commands/precache.dart';
 import 'commands/run.dart';
 import 'commands/test.dart';
@@ -105,16 +107,9 @@ Future<void> main(List<String> args) async {
       '--no-version-check',
       ...args,
     ],
-    () => <FlutterCommand>[
+    (ToolDependencies toolDependencies) => <FlutterCommand>[
       // Commands directly from flutter_tools.
       AnalyzeCommand(
-        verboseHelp: verboseHelp,
-        fileSystem: globals.fs,
-        platform: globals.platform,
-        terminal: globals.terminal,
-        logger: globals.logger,
-        processManager: globals.processManager,
-        artifacts: globals.artifacts!,
         allProjectValidators: <ProjectValidator>[
           GeneralInfoProjectValidator(),
           VariableDumpMachineProjectValidator(
@@ -125,64 +120,87 @@ Future<void> main(List<String> args) async {
           ),
         ],
         suppressAnalytics: !globals.analytics.okToSend,
+        toolContext: toolDependencies.toolContext,
+        verboseHelp: verboseHelp,
       ),
-      ConfigCommand(verboseHelp: verboseHelp),
-      DaemonCommand(hidden: !verboseHelp),
-      TizenDevicesCommand(verboseHelp: verboseHelp),
-      DoctorCommand(verbose: verbose),
-      EmulatorsCommand(),
-      GenerateLocalizationsCommand(
-        fileSystem: globals.fs,
-        logger: globals.logger,
-        artifacts: globals.artifacts!,
-        processManager: globals.processManager,
+      ConfigCommand(
+        verboseHelp: verboseHelp,
+        androidContext: toolDependencies.androidContext,
+        toolContext: toolDependencies.toolContext,
+        featureFlags: featureFlags,
       ),
-      InstallCommand(verboseHelp: verboseHelp),
-      PackagesCommand(),
-      SymbolizeCommand(stdio: globals.stdio, fileSystem: globals.fs),
+      DaemonCommand(
+        androidContext: toolDependencies.androidContext,
+        androidWorkflow: android_workflow.androidWorkflow,
+        buildSystem: toolDependencies.buildSystem,
+        buildTargets: const BuildTargetsImpl(),
+        deviceManager: toolDependencies.deviceManager,
+        hidden: !verboseHelp,
+        toolContext: toolDependencies.toolContext,
+        xcode: toolDependencies.appleContext.xcode,
+      ),
+      TizenDevicesCommand(
+        deviceManager: toolDependencies.deviceManager,
+        doctor: globals.doctor!,
+        toolContext: toolDependencies.toolContext,
+        verboseHelp: verboseHelp,
+      ),
+      DoctorCommand(
+        doctor: toolDependencies.doctor,
+        toolContext: toolDependencies.toolContext,
+        verbose: verbose,
+      ),
+      EmulatorsCommand(
+        doctor: toolDependencies.doctor,
+        emulatorManager: toolDependencies.emulatorManager,
+        toolContext: toolDependencies.toolContext,
+        verboseHelp: verboseHelp,
+      ),
+      GenerateLocalizationsCommand(toolContext: toolDependencies.toolContext),
+      InstallCommand(toolContext: toolDependencies.toolContext, verboseHelp: verboseHelp),
+      TizenPackagesCommand(
+        buildSystem: toolDependencies.buildSystem,
+        toolContext: toolDependencies.toolContext,
+        verboseHelp: verboseHelp,
+      ),
+      SymbolizeCommand(toolContext: toolDependencies.toolContext),
       // Commands extended for Tizen.
       TizenAttachCommand(
+        buildSystem: toolDependencies.buildSystem,
+        buildTargets: const BuildTargetsImpl(),
+        toolContext: toolDependencies.toolContext,
+        xcode: toolDependencies.appleContext.xcode,
         verboseHelp: verboseHelp,
-        stdio: globals.stdio,
-        logger: globals.logger,
-        terminal: globals.terminal,
-        signals: globals.signals,
-        platform: globals.platform,
-        processInfo: globals.processInfo,
-        fileSystem: globals.fs,
       ),
-      TizenChannelCommand(verboseHelp: verboseHelp),
+      TizenChannelCommand(verboseHelp: verboseHelp, toolContext: toolDependencies.toolContext),
       TizenBuildCommand(
-        fileSystem: globals.fs,
-        buildSystem: globals.buildSystem,
-        osUtils: globals.os,
+        androidContext: toolDependencies.androidContext,
+        appleContext: toolDependencies.appleContext,
+        buildSystem: toolDependencies.buildSystem,
+        featureFlags: toolDependencies.featureFlags,
+        templateRenderer: const MustacheTemplateRenderer(),
+        toolContext: toolDependencies.toolContext,
         verboseHelp: verboseHelp,
-        androidSdk: globals.androidSdk,
-        logger: globals.logger,
-        config: globals.config,
-        platform: globals.platform,
-        fileSystemUtils: globals.fsUtils,
-        terminal: globals.terminal,
-        plistParser: globals.plistParser,
-        processUtils: globals.processUtils,
-        processManager: globals.processManager,
-        templateRenderer: globals.templateRenderer,
-        xcode: globals.xcode,
-        artifacts: globals.artifacts!,
-        cache: globals.cache,
-        flutterVersion: globals.flutterVersion,
       ),
-      TizenCleanCommand(verbose: verbose),
-      TizenUpgradeCommand(verboseHelp: verboseHelp),
-      TizenCreateCommand(verboseHelp: verboseHelp),
-      TizenDriveCommand(
+      TizenCleanCommand(
+        verbose: verbose,
+        toolContext: toolDependencies.toolContext,
+        xcode: toolDependencies.appleContext.xcode,
+        xcodeProjectInterpreter: toolDependencies.appleContext.xcodeProjectInterpreter,
+      ),
+      TizenUpgradeCommand(toolContext: toolDependencies.toolContext, verboseHelp: verboseHelp),
+      TizenCreateCommand(
+        androidContext: toolDependencies.androidContext,
+        appleContext: toolDependencies.appleContext,
+        templateRenderer: const MustacheTemplateRenderer(),
+        toolContext: toolDependencies.toolContext,
         verboseHelp: verboseHelp,
-        fileSystem: globals.fs,
-        logger: globals.logger,
-        platform: globals.platform,
-        signals: globals.signals,
-        terminal: globals.terminal,
-        outputPreferences: globals.outputPreferences,
+      ),
+      TizenDriveCommand(
+        buildSystem: toolDependencies.buildSystem,
+        buildTargets: const BuildTargetsImpl(),
+        toolContext: toolDependencies.toolContext,
+        verboseHelp: verboseHelp,
       ),
       TizenPrecacheCommand(
         verboseHelp: verboseHelp,
@@ -191,8 +209,12 @@ Future<void> main(List<String> args) async {
         platform: globals.platform,
         featureFlags: featureFlags,
       ),
-      TizenRunCommand(verboseHelp: verboseHelp),
-      TizenTestCommand(verboseHelp: verboseHelp, verbose: verbose),
+      TizenRunCommand(toolContext: toolDependencies.toolContext, verboseHelp: verboseHelp),
+      TizenTestCommand(
+        toolContext: toolDependencies.toolContext,
+        verboseHelp: verboseHelp,
+        verbose: verbose,
+      ),
     ],
     verbose: verbose,
     verboseHelp: verboseHelp,

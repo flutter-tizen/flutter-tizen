@@ -20,14 +20,14 @@ import 'channel.dart';
 ///
 /// Source: [UpgradeCommand] in `upgrade.dart`
 class TizenUpgradeCommand extends UpgradeCommand {
-  TizenUpgradeCommand({required super.verboseHelp});
+  TizenUpgradeCommand({required super.toolContext, required super.verboseHelp});
 
   @override
   String get description => 'Upgrade the flutter-tizen toolchain to the latest released version.';
 
   @override
   Future<FlutterCommandResult> runCommand() {
-    final commandRunner = TizenUpgradeCommandRunner();
+    final commandRunner = TizenUpgradeCommandRunner(toolContext: toolContext!);
     // The repo root, not the vendored SDK at Cache.flutterRoot.
     commandRunner.workingDirectory =
         stringArg('working-directory') ?? globals.fs.directory(Cache.flutterRoot).parent.path;
@@ -48,6 +48,7 @@ class TizenUpgradeCommand extends UpgradeCommand {
 // ignore: invalid_use_of_visible_for_testing_member
 class TizenUpgradeCommandRunner extends UpgradeCommandRunner {
   TizenUpgradeCommandRunner({
+    required super.toolContext,
     Git? git,
     Future<int> Function(List<String> args)? runLauncher,
   })  : _git = git,

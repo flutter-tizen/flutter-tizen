@@ -13,7 +13,12 @@ import '../tizen_device.dart';
 
 /// Source: [DevicesCommand] in `devices.dart`
 class TizenDevicesCommand extends DevicesCommand {
-  TizenDevicesCommand({super.verboseHelp});
+  TizenDevicesCommand({
+    required super.deviceManager,
+    required super.doctor,
+    required super.toolContext,
+    super.verboseHelp,
+  });
 
   @override
   Future<FlutterCommandResult> runCommand() async {

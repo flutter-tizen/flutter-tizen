@@ -9,11 +9,14 @@ environment:
 dependencies:
   analyzer:
   archive:
+  args:
   code_assets:
   data_assets:
   fake_async:
   flutter_tools:
     path: flutter/packages/flutter_tools
+  flutter_tools_core:
+    path: flutter/packages/flutter_tools/packages/flutter_tools_core
   file:
   hooks:
   hooks_runner:
@@ -28,7 +31,6 @@ dependencies:
   yaml:
 
 dev_dependencies:
-  args:
   file_testing:
   flutter_test:
     sdk: flutter

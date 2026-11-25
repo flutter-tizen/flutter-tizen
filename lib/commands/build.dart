@@ -4,10 +4,10 @@
 
 import 'package:flutter_tools/src/android/build_validation.dart';
 import 'package:flutter_tools/src/base/common.dart';
-import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/build_info.dart';
 import 'package:flutter_tools/src/commands/build.dart';
 import 'package:flutter_tools/src/commands/build_apk.dart';
+import 'package:flutter_tools/src/context/tool_context.dart';
 import 'package:flutter_tools/src/project.dart';
 import 'package:flutter_tools/src/runner/flutter_command.dart';
 
@@ -18,37 +18,39 @@ import '../tizen_plugins.dart';
 
 class TizenBuildCommand extends BuildCommand {
   TizenBuildCommand({
-    required super.fileSystem,
+    required super.androidContext,
+    required super.appleContext,
     required super.buildSystem,
-    required super.osUtils,
-    required Logger logger,
-    required super.androidSdk,
-    required super.artifacts,
-    required super.cache,
-    required super.flutterVersion,
-    required super.config,
-    required super.platform,
-    required super.processUtils,
-    required super.processManager,
-    required super.fileSystemUtils,
+    required super.featureFlags,
     required super.templateRenderer,
-    required super.terminal,
-    required super.plistParser,
-    required super.xcode,
-    bool verboseHelp = false,
-  }) : super(logger: logger, verboseHelp: verboseHelp) {
-    addSubcommand(BuildTpkCommand(logger: logger, verboseHelp: verboseHelp));
-    addSubcommand(BuildModuleCommand(logger: logger, verboseHelp: verboseHelp));
+    required super.toolContext,
+    super.verboseHelp,
+  }) {
+    addSubcommand(BuildTpkCommand(toolContext: toolContext, verboseHelp: verboseHelp));
+    addSubcommand(BuildModuleCommand(toolContext: toolContext, verboseHelp: verboseHelp));
   }
 }
 
 class BuildTpkCommand extends BuildSubCommand with DartPluginRegistry, TizenRequiredArtifacts {
   /// See: [BuildApkCommand] in `build_apk.dart`
   BuildTpkCommand({
-    required super.logger,
-    required bool verboseHelp,
-  }) : super(verboseHelp: verboseHelp) {
-    addCommonDesktopBuildOptions(verboseHelp: verboseHelp);
+    required ToolContext super.toolContext,
+    required super.verboseHelp,
+  }) : super(logger: toolContext.logger, outputPreferences: toolContext.outputPreferences) {
+    addBuildModeFlags(verboseHelp: verboseHelp);
+    addBuildPerformanceFile(hide: !verboseHelp);
+    addDartObfuscationOption();
+    addEnableExperimentation(hide: !verboseHelp);
+    addSplitDebugInfoOption();
+    addTreeShakeIconsFlag();
+    usesAnalyzeSizeFlag();
+    usesDartDefineOption();
+    usesExtraDartFlagOptions(verboseHelp: verboseHelp);
+    usesPubOption();
+    usesTargetOption();
+    usesTrackWidgetCreation(verboseHelp: verboseHelp);
+    usesBuildNumberOption();
+    usesBuildNameOption();
     argParser.addOption(
       'target-arch',
       defaultsTo: 'arm',
@@ -101,9 +103,9 @@ class BuildTpkCommand extends BuildSubCommand with DartPluginRegistry, TizenRequ
 
 class BuildModuleCommand extends BuildSubCommand with DartPluginRegistry, TizenRequiredArtifacts {
   BuildModuleCommand({
-    required super.logger,
-    required bool verboseHelp,
-  }) : super(verboseHelp: verboseHelp) {
+    required ToolContext super.toolContext,
+    required super.verboseHelp,
+  }) : super(logger: toolContext.logger, outputPreferences: toolContext.outputPreferences) {
     addBuildModeFlags(verboseHelp: verboseHelp);
     addDartObfuscationOption();
     addEnableExperimentation(hide: !verboseHelp);

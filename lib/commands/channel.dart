@@ -22,21 +22,14 @@ import '../tizen_flutter_version.dart';
 /// Source: [ChannelCommand] in `channel.dart`
 class TizenChannelCommand extends ChannelCommand {
   TizenChannelCommand({
+    required super.toolContext,
     super.verboseHelp,
     Git? git,
     String? repoRoot,
     Future<int> Function(List<String> args)? runLauncher,
   })  : _git = git,
         _repoRoot = repoRoot,
-        _runLauncher = runLauncher {
-    argParser.addFlag(
-      'force',
-      negatable: false,
-      help: 'Discard local changes in the flutter-tizen checkout (including '
-          'its vendored Flutter SDK and untracked files that conflict with '
-          'the target release) and switch anyway.',
-    );
-  }
+        _runLauncher = runLauncher;
 
   final Git? _git;
   final String? _repoRoot;

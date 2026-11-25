@@ -1,4 +1,5 @@
-using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Tizen.Flutter.Embedding;
 using Tizen.System;
 
@@ -6,34 +7,33 @@ namespace {{tizenNamespace}}
 {
     public class {{pluginClass}} : IFlutterPlugin
     {
-        private MethodChannel _channel;
+        private BasicMessageChannel<object> _getPlatformVersionChannel;
 
         public void OnAttachedToEngine(IFlutterPluginBinding binding)
         {
-            _channel = new MethodChannel("{{projectName}}", StandardMethodCodec.Instance, binding.BinaryMessenger);
-            _channel.SetMethodCallHandler(HandleMethodCall);
+            // Implements {{pluginClass}}Api in pigeon/messages.dart. Pigeon does not
+            // generate C# code, so the channel name and the reply format
+            // ([result] or [code, message, details]) follow lib/src/messages.g.dart.
+            _getPlatformVersionChannel = new BasicMessageChannel<object>(
+                "dev.flutter.pigeon.{{projectName}}.{{pluginClass}}Api.getPlatformVersion",
+                StandardMessageCodec.Instance, binding.BinaryMessenger);
+            _getPlatformVersionChannel.SetMessageHandler(
+                message => Task.FromResult<object>(new List<object> { GetPlatformVersion() }));
         }
 
         public void OnDetachedFromEngine()
         {
-            _channel.UnsetMethodCallHandler();
-            _channel = null;
+            _getPlatformVersionChannel.SetMessageHandler(null);
+            _getPlatformVersionChannel = null;
         }
 
-        public object HandleMethodCall(MethodCall call)
+        public string GetPlatformVersion()
         {
-            if (call.Method == "getPlatformVersion")
+            if (Information.TryGetValue<string>("http://tizen.org/feature/platform.version", out string version))
             {
-                if (Information.TryGetValue<string>("http://tizen.org/feature/platform.version", out string version))
-                {
-                    return version;
-                }
-                else
-                {
-                    return "Unknown";
-                }
+                return version;
             }
-            throw new MissingPluginException();
+            return "Unknown";
         }
     }
 }

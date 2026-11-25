@@ -373,6 +373,7 @@ FlutterNativeAssetsBuildRunner _createBuildRunner(Environment environment, Build
     packageConfig,
     fileSystem,
     environment.logger,
+    environment.platform,
     runPackageName,
     includeDevDependencies: !buildMode.isRelease,
     pubspecPath,
@@ -409,14 +410,14 @@ DartHooksResult _combineResults({
   required native.LinkResult? linkResult,
   required DateTime buildStart,
 }) {
-  final target = native.Target.fromArchitectureAndOS(architecture, OS.linux);
   final encodedAssets = <EncodedAsset>[
     ...buildResult.encodedAssets,
     if (linkResult != null) ...linkResult.encodedAssets,
   ];
   final codeAssets = <FlutterCodeAsset>[
     for (final EncodedAsset asset in encodedAssets)
-      if (asset.isCodeAsset) FlutterCodeAsset(codeAsset: asset.asCodeAsset, target: target),
+      if (asset.isCodeAsset)
+        FlutterCodeAsset(codeAsset: asset.asCodeAsset, os: OS.linux, architecture: architecture),
   ];
   final dataAssets = <DataAsset>[
     for (final EncodedAsset asset in encodedAssets)

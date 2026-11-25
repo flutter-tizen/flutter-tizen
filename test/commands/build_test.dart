@@ -9,8 +9,6 @@ import 'package:flutter_tizen/tizen_build_info.dart';
 import 'package:flutter_tizen/tizen_builder.dart';
 import 'package:flutter_tools/src/base/analyze_size.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
-import 'package:flutter_tools/src/base/logger.dart';
-import 'package:flutter_tools/src/base/platform.dart';
 import 'package:flutter_tools/src/build_system/build_system.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/project.dart';
@@ -46,23 +44,12 @@ void main() {
   group('BuildTpkCommand', () {
     testUsingContext('Cannot build for x86 in release mode', () async {
       final command = TizenBuildCommand(
-        fileSystem: fileSystem,
+        androidContext: FakeAndroidContext(),
+        appleContext: FakeAppleContext(),
         buildSystem: TestBuildSystem.all(BuildResult(success: true)),
-        osUtils: FakeOperatingSystemUtils(),
-        logger: BufferLogger.test(),
-        androidSdk: FakeAndroidSdk(),
-        config: FakeConfig(),
-        platform: FakePlatform(),
-        fileSystemUtils: FakeFileSystemUtils(),
-        terminal: FakeTerminal(),
-        plistParser: FakePlistParser(),
-        processUtils: FakeProcessUtils(),
-        processManager: FakeProcessManager.any(),
+        featureFlags: TestFeatureFlags(),
         templateRenderer: FakeTemplateRenderer(),
-        xcode: FakeXcode(),
-        artifacts: FakeArtifacts(),
-        cache: FakeCache(),
-        flutterVersion: FakeFlutterVersion(),
+        toolContext: const DelegatingToolContext(),
       );
       final CommandRunner<void> runner = createTestCommandRunner(command);
 
@@ -83,23 +70,12 @@ void main() {
 
     testUsingContext('Can compute build info', () async {
       final command = TizenBuildCommand(
-        fileSystem: fileSystem,
+        androidContext: FakeAndroidContext(),
+        appleContext: FakeAppleContext(),
         buildSystem: TestBuildSystem.all(BuildResult(success: true)),
-        osUtils: FakeOperatingSystemUtils(),
-        logger: BufferLogger.test(),
-        androidSdk: FakeAndroidSdk(),
-        config: FakeConfig(),
-        platform: FakePlatform(),
-        fileSystemUtils: FakeFileSystemUtils(),
-        terminal: FakeTerminal(),
-        plistParser: FakePlistParser(),
-        processUtils: FakeProcessUtils(),
-        processManager: FakeProcessManager.any(),
+        featureFlags: TestFeatureFlags(),
         templateRenderer: FakeTemplateRenderer(),
-        xcode: FakeXcode(),
-        artifacts: FakeArtifacts(),
-        cache: FakeCache(),
-        flutterVersion: FakeFlutterVersion(),
+        toolContext: const DelegatingToolContext(),
       );
       fileSystem.file('test_main.dart').createSync(recursive: true);
 
@@ -125,23 +101,12 @@ void main() {
   group('BuildModuleCommand', () {
     testUsingContext('Can compute build info', () async {
       final command = TizenBuildCommand(
-        fileSystem: fileSystem,
+        androidContext: FakeAndroidContext(),
+        appleContext: FakeAppleContext(),
         buildSystem: TestBuildSystem.all(BuildResult(success: true)),
-        osUtils: FakeOperatingSystemUtils(),
-        logger: BufferLogger.test(),
-        androidSdk: FakeAndroidSdk(),
-        config: FakeConfig(),
-        platform: FakePlatform(),
-        fileSystemUtils: FakeFileSystemUtils(),
-        terminal: FakeTerminal(),
-        plistParser: FakePlistParser(),
-        processUtils: FakeProcessUtils(),
-        processManager: FakeProcessManager.any(),
+        featureFlags: TestFeatureFlags(),
         templateRenderer: FakeTemplateRenderer(),
-        xcode: FakeXcode(),
-        artifacts: FakeArtifacts(),
-        cache: FakeCache(),
-        flutterVersion: FakeFlutterVersion(),
+        toolContext: const DelegatingToolContext(),
       );
 
       await createTestCommandRunner(command).run(<String>[

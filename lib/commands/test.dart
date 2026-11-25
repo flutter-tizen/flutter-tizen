@@ -8,13 +8,13 @@ import 'package:file/file.dart';
 import 'package:flutter_tools/src/build_info.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/commands/test.dart';
+import 'package:flutter_tools/src/context/tool_context.dart';
 import 'package:flutter_tools/src/dart/language_version.dart';
 import 'package:flutter_tools/src/dart/package_map.dart';
 import 'package:flutter_tools/src/device.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/native_assets.dart';
 import 'package:flutter_tools/src/project.dart';
-import 'package:flutter_tools/src/runner/flutter_command.dart';
 import 'package:flutter_tools/src/test/runner.dart';
 import 'package:flutter_tools/src/test/test_time_recorder.dart';
 import 'package:flutter_tools/src/test/test_wrapper.dart';
@@ -26,29 +26,20 @@ import '../tizen_plugins.dart';
 
 class TizenTestCommand extends TestCommand with TizenRequiredArtifacts {
   TizenTestCommand({
+    required super.toolContext,
     super.verboseHelp,
     super.testWrapper,
     FlutterTestRunner? testRunner,
     super.verbose,
     super.nativeAssetsBuilder,
-  }) : super(testRunner: testRunner ?? TizenTestRunner());
-
-  @override
-  Future<FlutterCommandResult> runCommand() {
-    if (testRunner is TizenTestRunner) {
-      // ignore: invalid_use_of_visible_for_testing_member
-      (testRunner as TizenTestRunner).isIntegrationTest = isIntegrationTest;
-    }
-    return super.runCommand();
-  }
+  }) : super(testRunner: testRunner ?? TizenTestRunner(toolContext: toolContext));
 }
 
 class TizenTestRunner implements FlutterTestRunner {
-  TizenTestRunner();
+  TizenTestRunner({required ToolContext toolContext})
+      : testRunner = FlutterTestRunner(toolContext: toolContext);
 
-  final FlutterTestRunner testRunner = const FlutterTestRunner();
-
-  bool isIntegrationTest = false;
+  final FlutterTestRunner testRunner;
 
   /// See: [generateEntrypointWithPluginRegistrant] in `tizen_plugins.dart`
   Future<List<Uri>> _generateEntrypointWrappers(List<Uri> testFiles) async {
@@ -108,8 +99,9 @@ Future<void> main() {
     required DebuggingOptions debuggingOptions,
     List<String> names = const <String>[],
     List<String> plainNames = const <String>[],
-    String? tags,
-    String? excludeTags,
+    List<String> tags = const <String>[],
+    List<String> excludeTags = const <String>[],
+    List<String> presets = const <String>[],
     bool enableVmService = false,
     bool machine = false,
     String? precompiledDillPath,
@@ -135,9 +127,9 @@ Future<void> main() {
     String? integrationTestUserIdentifier,
     TestTimeRecorder? testTimeRecorder,
     TestCompilerNativeAssetsBuilder? nativeAssetsBuilder,
-    BuildInfo? buildInfo,
+    required BuildInfo buildInfo,
   }) async {
-    if (isIntegrationTest) {
+    if (integrationTestDevice != null) {
       testFiles = await _generateEntrypointWrappers(testFiles);
     }
     return testRunner.runTests(
@@ -148,6 +140,7 @@ Future<void> main() {
       plainNames: plainNames,
       tags: tags,
       excludeTags: excludeTags,
+      presets: presets,
       enableVmService: enableVmService,
       machine: machine,
       precompiledDillPath: precompiledDillPath,
@@ -173,7 +166,7 @@ Future<void> main() {
       integrationTestUserIdentifier: integrationTestUserIdentifier,
       testTimeRecorder: testTimeRecorder,
       nativeAssetsBuilder: nativeAssetsBuilder,
-      buildInfo: buildInfo!,
+      buildInfo: buildInfo,
     );
   }
 
@@ -183,8 +176,9 @@ Future<void> main() {
     required DebuggingOptions debuggingOptions,
     List<String> names = const <String>[],
     List<String> plainNames = const <String>[],
-    String? tags,
-    String? excludeTags,
+    List<String> tags = const <String>[],
+    List<String> excludeTags = const <String>[],
+    List<String> presets = const <String>[],
     bool machine = false,
     bool updateGoldens = false,
     required int? concurrency,
@@ -203,9 +197,6 @@ Future<void> main() {
     TestTimeRecorder? testTimeRecorder,
     TestCompilerNativeAssetsBuilder? nativeAssetsBuilder,
   }) async {
-    if (isIntegrationTest) {
-      testFiles = await _generateEntrypointWrappers(testFiles);
-    }
     return testRunner.runTestsBySpawningLightweightEngines(
       testFiles,
       debuggingOptions: debuggingOptions,
@@ -213,6 +204,7 @@ Future<void> main() {
       plainNames: plainNames,
       tags: tags,
       excludeTags: excludeTags,
+      presets: presets,
       machine: machine,
       updateGoldens: updateGoldens,
       concurrency: concurrency,

@@ -6,15 +6,12 @@ import 'package:flutter_tools/src/commands/attach.dart';
 
 class TizenAttachCommand extends AttachCommand {
   TizenAttachCommand({
-    super.verboseHelp,
+    required super.buildSystem,
+    required super.buildTargets,
+    required super.toolContext,
+    required super.xcode,
     super.hotRunnerFactory,
-    required super.stdio,
-    required super.logger,
-    required super.terminal,
-    required super.signals,
-    required super.platform,
-    required super.processInfo,
-    required super.fileSystem,
+    super.verboseHelp,
   });
 
   @override

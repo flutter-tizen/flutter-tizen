@@ -8,12 +8,14 @@ import 'package:args/command_runner.dart';
 import 'package:file_testing/file_testing.dart';
 import 'package:flutter_tizen/commands/create.dart';
 import 'package:flutter_tizen/tizen_pub.dart';
+import 'package:flutter_tools/src/base/context.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/base/net.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/dart/pub.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
+import 'package:flutter_tools/src/isolated/mustache_template.dart';
 import 'package:pubspec_parse/pubspec_parse.dart';
 
 import '../src/common.dart';
@@ -31,6 +33,16 @@ void main() {
   late Directory projectDir;
   late BufferLogger logger;
 
+  TizenCreateCommand createCommand({Net? net}) {
+    return TizenCreateCommand(
+      androidContext: FakeAndroidContext(),
+      appleContext: FakeAppleContext(),
+      templateRenderer: const MustacheTemplateRenderer(),
+      toolContext: const DelegatingToolContext(),
+      net: net,
+    );
+  }
+
   setUpAll(() {
     Cache.disableLocking();
   });
@@ -43,7 +55,13 @@ void main() {
 
   testUsingContext('Can list samples', () async {
     final File outputFile = tempDir.childFile('flutter_samples.json');
-    final command = TizenCreateCommand();
+    final TizenCreateCommand command = createCommand(
+      net: Net(
+        httpClientFactory: context.get<HttpClientFactory>(),
+        logger: globals.logger,
+        platform: globals.platform,
+      ),
+    );
     final CommandRunner<void> runner = createTestCommandRunner(command);
     await runner.run(<String>[
       'create',
@@ -67,7 +85,7 @@ void main() {
   });
 
   testUsingContext('Can create a default project', () async {
-    final command = TizenCreateCommand();
+    final TizenCreateCommand command = createCommand();
     final CommandRunner<void> runner = createTestCommandRunner(command);
     await runner.run(<String>[
       'create',
@@ -84,7 +102,7 @@ void main() {
   }, overrides: <Type, Generator>{});
 
   testUsingContext('Can create a C++ service app project', () async {
-    final command = TizenCreateCommand();
+    final TizenCreateCommand command = createCommand();
     final CommandRunner<void> runner = createTestCommandRunner(command);
     await runner.run(<String>[
       'create',
@@ -107,7 +125,7 @@ void main() {
   }, overrides: <Type, Generator>{});
 
   testUsingContext('Can create a C++ multi app project', () async {
-    final command = TizenCreateCommand();
+    final TizenCreateCommand command = createCommand();
     final CommandRunner<void> runner = createTestCommandRunner(command);
     await runner.run(<String>[
       'create',
@@ -131,7 +149,7 @@ void main() {
   }, overrides: <Type, Generator>{});
 
   testUsingContext('Can create a C++ plugin project', () async {
-    final command = TizenCreateCommand();
+    final TizenCreateCommand command = createCommand();
     final CommandRunner<void> runner = createTestCommandRunner(command);
     await runner.run(<String>[
       'create',
@@ -155,13 +173,14 @@ void main() {
     expect(projectDir.childDirectory('tizen/src').listSync(), isNotEmpty);
     expect(projectDir.childFile('tizen/.gitignore'), exists);
     expect(projectDir.childFile('tizen/project_def.prop'), exists);
+    expect(logger.statusText, isNot(contains('adapt the generated Tizen handler')));
     expect(logger.errorText, contains(_kNoPlatformsMessage));
   }, overrides: <Type, Generator>{
     Logger: () => logger,
   });
 
   testUsingContext('Can create a C# plugin project', () async {
-    final command = TizenCreateCommand();
+    final TizenCreateCommand command = createCommand();
     final CommandRunner<void> runner = createTestCommandRunner(command);
     await runner.run(<String>[
       'create',
@@ -190,7 +209,7 @@ void main() {
   });
 
   testUsingContext('Cannot create a plugin project with --app-type=multi option', () async {
-    final command = TizenCreateCommand();
+    final TizenCreateCommand command = createCommand();
     final CommandRunner<void> runner = createTestCommandRunner(command);
     await expectLater(
       () => runner.run(<String>[
@@ -205,8 +224,8 @@ void main() {
     );
   }, overrides: <Type, Generator>{});
 
-  testUsingContext('Can add Tizen platform to existing plugin project', () async {
-    final command = TizenCreateCommand();
+  testUsingContext('Adding Tizen to a MethodChannel plugin prints migration guidance', () async {
+    final TizenCreateCommand command = createCommand();
     final CommandRunner<void> runner = createTestCommandRunner(command);
     await runner.run(<String>[
       'create',
@@ -217,6 +236,7 @@ void main() {
     expect(projectDir.childDirectory('example/tizen'), isNot(exists));
     expect(projectDir.childDirectory('tizen'), isNot(exists));
     expect(logger.errorText, contains(_kNoPlatformsMessage));
+    projectDir.childFile('lib/flutter_project_method_channel.dart').createSync();
 
     await runner.run(<String>[
       'create',
@@ -227,12 +247,13 @@ void main() {
     expect(projectDir.childDirectory('example/tizen').listSync(), isNotEmpty);
     expect(projectDir.childDirectory('tizen').listSync(), isNotEmpty);
     expect(logger.statusText, isNot(contains(_kNoPlatformsMessage)));
+    expect(logger.statusText, contains('adapt the generated Tizen handler'));
   }, overrides: <Type, Generator>{
     Logger: () => logger,
   });
 
   testUsingContext('Can create a C# module project', () async {
-    final command = TizenCreateCommand();
+    final TizenCreateCommand command = createCommand();
     final CommandRunner<void> runner = createTestCommandRunner(command);
     await runner.run(<String>[
       'create',
@@ -254,7 +275,7 @@ void main() {
   });
 
   testUsingContext('Can create a C++ module project', () async {
-    final command = TizenCreateCommand();
+    final TizenCreateCommand command = createCommand();
     final CommandRunner<void> runner = createTestCommandRunner(command);
     await runner.run(<String>[
       'create',

@@ -3,9 +3,9 @@
 // For getPlatformVersion; remove unless needed for your plugin implementation.
 #include <system_info.h>
 
-#include <flutter/method_channel.h>
+#include <flutter/basic_message_channel.h>
 #include <flutter/plugin_registrar.h>
-#include <flutter/standard_method_codec.h>
+#include <flutter/standard_message_codec.h>
 
 #include <memory>
 #include <string>
@@ -17,47 +17,38 @@ namespace {
 class {{pluginClass}} : public flutter::Plugin {
  public:
   static void RegisterWithRegistrar(flutter::PluginRegistrar *registrar) {
-    auto channel =
-        std::make_unique<flutter::MethodChannel<flutter::EncodableValue>>(
-            registrar->messenger(), "{{projectName}}",
-            &flutter::StandardMethodCodec::GetInstance());
-
-    auto plugin = std::make_unique<{{pluginClass}}>();
-
-    channel->SetMethodCallHandler(
-        [plugin_pointer = plugin.get()](const auto &call, auto result) {
-          plugin_pointer->HandleMethodCall(call, std::move(result));
+    // Implements {{pluginClass}}Api in pigeon/messages.dart. The channel name
+    // and the reply format ([result] or [code, message, details]) follow
+    // lib/src/messages.g.dart.
+    flutter::BasicMessageChannel<flutter::EncodableValue> channel(
+        registrar->messenger(),
+        "dev.flutter.pigeon.{{projectName}}.{{pluginClass}}Api."
+        "getPlatformVersion",
+        &flutter::StandardMessageCodec::GetInstance());
+    channel.SetMessageHandler(
+        [](const flutter::EncodableValue &,
+           const flutter::MessageReply<flutter::EncodableValue> &reply) {
+          reply(GetPlatformVersion());
         });
 
-    registrar->AddPlugin(std::move(plugin));
+    registrar->AddPlugin(std::make_unique<{{pluginClass}}>());
   }
 
-  {{pluginClass}}() {}
-
-  virtual ~{{pluginClass}}() {}
-
  private:
-  void HandleMethodCall(
-      const flutter::MethodCall<flutter::EncodableValue> &method_call,
-      std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result) {
-    const auto &method_name = method_call.method_name();
-
-    // Replace "getPlatformVersion" check with your plugin's method.
-    if (method_name == "getPlatformVersion") {
-      char *value = nullptr;
-      int ret = system_info_get_platform_string(
-          "http://tizen.org/feature/platform.version", &value);
-      if (ret == SYSTEM_INFO_ERROR_NONE) {
-        result->Success(flutter::EncodableValue(std::string(value)));
-      } else {
-        result->Error(std::to_string(ret), "Failed to get platform version.");
-      }
-      if (value) {
-        free(value);
-      }
-    } else {
-      result->NotImplemented();
+  static flutter::EncodableValue GetPlatformVersion() {
+    char *value = nullptr;
+    int ret = system_info_get_platform_string(
+        "http://tizen.org/feature/platform.version", &value);
+    if (ret != SYSTEM_INFO_ERROR_NONE) {
+      return flutter::EncodableValue(flutter::EncodableList{
+          flutter::EncodableValue(std::to_string(ret)),
+          flutter::EncodableValue("Failed to get platform version."),
+          flutter::EncodableValue()});
     }
+    std::string version(value);
+    free(value);
+    return flutter::EncodableValue(
+        flutter::EncodableList{flutter::EncodableValue(version)});
   }
 };
 

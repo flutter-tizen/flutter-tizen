@@ -452,7 +452,8 @@ Future<void> injectTizenPlugins(FlutterProject project) async {
 }
 
 Future<void> _informAvailableTizenPlugins(FlutterProject project) async {
-  final List<String> plugins = (await findPlugins(project)).map((Plugin p) => p.name).toList();
+  final List<String> plugins =
+      (await findPlugins(project, logger: globals.logger)).map((Plugin p) => p.name).toList();
   for (final plugin in plugins) {
     final tizenPlugin = '${plugin}_tizen';
     if (_kKnownPlugins.containsKey(plugin) &&

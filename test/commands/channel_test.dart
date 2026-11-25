@@ -17,6 +17,7 @@ import 'package:path/path.dart' as path;
 import '../src/common.dart';
 import '../src/context.dart';
 import '../src/fake_process_manager.dart';
+import '../src/fakes.dart';
 import '../src/test_flutter_command_runner.dart';
 
 /// `git tag` output, deliberately not in commit-time order to prove the sort.
@@ -52,6 +53,7 @@ void main() {
     Future<int> Function(List<String> args)? runLauncher,
   }) {
     return TizenChannelCommand(
+      toolContext: const DelegatingToolContext(),
       git: Git(
         currentPlatform: FakePlatform(),
         runProcessWith: ProcessUtils(

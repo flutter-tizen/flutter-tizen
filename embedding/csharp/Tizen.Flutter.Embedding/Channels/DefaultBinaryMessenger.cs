@@ -117,11 +117,9 @@ namespace Tizen.Flutter.Embedding
         private async void OnMessageReceived(FlutterDesktopMessenger messenger, IntPtr message, IntPtr userData)
         {
             var receivedMessage = Marshal.PtrToStructure<FlutterDesktopMessage>(message);
-            var messageBytes = new byte[receivedMessage.message_size];
-            Marshal.Copy(receivedMessage.message, messageBytes, 0, (int)receivedMessage.message_size);
             if (_handlers.TryGetValue(receivedMessage.channel, out var handler))
             {
-                byte[] replyBytes = await handler(messageBytes);
+                byte[] replyBytes = await handler(receivedMessage.GetMessageBytes());
                 if (replyBytes != null)
                 {
                     using (var pinned = PinnedObject.Get(replyBytes))

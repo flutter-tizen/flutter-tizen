@@ -14,6 +14,7 @@ import 'package:flutter_tools/src/doctor.dart';
 import 'package:flutter_tools/src/doctor_validator.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/version.dart';
+import 'package:flutter_tools_core/flutter_tools_core.dart';
 import 'package:process/process.dart';
 
 import 'tizen_sdk.dart';
@@ -132,6 +133,7 @@ class TizenValidator extends DoctorValidator {
       frameworkRevision: revision,
       fs: _fileSystem,
       git: globals.git,
+      platform: globals.platform,
     );
     messages.add(ValidationMessage(
       'Framework revision ${version.frameworkRevisionShort} '
